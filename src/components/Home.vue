@@ -4,7 +4,7 @@ import {PhotoIcon} from '@heroicons/vue/24/solid'
 import {ChevronDownIcon} from '@heroicons/vue/16/solid'
 import useTypes from "../config/types.js";
 import {useFields} from "../helpers/fields.js";
-import {ArrowLeftIcon, ArrowRightIcon, DocumentArrowDownIcon, TrashIcon} from "@heroicons/vue/24/solid/index.js";
+import {ArrowLeftIcon, ArrowRightIcon, DocumentArrowDownIcon, TrashIcon, PrinterIcon} from "@heroicons/vue/24/solid/index.js";
 import Editor from '@tinymce/tinymce-vue'
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
 import {useCanvasHelper} from "../helpers/canvas.js";
@@ -271,6 +271,18 @@ const downloadImage = function () {
         console.error('oops, something went wrong!', err);
       });
 }
+
+const printPage = function () {
+  const stageInstance = stage.value.getStage();
+  stage.value.getStage().scale({x:0.52913385826,y:0.52913385826});
+  stageInstance.batchDraw();
+  setTimeout(() => {
+    window.print();
+    stageInstance.scale({x:1,y:1});
+    stageInstance.batchDraw();
+  }, 100);
+}
+
 const downloadURI = function (uri, name) {
   const link = document.createElement('a');
   link.download = name;
@@ -1151,10 +1163,14 @@ onUnmounted(() => {
             </v-stage>
           </div>
 
-          <div class="flex justify-center mt-2 print:hidden">
+          <div class="flex justify-center mt-2 print:hidden gap-4">
             <button class="inline-flex items-center gap-x-1.5 button-primary px-3.5 py-2.5" type="button" v-on:click="() => downloadImage()">
               Download Card
               <DocumentArrowDownIcon aria-hidden="true" class="-mr-0.5 size-5"/>
+            </button>
+            <button class="inline-flex items-center gap-x-1.5 button-primary px-3.5 py-2.5" type="button" v-on:click="() => printPage()">
+              Print
+              <PrinterIcon aria-hidden="true" class="-mr-0.5 size-5"/>
             </button>
           </div>
         </div>
