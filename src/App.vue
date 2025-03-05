@@ -9,12 +9,12 @@ export default {
 
 <template>
   <div>
-    <Menu></Menu>
+    <Menu class="print:hidden"></Menu>
     <main class="p-6 sm:pt-8 lg:pt-10 lg:pl-72 bg-white dark:bg-dark min-h-screen">
       <div class="px-4 sm:px-6 lg:px-8">
         <RouterView></RouterView>
       </div>
-      <Footer></Footer>
+      <Footer class="print:hidden"></Footer>
     </main>
   </div>
 </template>
