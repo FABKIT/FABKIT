@@ -32,8 +32,7 @@ export default function useTinyMCEConfig(cardText) {
         width: '100%',
         menubar: false,
         plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'searchreplace',
-            'emoticons'
+            'importcss', 'lists',
         ],
         toolbar: 'bold italic underline alignleft aligncenter alignright alignjustify bullist ' + buttons.map((b) => 'custom_button_' + b.icon).join(' '),
         promotion: false,
