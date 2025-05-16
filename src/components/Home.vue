@@ -2,25 +2,24 @@
 
 import {PhotoIcon} from '@heroicons/vue/24/solid'
 import {ChevronDownIcon} from '@heroicons/vue/16/solid'
-import useTypes from "../config/types.js";
-import {useFields} from "../helpers/fields.js";
-import {ArrowLeftIcon, ArrowRightIcon, DocumentArrowDownIcon, TrashIcon, PrinterIcon} from "@heroicons/vue/24/solid/index.js";
+import {useCard} from "../helpers/card.js";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  DocumentArrowDownIcon,
+  PrinterIcon,
+  TrashIcon
+} from "@heroicons/vue/24/solid/index.js";
 import Editor from '@tinymce/tinymce-vue'
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
 import {useCanvasHelper} from "../helpers/canvas.js";
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {useBackgrounds} from "../config/backgrounds.js";
-import {useCardBacks} from "../config/card_backs.js";
+import {nextTick, onMounted, ref, watch} from "vue";
 import {toPng} from "html-to-image";
 import useTinyMCEConfig from "../helpers/tinyMCEConfig.js";
-
-const types = useTypes();
-const capitalizeFirstLetter = function (val) {
-  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-}
-const fields = useFields();
+import {useImage} from "vue-konva";
 
 const {
+  types,
   cardType,
   cardPitch,
   cardName,
@@ -54,7 +53,16 @@ const {
   cardDefense,
   cardLife,
   cardUploadedArtwork,
-} = fields;
+  cardTypeText,
+  isFieldShown,
+  currentBackground,
+  getConfig,
+  cardbackName,
+  switchBackground,
+  nameFontSize,
+  typeTextFontSize,
+  footerTextFontSize,
+} = useCard();
 
 const CanvasHelper = useCanvasHelper();
 const configKonva = {
@@ -69,30 +77,6 @@ const footertext = ref();
 
 const canvasHelper = new CanvasHelper();
 
-const backgroundIndex = ref(0);
-
-const pitch = computed(() => {
-  return cardPitch.value || 1;
-})
-
-const backgrounds = useBackgrounds();
-const cardBackConfigs = useCardBacks();
-
-// a computed ref
-const isFieldShown = (fieldId) => {
-  if (cardType.value === '') return false;
-
-  const selectedType = types.find(t => t.type === cardType.value);
-  if (!selectedType) return false;
-
-  const field = selectedType.fields.find(f => f.id === fieldId);
-  if (!field) {
-    fields[fieldId].value = '';
-    return false;
-  }
-  return true;
-};
-
 const readFile = function readFile(event) {
 
   if (!event.target.files || !event.target.files[0]) return;
@@ -106,98 +90,8 @@ const readFile = function readFile(event) {
   FR.readAsDataURL(event.target.files[0]);
 }
 
-const availableBackgrounds = computed(() => {
-  return backgrounds[backgroundFolder.value][pitch.value] || [];
-});
-
-const backgroundFolder = computed(() => {
-  if (["equipment", "hero", "token", "weapon", "resource"].includes(cardType.value)) {
-    return cardType.value
-  }
-  if ("demi_hero" === cardType.value) {
-    return "hero";
-  }
-  // Determine category based on attack/defense presence
-  const hasPower = cardPower.value;
-  const hasDefense = cardDefense.value;
-
-  // Special categories (direct folder mapping)
-  if (hasPower && hasDefense) {
-    return "allstats";
-  } else if (!hasDefense && hasPower) {
-    return 'nodefense';
-  } else if (!hasPower && hasDefense) {
-    return "nopower";
-  }
-
-
-  return "nostats";
-})
-
-const currentBackground = computed(() => {
-  if (backgroundIndex.value > (availableBackgrounds.value.length - 1)) {
-    // Reset the index to 0 if it's out of bounds
-    backgroundIndex.value = 0;
-  }
-  if (!backgrounds[backgroundFolder.value]) return '';
-  if (!backgrounds[backgroundFolder.value][pitch.value]) return '';
-  if (!backgrounds[backgroundFolder.value][pitch.value][backgroundIndex.value]) return '';
-
-  return backgrounds[backgroundFolder.value][pitch.value][backgroundIndex.value];
-});
-
-const frameType = computed(() => {
-  // img/cardbacks/allstats/1/aria_allstats_1_dented.png
-  const re = /.*_(.*).png/
-  const match = currentBackground.value.match(re);
-
-  if (!match || !match[1]) {
-    console.error(`No frame type found for ${currentBackground.value}`)
-    return;
-  }
-
-  return match[1]
-});
-
-const getConfig = function (fieldName) {
-  if (!cardBackConfigs[frameType.value]) return {};
-  if (cardBackConfigs[frameType.value][cardType.value] && cardBackConfigs[frameType.value][cardType.value][fieldName]) {
-    return cardBackConfigs[frameType.value][cardType.value][fieldName];
-  }
-  if (cardBackConfigs[frameType.value].default[fieldName]) {
-    return cardBackConfigs[frameType.value].default[fieldName];
-  }
-
-  return {};
-}
-
 const tinyMCEConfig = useTinyMCEConfig(cardText);
 
-const scaledFontsize = function (text, fontSize, fontface, desiredWidth) {
-  const c = document.createElement('canvas');
-  const cctx = c.getContext('2d');
-  cctx.font = fontSize + 'px ' + fontface;
-  const textWidth = cctx.measureText(text).width;
-  if (textWidth < desiredWidth) {
-    return fontSize;
-  }
-
-  // Try and calculate the correct fontsize first
-  let newFontSize = (((fontSize * desiredWidth) / textWidth));
-
-  // If it's correct we return it
-  if (cctx.measureText(text).width <= desiredWidth) {
-    return newFontSize;
-  }
-
-  // increment the fontsize with 0.01 until we get a good size
-  while (cctx.measureText(text).width > desiredWidth) {
-    newFontSize -= 0.01;
-    cctx.font = newFontSize + 'px ' + fontface;
-  }
-
-  return newFontSize;
-}
 
 const downloadImage = function () {
   toPng(document.querySelector('.cardParent'), {
@@ -304,32 +198,12 @@ const doLoading = async function (callback) {
   });
 }
 
-const clamp = function (value, min, max) {
-  return Math.max(min, Math.min(value, max));
-}
 
-const switchBackground = function (dir) {
-  const available = availableBackgrounds.value;
-  if (dir === 'next') {
-    backgroundIndex.value = clamp(
-        (backgroundIndex.value + 1) % available.length,
-        0,
-        available.length - 1
-    );
-
-    return Promise.resolve();
-  }
-  if (dir === 'previous') {
-    backgroundIndex.value = clamp(
-        (backgroundIndex.value - 1 + available.length) % available.length,
-        0,
-        available.length - 1
-    );
-    return Promise.resolve();
-  }
-
-  return Promise.resolve();
-}
+onMounted(function () {
+  canvasHelper.artworkLayer = artwork.value.getStage();
+  canvasHelper.backgroundLayer = background.value.getStage();
+  canvasHelper.footerLayer = footer.value.getStage();
+})
 
 watch(currentBackground, (newBackground) => {
   nextTick(() => {
@@ -338,125 +212,6 @@ watch(currentBackground, (newBackground) => {
     })
   })
 });
-
-const cardbackName = computed(() => {
-  // img/cardbacks/allstats/1/aria_allstats_1_dented.png
-  const re = /([^\\^\/]*?)_.*.png/
-  const match = currentBackground.value.match(re);
-
-  if (!match || !match[1]) {
-    return '';
-  }
-
-  return capitalizeFirstLetter(match[1]);
-})
-
-const cardTypeText = computed(() => {
-  let classText = cardClass.value;
-  if (classText === 'Custom' && cardClassCustom.value) {
-    classText = cardClassCustom.value;
-  }
-
-  let subtype = '';
-  switch (cardType.value) {
-    case 'action':
-      subtype = cardActionSubtype.value;
-      if (subtype === 'Custom') {
-        subtype = cardActionSubtypeCustom.value;
-      }
-      break;
-    case 'defense_reaction':
-      subtype = cardDefenseReactionSubtype.value;
-      if (subtype === 'Custom') {
-        subtype = cardDefenseReactionSubtypeCustom.value;
-      }
-      break;
-    case 'equipment':
-      subtype = cardEquipmentSubtype.value;
-      if (subtype === 'Custom') {
-        subtype = cardEquipmentSubtypeCustom.value;
-      }
-      break;
-    case 'instant':
-      subtype = cardInstantSubtype.value;
-      if (subtype === 'Custom') {
-        subtype = cardInstantSubtypeCustom.value;
-      }
-      break;
-    case 'resource':
-      subtype = cardResourceSubtype.value;
-      if (subtype === 'Custom') {
-        subtype = cardResourceSubtypeCustom.value;
-      }
-      break;
-    case 'hero':
-    case 'demi_hero':
-      subtype = cardHeroSubtype.value;
-      break;
-    case 'weapon':
-      subtype = cardWeaponSubtype.value;
-      if (subtype === 'Custom') {
-        subtype = cardWeaponSubtypeCustom.value;
-      }
-      break;
-    case 'token':
-      subtype = cardTokenSubtype.value;
-      break;
-  }
-
-  if (subtype) {
-    subtype = ' - ' + subtype;
-  }
-  if (cardType.value === 'weapon') {
-    subtype += ' ' + cardWeapon.value;
-  }
-
-  let type = capitalizeFirstLetter(cardType.value).split('_').map((word) => capitalizeFirstLetter(word)).join(' ');
-
-  let secondaryClass = '';
-  if (cardSecondaryClass.value) {
-    secondaryClass = ' / ' + cardSecondaryClass.value;
-    if (cardSecondaryClass.value === 'Custom') {
-      secondaryClass = ' / ' + cardSecondaryClassCustom.value;
-    }
-  }
-
-  let talent = cardTalent.value;
-  if (talent === 'Custom') {
-    talent = cardTalentCustom.value;
-  }
-
-  return `${talent} ${classText} ${secondaryClass} ${type} ${subtype}`
-      .replace(/  +/g, ' ')
-      .replace(/ $/, '')
-      .replace(/^ /, '')
-      ;
-});
-
-const nameFontSize = computed(() => {
-  const config = getConfig('cardName') || {};
-
-  return scaledFontsize(cardName.value, config.fontSize, config.fontFamily, config.width);
-})
-
-const typeTextFontSize = computed(() => {
-  const typeTextConfig = getConfig('cardTypeText') || {};
-
-  return scaledFontsize(cardTypeText.value, typeTextConfig.fontSize, typeTextConfig.fontFamily, typeTextConfig.width);
-})
-
-const footerTextFontSize = computed(() => {
-  const footerTextConfig = getConfig('cardFooterText') || {};
-
-  return scaledFontsize(cardTypeText.value, footerTextConfig.fontSize, footerTextConfig.fontFamily, footerTextConfig.width);
-})
-
-
-onMounted(function () {
-  canvasHelper.artworkLayer = artwork.value.getStage();
-  canvasHelper.backgroundLayer = background.value.getStage();
-  canvasHelper.footerLayer = footer.value.getStage();
-})
 
 watch(cardType, (newCardType) => {
   if (!newCardType) return;
@@ -479,11 +234,8 @@ watch(cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
 })
 
-onUnmounted(() => {
-  Object.keys(fields).forEach(key => {
-    fields[key].value = '';
-  });
-})
+const [powerImage] = useImage('img/symbols/symbol_power.svg');
+const [defenseImage] = useImage('img/symbols/symbol_defense.svg');
 </script>
 
 <template>
@@ -1070,6 +822,22 @@ onUnmounted(() => {
             >
               <v-layer id="artwork" ref="artwork"></v-layer>
               <v-layer id="background" ref="background"></v-layer>
+              <v-layer>
+                <v-image v-if="cardPower" :config="{
+                  x: 27,
+                  y: 558,
+                  width: 42,
+                  height: 42,
+                  image: powerImage,
+                }" ></v-image>
+                <v-image v-if="cardDefense" :config="{
+                  x: 381,
+                  y: 558,
+                  width: 42,
+                  height: 42,
+                  image: defenseImage,
+                }" ></v-image>
+              </v-layer>
               <v-layer id="text">
                 <v-text v-if="cardName" v-bind="{
                   ...getConfig('cardName'),
