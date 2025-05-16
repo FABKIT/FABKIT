@@ -234,8 +234,8 @@ watch(cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
 })
 
-const [powerImage] = useImage('img/symbols/symbol_power.svg');
-const [defenseImage] = useImage('img/symbols/symbol_defense.svg');
+const [powerImage] = useImage('img/symbols/cardsymbol_power.svg');
+const [defenseImage] = useImage('img/symbols/cardsymbol_defense.svg');
 </script>
 
 <template>
@@ -824,17 +824,17 @@ const [defenseImage] = useImage('img/symbols/symbol_defense.svg');
               <v-layer id="background" ref="background"></v-layer>
               <v-layer>
                 <v-image v-if="cardPower" :config="{
-                  x: 27,
-                  y: 558,
-                  width: 42,
-                  height: 42,
+                  x: 30,
+                  y: 560.2,
+                  width: 36,
+                  height: 36,
                   image: powerImage,
                 }" ></v-image>
                 <v-image v-if="cardDefense" :config="{
-                  x: 381,
-                  y: 558,
-                  width: 42,
-                  height: 42,
+                  x: 383.5,
+                  y: 561.3,
+                  width: 36,
+                  height: 36,
                   image: defenseImage,
                 }" ></v-image>
               </v-layer>
