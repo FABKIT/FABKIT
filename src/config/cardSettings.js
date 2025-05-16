@@ -1,4 +1,4 @@
-const card_backs = {
+const cardSettings = {
     dented: {
         default: {
             cardBackground: {
@@ -259,6 +259,6 @@ const card_backs = {
     }
 }
 
-export function useCardBacks() {
-    return card_backs;
+export function useCardBackSettings() {
+    return cardSettings;
 }
