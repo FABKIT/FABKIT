@@ -234,8 +234,8 @@ watch(cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
 })
 
-const [powerImage] = useImage('img/symbols/cardsymbol_power.svg');
-const [defenseImage] = useImage('img/symbols/cardsymbol_defense.svg');
+const [powerImage] = useImage('src/assets/cardsymbol_power.svg');
+const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
 </script>
 
 <template>
