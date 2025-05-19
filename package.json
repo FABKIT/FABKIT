@@ -12,7 +12,7 @@
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.0.17",
     "@tailwindcss/vite": "^4.0.9",
-    "@tinymce/tinymce-vue": "^4.0.7",
+    "@tinymce/tinymce-vue": "^6.1.0",
     "fs-extra": "^11.3.0",
     "html-to-image": "1.11.11",
     "konva": "^9.3.18",
