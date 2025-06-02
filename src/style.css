@@ -5,6 +5,7 @@
 @theme {
     --color-primary: #A6864A;
     --color-dark: #2A2A2A;
+    --breakpoint-cardback: 450px;
 }
 
 .button-primary {
