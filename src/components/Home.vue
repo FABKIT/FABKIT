@@ -15,7 +15,7 @@ import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
 import {useCanvasHelper} from "../helpers/canvas.js";
 import {nextTick, onMounted, ref, watch} from "vue";
 import {toPng} from "html-to-image";
-import useTinyMCEConfig from "../helpers/tinyMCEConfig.js";
+import useTinyMCEConfig from "../config/tinyMCE.js";
 import {useImage} from "vue-konva";
 
 const {

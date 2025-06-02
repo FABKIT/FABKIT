@@ -21,3 +21,10 @@
     focus-visible:outline-offset-2
     focus-visible:outline-white
 }
+
+/* Tell tailwind to not touch styles inside the cardText */
+@layer base {
+    #renderedCardText ul, #renderedCardText ol {
+        list-style: inside;
+    }
+}
