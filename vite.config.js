@@ -1,19 +1,25 @@
-import {defineConfig} from 'vite'
+import {defineConfig, loadEnv} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
-import backgrounds from "./vite_generate_backgrounds.js";
+import getCardbacks from "./vite_generate_backgrounds.js";
 import fs from 'fs';
 
-fs.writeFileSync('./src/config/cardbacks.js', backgrounds);
-
 // https://vitejs.dev/config/
-export default defineConfig({
-    base: '/FABKIT/',
-    plugins: [
-        tailwindcss(),
-        vue()
-    ],
-    server: {
-        port: 8080,
+export default defineConfig(async ({mode}) => {
+    // Load env file based on `mode` in the current working directory.
+    // Set the third parameter to '' to load all env regardless of the
+    // `VITE_` prefix.
+    const env = loadEnv(mode, process.cwd(), '');
+    fs.writeFileSync('./src/config/cardbacks.js', await getCardbacks(env.BACKEND_URL));
+
+    return {
+        base: '/FABKIT/',
+        plugins: [
+            tailwindcss(),
+            vue()
+        ],
+        server: {
+            port: 8080,
+        },
     }
-});
+})

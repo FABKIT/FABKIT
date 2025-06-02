@@ -150,7 +150,7 @@ export function useCard() {
     const availableCardbacks = computed(() => {
         return cardbacks.filter(el => {
             let type = 'General';
-            if (['equipment', 'hero', 'demi_hero', 'equipment', 'weapon', 'token'].includes(cardType.value)) {
+            if (['equipment', 'hero', 'demi_hero', 'equipment', 'weapon', 'token', 'resource'].includes(cardType.value)) {
                 type = cardType.value;
                 if (cardType.value === 'demi_hero') {
                     type = 'hero';

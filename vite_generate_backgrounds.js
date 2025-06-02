@@ -1,66 +1,70 @@
-import fs from 'fs';
+import {readdir, unlink, createWriteStream} from 'fs';
+import path from 'path';
+import http from 'http';
+import https from 'https';
 
-function getFiles(dir, files_) {
-    files_ = files_ || [];
-    const files = fs.readdirSync(dir);
-    for (const i in files) {
-        const name = dir + '/' + files[i];
-        if (fs.statSync(name).isDirectory()) {
-            getFiles(name, files_);
-        } else {
-            if (name.search(".png") !== -1) {
-                files_.push(name);
-            }
+
+const getCardbacks = async function(url) {
+    // remove existing cardbacks
+    readdir('./public/img/cardbacks/generated', (err, files) => {
+        if (err) throw err;
+
+        for (const file of files) {
+            unlink(path.join('./public/img/cardbacks/generated', file), (err) => {
+                if (err) throw err;
+            });
         }
-    }
-    return files_;
-}
-
-let res = [];
-
-getFiles('public/img/cardbacks').forEach((file) => {
-    let path = file.replace("public/img/cardbacks", "");
-    const sub1re = /^\/(.*)?\/(.*.png)$/;
-    let sub1match = path.match(sub1re);
-    let [typeFolder, pitch] = sub1match[1].split('/');
-    if (!pitch) {
-        pitch = 1;
-    }
-    let type = typeFolder;
-    if ('nostats' === typeFolder) {
-        type = 'General';
-    }
-    if (['allstats', 'nodefense', 'nopower'].includes(typeFolder)) {
-        return;
-    }
-    const image = sub1match[2];
-    const name = image.split('_')[0];
-
-    let cardbackIndex = res.findIndex(el => el.name === name && el.type === type);
-    if (cardbackIndex < 0) {
-        let cardback = {
-            "type": type,
-            "dented": true,
-            "name": name,
-            "images": []
-        };
-        cardback.images.push({
-            "pitch": pitch,
-            "url": 'img/cardbacks/' + sub1match[1] + '/' + image,
-        });
-        res.push(cardback);
-
-        return;
-    }
-    res[cardbackIndex].images.push({
-        "pitch": pitch,
-        "url": 'img/cardbacks/' + sub1match[1] + '/' + image,
     });
-});
+    const response = await fetch(url);
+    const cardbacks = await response.json();
+    let downloads = [];
+    cardbacks.forEach((cardback) => {
+        cardback.images.forEach((cardbackImage) => {
+            downloads.push({url: cardbackImage.fileName, fileLocation: './public/img/cardbacks/generated/'+cardbackImage.url});
 
-const cardbacks = `const cardbacks = ${JSON.stringify(res)};
+            cardbackImage.url = 'img/cardbacks/generated/'+cardbackImage.url;
+            delete cardbackImage.fileName;
+        })
+    })
+
+    for (const download of downloads) {
+        await downloadFileFromURL(download.url, download.fileLocation);
+    }
+
+    return `const cardbacks = ${JSON.stringify(cardbacks)};
 export function useCardBacks() {
     return cardbacks;
 }`;
+}
 
-export default cardbacks;
+async function downloadFileFromURL(url, fileLocation) {
+    return await new Promise((resolve, reject) => {
+        let evalledHttp = http;
+        if (url.startsWith('https')) {
+            evalledHttp = https;
+        }
+        evalledHttp.get(url, async (response) => {
+                const code = response.statusCode ?? 0
+
+                if (code >= 400) {
+                    return reject(new Error(response.statusMessage))
+                }
+
+                // save the file to disk
+                const fileWriter = createWriteStream(fileLocation)
+                    .on('finish', () => {
+                        resolve({
+                            fileLocation,
+                            contentType: response.headers['content-type'],
+                        })
+                    })
+
+                response.pipe(fileWriter)
+            })
+            .on('error', (error) => {
+                reject(error)
+            })
+    })
+}
+
+export default getCardbacks;
