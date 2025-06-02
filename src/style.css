@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./css/animations.css";
 @import "./css/customstyles.css";
 @import "./css/editor.css";
 
