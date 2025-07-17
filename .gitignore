@@ -1,4 +1,4 @@
-public/img/cardbacks/generated
+public/img/cardbacks/generated/*.png
 src/config/cardbacks.js
 .env
 # Logs
