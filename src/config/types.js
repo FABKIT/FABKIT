@@ -103,9 +103,6 @@ const types = [
                 id: "cardName",
             },
             {
-                id: "cardCost",
-            },
-            {
                 id: "cardText",
             },
             {
