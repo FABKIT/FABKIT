@@ -235,6 +235,7 @@ watch(cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
 })
 
+const [noCostImage] = useImage('src/assets/symbol_nocost.png');
 const [powerImage] = useImage('src/assets/cardsymbol_power.svg');
 const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
 </script>
@@ -856,6 +857,13 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
                 <v-layer id="artwork" ref="artwork"></v-layer>
                 <v-layer id="background" ref="background"></v-layer>
                 <v-layer>
+                   <v-image v-if="cardType === 'block'" :config="{
+                    x: 372.1,
+                    y: 34.6,
+                    width: 48,
+                    height: 44,
+                    image: noCostImage,
+                  }" ></v-image>
                   <v-image v-if="cardPower" :config="{
                   x: 30,
                   y: 560.2,
