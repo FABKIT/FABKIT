@@ -860,8 +860,8 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
                    <v-image v-if="cardType === 'block'" :config="{
                     x: 372.1,
                     y: 34.6,
-                    width: 48,
-                    height: 44,
+                    width: 54,
+                    height: 53,
                     image: noCostImage,
                   }" ></v-image>
                   <v-image v-if="cardPower" :config="{
