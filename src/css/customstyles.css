@@ -80,3 +80,89 @@
     font-family: 'Palatino LT Std Light', serif;
     position:relative;
 }
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button-cover {
+    height: 8px;
+    margin: 20px;
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 30px;
+    position: relative;
+    width: 120px;
+}
+
+.button {
+    position: relative;
+    top: 50%;
+    width: 120px;
+    height: 30px;
+    margin: -15px auto 0 auto;
+    overflow: hidden;
+}
+
+.button.r {
+    border-radius: 30px;
+}
+
+.checkbox {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.knobs {
+    z-index: 2;
+}
+
+.layer {
+    width: 100%;
+    background-color: #FFFFFF;
+    transition: 0.3s ease all;
+    z-index: 1;
+}
+
+.knobs, .layer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.knobs:before {
+    content: "Old Style";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 56px;
+    height: 26px;
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 26px;
+    background-color: #2A2A2A;
+    border-radius: 26px;
+    transition: 0.3s ease all;
+}
+
+.checkbox:checked + .knobs:before {
+    content: "New Style";
+    left: 60px;
+    background-color: #A6864A;
+}
+
+.checkbox:checked ~ .layer {
+    background-color: #FFFFFF;
+}

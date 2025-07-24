@@ -832,6 +832,15 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
         </div>
         <div v-show="cardType" class="flex flex-col items-center cardback:p-6">
           <label class="block text-sm/6 font-medium text-primary dark:text-white text-center print:hidden" for="cardBackLabel">Select Card Background</label>
+          <div class="toggle-container">
+            <div class="button-cover">
+              <div class="button r">
+                <input type="checkbox" class="checkbox" name="cardStyle" value="new" />
+                <div class="knobs"></div>
+                <div class="layer"></div>
+              </div>
+            </div>
+          </div>
           <div class="w-full flex justify-between items-center mt-2 mb-4 col-start-2 print:hidden">
             <button :disabled="loadingBackground" class="button-primary px-3.5 py-2.5" type="button"
                     v-on:click="() => switchBackground('next')">
