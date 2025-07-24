@@ -182,7 +182,7 @@ export function useCard() {
             return 'dented';
         }
 
-        return '';
+        return 'flat';
     });
 
     const cardBackSettings = useCardBackSettings();
