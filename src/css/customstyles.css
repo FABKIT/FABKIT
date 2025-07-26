@@ -48,6 +48,11 @@
     src: url('/fonts/Dialog Cond SemiBold Regular.woff2') format('woff');
 }
 
+@font-face {
+    font-family: 'Palatino LT Std Light Bold';
+    src: url('/fonts/Palatino LT Std Light Bold.otf') format('opentype');
+}
+
 #renderedCardText {
     font-family: 'Palatino LT Std Light', serif;
     position: absolute;
@@ -76,9 +81,22 @@
     line-height:21.16px;
 }
 
+#renderedCardText strong {
+    font-family: 'Palatino LT Std Medium', serif;
+    font-weight: normal;
+}
+
 .cardParent {
     font-family: 'Palatino LT Std Light', serif;
     position:relative;
+}
+
+.exampleCard {
+    width:450px;
+    height:628px;
+    position:absolute;
+    z-index:20;
+    opacity:0.3;
 }
 
 .toggle-container {
@@ -166,3 +184,4 @@
 .checkbox:checked ~ .layer {
     background-color: #FFFFFF;
 }
+

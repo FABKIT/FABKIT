@@ -855,6 +855,9 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
           </div>
 
           <div class="flex flex-col w-full overflow-x-scroll cardback:items-center cardback:overflow-x-auto">
+            <div class="exampleCard">
+              <img src="../../public/img/Flat_CardBack_Example3.png" height="628" width="450"/>
+            </div>
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement">
                 <div id="renderedContent" ref="contentElement" style="font-family: 'Palatino LT Std Light', serif;" v-html="cardText"></div>
