@@ -4,17 +4,17 @@ import {Dialog, DialogPanel, TransitionChild, TransitionRoot} from '@headlessui/
 import {
   Bars3Icon,
   XMarkIcon,
-  AdjustmentsHorizontalIcon,
-  PaintBrushIcon, GiftIcon, RectangleStackIcon,
+  PaintBrushIcon,
+  MapIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/vue/24/outline'
 import {useRoute} from "vue-router";
 
 
 const navigation = [
   {name: 'Card Creator', route: 'home', icon: PaintBrushIcon},
-  {name: 'My Cards', route: 'my-cards', icon: RectangleStackIcon},
-  {name: 'Booster Opener', route: 'booster-opener', icon: GiftIcon},
-  {name: 'Settings', route: 'settings', icon: AdjustmentsHorizontalIcon},
+  {name: 'Roadmap', route: 'roadmap', icon: MapIcon},
+  {name: 'Contact', route: 'contact', icon: ChatBubbleLeftRightIcon},
 ];
 
 const route = useRoute();
