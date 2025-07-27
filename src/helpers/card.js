@@ -159,13 +159,30 @@ export function useCard() {
             return el.type.toLowerCase() === type.toLowerCase();
         });
     });
+
+    const filteredAvailableCardbacks = computed(() => {
+
+        // Filter based on dented property
+        if (selectedStyle.value === 'dented') {
+            // Only show cardbacks where dented is explicitly true
+            return availableCardbacks.value.filter(cb => cb.dented === true);
+        } else if (selectedStyle.value === 'flat') {
+            // Show cardbacks where dented is false, undefined, or null
+            return availableCardbacks.value.filter(cb => !cb.dented);
+        }
+
+        return availableCardbacks.value;
+    });
+
     const currentCardback = computed(() => {
-        if (backgroundIndex.value > (availableCardbacks.value.length - 1)) {
+        const filtered = filteredAvailableCardbacks.value;
+
+        if (backgroundIndex.value > (filtered.length - 1)) {
             // Reset the index to 0 if it's out of bounds
             backgroundIndex.value = 0;
         }
 
-        return availableCardbacks.value[backgroundIndex.value];
+        return filtered[backgroundIndex.value];
     })
 
     const currentBackground = computed(() => {
@@ -208,9 +225,10 @@ export function useCard() {
     })
 
     const backgroundIndex = ref(0);
+    const selectedStyle = ref('dented');
 
     const switchBackground = function (dir) {
-        const available = availableCardbacks.value;
+        const available = filteredAvailableCardbacks.value;
         if (dir === 'next') {
             backgroundIndex.value = clamp(
                 (backgroundIndex.value + 1) % available.length,
@@ -277,6 +295,9 @@ export function useCard() {
         return scaledFontsize(cardTypeText.value, footerTextConfig.fontSize, footerTextConfig.fontFamily, footerTextConfig.width);
     })
 
+    watch(selectedStyle, () => {
+        backgroundIndex.value = 0;
+    });
 
     onUnmounted(() => {
         cardType.value = '';
@@ -357,6 +378,7 @@ export function useCard() {
         getConfig,
         switchBackground,
         cardbackName,
+        selectedStyle,
         nameFontSize,
         typeTextFontSize,
         footerTextFontSize,

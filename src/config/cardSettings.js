@@ -16,7 +16,7 @@ const cardSettings = {
             },
             cardName: {
                 x: 88,
-                y: 41.2,
+                y: 42,
                 width: 273.5,
                 height: 31,
                 fontFamily: 'Amanda Std Regular',
@@ -40,7 +40,7 @@ const cardSettings = {
             },
             cardDefense: {
                 x: 352.3,
-                y: 572,
+                y: 572.5,
                 width: 24,
                 height: 29,
                 fontFamily: 'Palatino LT Std Light',
@@ -50,7 +50,7 @@ const cardSettings = {
             },
             cardPower: {
                 x: 73,
-                y: 572,
+                y: 572.5,
                 width: 24,
                 height: 29,
                 fontFamily: 'Palatino LT Std Light',
@@ -100,7 +100,25 @@ const cardSettings = {
                 fontSize: 9.2,
                 verticalAlign: "top",
                 fill: "white",
-            }
+            },
+            noCostImage: {
+                x: 371,
+                y: 29.9,
+                width: 49.8,
+                height: 49.8,
+            },
+            powerImage: {
+                x: 30,
+                y: 560.2,
+                width: 36,
+                height: 36,
+            },
+            defenseImage: {
+                x: 383.5,
+                y: 561.3,
+                width: 36,
+                height: 36,
+            },
         },
         // Specialty cases
         hero: {
@@ -176,18 +194,18 @@ const cardSettings = {
                 name: 'card-text-image',
             },
             cardName: {
-                x: 94.5,
-                y: 42.85,
+                x: 95,
+                y: 43.5,
                 width: 261,
                 height: 27,
                 fontFamily: 'Amanda Std Regular',
-                fontSize: 25.65,
+                fontSize: 25.5,
                 verticalAlign: "middle",
                 align: "center",
                 fill: "black",
             },
             cardCost: {
-                x: 372.5,
+                x: 373,
                 y: 34.6,
                 width: 48,
                 height: 44,
@@ -261,7 +279,25 @@ const cardSettings = {
                 fontSize: 9.2,
                 verticalAlign: "top",
                 fill: "white",
-            }
+            },
+            noCostImage: {
+                x: 372,  // Adjust these values as needed for flat
+                y: 29,
+                width: 50,
+                height: 50,
+            },
+            powerImage: {
+                x: 28,     // Adjust these values as needed for flat
+                y: 553.6,
+                width: 30,
+                height: 30,
+            },
+            defenseImage: {
+                x: 392,  // Adjust these values as needed for flat
+                y: 553.6,
+                width: 30,
+                height: 30,
+            },
         },
         hero: {
             cardUploadedArtwork: {

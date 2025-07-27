@@ -60,6 +60,7 @@ const {
   getConfig,
   cardbackName,
   switchBackground,
+  selectedStyle,
   nameFontSize,
   typeTextFontSize,
   footerTextFontSize,
@@ -75,7 +76,6 @@ const artwork = ref();
 const background = ref();
 const footer = ref();
 const footertext = ref();
-
 const canvasHelper = new CanvasHelper();
 
 const readFile = function readFile(event) {
@@ -238,6 +238,9 @@ watch(cardUploadedArtwork, (newUploadedArtwork) => {
 const [noCostImage] = useImage('src/assets/symbol_nocost.png');
 const [powerImage] = useImage('src/assets/cardsymbol_power.svg');
 const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
+const handleStyleToggle = (event) => {
+  selectedStyle.value = event.target.checked ? 'flat' : 'dented';
+}
 </script>
 
 <template>
@@ -835,7 +838,13 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
           <div class="toggle-container">
             <div class="button-cover">
               <div class="button r">
-                <input type="checkbox" class="checkbox" name="cardStyle" value="new" />
+                <input
+                    type="checkbox"
+                    class="checkbox"
+                    name="cardStyle"
+                    :checked="selectedStyle === 'flat'"
+                    @change="handleStyleToggle"
+                />
                 <div class="knobs"></div>
                 <div class="layer"></div>
               </div>
@@ -856,7 +865,7 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
 
           <div class="flex flex-col w-full overflow-x-scroll cardback:items-center cardback:overflow-x-auto">
             <div class="exampleCard">
-              <img src="../../public/img/Flat_CardBack_Example3.png" height="628" width="450"/>
+              <img src="../../public/img/Flat_CardBack_Example6.png" height="628" width="450"/>
             </div>
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement">
@@ -869,27 +878,27 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
                 <v-layer id="artwork" ref="artwork"></v-layer>
                 <v-layer id="background" ref="background"></v-layer>
                 <v-layer>
-                   <v-image v-if="cardType === 'block'" :config="{
-                    x: 372.1,
-                    y: 34.6,
-                    width: 54,
-                    height: 53,
-                    image: noCostImage,
-                  }" ></v-image>
-                  <v-image v-if="cardPower" :config="{
-                  x: 30,
-                  y: 560.2,
-                  width: 36,
-                  height: 36,
-                  image: powerImage,
-                }" ></v-image>
-                  <v-image v-if="cardDefense" :config="{
-                  x: 383.5,
-                  y: 561.3,
-                  width: 36,
-                  height: 36,
-                  image: defenseImage,
-                }" ></v-image>
+                  <v-image
+                      v-if="cardType === 'block'"
+                      :config="{
+                       ...getConfig('noCostImage'),
+                       image: noCostImage,
+                     }"
+                  />
+                  <v-image
+                      v-if="cardPower"
+                      :config="{
+                       ...getConfig('powerImage'),
+                       image: powerImage,
+                     }"
+                  />
+                  <v-image
+                      v-if="cardDefense"
+                      :config="{
+                       ...getConfig('defenseImage'),
+                       image: defenseImage,
+                     }"
+                  />
                 </v-layer>
                 <v-layer id="text">
                   <v-text v-if="cardName" v-bind="{
