@@ -53,8 +53,17 @@
     src: url('/fonts/Palatino LT Std Light Bold.otf') format('opentype');
 }
 
+@font-face {
+    font-family: 'Palatino LT Std Italic';
+    src: url('/fonts/Palatino LT Std Italic.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'Palatino LT Std Roman';
+    src: url('/fonts/Palatino LT Std Roman.otf') format('opentype');
+}
+
 #renderedCardText {
-    font-family: 'Palatino LT Std Light', serif;
     position: absolute;
     height: 135px;
     width: 345px;
@@ -68,22 +77,48 @@
     align-items:center;
     justify-content:center;
     text-align:left;
-    letter-spacing:0.015em;
 }
 
-#renderedCardText > * {
-    font-family: 'Palatino LT Std Light', serif;
+#renderedContent > * {
     word-wrap: break-word;
     overflow-wrap: break-word;
     display:block;
     width:100%;
-    font-size:17.82px;
-    line-height:21.16px;
+    letter-spacing:0.018em;
+    text-align:left;
 }
 
-#renderedCardText strong {
-    font-family: 'Palatino LT Std Medium', serif;
+#renderedCardText p {
+    font-family: 'Palatino LT Std Roman', serif;
+    margin: 0;
+    padding: 0;
+    letter-spacing:0.014em;
+}
+
+#renderedCardText p + p {
+    margin-top: 1em; /* This adds space between paragraphs, matching a single line break */
+}
+
+#renderedCardText br {
+    line-height: inherit;
+}
+
+#renderedContent strong {
+    font-family: 'Palatino LT Std Bold', serif;
     font-weight: normal;
+    font-size: 0.99em;
+    letter-spacing:0.016em;
+}
+
+#renderedContent em {
+    font-family: 'Palatino LT Std Italic', serif;
+    font-style: normal;
+    letter-spacing:0.0128em;
+    font-size:1.0001em;
+}
+
+#renderedContent {
+    padding-left:0.08em;
 }
 
 .cardParent {

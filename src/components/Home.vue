@@ -133,47 +133,87 @@ const downloadURI = function (uri, name) {
 const containerElement = ref();
 const contentElement = ref();
 
+// Easily adjustable constants - modify these to match real cards
+const TEXT_CONFIG = {
+  maxFontSize: 17.12,      // Maximum font size in px
+  baseFontSize: 17.12,     // Base font size for ratio calculation
+  baseLineHeight: 20.22,    // Base line height for ratio calculation
+  minFontSize: 8,          // Minimum font size in px
+  step: 0.1,               // Search precision
+  paragraphSpacing: 0.56    // CHANGED: Paragraph spacing as a fraction of line height
+};
+
+const resizeText = ({element, minSize = TEXT_CONFIG.minFontSize, maxSize = TEXT_CONFIG.maxFontSize, step = TEXT_CONFIG.step, unit = 'px'}) => {
+  const parent = element.parentNode;
+  const maxHeight = parent.clientHeight;
+
+  // Binary search for the optimal font size
+  let low = minSize;
+  let high = maxSize;
+  let optimalSize = minSize;
+
+  // Helper function to calculate line height based on font size
+  const calculateLineHeight = (fontSize) => {
+    return (fontSize / TEXT_CONFIG.baseFontSize) * TEXT_CONFIG.baseLineHeight;
+  };
+
+  // UPDATED: Apply styles to element and paragraphs
+  const applyStyles = (size) => {
+    element.style.fontSize = `${size}${unit}`;
+    element.style.lineHeight = `${calculateLineHeight(size)}${unit}`;
+
+    // Apply paragraph spacing
+    const paragraphs = element.querySelectorAll('p');
+    paragraphs.forEach((p, index) => {
+      p.style.margin = '0';
+      p.style.padding = '0';
+      // Add margin-top to all paragraphs except the first
+      if (index > 0) {
+        p.style.marginTop = `${calculateLineHeight(size) * TEXT_CONFIG.paragraphSpacing}${unit}`;
+      }
+    });
+  };
+
+  // Helper function to check if content overflows parent
+  const isOverflowing = (size) => {
+    applyStyles(size);
+
+    // Check if element's scroll height exceeds parent's client height
+    return element.scrollHeight > maxHeight;
+  };
+
+  // First check if max size fits
+  if (!isOverflowing(maxSize)) {
+    applyStyles(maxSize);
+    return;
+  }
+
+  // Binary search
+  while (high - low > step) {
+    const mid = (low + high) / 2;
+
+    if (!isOverflowing(mid)) {
+      optimalSize = mid;
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  // Apply the optimal size
+  applyStyles(optimalSize);
+};
+
 function recalculateRatio() {
   if (containerElement.value === undefined || contentElement.value === undefined) return;
-  resizeText(
-      {
-        element: contentElement.value,
-        step: 0.1,
-        minSize: 1,
-        maxSize: 17.82
-      })
+
+  resizeText({
+    element: contentElement.value,
+    minSize: TEXT_CONFIG.minFontSize,
+    maxSize: TEXT_CONFIG.maxFontSize,
+    step: TEXT_CONFIG.step
+  });
 }
-
-const isOverflown = ({clientHeight, scrollHeight}) => scrollHeight > clientHeight
-
-const resizeText = ({element, elements, minSize = 10, maxSize = 512, step = 1, unit = 'px'}) => {
-  (elements || [element]).forEach(el => {
-    let i = minSize
-    let overflow = false
-
-    const parent = el.parentNode
-
-    el.style.fontSize = `${maxSize}${unit}`
-    el.style.lineHeight = (((maxSize)) / 17.82) * 21.16 + 'px';
-    if (!isOverflown(parent)) {
-      // If not too tall, don't do anything
-      return;
-    }
-
-    while (!overflow && i < maxSize) {
-      el.style.fontSize = `${i}${unit}`
-      el.style.lineHeight = (((i)) / 17.82) * 21.16 + 'px';
-      overflow = isOverflown(parent)
-
-      if (!overflow) i += step
-    }
-
-    // revert to last state where no overflow happened
-    el.style.fontSize = `${i - step}${unit}`
-    el.style.lineHeight = (((i - step)) / 17.82) * 21.16 + 'px';
-  })
-}
-
 
 watch(cardText, () => {
   nextTick().then(() => {
@@ -865,7 +905,7 @@ const handleStyleToggle = (event) => {
 
           <div class="flex flex-col w-full overflow-x-scroll cardback:items-center cardback:overflow-x-auto">
             <div class="exampleCard">
-              <img src="../../public/img/Flat_CardBack_Example6.png" height="628" width="450"/>
+              <img src="../../public/img/Card_Example1.png" height="628" width="450"/>
             </div>
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement">
