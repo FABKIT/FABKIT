@@ -135,8 +135,8 @@ const contentElement = ref();
 
 // Easily adjustable constants - modify these to match real cards
 const TEXT_CONFIG = {
-  maxFontSize: 17.12,      // Maximum font size in px
-  baseFontSize: 17.12,     // Base font size for ratio calculation
+  maxFontSize: 17.08,      // Maximum font size in px
+  baseFontSize: 17.08,     // Base font size for ratio calculation
   baseLineHeight: 20.22,    // Base line height for ratio calculation
   minFontSize: 8,          // Minimum font size in px
   step: 0.1,               // Search precision

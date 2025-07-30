@@ -84,7 +84,7 @@
     overflow-wrap: break-word;
     display:block;
     width:100%;
-    letter-spacing:0.018em;
+    letter-spacing:0.017em;
     text-align:left;
 }
 
@@ -132,4 +132,35 @@
     position:absolute;
     z-index:20;
     opacity:0.3;
+}
+
+.fab-icon-container {
+    display: inline;
+    cursor: pointer;
+    user-select: all;
+    -webkit-user-select: all;
+    -moz-user-select: all;
+    -ms-user-select: all;
+}
+.fab-icon {
+    display: inline-block;
+    vertical-align: baseline;
+    width: 16px;
+    height: 16px;
+    margin: 0 0.1em;
+    pointer-events: none;
+}
+
+/* Make sure they work in your rendered card text */
+#renderedCardText .fab-icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: baseline;
+}
+
+/* Ensure they work in TinyMCE editor */
+.mce-content-body .fab-icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: baseline;
 }
