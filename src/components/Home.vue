@@ -76,6 +76,7 @@ const artwork = ref();
 const background = ref();
 const footer = ref();
 const footertext = ref();
+const footertextRight = ref();
 const canvasHelper = new CanvasHelper();
 
 const readFile = function readFile(event) {
@@ -258,12 +259,6 @@ watch(cardType, (newCardType) => {
   if (!newCardType) return;
   canvasHelper.drawBackground(currentBackground.value);
   canvasHelper.drawUploadedArtwork(cardUploadedArtwork.value, getConfig('cardUploadedArtwork'));
-  setTimeout(
-      () => {
-        footertext.value.getStage().text('FABKIT - NOT TOURNAMENT LEGAL - FaB TCG by © LSS');
-      },
-      250
-  )
 });
 
 watch(cardRarity, (newCardRarity) => {
@@ -905,7 +900,7 @@ const handleStyleToggle = (event) => {
 
           <div class="flex flex-col w-full overflow-x-scroll cardback:items-center cardback:overflow-x-auto">
             <div class="exampleCard">
-              <img src="../../public/img/Card_Example1.png" height="628" width="450"/>
+              <img src="../../public/img/Card_Example2.png" height="628" width="450"/>
             </div>
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement">
@@ -970,7 +965,20 @@ const handleStyleToggle = (event) => {
                   <v-image v-if="cardRarity" :text="cardRarity" v-bind="getConfig('cardRarity')"></v-image>
                 </v-layer>
                 <v-layer id="footertext">
-                  <v-text v-if="cardType" ref="footertext" :fontSize="footerTextFontSize" text="" v-bind="getConfig('cardFooterText')"></v-text>
+                  <v-text
+                      v-if="cardType"
+                      ref="footertext"
+                      :fontSize="footerTextFontSize"
+                      :text="selectedStyle === 'flat' ? 'FABKIT  |  NOT TOURNAMENT LEGAL' : 'FABKIT - NOT TOURNAMENT LEGAL - FaB TCG BY © LSS'"
+                      v-bind="getConfig('cardFooterText')"
+                  />
+                  <v-text
+                      v-if="cardType && selectedStyle === 'flat'"
+                      ref="footertextRight"
+                      :fontSize="footerTextFontSize"
+                      text="FLESH AND BLOOD TCG BY © Legend Story Studios"
+                      v-bind="getConfig('cardFooterTextRight')"
+                  />
                 </v-layer>
               </v-stage>
             </div>

@@ -80,8 +80,8 @@ const cardSettings = {
                 align: "center",
             },
             cardRarity: {
-                x: 126,
-                y: 596,
+                x: 114,
+                y: 594,
                 width: 12,
                 height: 12,
             },
@@ -92,14 +92,15 @@ const cardSettings = {
                 y: 76,
             },
             cardFooterText: {
-                x: 142,
-                y: 597.9,
-                width: 182,
+                x: 128,
+                y: 595.9,
+                width: 204,
                 height: 12,
                 fontFamily: 'Dialog Cond Semibold Regular',
-                fontSize: 9.2,
+                fontSize: 10.43,
                 verticalAlign: "top",
                 fill: "white",
+                align: "left",
             },
             noCostImage: {
                 x: 371,
@@ -205,8 +206,8 @@ const cardSettings = {
                 fill: "black",
             },
             cardCost: {
-                x: 373,
-                y: 34.6,
+                x: 373.3,
+                y: 34.8,
                 width: 48,
                 height: 44,
                 fontFamily: 'Palatino LT Std Light',
@@ -239,7 +240,7 @@ const cardSettings = {
             },
             cardTypeText: {
                 x: 116.3,
-                y: 562.55,
+                y: 562.8,
                 width: 217.2,
                 height: 23,
                 fontFamily: 'Amanda Std Regular',
@@ -271,14 +272,26 @@ const cardSettings = {
                 y: 76,
             },
             cardFooterText: {
-                x: 142,
-                y: 597.9,
-                width: 182,
+                x: 46.4,  // Adjust for left alignment
+                y: 598,
+                width: 200,
                 height: 12,
                 fontFamily: 'Dialog Cond Semibold Regular',
-                fontSize: 9.2,
+                fontSize: 9.9,
+                verticalAlign: "top",
+                fill: "white",  // Changed to black for flat
+                align: "left",
+            },
+            cardFooterTextRight: {
+                x: 222.5,  // Adjust for right side positioning
+                y: 598,
+                width: 200,
+                height: 12,
+                fontFamily: 'Dialog Cond Semibold Regular',
+                fontSize: 9.9,
                 verticalAlign: "top",
                 fill: "white",
+                align: "right",
             },
             noCostImage: {
                 x: 372,  // Adjust these values as needed for flat
