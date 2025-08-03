@@ -276,6 +276,16 @@ watch(frameType, (newFrameType) => {
   }
 });
 
+watch(frameType, (newFrameType) => {
+  // Only proceed if frameType is actually defined and we have a rarity
+  if (newFrameType && cardRarity.value) {
+    nextTick().then(() => {
+      // Redraw the rarity with the new position settings
+      canvasHelper.drawRarity(cardRarity.value, getConfig('cardRarity'));
+    });
+  }
+});
+
 const loadingBackground = ref(false);
 
 const doLoading = async function (callback) {
@@ -317,7 +327,9 @@ watch(cardType, (newCardType) => {
 
 watch(cardRarity, (newCardRarity) => {
   if (!newCardRarity) return;
-  canvasHelper.drawRarity(newCardRarity, getConfig('cardRarity'));
+  nextTick().then(() => {
+    canvasHelper.drawRarity(newCardRarity, getConfig('cardRarity'));
+  });
 })
 
 watch(cardUploadedArtwork, (newUploadedArtwork) => {
@@ -389,6 +401,9 @@ const waitForFonts = async () => {
 
 // Call this when component mounts
 onMounted(() => {
+  if (!cardRarity.value) {
+    cardRarity.value = 'img/rarities/rarity_common.svg';
+  }
   waitForFonts();
 });
 
@@ -1040,7 +1055,7 @@ const handleStyleToggle = (event) => {
             </div>
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
-                <div id="renderedContent" ref="contentElement" style="font-family: 'Palatino LT Std Light', serif;" v-html="cardText"></div>
+                <div id="renderedContent" ref="contentElement" v-html="cardText"></div>
               </div>
               <v-stage
                   ref="stage"
