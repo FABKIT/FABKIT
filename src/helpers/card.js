@@ -256,27 +256,43 @@ export function useCard() {
     }
 
 
-    const scaledFontsize = function (text, fontSize, fontface, desiredWidth) {
+    const scaledFontsize = function (text, fontSize, fontface, desiredWidth, desiredHeight = null) {
+        if (!text || !fontSize || !fontface || !desiredWidth) {
+            return fontSize;
+        }
+
         const c = document.createElement('canvas');
         const cctx = c.getContext('2d');
         cctx.font = fontSize + 'px ' + fontface;
         const textWidth = cctx.measureText(text).width;
-        if (textWidth < desiredWidth) {
+
+        // Estimate text height (approximate)
+        const textHeight = fontSize * 1.2; // Line height is typically 1.2x font size
+
+        // Check if text fits both width and height (if height is specified)
+        const fitsWidth = textWidth <= desiredWidth;
+        const fitsHeight = !desiredHeight || textHeight <= desiredHeight;
+
+        if (fitsWidth && fitsHeight) {
             return fontSize;
         }
 
-        // Try and calculate the correct fontsize first
-        let newFontSize = (((fontSize * desiredWidth) / textWidth));
+        // Calculate scaling factor based on both width and height constraints
+        let widthScale = desiredWidth / textWidth;
+        let heightScale = desiredHeight ? desiredHeight / textHeight : 1;
 
-        // If it's correct we return it
-        if (cctx.measureText(text).width <= desiredWidth) {
-            return newFontSize;
-        }
+        // Use the more restrictive scaling factor
+        let newFontSize = fontSize * Math.min(widthScale, heightScale);
 
-        // increment the fontsize with 0.01 until we get a good size
-        while (cctx.measureText(text).width > desiredWidth) {
+        // Fine-tune with the existing logic but check both dimensions
+        cctx.font = newFontSize + 'px ' + fontface;
+        while (cctx.measureText(text).width > desiredWidth ||
+        (desiredHeight && newFontSize * 1.2 > desiredHeight)) {
             newFontSize -= 0.01;
             cctx.font = newFontSize + 'px ' + fontface;
+
+            // Prevent infinite loop
+            if (newFontSize <= 1) break;
         }
 
         return newFontSize;
@@ -291,7 +307,13 @@ export function useCard() {
     const typeTextFontSize = computed(() => {
         const typeTextConfig = getConfig('cardTypeText') || {};
 
-        return scaledFontsize(cardTypeText.value, typeTextConfig.fontSize, typeTextConfig.fontFamily, typeTextConfig.width);
+        return scaledFontsize(
+            cardTypeText.value,
+            typeTextConfig.fontSize,
+            typeTextConfig.fontFamily,
+            typeTextConfig.width,
+            typeTextConfig.height
+        );
     })
 
     const footerTextFontSize = computed(() => {
@@ -389,5 +411,7 @@ export function useCard() {
         footerTextFontSize,
         frameType,
         cardTextStyleClass,
+        filteredAvailableCardbacks,
+        backgroundIndex,
     };
 }

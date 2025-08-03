@@ -68,6 +68,8 @@ const {
   footerTextFontSize,
   frameType,
   cardTextStyleClass,
+  filteredAvailableCardbacks,
+  backgroundIndex,
 } = useCard();
 
 const CanvasHelper = useCanvasHelper();
@@ -1005,16 +1007,30 @@ const handleStyleToggle = (event) => {
               </div>
             </div>
           </div>
-          <div class="w-full flex justify-between items-center mt-2 mb-4 col-start-2 print:hidden">
-            <button :disabled="loadingBackground" class="button-primary px-3.5 py-2.5" type="button"
+          <div class="w-full flex justify-between items-center mt-2 mb-4 col-start-2 print:hidden cardback-selector-row">
+            <button :disabled="loadingBackground" class="cardback-nav-button" type="button"
                     v-on:click="() => switchBackground('next')">
-              <ArrowLeftIcon aria-hidden="true" class="-mr-0.5 size-5"/>
+              <ArrowLeftIcon aria-hidden="true" class="size-5"/>
             </button>
-            <span id="cardBackLabel" class="text-center flex-grow-1 font-semibold text-primary dark:text-white">{{ cardbackName }}</span>
+
+            <select
+                v-model="backgroundIndex"
+                class="cardback-dropdown flex-grow-1 font-semibold text-primary dark:text-white"
+                @change="onCardbackDropdownChange"
+            >
+              <option
+                  v-for="(cardback, index) in filteredAvailableCardbacks"
+                  :key="cardback.id"
+                  :value="index"
+              >
+                {{ cardback.name }}
+              </option>
+            </select>
+
             <button :disabled="loadingBackground"
-                    class="button-primary px-3.5 py-2.5" type="button"
+                    class="cardback-nav-button" type="button"
                     v-on:click="() => switchBackground('previous')">
-              <ArrowRightIcon aria-hidden="true" class="-mr-0.5 size-5"/>
+              <ArrowRightIcon aria-hidden="true" class="size-5"/>
             </button>
           </div>
 
@@ -1069,9 +1085,10 @@ const handleStyleToggle = (event) => {
                   <v-text v-if="cardLife" :text="cardLife" v-bind="getConfig('cardLife')"></v-text>
                   <v-text v-if="cardHeroIntellect" :text="cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
                   <v-text
-                      :fontSize="typeTextFontSize"
+                      v-if="cardTypeText"
                       :text="cardTypeText"
                       v-bind="getConfig('cardTypeText')"
+                      :fontSize="typeTextFontSize"
                   ></v-text>
                 </v-layer>
                 <v-layer id="footer" ref="footer">

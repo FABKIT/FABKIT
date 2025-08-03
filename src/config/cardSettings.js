@@ -255,7 +255,7 @@ const cardSettings = {
                 width: 228.5,
                 height: 23,
                 fontFamily: 'Amanda Std Regular',
-                fontSize: 16.8,
+                fontSize: 17.55,
                 verticalAlign: "middle",
                 align: "center",
                 fill: "black",

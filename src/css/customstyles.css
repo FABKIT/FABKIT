@@ -194,3 +194,111 @@ fab-tap {
 fab-untap {
     background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTUxIiBoZWlnaHQ9IjE1MSIgdmlld0JveD0iMCAwIDE1MSAxNTEiPjxwYXRoIGZpbGw9IiM5RjY2MjgiIGQ9Ik03Mi4zMjI3IDBMNzguNDgxNiAwQzc5LjkxODIgMC44MDI5NTEgODguMzg2NCAxLjQ3NDA0IDkwLjc1MTEgMS45NDczMUMxMDcuMjI5IDUuMjQ1MTQgMTE5LjQwNSAxMy4yMTM1IDEzMS4wMzIgMjQuODcwMUwxMzMuMzMyIDI3LjUyNzVDMTM2LjE2NCAzMC44MTEzIDEzOS4zODMgMzUuODY2IDE0MS41MDIgMzkuNjM1M0MxNDQuMTEyIDQ0LjczMzMgMTQ2LjE3NiA0OS4zMzMgMTQ3Ljc4MyA1NC44NzU2TDE0OC44MTYgNTkuMTQyQzE0OS42MzMgNjIuMDE3MyAxNTAuMjYyIDcwLjQ3NjQgMTUxIDcxLjU2NjlMMTUxIDc5LjQxNzZDMTUwLjUyMSA4MC40NjE2IDE1MC40MjYgODEuNTc4MyAxNTAuMjk4IDgyLjcwNkMxNDkuNzY0IDg3LjQyNDMgMTQ5LjE0NiA5Mi4wNzIyIDE0Ny44MDMgOTYuNjQ3NkMxNDEuMDM2IDExOS4yMzUgMTI0LjE4NSAxMzcuNDEyIDEwMi4xNzQgMTQ1Ljg2OEM5OC4xMTQ1IDE0Ny40NjEgOTQuMDc0OSAxNDguMzA0IDg5LjkwNjQgMTQ5LjI4NkM4Ny43OTgyIDE0OS43ODMgODAuODA5NiAxNTAuMzUyIDc5LjcxOTcgMTUxTDcxLjUzNzEgMTUxQzcwLjI0NDEgMTUwLjE2NCA2NC4xNjEyIDE0OS45MzcgNjIuNDIyNCAxNDkuNjE5QzI5LjU4MzMgMTQzLjYxOSAzLjM4MDg2IDExNi4xOTMgMC44MDM4NzcgODIuNjMxMUMwLjcxMzI1NCA4MS40NTA5IDAuNDkwNDIgNzkuNDc5OCAwIDc4LjQwNTJMMCA3Mi41NzMzQzAuMjA0NTY0IDcyLjI3MTYgMi4yOTY0NiA1OC41NzQgMi44OTMwNCA1Ni4yNDk2QzkuNzcwMjggMzAuNDA2OSAyOS44NDc1IDEwLjE1NjQgNTUuNjMwMSAzLjA1NzNDNTcuNzYxNyAyLjQ4MDM0IDU5LjkxOTYgMi4wMDUwNSA2Mi4wOTYzIDEuNjMzMDJDNjMuODE2NyAxLjM0OTEgNzEuMjE3MSAwLjczNjczNSA3Mi4zMjI3IDBaIi8+PHBhdGggZmlsbD0iI0ZFRkVGRSIgZD0iTTc0LjU0NyA0NC4wNzA4Qzg2LjE4NTcgNDMuNzAwMSA5NS4xNDIyIDQ1LjI5MDQgMTA0Ljg3OSA1Mi4wNTQzQzE0MC41NDEgNzcuMTAwMSAxMjcuNzU0IDEzMC4yMTYgODYuMDA4IDEzOS4xNDJDODMuMDkyOSAxMzkuNzY2IDc5Ljg1NjQgMTM5Ljg5IDc2Ljg4MjggMTM5Ljk1OUM2Mi40NDQ0IDE0MC4yOTggNDkuNjY1NCAxMzYuMTQ2IDM3Ljg0MTEgMTI4LjAxNkMyNy4xMDI2IDEyMC4zMzQgMTguOTY3OSAxMDkuNTU0IDE0LjUyNjcgOTcuMTE5NkM4LjI1NTIzIDc5LjM2MTUgMTAuMzQxOCA2Mi4wNjk2IDE4LjMyNjkgNDUuMzY4M0MxOS45ODg3IDQ2LjcxMDIgMjMuNzA0IDQ5LjA0OTQgMjUuNjA3NCA1MC4zMTQ4TDQwLjU3OSA2MC4xNjE4QzUxLjI5MzcgNjcuMTk3NyA2My43MjY1IDc1Ljg1MzQgNzQuNTM0OSA4Mi4zNjUyQzc0LjMzNTEgNjkuOTMzIDc0LjM4MzQgNTYuNTEyOCA3NC41NDcgNDQuMDcwOFoiLz48L3N2Zz4='); /* PASTE UNTAP SVG BASE64 HERE */
 }
+
+.cardback-selector-row {
+    border: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.cardback-selector-row:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+}
+
+/* Style the dropdown select element directly */
+.cardback-dropdown {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 0.5rem 2rem 0.5rem 1rem;
+    border-radius: 0.25rem;
+    position: relative;
+    transition: all 0.2s ease;
+    min-width: 0;
+    text-align: center;
+    text-align-last: center;
+}
+
+/* Create dropdown arrow using color-primary */
+.cardback-dropdown {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23A6864A' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    background-color: transparent;
+}
+
+.cardback-dropdown option {
+    background: white;
+    color: #1f2937;
+    padding: 0.5rem;
+    font-weight: 500;
+}
+
+/* Arrow buttons styling */
+.cardback-nav-button {
+    background: transparent;
+    border: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    color: var(--color-primary);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+}
+
+.cardback-nav-button:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+    transform: translateY(-1px);
+}
+
+.cardback-nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.cardback-nav-button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Dark mode support */
+.dark .cardback-selector-row {
+    border: 2px solid color-mix(in srgb, var(--color-primary) 50%, transparent);
+}
+
+.dark .cardback-selector-row:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 70%, transparent);
+}
+
+.dark .cardback-dropdown {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-color: transparent !important;
+}
+
+.dark .cardback-dropdown option {
+    background: #1f2937;
+    color: white;
+}
+
+.dark .cardback-nav-button {
+    border: 2px solid color-mix(in srgb, var(--color-primary) 50%, transparent);
+    color: white;
+    background: transparent;
+}
+
+.dark .cardback-nav-button:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-primary) 70%, transparent);
+}
