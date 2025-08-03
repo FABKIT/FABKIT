@@ -202,6 +202,11 @@ export function useCard() {
         return 'flat';
     });
 
+    const cardTextStyleClass = computed(() => {
+        // Return the frame type as the CSS class name
+        return frameType.value; // This will be either 'flat' or 'dented'
+    });
+
     const cardBackSettings = useCardBackSettings();
 
     const getConfig = function (fieldName) {
@@ -382,5 +387,7 @@ export function useCard() {
         nameFontSize,
         typeTextFontSize,
         footerTextFontSize,
+        frameType,
+        cardTextStyleClass,
     };
 }

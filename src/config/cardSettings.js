@@ -96,11 +96,22 @@ const cardSettings = {
                 y: 595.9,
                 width: 204,
                 height: 12,
-                fontFamily: 'Dialog Cond Semibold Regular',
+                fontFamily: 'Dialog Cond Semibold Regular, Arial, sans-serif',
                 fontSize: 10.43,
                 verticalAlign: "top",
                 fill: "white",
                 align: "left",
+            },
+            copyrightOverlay: {
+                x: 305,  // Position where © appears in the dented footer
+                y: 596,
+                width: 10,
+                height: 12,
+                fontFamily: 'Arial',
+                fontSize: 10.43,
+                verticalAlign: "top",
+                fill: "white",
+                align: "center",
             },
             noCostImage: {
                 x: 371,
@@ -239,15 +250,17 @@ const cardSettings = {
                 align: "center",
             },
             cardTypeText: {
-                x: 116.3,
-                y: 562.8,
-                width: 217.2,
+                x: 110.9,
+                y: 562.55,
+                width: 228.5,
                 height: 23,
                 fontFamily: 'Amanda Std Regular',
-                fontSize: 17.6,
+                fontSize: 16.8,
                 verticalAlign: "middle",
                 align: "center",
                 fill: "black",
+                scaleX: 1,
+                scaleY: 0.96,
             },
             cardLife: {
                 x: 352.1,
@@ -260,10 +273,10 @@ const cardSettings = {
                 align: "center",
             },
             cardRarity: {
-                x: 27,
-                y: 596,
-                width: 12,
-                height: 12,
+                x: 27.5,
+                y: 596.5,
+                width: 12.5,
+                height: 12.5,
             },
             cardUploadedArtwork: {
                 width: 390,
@@ -273,25 +286,36 @@ const cardSettings = {
             },
             cardFooterText: {
                 x: 46.4,  // Adjust for left alignment
-                y: 598,
+                y: 598.4,
                 width: 200,
                 height: 12,
-                fontFamily: 'Dialog Cond Semibold Regular',
-                fontSize: 9.9,
+                fontFamily: 'Dialog Cond Semibold Regular, "Arial Narrow", "Helvetica Condensed", Arial, sans-serif',
+                fontSize: 10,
                 verticalAlign: "top",
                 fill: "white",  // Changed to black for flat
                 align: "left",
             },
             cardFooterTextRight: {
                 x: 222.5,  // Adjust for right side positioning
-                y: 598,
+                y: 598.4,
                 width: 200,
                 height: 12,
-                fontFamily: 'Dialog Cond Semibold Regular',
-                fontSize: 9.9,
+                fontFamily: 'Dialog Cond Semibold Regular, "Arial Narrow", "Helvetica Condensed", Arial, sans-serif',
+                fontSize: 10,
                 verticalAlign: "top",
                 fill: "white",
                 align: "right",
+            },
+            copyrightOverlay: {
+                x: 334.25,  // Position where © appears in the dented footer
+                y: 599.55,
+                width: 10,
+                height: 12,
+                fontFamily: 'Arial',
+                fontSize: 9,
+                verticalAlign: "top",
+                fill: "white",
+                align: "center",
             },
             noCostImage: {
                 x: 372,  // Adjust these values as needed for flat

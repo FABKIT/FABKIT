@@ -13,11 +13,13 @@ import {
 import Editor from '@tinymce/tinymce-vue'
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
 import {useCanvasHelper} from "../helpers/canvas.js";
-import {nextTick, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {toPng} from "html-to-image";
 import useTinyMCEConfig from "../config/tinyMCE.js";
 import {useImage} from "vue-konva";
 import ButtonDropdown from "./ButtonDropdown.vue";
+
+const fontsLoaded = ref(false);
 
 const {
   types,
@@ -64,6 +66,8 @@ const {
   nameFontSize,
   typeTextFontSize,
   footerTextFontSize,
+  frameType,
+  cardTextStyleClass,
 } = useCard();
 
 const CanvasHelper = useCanvasHelper();
@@ -135,16 +139,45 @@ const containerElement = ref();
 const contentElement = ref();
 
 // Easily adjustable constants - modify these to match real cards
-const TEXT_CONFIG = {
-  maxFontSize: 17.08,      // Maximum font size in px
-  baseFontSize: 17.08,     // Base font size for ratio calculation
-  baseLineHeight: 20.22,    // Base line height for ratio calculation
-  minFontSize: 8,          // Minimum font size in px
-  step: 0.1,               // Search precision
-  paragraphSpacing: 0.56    // CHANGED: Paragraph spacing as a fraction of line height
-};
+const TEXT_CONFIG = computed(() => {
+  const baseConfig = {    // Base line height for ratio calculation
+    minFontSize: 8,          // Minimum font size in px
+    step: 0.1,               // Search precision
+  };
 
-const resizeText = ({element, minSize = TEXT_CONFIG.minFontSize, maxSize = TEXT_CONFIG.maxFontSize, step = TEXT_CONFIG.step, unit = 'px'}) => {
+  // Default to dented if frameType is undefined or not 'flat'
+  if (frameType.value === 'flat') {
+    return {
+      ...baseConfig,
+      baseLineHeight: 20.235,
+      maxFontSize: 17.27,      // Maximum font size in px
+      baseFontSize: 17.27,
+      paragraphSpacing: 0.545, // Base font size for ratio calculation
+    };
+  } else {
+    // Default to dented (covers both 'dented' and undefined cases)
+    return {
+      ...baseConfig,
+      baseLineHeight: 20.235,
+      maxFontSize: 17.08,      // Maximum font size in px
+      baseFontSize: 17.08,     // Base font size for ratio calculation
+      paragraphSpacing: 0.55,
+    };
+  }
+});
+
+const flatFooterText = computed(() => {
+  return `FLESH AND BLOOD TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}Legend Story Studios`;
+});
+
+const dentedFooterText = computed(() => {
+  if (selectedStyle.value === 'flat') {
+    return 'FABKIT  |  NOT TOURNAMENT LEGAL';
+  }
+  return `FABKIT - NOT TOURNAMENT LEGAL - FaB TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}LSS`;
+});
+
+const resizeText = ({element, minSize = TEXT_CONFIG.value.minFontSize, maxSize = TEXT_CONFIG.value.maxFontSize, step = TEXT_CONFIG.value.step, unit = 'px'}) => {
   const parent = element.parentNode;
   const maxHeight = parent.clientHeight;
 
@@ -155,7 +188,7 @@ const resizeText = ({element, minSize = TEXT_CONFIG.minFontSize, maxSize = TEXT_
 
   // Helper function to calculate line height based on font size
   const calculateLineHeight = (fontSize) => {
-    return (fontSize / TEXT_CONFIG.baseFontSize) * TEXT_CONFIG.baseLineHeight;
+    return (fontSize / TEXT_CONFIG.value.baseFontSize) * TEXT_CONFIG.value.baseLineHeight;
   };
 
   // UPDATED: Apply styles to element and paragraphs
@@ -170,7 +203,7 @@ const resizeText = ({element, minSize = TEXT_CONFIG.minFontSize, maxSize = TEXT_
       p.style.padding = '0';
       // Add margin-top to all paragraphs except the first
       if (index > 0) {
-        p.style.marginTop = `${calculateLineHeight(size) * TEXT_CONFIG.paragraphSpacing}${unit}`;
+        p.style.marginTop = `${calculateLineHeight(size) * TEXT_CONFIG.value.paragraphSpacing}${unit}`;
       }
     });
   };
@@ -210,9 +243,9 @@ function recalculateRatio() {
 
   resizeText({
     element: contentElement.value,
-    minSize: TEXT_CONFIG.minFontSize,
-    maxSize: TEXT_CONFIG.maxFontSize,
-    step: TEXT_CONFIG.step
+    minSize: TEXT_CONFIG.value.minFontSize,
+    maxSize: TEXT_CONFIG.value.maxFontSize,
+    step: TEXT_CONFIG.value.step
   });
 }
 
@@ -220,6 +253,25 @@ watch(cardText, () => {
   nextTick().then(() => {
     recalculateRatio();
   })
+});
+
+watch([frameType, cardType], () => {
+  nextTick(() => {
+    const cardTextElement = containerElement.value;
+    if (cardTextElement && cardTextStyleClass.value) {
+      cardTextElement.classList.remove('flat', 'dented');
+      cardTextElement.classList.add(cardTextStyleClass.value);
+    }
+  });
+}, { immediate: true });
+
+watch(frameType, (newFrameType) => {
+  // Only proceed if frameType is actually defined
+  if (newFrameType) {
+    nextTick().then(() => {
+      recalculateRatio();
+    });
+  }
 });
 
 const loadingBackground = ref(false);
@@ -269,6 +321,74 @@ watch(cardRarity, (newCardRarity) => {
 watch(cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
 })
+
+watch(fontsLoaded, (newValue) => {
+  if (newValue && stage.value) {
+    nextTick(() => {
+      stage.value.getStage().batchDraw();
+    });
+  }
+});
+
+// Add this function to detect when fonts are loaded
+const waitForFonts = async () => {
+  try {
+    // Check if the specific font is loaded
+    if (document.fonts && document.fonts.check) {
+      // Wait for all fonts to be ready
+      await document.fonts.ready;
+
+      // Double-check our specific font is available
+      const fontLoaded = document.fonts.check('10px "Dialog Cond SemiBold Regular"');
+
+      if (fontLoaded) {
+        fontsLoaded.value = true;
+        // Force Konva to redraw after fonts are loaded
+        nextTick(() => {
+          if (stage.value) {
+            stage.value.getStage().batchDraw();
+          }
+        });
+      } else {
+        // Fallback: wait a bit more and try again
+        setTimeout(() => {
+          fontsLoaded.value = true;
+          nextTick(() => {
+            if (stage.value) {
+              stage.value.getStage().batchDraw();
+            }
+          });
+        }, 200);
+      }
+    } else {
+      // Fallback for older browsers
+      setTimeout(() => {
+        fontsLoaded.value = true;
+        nextTick(() => {
+          if (stage.value) {
+            stage.value.getStage().batchDraw();
+          }
+        });
+      }, 500);
+    }
+  } catch (error) {
+    console.warn('Font loading detection failed:', error);
+    // Fallback: assume fonts are loaded after delay
+    setTimeout(() => {
+      fontsLoaded.value = true;
+      nextTick(() => {
+        if (stage.value) {
+          stage.value.getStage().batchDraw();
+        }
+      });
+    }, 1000);
+  }
+};
+
+// Call this when component mounts
+onMounted(() => {
+  waitForFonts();
+});
 
 const [noCostImage] = useImage('src/assets/symbol_nocost.png');
 const [powerImage] = useImage('src/assets/cardsymbol_power.svg');
@@ -900,10 +1020,10 @@ const handleStyleToggle = (event) => {
 
           <div class="flex flex-col w-full overflow-x-scroll cardback:items-center cardback:overflow-x-auto">
             <div class="exampleCard">
-              <img src="../../public/img/Card_Example2.png" height="628" width="450"/>
+              <img src="../../public/img/Card_Example5.png" height="628" width="450"/>
             </div>
             <div class="cardParent">
-              <div id="renderedCardText" ref="containerElement">
+              <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
                 <div id="renderedContent" ref="contentElement" style="font-family: 'Palatino LT Std Light', serif;" v-html="cardText"></div>
               </div>
               <v-stage
@@ -950,15 +1070,8 @@ const handleStyleToggle = (event) => {
                   <v-text v-if="cardHeroIntellect" :text="cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
                   <v-text
                       :fontSize="typeTextFontSize"
-                      :height="23"
                       :text="cardTypeText"
-                      :width="217.2"
-                      :x="116.3"
-                      :y="562.55"
-                      align="center"
-                      fill="black"
-                      fontFamily="Amanda Std Regular"
-                      verticalAlign="middle"
+                      v-bind="getConfig('cardTypeText')"
                   ></v-text>
                 </v-layer>
                 <v-layer id="footer" ref="footer">
@@ -966,18 +1079,25 @@ const handleStyleToggle = (event) => {
                 </v-layer>
                 <v-layer id="footertext">
                   <v-text
-                      v-if="cardType"
+                      v-if="cardType && fontsLoaded"
                       ref="footertext"
                       :fontSize="footerTextFontSize"
-                      :text="selectedStyle === 'flat' ? 'FABKIT  |  NOT TOURNAMENT LEGAL' : 'FABKIT - NOT TOURNAMENT LEGAL - FaB TCG BY © LSS'"
+                      :text="dentedFooterText"
                       v-bind="getConfig('cardFooterText')"
                   />
                   <v-text
-                      v-if="cardType && selectedStyle === 'flat'"
+                      v-if="cardType && selectedStyle === 'flat' && fontsLoaded"
                       ref="footertextRight"
                       :fontSize="footerTextFontSize"
-                      text="FLESH AND BLOOD TCG BY © Legend Story Studios"
+                      :text="flatFooterText"
                       v-bind="getConfig('cardFooterTextRight')"
+                  />
+
+                  <!-- Copyright overlay -->
+                  <v-text
+                      v-if="cardType && fontsLoaded"
+                      text="©"
+                      v-bind="getConfig('copyrightOverlay')"
                   />
                 </v-layer>
               </v-stage>
