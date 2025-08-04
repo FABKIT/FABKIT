@@ -1017,13 +1017,12 @@ const handleStyleToggle = (event) => {
                     fontSize: nameFontSize
                   }
                 }"></v-text>
-                  <v-text v-if="cardCost" :text="cardCost" v-bind="getConfig('cardCost')"></v-text>
-                  <v-text v-if="cardDefense" :text="cardDefense" v-bind="getConfig('cardDefense')"></v-text>
-                  <v-text v-if="cardPower" :text="cardPower" v-bind="getConfig('cardPower')"></v-text>
-                  <v-text v-if="cardLife" :text="cardLife" v-bind="getConfig('cardLife')"></v-text>
-                  <v-text v-if="cardHeroIntellect" :text="cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
+                  <v-text v-show="cardCost" :text="cardCost" v-bind="getConfig('cardCost')"></v-text>
+                  <v-text v-show="cardDefense" :text="cardDefense" v-bind="getConfig('cardDefense')"></v-text>
+                  <v-text v-show="cardPower" :text="cardPower" v-bind="getConfig('cardPower')"></v-text>
+                  <v-text v-show="cardLife" :text="cardLife" v-bind="getConfig('cardLife')"></v-text>
+                  <v-text v-show="cardHeroIntellect" :text="cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
                   <v-text
-                      v-if="cardTypeText"
                       :text="cardTypeText"
                       v-bind="getConfig('cardTypeText')"
                       :fontSize="typeTextFontSize"
@@ -1034,14 +1033,13 @@ const handleStyleToggle = (event) => {
                 </v-layer>
                 <v-layer id="footertext">
                   <v-text
-                      v-if="cardType"
                       ref="footertext"
                       :fontSize="footerTextFontSize"
                       :text="dentedFooterText"
                       v-bind="getConfig('cardFooterText')"
                   />
                   <v-text
-                      v-if="cardType && selectedStyle === 'flat'"
+                      v-if="selectedStyle === 'flat'"
                       ref="footertextRight"
                       :fontSize="footerTextFontSize"
                       :text="flatFooterText"
@@ -1050,7 +1048,6 @@ const handleStyleToggle = (event) => {
 
                   <!-- Copyright overlay -->
                   <v-text
-                      v-if="cardType"
                       text="©"
                       v-bind="getConfig('copyrightOverlay')"
                   />
