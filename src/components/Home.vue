@@ -1010,7 +1010,7 @@ const handleStyleToggle = (event) => {
                   />
                 </v-layer>
                 <v-layer id="text">
-                  <v-text v-if="cardName" v-bind="{
+                  <v-text v-show="cardName" v-bind="{
                   ...getConfig('cardName'),
                   ...{
                     text: cardName,
