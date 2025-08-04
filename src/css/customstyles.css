@@ -1,3 +1,12 @@
+:root {
+    /* Your existing --color-primary variable should stay */
+    --color-primary: #A6864A;
+
+    /* Add these new color variables */
+    --color-secondary: #A66E4B;
+    --color-tertiary: #4B73A6;
+}
+
 @font-face {
     font-family: 'Amanda Std Regular';
     src: url('/fonts/Amanda Std Regular.otf') format('opentype');
