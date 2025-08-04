@@ -225,10 +225,6 @@ export function useCard() {
         return {};
     }
 
-    const cardbackName = computed(() => {
-        return currentCardback.value.name;
-    })
-
     const backgroundIndex = ref(0);
     const selectedStyle = ref('dented');
 
@@ -404,7 +400,6 @@ export function useCard() {
         currentBackground,
         getConfig,
         switchBackground,
-        cardbackName,
         selectedStyle,
         nameFontSize,
         typeTextFontSize,

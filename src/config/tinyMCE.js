@@ -17,7 +17,6 @@ export default function useTinyMCEConfig(cardText) {
 
     return {
         selector: 'textarea#cardText',
-        icons: 'fabkit-icons',
         license_key: 'gpl',
         pad_empty_with_br: true,
         resize: false,

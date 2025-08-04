@@ -60,7 +60,6 @@ const {
   isFieldShown,
   currentBackground,
   getConfig,
-  cardbackName,
   switchBackground,
   selectedStyle,
   nameFontSize,
@@ -169,10 +168,16 @@ const TEXT_CONFIG = computed(() => {
 });
 
 const flatFooterText = computed(() => {
+  if (!fontsLoaded.value) {
+    return '';
+  }
   return `FLESH AND BLOOD TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}Legend Story Studios`;
 });
 
 const dentedFooterText = computed(() => {
+  if (!fontsLoaded.value) {
+    return '';
+  }
   if (selectedStyle.value === 'flat') {
     return 'FABKIT  |  NOT TOURNAMENT LEGAL';
   }
@@ -257,30 +262,11 @@ watch(cardText, () => {
   })
 });
 
-watch([frameType, cardType], () => {
-  nextTick(() => {
-    const cardTextElement = containerElement.value;
-    if (cardTextElement && cardTextStyleClass.value) {
-      cardTextElement.classList.remove('flat', 'dented');
-      cardTextElement.classList.add(cardTextStyleClass.value);
-    }
-  });
-}, { immediate: true });
-
 watch(frameType, (newFrameType) => {
   // Only proceed if frameType is actually defined
   if (newFrameType) {
     nextTick().then(() => {
       recalculateRatio();
-    });
-  }
-});
-
-watch(frameType, (newFrameType) => {
-  // Only proceed if frameType is actually defined and we have a rarity
-  if (newFrameType && cardRarity.value) {
-    nextTick().then(() => {
-      // Redraw the rarity with the new position settings
       canvasHelper.drawRarity(cardRarity.value, getConfig('cardRarity'));
     });
   }
@@ -306,6 +292,10 @@ const doLoading = async function (callback) {
 
 
 onMounted(function () {
+  if (!cardRarity.value) {
+    cardRarity.value = 'img/rarities/rarity_common.svg';
+  }
+
   canvasHelper.artworkLayer = artwork.value.getStage();
   canvasHelper.backgroundLayer = background.value.getStage();
   canvasHelper.footerLayer = footer.value.getStage();
@@ -323,6 +313,11 @@ watch(cardType, (newCardType) => {
   if (!newCardType) return;
   canvasHelper.drawBackground(currentBackground.value);
   canvasHelper.drawUploadedArtwork(cardUploadedArtwork.value, getConfig('cardUploadedArtwork'));
+  if (fontsLoaded.value === false) {
+    nextTick().then(() => {
+      setTimeout(() => fontsLoaded.value = true, 100)
+    })
+  }
 });
 
 watch(cardRarity, (newCardRarity) => {
@@ -331,81 +326,9 @@ watch(cardRarity, (newCardRarity) => {
     canvasHelper.drawRarity(newCardRarity, getConfig('cardRarity'));
   });
 })
-
 watch(cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
 })
-
-watch(fontsLoaded, (newValue) => {
-  if (newValue && stage.value) {
-    nextTick(() => {
-      stage.value.getStage().batchDraw();
-    });
-  }
-});
-
-// Add this function to detect when fonts are loaded
-const waitForFonts = async () => {
-  try {
-    // Check if the specific font is loaded
-    if (document.fonts && document.fonts.check) {
-      // Wait for all fonts to be ready
-      await document.fonts.ready;
-
-      // Double-check our specific font is available
-      const fontLoaded = document.fonts.check('10px "Dialog Cond SemiBold Regular"');
-
-      if (fontLoaded) {
-        fontsLoaded.value = true;
-        // Force Konva to redraw after fonts are loaded
-        nextTick(() => {
-          if (stage.value) {
-            stage.value.getStage().batchDraw();
-          }
-        });
-      } else {
-        // Fallback: wait a bit more and try again
-        setTimeout(() => {
-          fontsLoaded.value = true;
-          nextTick(() => {
-            if (stage.value) {
-              stage.value.getStage().batchDraw();
-            }
-          });
-        }, 200);
-      }
-    } else {
-      // Fallback for older browsers
-      setTimeout(() => {
-        fontsLoaded.value = true;
-        nextTick(() => {
-          if (stage.value) {
-            stage.value.getStage().batchDraw();
-          }
-        });
-      }, 500);
-    }
-  } catch (error) {
-    console.warn('Font loading detection failed:', error);
-    // Fallback: assume fonts are loaded after delay
-    setTimeout(() => {
-      fontsLoaded.value = true;
-      nextTick(() => {
-        if (stage.value) {
-          stage.value.getStage().batchDraw();
-        }
-      });
-    }, 1000);
-  }
-};
-
-// Call this when component mounts
-onMounted(() => {
-  if (!cardRarity.value) {
-    cardRarity.value = 'img/rarities/rarity_common.svg';
-  }
-  waitForFonts();
-});
 
 const [noCostImage] = useImage('src/assets/symbol_nocost.png');
 const [powerImage] = useImage('src/assets/cardsymbol_power.svg');
@@ -1111,14 +1034,14 @@ const handleStyleToggle = (event) => {
                 </v-layer>
                 <v-layer id="footertext">
                   <v-text
-                      v-if="cardType && fontsLoaded"
+                      v-if="cardType"
                       ref="footertext"
                       :fontSize="footerTextFontSize"
                       :text="dentedFooterText"
                       v-bind="getConfig('cardFooterText')"
                   />
                   <v-text
-                      v-if="cardType && selectedStyle === 'flat' && fontsLoaded"
+                      v-if="cardType && selectedStyle === 'flat'"
                       ref="footertextRight"
                       :fontSize="footerTextFontSize"
                       :text="flatFooterText"
@@ -1127,7 +1050,7 @@ const handleStyleToggle = (event) => {
 
                   <!-- Copyright overlay -->
                   <v-text
-                      v-if="cardType && fontsLoaded"
+                      v-if="cardType"
                       text="©"
                       v-bind="getConfig('copyrightOverlay')"
                   />
