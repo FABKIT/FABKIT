@@ -1,35 +1,32 @@
-import {readdir, unlink, createWriteStream} from 'fs';
+import {readdir, unlink, createWriteStream, promises} from 'fs';
 import path from 'path';
 import http from 'http';
 import https from 'https';
 
 
 const getCardbacks = async function(url) {
-    // remove existing cardbacks
-    readdir('./public/img/cardbacks/generated', (err, files) => {
-        if (err) throw err;
-
-        for (const file of files) {
-            unlink(path.join('./public/img/cardbacks/generated', file), (err) => {
-                if (err) throw err;
-            });
-        }
-    });
     const response = await fetch(url);
     const cardbacks = await response.json();
     let downloads = [];
     cardbacks.forEach((cardback) => {
         cardback.images.forEach((cardbackImage) => {
-            downloads.push({url: cardbackImage.fileName, fileLocation: './public/img/cardbacks/generated/'+cardbackImage.url});
+            const imgUrl = cardbackImage.fileName.split('/').pop();
+            const cardbackLocation = './public/img/cardbacks/generated/' + imgUrl;
+            downloads.push({url: cardbackImage.fileName, fileLocation: cardbackLocation});
 
-            cardbackImage.url = 'img/cardbacks/generated/'+cardbackImage.url;
+            cardbackImage.url = 'img/cardbacks/generated/' + imgUrl;
             delete cardbackImage.fileName;
         })
     })
 
+    const downloadPromises = [];
     for (const download of downloads) {
-        await downloadFileFromURL(download.url, download.fileLocation);
+        await promises.access(download.fileLocation)
+            .then(() => true)
+            .catch(() => downloadPromises.push(downloadFileFromURL(download.url, download.fileLocation)));
     }
+
+    await Promise.all(downloadPromises);
 
     return `const cardbacks = ${JSON.stringify(cardbacks)};
 export function useCardBacks() {
@@ -44,23 +41,23 @@ async function downloadFileFromURL(url, fileLocation) {
             evalledHttp = https;
         }
         evalledHttp.get(url, async (response) => {
-                const code = response.statusCode ?? 0
+            const code = response.statusCode ?? 0
 
-                if (code >= 400) {
-                    return reject(new Error(response.statusMessage))
-                }
+            if (code >= 400) {
+                return reject(new Error(response.statusMessage))
+            }
 
-                // save the file to disk
-                const fileWriter = createWriteStream(fileLocation)
-                    .on('finish', () => {
-                        resolve({
-                            fileLocation,
-                            contentType: response.headers['content-type'],
-                        })
+            // save the file to disk
+            const fileWriter = createWriteStream(fileLocation)
+                .on('finish', () => {
+                    resolve({
+                        fileLocation,
+                        contentType: response.headers['content-type'],
                     })
+                })
 
-                response.pipe(fileWriter)
-            })
+            response.pipe(fileWriter)
+        })
             .on('error', (error) => {
                 reject(error)
             })
