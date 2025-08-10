@@ -214,41 +214,6 @@ fab-untap {
     filter: brightness(1.05); /* Very subtle brightness increase */
 }
 
-/* Style the dropdown select element directly */
-.cardback-dropdown {
-    background: transparent;
-    border: none;
-    outline: none;
-    font-family: inherit;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding: 0.5rem 2rem 0.5rem 1rem;
-    border-radius: 0.25rem;
-    position: relative;
-    transition: all 0.2s ease;
-    min-width: 0;
-    text-align: center;
-    text-align-last: center;
-}
-
-/* Create dropdown arrow */
-.cardback-dropdown {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23A6864A' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1rem;
-    background-color: transparent;
-}
-
-.cardback-dropdown option {
-    background: white;
-    color: #1f2937;
-    padding: 0.5rem;
-    font-weight: 500;
-}
-
 /* Arrow buttons styling */
 .cardback-nav-button {
     background: transparent;
