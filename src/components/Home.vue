@@ -371,7 +371,7 @@ const handleStyleToggle = (event) => {
         </defs>
       </svg>
     </div>
-    <div v-show="cardType" class="p-1 cardback:p-6 fade-in-fwd">
+    <div v-show="cardType" class="p-1 fade-in-fwd">
       <div v-show="cardType" class="w-full mb-3 print:hidden">
         <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardType">Type</label>
         <div class="mt-2 grid grid-cols-1">
@@ -928,7 +928,7 @@ const handleStyleToggle = (event) => {
             </div>
           </form>
         </div>
-        <div v-show="cardType" class="flex flex-col items-center cardback:p-6">
+        <div v-show="cardType" class="flex flex-col items-center">
           <label class="block text-sm/6 font-medium text-primary dark:text-white text-center print:hidden" for="cardBackLabel">Select Card Background</label>
           <div class="toggle-container">
             <div class="button-cover">
@@ -972,7 +972,7 @@ const handleStyleToggle = (event) => {
             </button>
           </div>
 
-          <div class="flex flex-col w-full overflow-x-scroll cardback:items-center cardback:overflow-x-auto">
+          <div class="flex flex-col w-full overflow-x-scroll items-center">
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
                 <div id="renderedContent" ref="contentElement" v-html="cardText"></div>
