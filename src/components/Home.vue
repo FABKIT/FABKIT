@@ -973,9 +973,6 @@ const handleStyleToggle = (event) => {
           </div>
 
           <div class="flex flex-col w-full overflow-x-scroll cardback:items-center cardback:overflow-x-auto">
-            <div class="exampleCard">
-              <img src="../../public/img/Card_Example5.png" height="628" width="450"/>
-            </div>
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
                 <div id="renderedContent" ref="contentElement" v-html="cardText"></div>
