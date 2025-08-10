@@ -39,7 +39,7 @@ export function useCard() {
     const cardWeaponSubtype = ref('');
     const cardWeaponSubtypeCustom = ref('');
     const cardWeapon = ref('');
-    const cardRarity = ref('');
+    const cardRarity = ref();
     const cardTokenSubtype = ref('');
     const cardDefense = ref('');
     const cardLife = ref('');

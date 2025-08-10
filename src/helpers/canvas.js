@@ -123,33 +123,6 @@ const CanvasHelpers = class CanvasHelper {
         );
     }
 
-    drawRarity(src, config) {
-        const self = this;
-
-        const existing = self.footerLayer.findOne('.rarity');
-        if (existing && existing.attrs.image.src === src) {
-            return;
-        }
-
-        self.footerLayer.removeChildren();
-
-        Konva.Image.fromURL(
-            src,
-            (img) => {
-                img.setAttrs(
-                    {
-                        ...config,
-                        ...{
-                            name: 'rarity',
-                            id: 'img-ratiry',
-                            draggable: false,
-                        }
-                    });
-                self.footerLayer.add(img);
-            }
-        );
-    }
-
     async drawBackground(src) {
         const self = this;
 

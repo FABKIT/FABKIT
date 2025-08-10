@@ -71,6 +71,58 @@ const {
   backgroundIndex,
 } = useCard();
 
+const cardRarities = [
+  {
+    id: 1,
+    label: 'Common',
+    image: useImage('img/rarities/rarity_common.svg')
+  },
+  {
+    id: 2,
+    label: 'Fabled',
+    image: useImage('img/rarities/rarity_fabled.svg')
+  },
+  {
+    id: 3,
+    label: 'Legendary',
+    image: useImage('img/rarities/rarity_legendary.svg')
+  },
+  {
+    id: 4,
+    label: 'Majestic',
+    image: useImage('img/rarities/rarity_majestic.svg')
+  },
+  {
+    id: 5,
+    label: 'Marvel',
+    image: useImage('img/rarities/rarity_marvel.svg')
+  },
+  {
+    id: 6,
+    label: 'Promo',
+    image: useImage('img/rarities/rarity_promo.svg')
+  },
+  {
+    id: 7,
+    label: 'Rare',
+    image: useImage('img/rarities/rarity_rare.svg')
+  },
+  {
+    id: 8,
+    label: 'Super Rare',
+    image: useImage('img/rarities/rarity_superrare.svg')
+  },
+  {
+    id: 9,
+    label: 'Token',
+    image: useImage('img/rarities/rarity_token.svg')
+  }
+];
+
+const cardRarityImage = computed(() => {
+  return cardRarities.find(value => value.id === cardRarity.value).image[0].value;
+})
+
 const CanvasHelper = useCanvasHelper();
 const configKonva = {
   width: 450,
@@ -267,7 +319,6 @@ watch(frameType, (newFrameType) => {
   if (newFrameType) {
     nextTick().then(() => {
       recalculateRatio();
-      canvasHelper.drawRarity(cardRarity.value, getConfig('cardRarity'));
     });
   }
 });
@@ -293,7 +344,7 @@ const doLoading = async function (callback) {
 
 onMounted(function () {
   if (!cardRarity.value) {
-    cardRarity.value = 'img/rarities/rarity_common.svg';
+    cardRarity.value = 1;
   }
 
   canvasHelper.artworkLayer = artwork.value.getStage();
@@ -320,12 +371,6 @@ watch(cardType, (newCardType) => {
   }
 });
 
-watch(cardRarity, (newCardRarity) => {
-  if (!newCardRarity) return;
-  nextTick().then(() => {
-    canvasHelper.drawRarity(newCardRarity, getConfig('cardRarity'));
-  });
-})
 watch(cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
 })
@@ -842,15 +887,7 @@ const handleStyleToggle = (event) => {
                       id="cardRarity"
                       v-model="cardRarity"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="img/rarities/rarity_common.svg">Common</option>
-                    <option value="img/rarities/rarity_fabled.svg">Fabled</option>
-                    <option value="img/rarities/rarity_legendary.svg">Legendary</option>
-                    <option value="img/rarities/rarity_majestic.svg">Majestic</option>
-                    <option value="img/rarities/rarity_marvel.svg">Marvel</option>
-                    <option value="img/rarities/rarity_promo.svg">Promo</option>
-                    <option value="img/rarities/rarity_rare.svg">Rare</option>
-                    <option value="img/rarities/rarity_superrare.svg">Super Rare</option>
-                    <option value="img/rarities/rarity_token.svg">Token</option>
+                    <option v-for="rarity in cardRarities" :value="rarity.id">{{ rarity.label }}</option>
                   </select>
                   <ChevronDownIcon
                       aria-hidden="true"
@@ -1026,9 +1063,7 @@ const handleStyleToggle = (event) => {
                   ></v-text>
                 </v-layer>
                 <v-layer id="footer" ref="footer">
-                  <v-image v-if="cardRarity" :text="cardRarity" v-bind="getConfig('cardRarity')"></v-image>
-                </v-layer>
-                <v-layer id="footertext">
+                  <v-image v-if="cardRarity" id="cardRarity" :image="cardRarityImage" v-bind="getConfig('cardRarity')"></v-image>
                   <v-text
                       ref="footertext"
                       :fontSize="footerTextFontSize"
