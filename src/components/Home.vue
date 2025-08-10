@@ -384,7 +384,7 @@ const handleStyleToggle = (event) => {
 </script>
 
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
+  <div>
     <div v-if="!cardType" class="relative isolate overflow-hidden min-h-[100vh]">
       <div>
         <div class="mx-auto max-w-2xl text-center">
@@ -416,7 +416,7 @@ const handleStyleToggle = (event) => {
         </defs>
       </svg>
     </div>
-    <div v-show="cardType" class="p-1 fade-in-fwd">
+    <div v-show="cardType" class="fade-in-fwd px-4 sm:px-6 lg:px-8">
       <div v-show="cardType" class="w-full mb-3 print:hidden">
         <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardType">Type</label>
         <div class="mt-2 grid grid-cols-1">
