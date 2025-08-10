@@ -29,8 +29,12 @@ export default function useTinyMCEConfig(cardText) {
             buttons.map((b) => 'fab_' + b.name).join(' '),
         promotion: false,
         branding: false,
-        skin: (window.matchMedia("(prefers-color-scheme: dark)").matches ? "oxide-dark" : "oxide"),
-        content_css: (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : ""),
+        skin: window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? 'fabkit_tmce-dark'
+            : 'fabkit_tmce',
+        content_css: window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? 'fabkit_tmce-dark'
+            : 'fabkit_tmce',
 
         // Add custom elements to valid elements and extended valid elements
         valid_elements: '*[*]',

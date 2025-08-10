@@ -51,6 +51,14 @@ body {
     font-family: 'Palatino LT Std Light', serif;
 }
 
+@media (prefers-color-scheme: light) {
+    body { color: #2A2A2A !important; }
+}
+
+@media (prefers-color-scheme: dark) {
+    body { color: white !important; }
+}
+
 /* Override TinyMCE's default bold behavior */
 strong, b {
     font-family: 'Palatino LT Std Medium', serif !important;
