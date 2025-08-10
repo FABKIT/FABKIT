@@ -339,7 +339,7 @@ const handleStyleToggle = (event) => {
 </script>
 
 <template>
-  <div>
+  <div class="px-4 sm:px-6 lg:px-8">
     <div v-if="!cardType" class="relative isolate overflow-hidden min-h-[100vh]">
       <div>
         <div class="mx-auto max-w-2xl text-center">
