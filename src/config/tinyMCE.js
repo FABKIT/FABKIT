@@ -24,7 +24,7 @@ export default function useTinyMCEConfig(cardText) {
         width: '100%',
         paste_as_text: true,
         menubar: false,
-        plugins: ['importcss', 'lists', 'paste'],
+        plugins: ['importcss', 'lists'],
         toolbar: 'bold italic underline alignleft aligncenter alignright alignjustify bullist ' +
             buttons.map((b) => 'fab_' + b.name).join(' '),
         promotion: false,
@@ -51,6 +51,7 @@ export default function useTinyMCEConfig(cardText) {
 
         content_style: `
             @import url('./tinymce/fonts.css');
+            @import url('./tinymce/tmce_customstyles.css');
             
             .tox-edit-area__iframe {
                     background-color: transparent !important;
@@ -106,7 +107,7 @@ export default function useTinyMCEConfig(cardText) {
                 const customElements = ['fab-cost', 'fab-power', 'fab-defense', 'fab-life', 'fab-intellect', 'fab-tap', 'fab-untap'];
                 customElements.forEach(element => {
                     const regex = new RegExp(`<${element}(?![^>]*contenteditable)([^>]*)>`, 'gi');
-                    e.content = e.content.replace(regex, `<${element} contenteditable="false"$1>`);
+                    e.content = e.content.replace(regex, `<${element} contenteditable="false" $1>`);
                 });
             });
 
@@ -181,8 +182,7 @@ export default function useTinyMCEConfig(cardText) {
                                 editor.dom.remove(prevSibling);
 
                                 // Remove the zero-width space and position cursor correctly
-                                const newContent = textContent.substring(1);
-                                startContainer.textContent = newContent;
+                                startContainer.textContent = textContent.substring(1);
 
                                 const newRange = editor.dom.createRng();
                                 newRange.setStart(startContainer, 0);

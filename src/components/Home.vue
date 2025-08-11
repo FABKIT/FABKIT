@@ -416,7 +416,7 @@ const handleStyleToggle = (event) => {
         </defs>
       </svg>
     </div>
-    <div v-show="cardType" class="fade-in-fwd px-4 sm:px-6 lg:px-8">
+    <div v-show="cardType" class="fade-in-fwd px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
       <div v-show="cardType" class="w-full mb-3 print:hidden">
         <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardType">Type</label>
         <div class="mt-2 grid grid-cols-1">
