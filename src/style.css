@@ -6,6 +6,7 @@
 @theme {
     --color-primary: #A6864A;
     --color-dark: #2A2A2A;
+    --breakpoint-xs: 30rem;
 }
 
 .button-primary {

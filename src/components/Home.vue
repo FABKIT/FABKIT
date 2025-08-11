@@ -1014,7 +1014,7 @@ const handleStyleToggle = (event) => {
             </button>
           </div>
 
-          <div class="flex flex-col w-full overflow-x-scroll items-center">
+          <div class="flex flex-col w-full overflow-x-auto xs:overflow-none xs:items-center">
             <div class="cardParent">
               <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
                 <div id="renderedContent" ref="contentElement" v-html="cardText"></div>
