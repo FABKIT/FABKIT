@@ -396,7 +396,8 @@ const handleStyleToggle = (event) => {
                 return {
                  title: t.label,
                  type: t.type,
-                 selected: t.type === cardType
+                 selected: t.type === cardType,
+                 disabled: t.disabled,
                 }
               })"
                 @update:modelValue="cardType = $event.type"
@@ -424,7 +425,7 @@ const handleStyleToggle = (event) => {
                   ref="cardTypeSelect"
                   class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
                   name="cardType">
-            <option v-for="type in types.sort((a, b) => a.label.localeCompare(b.label))" :value="type.type">
+            <option v-for="type in types.sort((a, b) => a.label.localeCompare(b.label))" :value="type.type" :disabled="type.disabled">
               {{ type.label }}
             </option>
           </select>

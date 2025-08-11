@@ -371,6 +371,7 @@ const types = [
     {
         type: 'mentor',
         label: 'Mentor',
+        disabled: true,
         fields: [
             {
                 id: "cardName",
