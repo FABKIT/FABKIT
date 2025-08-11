@@ -29,12 +29,13 @@ export default function useTinyMCEConfig(cardText) {
             buttons.map((b) => 'fab_' + b.name).join(' '),
         promotion: false,
         branding: false,
-        skin: window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? 'fabkit_tmce-dark'
-            : 'fabkit_tmce',
+        base_url: '/FABKIT/tinymce',
+        skin_url: window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? './tinymce/skins/ui/fabkit_tmce-dark'
+            : './tinymce/skins/ui/fabkit_tmce',
         content_css: window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? 'fabkit_tmce-dark'
-            : 'fabkit_tmce',
+            ? './tinymce/skins/content/fabkit_tmce-dark/content.min.css'
+            : './tinymce/skins/content/fabkit_tmce/content.min.css',
 
         // Add custom elements to valid elements and extended valid elements
         valid_elements: '*[*]',
@@ -48,7 +49,13 @@ export default function useTinyMCEConfig(cardText) {
         forced_root_block: 'p',
         force_br_newlines: false,
 
-        content_style: `@import url('tinymce/fonts.css');`,
+        content_style: `
+            @import url('./tinymce/fonts.css');
+            
+            .tox-edit-area__iframe {
+                    background-color: transparent !important;
+                }
+        `,
 
         setup: (editor) => {
             // Define custom elements as non-editable and inline

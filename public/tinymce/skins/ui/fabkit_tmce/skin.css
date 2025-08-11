@@ -1501,7 +1501,7 @@ body.tox-dialog__disable-scroll {
   position: relative;
 }
 .tox .tox-edit-area__iframe {
-  background-color: transparent;
+  background-color: transparent !important;
   border: 0;
   box-sizing: border-box;
   flex: 1;

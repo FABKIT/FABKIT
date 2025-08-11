@@ -630,7 +630,7 @@
   height: 100%;
 }
 .tinymce-mobile-outer-container .tinymce-mobile-editor-socket iframe {
-  background-color: #fff;
+  background-color: transparent !important;
   width: 100%;
 }
 .tinymce-mobile-editor-socket .tinymce-mobile-mask-edit-icon {
