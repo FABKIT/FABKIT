@@ -988,19 +988,23 @@ const handleStyleToggle = (event) => {
               <ArrowLeftIcon aria-hidden="true" class="size-5"/>
             </button>
 
-            <select
-                v-model="backgroundIndex"
-                class="cardback-dropdown flex-grow-1 font-semibold text-primary dark:text-white"
-                @change="onCardbackDropdownChange"
-            >
-              <option
-                  v-for="(cardback, index) in filteredAvailableCardbacks"
-                  :key="cardback.id"
-                  :value="index"
-              >
-                {{ cardback.name }}
-              </option>
-            </select>
+            <div class="grid grid-cols-1 w-full">
+              <select
+                  v-model="backgroundIndex"
+                  class="col-start-1 row-start-1 appearance-none text-center font-bold bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary sm:text-sm/6">
+                <option
+                    v-for="(cardback, index) in filteredAvailableCardbacks"
+                    :key="`background_${cardback.id}`"
+                    :value="index"
+                >
+                  {{ cardback.name }}
+                </option>
+              </select>
+              <ChevronDownIcon
+                  aria-hidden="true"
+                  class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-primary sm:size-4"/>
+            </div>
+
 
             <button :disabled="loadingBackground"
                     class="cardback-nav-button" type="button"
