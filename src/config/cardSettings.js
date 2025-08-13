@@ -104,7 +104,7 @@ const cardSettings = {
             },
             copyrightOverlay: {
                 x: 305,  // Position where © appears in the dented footer
-                y: 596,
+                y: 595,
                 width: 10,
                 height: 12,
                 fontFamily: 'Arial',
@@ -207,11 +207,11 @@ const cardSettings = {
             },
             cardName: {
                 x: 95,
-                y: 43.5,
+                y: 43,
                 width: 261,
                 height: 27,
                 fontFamily: 'amanda_std_regular',
-                fontSize: 25.5,
+                fontSize: 25.45,
                 verticalAlign: "middle",
                 align: "center",
                 fill: "black",
@@ -307,8 +307,8 @@ const cardSettings = {
                 align: "right",
             },
             copyrightOverlay: {
-                x: 334.25,  // Position where © appears in the dented footer
-                y: 599.55,
+                x: 334.7,  // Position where © appears in the dented footer
+                y: 599,
                 width: 10,
                 height: 12,
                 fontFamily: 'Arial',

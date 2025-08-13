@@ -53,7 +53,7 @@
 }
 
 @font-face {
-    font-family: 'palatino_ltitalic';
+    font-family: 'palatino_lt_italic';
     src: url('/fonts/palatino_lt_std_italic.woff2') format('woff2'),
     url('/fonts/palatino_lt_std_italic.woff') format('woff'),
     url('/fonts/palatino_lt_std_italic.svg#palatino_ltitalic') format('svg');
@@ -189,7 +189,7 @@
 }
 
 #renderedContent em {
-    font-family: 'Palatino LT Std Italic', serif;
+    font-family: 'palatino_lt_italic', serif;
     font-style: normal;
     letter-spacing:0.0128em;
     font-size:1.0001em;

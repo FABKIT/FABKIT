@@ -13,10 +13,18 @@
         <link rel="manifest" href="/site.webmanifest" />
         <meta content="#603cba" name="msapplication-TileColor">
         <meta content="#ffffff" name="theme-color">
-    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="FABKIT" data-description="Support me on Buy me a coffee!" data-message="" data-color="#FF813F" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
-</head>
+    </head>
 <body class="h-full bg-white dark:bg-dark">
 <div id="app"></div>
 <script src="src/main.js" type="module"></script>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+    kofiWidgetOverlay.draw('fabkit', {
+        'type': 'floating-chat',
+        'floating-chat.donateButton.text': 'Support Us',
+        'floating-chat.donateButton.background-color': '#323842',
+        'floating-chat.donateButton.text-color': '#fff'
+    });
+</script>
 </body>
 </html>

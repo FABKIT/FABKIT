@@ -149,7 +149,6 @@ export default function useTinyMCEConfig(cardText) {
                         if (prevSibling && prevSibling.tagName && prevSibling.tagName.toLowerCase().startsWith('fab-')) {
                             e.preventDefault();
                             // Delete the custom element directly and maintain focus
-                            const parent = prevSibling.parentNode;
                             editor.dom.remove(prevSibling);
 
                             // Ensure cursor stays in the right place and editor keeps focus

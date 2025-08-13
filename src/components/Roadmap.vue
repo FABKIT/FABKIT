@@ -201,12 +201,7 @@ const getPriorityColor = (priority) => {
           </div>
           <div class="p-6">
             <!-- Embedded Buy Me a Coffee iframe -->
-            <iframe
-                allow="payment"
-                title="Buy Me a Coffee"
-                style="border: 0px; width: 100%; height: 600px; border-radius: 10px; box-shadow: rgba(13, 12, 34, 0.1) 0px 4px 20px; background: rgb(255, 255, 255);"
-                src="https://www.buymeacoffee.com/widget/page/FABKIT?description=Support%20me%20on%20Buy%20me%20a%20coffee!&color=%23FF813F">
-            </iframe>
+            <iframe id='kofiframe' src='https://ko-fi.com/fabkit/?hidefeed=true&widget=true&embed=true&preview=true' style='border:none;width:100%;padding:4px;background:#f9f9f9;' height='575' title='fabkit'></iframe>
           </div>
         </div>
 
