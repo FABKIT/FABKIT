@@ -64,7 +64,7 @@ const readFile = function readFile(event) {
   FR.readAsDataURL(event.target.files[0]);
 }
 
-const tinyMCEConfig = useTinyMCEConfig(fields.cardText);
+const tinyMCEConfig = useTinyMCEConfig(fields);
 
 const downloadImage = function () {
   toPng(document.querySelector('.cardParent'), {
@@ -742,7 +742,7 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
             <div class="exampleCard"><img src="../../public/img/Card_Example4.png" height="628" width="450"/></div>
             <div class="cardParent">
                 <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
-                <div id="renderedContent" ref="contentElement" v-html="fields.cardText"></div>
+                <div v-if="fields" id="renderedContent" ref="contentElement" v-html="fields.cardText"></div>
               </div>
               <v-stage
                   ref="stage"

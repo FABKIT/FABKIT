@@ -1,4 +1,4 @@
-export default function useTinyMCEConfig(cardText) {
+export default function useTinyMCEConfig(fields) {
 
     const iconTokens = {
         cost: 'fab-cost',
@@ -132,7 +132,7 @@ export default function useTinyMCEConfig(cardText) {
             editor.on('Paste Change input Undo Redo', function () {
                 clearTimeout(editorChangeHandlerId);
                 editorChangeHandlerId = setTimeout(function () {
-                    cardText.value = editor.getContent();
+                    fields.cardText = editor.getContent();
                 }, 250);
             });
             // Handle backspace for custom elements - single press deletion
@@ -162,7 +162,7 @@ export default function useTinyMCEConfig(cardText) {
 
                             // Trigger change detection immediately
                             editor.fire('input');
-                            cardText.value = editor.getContent();
+                            fields.cardText = editor.getContent();
 
                             return false;
                         }
@@ -193,7 +193,7 @@ export default function useTinyMCEConfig(cardText) {
 
                                 // Trigger change detection immediately
                                 editor.fire('input');
-                                cardText.value = editor.getContent();
+                                fields.cardText = editor.getContent();
 
                                 return false;
                             }
@@ -225,7 +225,7 @@ export default function useTinyMCEConfig(cardText) {
 
                         // Trigger change detection immediately
                         editor.fire('input');
-                        cardText.value = editor.getContent();
+                        fields.cardText = editor.getContent();
 
                         return false;
                     }
