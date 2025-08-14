@@ -3,6 +3,7 @@
 import {PhotoIcon} from '@heroicons/vue/24/solid'
 import {ChevronDownIcon} from '@heroicons/vue/16/solid'
 import {useCard} from "../helpers/card.js";
+import {useCardRarities} from "../helpers/cardRarities.js";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -23,39 +24,7 @@ const fontsLoaded = ref(false);
 
 const {
   types,
-  cardType,
-  cardPitch,
-  cardName,
-  cardCost,
-  cardText,
-  cardPower,
-  cardHeroIntellect,
-  cardTalent,
-  cardTalentCustom,
-  cardClass,
-  cardClassCustom,
-  cardSecondaryClass,
-  cardSecondaryClassCustom,
-  cardActionSubtype,
-  cardActionSubtypeCustom,
-  cardDefenseReactionSubtype,
-  cardDefenseReactionSubtypeCustom,
-  cardEquipmentSubtype,
-  cardEquipmentSubtypeCustom,
-  cardInstantSubtype,
-  cardInstantSubtypeCustom,
-  cardResourceSubtype,
-  cardResourceSubtypeCustom,
-  cardMacroGroup,
-  cardHeroSubtype,
-  cardWeaponSubtype,
-  cardWeaponSubtypeCustom,
-  cardWeapon,
-  cardRarity,
-  cardTokenSubtype,
-  cardDefense,
-  cardLife,
-  cardUploadedArtwork,
+  fields,
   cardTypeText,
   isFieldShown,
   currentBackground,
@@ -66,62 +35,14 @@ const {
   typeTextFontSize,
   footerTextFontSize,
   frameType,
-  cardTextStyleClass,
   filteredAvailableCardbacks,
   backgroundIndex,
+  cardTextStyleClass,
+  handleStyleToggle,
+  cardRarityImage,
 } = useCard();
 
-const cardRarities = [
-  {
-    id: 1,
-    label: 'Common',
-    image: useImage('img/rarities/rarity_common.svg')
-  },
-  {
-    id: 2,
-    label: 'Fabled',
-    image: useImage('img/rarities/rarity_fabled.svg')
-  },
-  {
-    id: 3,
-    label: 'Legendary',
-    image: useImage('img/rarities/rarity_legendary.svg')
-  },
-  {
-    id: 4,
-    label: 'Majestic',
-    image: useImage('img/rarities/rarity_majestic.svg')
-  },
-  {
-    id: 5,
-    label: 'Marvel',
-    image: useImage('img/rarities/rarity_marvel.svg')
-  },
-  {
-    id: 6,
-    label: 'Promo',
-    image: useImage('img/rarities/rarity_promo.svg')
-  },
-  {
-    id: 7,
-    label: 'Rare',
-    image: useImage('img/rarities/rarity_rare.svg')
-  },
-  {
-    id: 8,
-    label: 'Super Rare',
-    image: useImage('img/rarities/rarity_superrare.svg')
-  },
-  {
-    id: 9,
-    label: 'Token',
-    image: useImage('img/rarities/rarity_token.svg')
-  }
-];
-
-const cardRarityImage = computed(() => {
-  return cardRarities.find(value => value.id === cardRarity.value).image[0].value;
-})
+const {cardRarities} = useCardRarities();
 
 const CanvasHelper = useCanvasHelper();
 const configKonva = {
@@ -143,13 +64,13 @@ const readFile = function readFile(event) {
   const FR = new FileReader();
 
   FR.addEventListener("load", function (evt) {
-    cardUploadedArtwork.value = String(evt.target.result);
+    fields.cardUploadedArtwork = String(evt.target.result);
   });
 
   FR.readAsDataURL(event.target.files[0]);
 }
 
-const tinyMCEConfig = useTinyMCEConfig(cardText);
+const tinyMCEConfig = useTinyMCEConfig(fields.cardText);
 
 
 const downloadImage = function () {
@@ -160,7 +81,7 @@ const downloadImage = function () {
     canvasHeight: 628,
   })
       .then((dataUrl) => {
-        downloadURI(dataUrl, (cardName.value || 'card') + '.png');
+        downloadURI(dataUrl, (fields.cardName || 'card') + '.png');
       })
       .catch((err) => {
         console.error('oops, something went wrong!', err);
@@ -308,11 +229,11 @@ function recalculateRatio() {
   });
 }
 
-watch(cardText, () => {
+watch(() => fields.cardText, () => {
   nextTick().then(() => {
     recalculateRatio();
   })
-});
+}, {deep: true});
 
 watch(frameType, (newFrameType) => {
   // Only proceed if frameType is actually defined
@@ -343,10 +264,6 @@ const doLoading = async function (callback) {
 
 
 onMounted(function () {
-  if (!cardRarity.value) {
-    cardRarity.value = 1;
-  }
-
   canvasHelper.artworkLayer = artwork.value.getStage();
   canvasHelper.backgroundLayer = background.value.getStage();
   canvasHelper.footerLayer = footer.value.getStage();
@@ -360,32 +277,29 @@ watch(currentBackground, (newBackground) => {
   })
 });
 
-watch(cardType, (newCardType) => {
+watch(() => fields.cardType, (newCardType) => {
   if (!newCardType) return;
   canvasHelper.drawBackground(currentBackground.value);
-  canvasHelper.drawUploadedArtwork(cardUploadedArtwork.value, getConfig('cardUploadedArtwork'));
+  canvasHelper.drawUploadedArtwork(fields.cardUploadedArtwork, getConfig('cardUploadedArtwork'));
   if (fontsLoaded.value === false) {
     nextTick().then(() => {
       setTimeout(() => fontsLoaded.value = true, 100)
     })
   }
-});
+}, {deep: true});
 
-watch(cardUploadedArtwork, (newUploadedArtwork) => {
+watch(() => fields.cardUploadedArtwork, (newUploadedArtwork) => {
   canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
-})
+}, {deep: true});
 
 const [noCostImage] = useImage('src/assets/symbol_nocost.png');
 const [powerImage] = useImage('src/assets/cardsymbol_power.svg');
 const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
-const handleStyleToggle = (event) => {
-  selectedStyle.value = event.target.checked ? 'flat' : 'dented';
-}
 </script>
 
 <template>
   <div>
-    <div v-if="!cardType" class="relative isolate overflow-hidden min-h-[100vh]">
+    <div v-if="!fields.cardType" class="relative isolate overflow-hidden min-h-[100vh]">
       <div>
         <div class="mx-auto max-w-2xl text-center">
           <h2 class="text-4xl font-semibold tracking-tight text-balance text-primary dark:text-white sm:text-5xl">Start creating!</h2>
@@ -396,11 +310,11 @@ const handleStyleToggle = (event) => {
                 return {
                  title: t.label,
                  type: t.type,
-                 selected: t.type === cardType,
+                 selected: t.type === fields.cardType,
                  disabled: t.disabled,
                 }
               })"
-                @update:modelValue="cardType = $event.type"
+                @update:modelValue="fields.cardType = $event.type"
             >
               <div slot="icon"></div>
             </ButtonDropdown>
@@ -417,14 +331,14 @@ const handleStyleToggle = (event) => {
         </defs>
       </svg>
     </div>
-    <div v-show="cardType" class="fade-in-fwd px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
-      <div v-show="cardType" class="w-full mb-3 print:hidden">
+    <div v-show="fields.cardType" class="fade-in-fwd px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
+      <div v-show="fields.cardType" class="w-full mb-3 print:hidden">
         <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardType">Type</label>
         <div class="mt-2 grid grid-cols-1">
-          <select id="cardType" v-model="cardType"
-                  ref="cardTypeSelect"
+          <select id="cardType" v-model="fields.cardType"
+                  ref="fields.cardTypeSelect"
                   class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
-                  name="cardType">
+                  name="fields.cardType">
             <option v-for="type in types.sort((a, b) => a.label.localeCompare(b.label))" :value="type.type" :disabled="type.disabled">
               {{ type.label }}
             </option>
@@ -434,7 +348,7 @@ const handleStyleToggle = (event) => {
               class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-primary dark:text-white sm:size-4"/>
         </div>
       </div>
-      <div v-show="cardType" class="grid grid-cols-1 sm:grid-cols-[2fr_1fr]">
+      <div v-show="fields.cardType" class="grid grid-cols-1 sm:grid-cols-[2fr_1fr]">
         <div class="container mx-auto print:hidden">
           <form>
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -443,7 +357,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardPitch"
-                      v-model="cardPitch"
+                      v-model="fields.cardPitch"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -455,14 +369,14 @@ const handleStyleToggle = (event) => {
                 </div>
               </div>
               <div v-if="isFieldShown('cardName')" class="">
-                <label v-if="['hero', 'demi_hero'].includes(cardType)" id="cardHeroNameLabel"
+                <label v-if="['hero', 'demi_hero'].includes(fields.cardType)" id="cardHeroNameLabel"
                        class="block text-sm/6 font-medium text-primary dark:text-white">Hero name</label>
                 <label v-else id="cardNameLabel" class="block text-sm/6 font-medium text-primary dark:text-white" for="cardName">Card
                   name</label>
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardName" v-model="cardName"
+                    <input id="cardName" v-model="fields.cardName"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            maxlength="50" type="text">
                   </div>
@@ -473,7 +387,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardCost" v-model="cardCost"
+                    <input id="cardCost" v-model="fields.cardCost"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            maxlength="2" type="text">
                   </div>
@@ -484,7 +398,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardPower" v-model="cardPower"
+                    <input id="cardPower" v-model="fields.cardPower"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="number">
                   </div>
@@ -495,7 +409,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardHeroIntellect" v-model="cardHeroIntellect"
+                    <input id="cardHeroIntellect" v-model="fields.cardHeroIntellect"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="number">
                   </div>
@@ -506,7 +420,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardTalent"
-                      v-model="cardTalent"
+                      v-model="fields.cardTalent"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Chaos">Chaos</option>
@@ -525,12 +439,12 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardTalent === 'Custom'">
+                <template v-if="fields.cardTalent === 'Custom'">
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTalentCustom">Custom Talent</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardTalentCustom" v-model="cardTalentCustom"
+                      <input id="cardTalentCustom" v-model="fields.cardTalentCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
                              placeholder="Enter custom resource subtype"
                              type="text">
@@ -538,14 +452,14 @@ const handleStyleToggle = (event) => {
                   </div>
                 </template>
               </div>
-              <div v-if="isFieldShown('cardClass')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardClass">Class</label>
+              <div v-if="isFieldShown('cardTalent')" class="">
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTalent">Class</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardClass"
-                      v-model="cardClass"
+                      v-model="fields.cardClass"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
-                      @change="!cardClass ? cardSecondaryClass = '' : ''">
+                      @change="!fields.cardClass ? fields.cardSecondaryClass = '' : ''">
                     <option value="">None</option>
                     <option value="Adjudicator">Adjudicator</option>
                     <option value="Assassin">Assassin</option>
@@ -568,12 +482,12 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardClass === 'Custom'">
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardClassCustom">Custom class</label>
+                <template v-if="fields.cardTalent === 'Custom'">
+                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTalentCustom">Custom class</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardClassCustom" v-model="cardClassCustom"
+                      <input id="cardTalentCustom" v-model="fields.cardTalentCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                              placeholder="Enter custom class" type="text">
                     </div>
@@ -584,7 +498,7 @@ const handleStyleToggle = (event) => {
                 <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardSecondaryClass">Secondary class
                   (optional)</label>
                 <div class="mt-2 grid grid-cols-1">
-                  <select id="cardSecondaryClass" v-model="cardSecondaryClass"
+                  <select id="cardSecondaryClass" v-model="fields.cardSecondaryClass"
                           class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Adjudicator">Adjudicator</option>
@@ -608,12 +522,12 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardSecondaryClass === 'Custom'">
+                <template v-if="fields.cardSecondaryClass === 'Custom'">
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardSecondaryClassCustom">Custom class</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardSecondaryClassCustom" v-model="cardSecondaryClassCustom"
+                      <input id="cardSecondaryClassCustom" v-model="fields.cardSecondaryClassCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                              placeholder="Enter custom class"
                              type="text">
@@ -628,7 +542,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardActionSubtype"
-                      v-model="cardActionSubtype"
+                      v-model="fields.cardActionSubtype"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Attack">Attack</option>
@@ -648,12 +562,12 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardActionSubtype === 'Custom'">
+                <template v-if="fields.cardActionSubtype === 'Custom'">
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardActionSubtypeCustom">Custom action subtype</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardActionSubtypeCustom" v-model="cardActionSubtypeCustom"
+                      <input id="cardActionSubtypeCustom" v-model="fields.cardActionSubtypeCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
                              placeholder="Enter custom action subtype"
                              type="text">
@@ -667,7 +581,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardDefenseReactionSubtype"
-                      v-model="cardDefenseReactionSubtype"
+                      v-model="fields.cardDefenseReactionSubtype"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Trap">Trap</option>
@@ -677,13 +591,13 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardDefenseReactionSubtype === 'Custom'">
+                <template v-if="fields.cardDefenseReactionSubtype === 'Custom'">
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardDefenseReactionSubtypeCustom">Custom Defense Reaction
                     subtype</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardDefenseReactionSubtypeCustom" v-model="cardDefenseReactionSubtypeCustom"
+                      <input id="cardDefenseReactionSubtypeCustom" v-model="fields.cardDefenseReactionSubtypeCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
                              placeholder="Enter custom defense reaction subtype"
                              type="text">
@@ -698,7 +612,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardEquipmentSubtype"
-                      v-model="cardEquipmentSubtype"
+                      v-model="fields.cardEquipmentSubtype"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Head">Head</option>
@@ -714,13 +628,13 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardEquipmentSubtype === 'Custom'">
+                <template v-if="fields.cardEquipmentSubtype === 'Custom'">
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardEquipmentSubtypeCustom">Custom equipment
                     subtype</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardEquipmentSubtypeCustom" v-model="cardEquipmentSubtypeCustom"
+                      <input id="cardEquipmentSubtypeCustom" v-model="fields.cardEquipmentSubtypeCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
                              placeholder="Enter custom equipment subtype"
                              type="text">
@@ -734,7 +648,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardInstantSubtype"
-                      v-model="cardInstantSubtype"
+                      v-model="fields.cardInstantSubtype"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Aura">Aura</option>
@@ -746,12 +660,12 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardInstantSubtype === 'Custom'">
+                <template v-if="fields.cardInstantSubtype === 'Custom'">
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardInstantSubtypeCustom">Custom instant subtype</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardInstantSubtypeCustom" v-model="cardInstantSubtypeCustom"
+                      <input id="cardInstantSubtypeCustom" v-model="fields.cardInstantSubtypeCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
                              placeholder="Enter custom instant subtype"
                              type="text">
@@ -766,7 +680,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardResourceSubtype"
-                      v-model="cardResourceSubtype"
+                      v-model="fields.cardResourceSubtype"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Gem">Gem</option>
@@ -777,13 +691,13 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardResourceSubtype === 'Custom'">
+                <template v-if="fields.cardResourceSubtype === 'Custom'">
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtypeCustom">Custom resource
                     subtype</label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardResourceSubtypeCustom" v-model="cardResourceSubtypeCustom"
+                      <input id="cardResourceSubtypeCustom" v-model="fields.cardResourceSubtypeCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
                              placeholder="Enter custom resource subtype"
                              type="text">
@@ -797,7 +711,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardMacroGroup" v-model="cardMacroGroup"
+                    <input id="cardMacroGroup" v-model="fields.cardMacroGroup"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="text">
                   </div>
@@ -808,7 +722,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardHeroSubtype"
-                      v-model="cardHeroSubtype"
+                      v-model="fields.cardHeroSubtype"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Demon">Demon</option>
@@ -825,7 +739,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardWeaponSubtype"
-                      v-model="cardWeaponSubtype"
+                      v-model="fields.cardWeaponSubtype"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Axe">Axe</option>
@@ -854,13 +768,13 @@ const handleStyleToggle = (event) => {
                       aria-hidden="true"
                       class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
                 </div>
-                <template v-if="cardWeaponSubtype === 'Custom'">
+                <template v-if="fields.cardWeaponSubtype === 'Custom'">
                   <!-- Custom input field for weapon type -->
                   <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardWeaponSubtypeCustom"></label>
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardWeaponSubtypeCustom" v-model="cardWeaponSubtypeCustom"
+                      <input id="cardWeaponSubtypeCustom" v-model="fields.cardWeaponSubtypeCustom"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
                              placeholder="Enter custom weapon subtype"
                              type="text">
@@ -871,7 +785,7 @@ const handleStyleToggle = (event) => {
               <div v-if="isFieldShown('cardWeapon')" class="">
                 <label id="cardWeapon" class="block text-sm/6 font-medium text-primary dark:text-white">1H or 2H?</label>
                 <fieldset aria-label="1H or 2H?">
-                  <RadioGroup v-model="cardWeapon" class="mt-2 grid grid-cols-2 gap-6">
+                  <RadioGroup v-model="fields.cardWeapon" class="mt-2 grid grid-cols-2 gap-6">
                     <RadioGroupOption v-slot="{ active, checked }" as="template" value="(1H)">
                       <div :class="[active ? 'ring-2 bg-primary ring-offset-2' : '', checked ? 'bg-primary text-white ring-0 hover:bg-primary' : 'bg-white text-primary ring-1 ring-gray-300 hover:bg-gray-50', !active && !checked ? 'ring-inset' : '', active && checked ? 'ring-2' : '', 'flex items-center justify-center rounded-md px-6 py-3 text-sm font-semibold uppercase sm:flex-1']" class="cursor-pointer focus:outline-hidden">1h</div>
                     </RadioGroupOption>
@@ -886,7 +800,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardRarity"
-                      v-model="cardRarity"
+                      v-model="fields.cardRarity"
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option v-for="rarity in cardRarities" :value="rarity.id">{{ rarity.label }}</option>
                   </select>
@@ -900,7 +814,7 @@ const handleStyleToggle = (event) => {
                   <div class="mt-2">
                     <div
                         class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardTokenSubtype" v-model="cardTokenSubtype"
+                      <input id="cardTokenSubtype" v-model="fields.cardTokenSubtype"
                              class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                              type="text">
                     </div>
@@ -912,7 +826,7 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardDefense" v-model="cardDefense"
+                    <input id="cardDefense" v-model="fields.cardDefense"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="number">
                   </div>
@@ -923,17 +837,17 @@ const handleStyleToggle = (event) => {
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardLife" v-model="cardLife"
+                    <input id="cardLife" v-model="fields.cardLife"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="number">
                   </div>
                 </div>
               </div>
-              <div v-if="cardType !== ''" class="">
+              <div v-if="fields.cardType !== ''" class="">
                 <label class="block text-sm/6 font-medium text-primary dark:text-white" for="photo-cover">Artwork</label>
-                <div v-if="cardUploadedArtwork" class="mt-2 w-full flex justify-center rounded-lg border border-dashed border-primary/25 dark:border-white px-6 py-1">
-                  <img :src="cardUploadedArtwork" alt="Uploaded artwork" class="rounded">
-                  <button class="inline-flex items-center gap-x-1.5 rounded-r-md bg-primary px-2.5  text-sm font-semibold text-white shadow-xs hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" v-on:click="() => cardUploadedArtwork = ''">
+                <div v-if="fields.cardUploadedArtwork" class="mt-2 w-full flex justify-center rounded-lg border border-dashed border-primary/25 dark:border-white px-6 py-1">
+                  <img :src="fields.cardUploadedArtwork" alt="Uploaded artwork" class="rounded">
+                  <button class="inline-flex items-center gap-x-1.5 rounded-r-md bg-primary px-2.5  text-sm font-semibold text-white shadow-xs hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" v-on:click="() => fields.cardUploadedArtwork = ''">
                     <TrashIcon aria-hidden="true" class="-mr-0.5 size-5"/>
                   </button>
                 </div>
@@ -951,7 +865,7 @@ const handleStyleToggle = (event) => {
                 </div>
               </div>
               <div v-show="isFieldShown('cardText')" class="sm:col-span-2">
-                <label v-if="['hero', 'demi_hero'].includes(cardType)" id="cardHeroPowerLabel" class="block text-sm/6 font-medium text-primary dark:text-white" for="cardText">Hero power</label>
+                <label v-if="['hero', 'demi_hero'].includes(fields.cardType)" id="cardHeroPowerLabel" class="block text-sm/6 font-medium text-primary dark:text-white" for="cardText">Hero power</label>
                 <label v-else id="cardTextLabel" class="block text-sm/6 font-medium text-primary dark:text-white" for="cardText">Card text</label>
                 <div class="col-span-full">
                   <div class="mt-2">
@@ -966,7 +880,7 @@ const handleStyleToggle = (event) => {
             </div>
           </form>
         </div>
-        <div v-show="cardType" class="flex flex-col items-center">
+        <div v-show="fields.cardType" class="flex flex-col items-center">
           <label class="block text-sm/6 font-medium text-primary dark:text-white text-center print:hidden" for="cardBackLabel">Select Card Background</label>
           <div class="toggle-container">
             <div class="button-cover">
@@ -1018,7 +932,7 @@ const handleStyleToggle = (event) => {
             <div class="exampleCard"><img src="../../public/img/Card_Example4.png" height="628" width="450"/></div>
             <div class="cardParent">
                 <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
-                <div id="renderedContent" ref="contentElement" v-html="cardText"></div>
+                <div id="renderedContent" ref="contentElement" v-html="fields.cardText"></div>
               </div>
               <v-stage
                   ref="stage"
@@ -1028,21 +942,21 @@ const handleStyleToggle = (event) => {
                 <v-layer id="background" ref="background"></v-layer>
                 <v-layer>
                   <v-image
-                      v-if="cardType === 'block'"
+                      v-if="fields.cardType === 'block'"
                       :config="{
                        ...getConfig('noCostImage'),
                        image: noCostImage,
                      }"
                   />
                   <v-image
-                      v-if="cardPower"
+                      v-if="fields.cardPower"
                       :config="{
                        ...getConfig('powerImage'),
                        image: powerImage,
                      }"
                   />
                   <v-image
-                      v-if="cardDefense"
+                      v-if="fields.cardDefense"
                       :config="{
                        ...getConfig('defenseImage'),
                        image: defenseImage,
@@ -1050,18 +964,18 @@ const handleStyleToggle = (event) => {
                   />
                 </v-layer>
                 <v-layer id="text">
-                  <v-text v-show="cardName" v-bind="{
+                  <v-text v-show="fields.cardName" v-bind="{
                   ...getConfig('cardName'),
                   ...{
-                    text: cardName,
+                    text: fields.cardName,
                     fontSize: nameFontSize
                   }
                 }"></v-text>
-                  <v-text v-show="cardCost" :text="cardCost" v-bind="getConfig('cardCost')"></v-text>
-                  <v-text v-show="cardDefense" :text="cardDefense" v-bind="getConfig('cardDefense')"></v-text>
-                  <v-text v-show="cardPower" :text="cardPower" v-bind="getConfig('cardPower')"></v-text>
-                  <v-text v-show="cardLife" :text="cardLife" v-bind="getConfig('cardLife')"></v-text>
-                  <v-text v-show="cardHeroIntellect" :text="cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
+                  <v-text v-show="fields.cardCost" :text="fields.cardCost" v-bind="getConfig('cardCost')"></v-text>
+                  <v-text v-show="fields.cardDefense" :text="fields.cardDefense" v-bind="getConfig('cardDefense')"></v-text>
+                  <v-text v-show="fields.cardPower" :text="fields.cardPower" v-bind="getConfig('cardPower')"></v-text>
+                  <v-text v-show="fields.cardLife" :text="fields.cardLife" v-bind="getConfig('cardLife')"></v-text>
+                  <v-text v-show="fields.cardHeroIntellect" :text="fields.cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
                   <v-text
                       :text="cardTypeText"
                       v-bind="getConfig('cardTypeText')"
@@ -1069,7 +983,7 @@ const handleStyleToggle = (event) => {
                   ></v-text>
                 </v-layer>
                 <v-layer id="footer" ref="footer">
-                  <v-image v-if="cardRarity" id="cardRarity" :image="cardRarityImage" v-bind="getConfig('cardRarity')"></v-image>
+                  <v-image v-if="fields.cardRarity" id="cardRarity" :image="cardRarityImage" v-bind="getConfig('cardRarity')"></v-image>
                   <v-text
                       ref="footertext"
                       :fontSize="footerTextFontSize"

@@ -1,8 +1,9 @@
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {useCardBacks} from "../config/cardbacks.js";
 import {useCardBackSettings} from "../config/cardSettings.js";
 import {useMath} from "./math.js";
 import useTypes from "../config/types.js";
+import {useCardRarities} from "./cardRarities.js";
 
 const {clamp} = useMath();
 
@@ -11,113 +12,115 @@ const capitalizeFirstLetter = function (val) {
 }
 
 export function useCard() {
-    const cardType = ref('');
-    const cardPitch = ref('');
-    const cardName = ref('');
-    const cardCost = ref('');
-    const cardText = ref('');
-    const cardPower = ref('');
-    const cardHeroIntellect = ref('');
-    const cardTalent = ref('');
-    const cardTalentCustom = ref('');
-    const cardClass = ref('');
-    const cardClassCustom = ref('');
-    const cardSecondaryClass = ref('');
-    const cardSecondaryClassCustom = ref('');
-    const cardActionSubtype = ref('');
-    const cardActionSubtypeCustom = ref('');
-    const cardDefenseReactionSubtype = ref('');
-    const cardDefenseReactionSubtypeCustom = ref('');
-    const cardEquipmentSubtype = ref('');
-    const cardEquipmentSubtypeCustom = ref('');
-    const cardInstantSubtype = ref('');
-    const cardInstantSubtypeCustom = ref('');
-    const cardResourceSubtype = ref('');
-    const cardResourceSubtypeCustom = ref('');
-    const cardMacroGroup = ref('');
-    const cardHeroSubtype = ref('');
-    const cardWeaponSubtype = ref('');
-    const cardWeaponSubtypeCustom = ref('');
-    const cardWeapon = ref('');
-    const cardRarity = ref();
-    const cardTokenSubtype = ref('');
-    const cardDefense = ref('');
-    const cardLife = ref('');
-    const cardUploadedArtwork = ref('');
-    const cardFooterText  = ref('');
+    const fields = reactive({
+        cardType: '',
+        cardPitch: '',
+        cardName: '',
+        cardCost: '',
+        cardText: '',
+        cardPower: '',
+        cardHeroIntellect: '',
+        cardTalent: '',
+        cardTalentCustom: '',
+        cardClass: '',
+        cardClassCustom: '',
+        cardSecondaryClass: '',
+        cardSecondaryClassCustom: '',
+        cardActionSubtype: '',
+        cardActionSubtypeCustom: '',
+        cardDefenseReactionSubtype: '',
+        cardDefenseReactionSubtypeCustom: '',
+        cardEquipmentSubtype: '',
+        cardEquipmentSubtypeCustom: '',
+        cardInstantSubtype: '',
+        cardInstantSubtypeCustom: '',
+        cardResourceSubtype: '',
+        cardResourceSubtypeCustom: '',
+        cardMacroGroup: '',
+        cardHeroSubtype: '',
+        cardWeaponSubtype: '',
+        cardWeaponSubtypeCustom: '',
+        cardWeapon: '',
+        cardRarity: 0,
+        cardTokenSubtype: '',
+        cardDefense: '',
+        cardLife: '',
+        cardUploadedArtwork: '',
+        cardFooterText: '',
+    });
     const cardTypeText = computed(() => {
-        let classText = cardClass.value;
-        if (classText === 'Custom' && cardClassCustom.value) {
-            classText = cardClassCustom.value;
+        let classText = fields.cardClass;
+        if (classText === 'Custom' && fields.cardClassCustom) {
+            classText = fields.cardClassCustom;
         }
 
         let subtype = '';
-        switch (cardType.value) {
+        switch (fields.cardType) {
             case 'action':
-                subtype = cardActionSubtype.value;
+                subtype = fields.cardActionSubtype;
                 if (subtype === 'Custom') {
-                    subtype = cardActionSubtypeCustom.value;
+                    subtype = fields.cardActionSubtypeCustom;
                 }
                 break;
             case 'defense_reaction':
-                subtype = cardDefenseReactionSubtype.value;
+                subtype = fields.cardDefenseReactionSubtype;
                 if (subtype === 'Custom') {
-                    subtype = cardDefenseReactionSubtypeCustom.value;
+                    subtype = fields.cardDefenseReactionSubtypeCustom;
                 }
                 break;
             case 'equipment':
-                subtype = cardEquipmentSubtype.value;
+                subtype = fields.cardEquipmentSubtype;
                 if (subtype === 'Custom') {
-                    subtype = cardEquipmentSubtypeCustom.value;
+                    subtype = fields.cardEquipmentSubtypeCustom;
                 }
                 break;
             case 'instant':
-                subtype = cardInstantSubtype.value;
+                subtype = fields.cardInstantSubtype;
                 if (subtype === 'Custom') {
-                    subtype = cardInstantSubtypeCustom.value;
+                    subtype = fields.cardInstantSubtypeCustom;
                 }
                 break;
             case 'resource':
-                subtype = cardResourceSubtype.value;
+                subtype = fields.cardResourceSubtype;
                 if (subtype === 'Custom') {
-                    subtype = cardResourceSubtypeCustom.value;
+                    subtype = fields.cardResourceSubtypeCustom;
                 }
                 break;
             case 'hero':
             case 'demi_hero':
-                subtype = cardHeroSubtype.value;
+                subtype = fields.cardHeroSubtype;
                 break;
             case 'weapon':
-                subtype = cardWeaponSubtype.value;
+                subtype = fields.cardWeaponSubtype;
                 if (subtype === 'Custom') {
-                    subtype = cardWeaponSubtypeCustom.value;
+                    subtype = fields.cardWeaponSubtypeCustom;
                 }
                 break;
             case 'token':
-                subtype = cardTokenSubtype.value;
+                subtype = fields.cardTokenSubtype;
                 break;
         }
 
         if (subtype) {
             subtype = ' - ' + subtype;
         }
-        if (cardType.value === 'weapon') {
-            subtype += ' ' + cardWeapon.value;
+        if (fields.cardType === 'weapon') {
+            subtype += ' ' + fields.cardWeapon;
         }
 
-        let type = capitalizeFirstLetter(cardType.value).split('_').map((word) => capitalizeFirstLetter(word)).join(' ');
+        let type = capitalizeFirstLetter(fields.cardType).split('_').map((word) => capitalizeFirstLetter(word)).join(' ');
 
         let secondaryClass = '';
-        if (cardSecondaryClass.value) {
-            secondaryClass = ' / ' + cardSecondaryClass.value;
-            if (cardSecondaryClass.value === 'Custom') {
-                secondaryClass = ' / ' + cardSecondaryClassCustom.value;
+        if (fields.cardSecondaryClass) {
+            secondaryClass = ' / ' + fields.cardSecondaryClass;
+            if (fields.cardSecondaryClass === 'Custom') {
+                secondaryClass = ' / ' + fields.cardSecondaryClassCustom;
             }
         }
 
-        let talent = cardTalent.value;
+        let talent = fields.cardTalent;
         if (talent === 'Custom') {
-            talent = cardTalentCustom.value;
+            talent = fields.cardTalentCustom;
         }
 
         return `${talent} ${classText} ${secondaryClass} ${type} ${subtype}`
@@ -130,9 +133,9 @@ export function useCard() {
     const types = useTypes();
 
     const activeFields = computed(() => {
-        if (cardType.value === '') return [];
+        if (fields.cardType === '') return [];
 
-        const selectedType = types.find(t => t.type === cardType.value);
+        const selectedType = types.find(t => t.type === fields.cardType);
         if (!selectedType) return false;
 
 
@@ -141,7 +144,7 @@ export function useCard() {
     const isFieldShown = (fieldId) => {
         if (activeFields.value.includes(fieldId)) return true;
         // Reset field value when it's not shown
-        eval(fieldId).value = '';
+        fields[fieldId] = '';
         return false;
     };
 
@@ -150,9 +153,9 @@ export function useCard() {
     const availableCardbacks = computed(() => {
         return cardbacks.filter(el => {
             let type = 'General';
-            if (['equipment', 'hero', 'demi_hero', 'equipment', 'weapon', 'token', 'resource'].includes(cardType.value)) {
-                type = cardType.value;
-                if (cardType.value === 'demi_hero') {
+            if (['equipment', 'hero', 'demi_hero', 'equipment', 'weapon', 'token', 'resource'].includes(fields.cardType)) {
+                type = fields.cardType;
+                if (fields.cardType === 'demi_hero') {
                     type = 'hero';
                 }
             }
@@ -186,7 +189,7 @@ export function useCard() {
     })
 
     const currentBackground = computed(() => {
-        let currentPitch = cardPitch.value || 1;
+        let currentPitch = fields.cardPitch || 1;
         if (currentCardback.value.images.length < currentPitch) {
             // Reset pitch to 1 if the current pitch is invalid
             currentPitch = 1;
@@ -211,9 +214,9 @@ export function useCard() {
 
     const getConfig = function (fieldName) {
         if (!cardBackSettings[frameType.value]) return {};
-        if (cardBackSettings[frameType.value][cardType.value] && cardBackSettings[frameType.value][cardType.value][fieldName]) {
+        if (cardBackSettings[frameType.value][fields.cardType] && cardBackSettings[frameType.value][fields.cardType][fieldName]) {
             return {
-                ...cardBackSettings[frameType.value][cardType.value][fieldName],
+                ...cardBackSettings[frameType.value][fields.cardType][fieldName],
             };
         }
         if (cardBackSettings[frameType.value].default[fieldName]) {
@@ -297,7 +300,7 @@ export function useCard() {
     const nameFontSize = computed(() => {
         const config = getConfig('cardName') || {};
 
-        return scaledFontsize(cardName.value, config.fontSize, config.fontFamily, config.width);
+        return scaledFontsize(fields.cardName, config.fontSize, config.fontFamily, config.width);
     })
 
     const typeTextFontSize = computed(() => {
@@ -322,80 +325,59 @@ export function useCard() {
         backgroundIndex.value = 0;
     });
 
+    const handleStyleToggle = (event) => {
+        selectedStyle.value = event.target.checked ? 'flat' : 'dented';
+    }
+
+    const {cardRarities} = useCardRarities();
+    const cardRarityImage = computed(() => {
+        return cardRarities.find(value => value.id === fields.cardRarity).image[0].value;
+    })
+
+    onMounted(() => {
+        fields.cardRarity = 1;
+    })
+
     onUnmounted(() => {
-        cardType.value = '';
-            cardPitch.value = '';
-            cardName.value = '';
-            cardCost.value = '';
-            cardText.value = '';
-            cardPower.value = '';
-            cardHeroIntellect.value = '';
-            cardTalent.value = '';
-            cardTalentCustom.value = '';
-            cardClass.value = '';
-            cardClassCustom.value = '';
-            cardSecondaryClass.value = '';
-            cardSecondaryClassCustom.value = '';
-            cardActionSubtype.value = '';
-            cardActionSubtypeCustom.value = '';
-            cardDefenseReactionSubtype.value = '';
-            cardDefenseReactionSubtypeCustom.value = '';
-            cardEquipmentSubtype.value = '';
-            cardEquipmentSubtypeCustom.value = '';
-            cardInstantSubtype.value = '';
-            cardInstantSubtypeCustom.value = '';
-            cardResourceSubtype.value = '';
-            cardResourceSubtypeCustom.value = '';
-            cardMacroGroup.value = '';
-            cardHeroSubtype.value = '';
-            cardWeaponSubtype.value = '';
-            cardWeaponSubtypeCustom.value = '';
-            cardWeapon.value = '';
-            cardRarity.value = '';
-            cardTokenSubtype.value = '';
-            cardDefense.value = '';
-            cardLife.value = '';
-            cardUploadedArtwork.value = '';
-            cardTypeText.value = '';
-            cardFooterText.value = '';
+        fields.cardType = '';
+        fields.cardPitch = '';
+        fields.cardName = '';
+        fields.cardCost = '';
+        fields.cardText = '';
+        fields.cardPower = '';
+        fields.cardHeroIntellect = '';
+        fields.cardTalent = '';
+        fields.cardTalentCustom = '';
+        fields.cardClass = '';
+        fields.cardClassCustom = '';
+        fields.cardSecondaryClass = '';
+        fields.cardSecondaryClassCustom = '';
+        fields.cardActionSubtype = '';
+        fields.cardActionSubtypeCustom = '';
+        fields.cardDefenseReactionSubtype = '';
+        fields.cardDefenseReactionSubtypeCustom = '';
+        fields.cardEquipmentSubtype = '';
+        fields.cardEquipmentSubtypeCustom = '';
+        fields.cardInstantSubtype = '';
+        fields.cardInstantSubtypeCustom = '';
+        fields.cardResourceSubtype = '';
+        fields.cardResourceSubtypeCustom = '';
+        fields.cardMacroGroup = '';
+        fields.cardHeroSubtype = '';
+        fields.cardWeaponSubtype = '';
+        fields.cardWeaponSubtypeCustom = '';
+        fields.cardWeapon = '';
+        fields.cardRarity = 0;
+        fields.cardTokenSubtype = '';
+        fields.cardDefense = '';
+        fields.cardLife = '';
+        fields.cardUploadedArtwork = '';
+        fields.cardFooterText = '';
     });
     return {
         types,
-        cardType,
-        cardPitch,
-        cardName,
-        cardCost,
-        cardText,
-        cardPower,
-        cardHeroIntellect,
-        cardTalent,
-        cardTalentCustom,
-        cardClass,
-        cardClassCustom,
-        cardSecondaryClass,
-        cardSecondaryClassCustom,
-        cardActionSubtype,
-        cardActionSubtypeCustom,
-        cardDefenseReactionSubtype,
-        cardDefenseReactionSubtypeCustom,
-        cardEquipmentSubtype,
-        cardEquipmentSubtypeCustom,
-        cardInstantSubtype,
-        cardInstantSubtypeCustom,
-        cardResourceSubtype,
-        cardResourceSubtypeCustom,
-        cardMacroGroup,
-        cardHeroSubtype,
-        cardWeaponSubtype,
-        cardWeaponSubtypeCustom,
-        cardWeapon,
-        cardRarity,
-        cardTokenSubtype,
-        cardDefense,
-        cardLife,
-        cardUploadedArtwork,
+        fields,
         cardTypeText,
-        cardFooterText,
         isFieldShown,
         currentBackground,
         getConfig,
@@ -408,5 +390,7 @@ export function useCard() {
         cardTextStyleClass,
         filteredAvailableCardbacks,
         backgroundIndex,
+        handleStyleToggle,
+        cardRarityImage,
     };
 }
