@@ -13,49 +13,43 @@ import {
 } from "@heroicons/vue/24/solid/index.js";
 import Editor from '@tinymce/tinymce-vue'
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
-import {useCanvasHelper} from "../helpers/canvas.js";
-import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {toPng} from "html-to-image";
 import useTinyMCEConfig from "../config/tinyMCE.js";
 import {useImage} from "vue-konva";
 import ButtonDropdown from "./ButtonDropdown.vue";
-
-const fontsLoaded = ref(false);
 
 const {
   types,
   fields,
   cardTypeText,
   isFieldShown,
-  currentBackground,
   getConfig,
   switchBackground,
   selectedStyle,
   nameFontSize,
   typeTextFontSize,
   footerTextFontSize,
-  frameType,
   filteredAvailableCardbacks,
   backgroundIndex,
   cardTextStyleClass,
   handleStyleToggle,
   cardRarityImage,
+  stage,
+  artwork,
+  background,
+  footer,
+  footertext,
+  footertextRight,
+  flatFooterText,
+  dentedFooterText,
 } = useCard();
 
 const {cardRarities} = useCardRarities();
 
-const CanvasHelper = useCanvasHelper();
 const configKonva = {
   width: 450,
   height: 628,
 };
-const stage = ref();
-const artwork = ref();
-const background = ref();
-const footer = ref();
-const footertext = ref();
-const footertextRight = ref();
-const canvasHelper = new CanvasHelper();
 
 const readFile = function readFile(event) {
 
@@ -71,7 +65,6 @@ const readFile = function readFile(event) {
 }
 
 const tinyMCEConfig = useTinyMCEConfig(fields.cardText);
-
 
 const downloadImage = function () {
   toPng(document.querySelector('.cardParent'), {
@@ -108,189 +101,6 @@ const downloadURI = function (uri, name) {
   document.body.removeChild(link);
   link.remove();
 }
-
-const containerElement = ref();
-const contentElement = ref();
-
-// Easily adjustable constants - modify these to match real cards
-const TEXT_CONFIG = computed(() => {
-  const baseConfig = {    // Base line height for ratio calculation
-    minFontSize: 8,          // Minimum font size in px
-    step: 0.1,               // Search precision
-  };
-
-  // Default to dented if frameType is undefined or not 'flat'
-  if (frameType.value === 'flat') {
-    return {
-      ...baseConfig,
-      baseLineHeight: 20.235,
-      maxFontSize: 17.27,      // Maximum font size in px
-      baseFontSize: 17.27,
-      paragraphSpacing: 0.545, // Base font size for ratio calculation
-    };
-  } else {
-    // Default to dented (covers both 'dented' and undefined cases)
-    return {
-      ...baseConfig,
-      baseLineHeight: 20.235,
-      maxFontSize: 17.08,      // Maximum font size in px
-      baseFontSize: 17.08,     // Base font size for ratio calculation
-      paragraphSpacing: 0.55,
-    };
-  }
-});
-
-const flatFooterText = computed(() => {
-  if (!fontsLoaded.value) {
-    return '';
-  }
-  return `FLESH AND BLOOD TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}Legend Story Studios`;
-});
-
-const dentedFooterText = computed(() => {
-  if (!fontsLoaded.value) {
-    return '';
-  }
-  if (selectedStyle.value === 'flat') {
-    return 'FABKIT  |  NOT TOURNAMENT LEGAL';
-  }
-  return `FABKIT - NOT TOURNAMENT LEGAL - FaB TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}LSS`;
-});
-
-const resizeText = ({element, minSize = TEXT_CONFIG.value.minFontSize, maxSize = TEXT_CONFIG.value.maxFontSize, step = TEXT_CONFIG.value.step, unit = 'px'}) => {
-  const parent = element.parentNode;
-  const maxHeight = parent.clientHeight;
-
-  // Binary search for the optimal font size
-  let low = minSize;
-  let high = maxSize;
-  let optimalSize = minSize;
-
-  // Helper function to calculate line height based on font size
-  const calculateLineHeight = (fontSize) => {
-    return (fontSize / TEXT_CONFIG.value.baseFontSize) * TEXT_CONFIG.value.baseLineHeight;
-  };
-
-  // UPDATED: Apply styles to element and paragraphs
-  const applyStyles = (size) => {
-    element.style.fontSize = `${size}${unit}`;
-    element.style.lineHeight = `${calculateLineHeight(size)}${unit}`;
-
-    // Apply paragraph spacing
-    const paragraphs = element.querySelectorAll('p');
-    paragraphs.forEach((p, index) => {
-      p.style.margin = '0';
-      p.style.padding = '0';
-      // Add margin-top to all paragraphs except the first
-      if (index > 0) {
-        p.style.marginTop = `${calculateLineHeight(size) * TEXT_CONFIG.value.paragraphSpacing}${unit}`;
-      }
-    });
-  };
-
-  // Helper function to check if content overflows parent
-  const isOverflowing = (size) => {
-    applyStyles(size);
-
-    // Check if element's scroll height exceeds parent's client height
-    return element.scrollHeight > maxHeight;
-  };
-
-  // First check if max size fits
-  if (!isOverflowing(maxSize)) {
-    applyStyles(maxSize);
-    return;
-  }
-
-  // Binary search
-  while (high - low > step) {
-    const mid = (low + high) / 2;
-
-    if (!isOverflowing(mid)) {
-      optimalSize = mid;
-      low = mid;
-    } else {
-      high = mid;
-    }
-  }
-
-  // Apply the optimal size
-  applyStyles(optimalSize);
-};
-
-function recalculateRatio() {
-  if (containerElement.value === undefined || contentElement.value === undefined) return;
-
-  resizeText({
-    element: contentElement.value,
-    minSize: TEXT_CONFIG.value.minFontSize,
-    maxSize: TEXT_CONFIG.value.maxFontSize,
-    step: TEXT_CONFIG.value.step
-  });
-}
-
-watch(() => fields.cardText, () => {
-  nextTick().then(() => {
-    recalculateRatio();
-  })
-}, {deep: true});
-
-watch(frameType, (newFrameType) => {
-  // Only proceed if frameType is actually defined
-  if (newFrameType) {
-    nextTick().then(() => {
-      recalculateRatio();
-    });
-  }
-});
-
-const loadingBackground = ref(false);
-
-const doLoading = async function (callback) {
-  loadingBackground.value = true;
-  const konvaStage = stage.value.getStage();
-  // if it takes longer than 100 ms to load => set visual indicator
-  setTimeout(() => {
-    if (loadingBackground.value === true) {
-      konvaStage.opacity(0.5)
-    }
-  }, 100);
-
-  callback().finally(() => {
-    loadingBackground.value = false;
-    konvaStage.opacity(1);
-  });
-}
-
-
-onMounted(function () {
-  canvasHelper.artworkLayer = artwork.value.getStage();
-  canvasHelper.backgroundLayer = background.value.getStage();
-  canvasHelper.footerLayer = footer.value.getStage();
-})
-
-watch(currentBackground, (newBackground) => {
-  nextTick(() => {
-    doLoading(async () => {
-      return canvasHelper.drawBackground(newBackground);
-    })
-  })
-});
-
-watch(() => fields.cardType, (newCardType) => {
-  if (!newCardType) return;
-  canvasHelper.drawBackground(currentBackground.value);
-  canvasHelper.drawUploadedArtwork(fields.cardUploadedArtwork, getConfig('cardUploadedArtwork'));
-  if (fontsLoaded.value === false) {
-    nextTick().then(() => {
-      setTimeout(() => fontsLoaded.value = true, 100)
-    })
-  }
-}, {deep: true});
-
-watch(() => fields.cardUploadedArtwork, (newUploadedArtwork) => {
-  canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
-}, {deep: true});
 
 const [noCostImage] = useImage('src/assets/symbol_nocost.png');
 const [powerImage] = useImage('src/assets/cardsymbol_power.svg');

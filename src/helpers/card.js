@@ -1,9 +1,11 @@
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {useCardBacks} from "../config/cardbacks.js";
 import {useCardBackSettings} from "../config/cardSettings.js";
 import {useMath} from "./math.js";
 import useTypes from "../config/types.js";
 import {useCardRarities} from "./cardRarities.js";
+import {useCanvasHelper} from "./canvas.js";
+import {useTextConfig} from "../config/text.js";
 
 const {clamp} = useMath();
 
@@ -334,8 +336,184 @@ export function useCard() {
         return cardRarities.find(value => value.id === fields.cardRarity).image[0].value;
     })
 
+
+    const containerElement = ref();
+    const contentElement = ref();
+
+    const {flatConfig, dentedConfig} = useTextConfig();
+    const frameTypeTextConfig = computed(() => {
+        if (frameType.value === 'flat') {
+            return flatConfig;
+        } else {
+            return dentedConfig;
+        }
+    });
+
+    const fontsLoaded = ref(false);
+
+    const flatFooterText = computed(() => {
+        if (!fontsLoaded.value) {
+            return '';
+        }
+        return `FLESH AND BLOOD TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}Legend Story Studios`;
+    });
+
+    const dentedFooterText = computed(() => {
+        if (!fontsLoaded.value) {
+            return '';
+        }
+        if (selectedStyle.value === 'flat') {
+            return 'FABKIT  |  NOT TOURNAMENT LEGAL';
+        }
+        return `FABKIT - NOT TOURNAMENT LEGAL - FaB TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}LSS`;
+    });
+
+    const resizeText = ({element, minSize = frameTypeTextConfig.value.minFontSize, maxSize = frameTypeTextConfig.value.maxFontSize, step = frameTypeTextConfig.value.step, unit = 'px'}) => {
+        const parent = element.parentNode;
+        const maxHeight = parent.clientHeight;
+
+        // Binary search for the optimal font size
+        let low = minSize;
+        let high = maxSize;
+        let optimalSize = minSize;
+
+        // Helper function to calculate line height based on font size
+        const calculateLineHeight = (fontSize) => {
+            return (fontSize / frameTypeTextConfig.value.baseFontSize) * frameTypeTextConfig.value.baseLineHeight;
+        };
+
+        // UPDATED: Apply styles to element and paragraphs
+        const applyStyles = (size) => {
+            element.style.fontSize = `${size}${unit}`;
+            element.style.lineHeight = `${calculateLineHeight(size)}${unit}`;
+
+            // Apply paragraph spacing
+            const paragraphs = element.querySelectorAll('p');
+            paragraphs.forEach((p, index) => {
+                p.style.margin = '0';
+                p.style.padding = '0';
+                // Add margin-top to all paragraphs except the first
+                if (index > 0) {
+                    p.style.marginTop = `${calculateLineHeight(size) * frameTypeTextConfig.value.paragraphSpacing}${unit}`;
+                }
+            });
+        };
+
+        // Helper function to check if content overflows parent
+        const isOverflowing = (size) => {
+            applyStyles(size);
+
+            // Check if element's scroll height exceeds parent's client height
+            return element.scrollHeight > maxHeight;
+        };
+
+        // First check if max size fits
+        if (!isOverflowing(maxSize)) {
+            applyStyles(maxSize);
+            return;
+        }
+
+        // Binary search
+        while (high - low > step) {
+            const mid = (low + high) / 2;
+
+            if (!isOverflowing(mid)) {
+                optimalSize = mid;
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+
+        // Apply the optimal size
+        applyStyles(optimalSize);
+    };
+
+    function recalculateRatio() {
+        if (containerElement.value === undefined || contentElement.value === undefined) return;
+
+        resizeText({
+            element: contentElement.value,
+            minSize: frameTypeTextConfig.value.minFontSize,
+            maxSize: frameTypeTextConfig.value.maxFontSize,
+            step: frameTypeTextConfig.value.step
+        });
+    }
+
+    watch(() => fields.cardText, () => {
+        nextTick().then(() => {
+            recalculateRatio();
+        })
+    }, {deep: true});
+
+    watch(frameType, (newFrameType) => {
+        // Only proceed if frameType is actually defined
+        if (newFrameType) {
+            nextTick().then(() => {
+                recalculateRatio();
+            });
+        }
+    });
+
+    const loadingBackground = ref(false);
+
+    const doLoading = async function (callback) {
+        loadingBackground.value = true;
+        const konvaStage = stage.value.getStage();
+        // if it takes longer than 100 ms to load => set visual indicator
+        setTimeout(() => {
+            if (loadingBackground.value === true) {
+                konvaStage.opacity(0.5)
+            }
+        }, 100);
+
+        callback().finally(() => {
+            loadingBackground.value = false;
+            konvaStage.opacity(1);
+        });
+    }
+
+
+    const CanvasHelper = useCanvasHelper();
+    const stage = ref();
+    const artwork = ref();
+    const background = ref();
+    const footer = ref();
+    const footertext = ref();
+    const footertextRight = ref();
+
+    const canvasHelper = new CanvasHelper();
+
+    watch(currentBackground, (newBackground) => {
+        nextTick().then(async () => {
+            await doLoading(async () => {
+                return canvasHelper.drawBackground(newBackground);
+            })
+        })
+    });
+
+    watch(() => fields.cardType, (newCardType) => {
+        if (!newCardType) return;
+        canvasHelper.drawBackground(currentBackground.value);
+        canvasHelper.drawUploadedArtwork(fields.cardUploadedArtwork, getConfig('cardUploadedArtwork'));
+        if (fontsLoaded.value === false) {
+            nextTick().then(() => {
+                setTimeout(() => fontsLoaded.value = true, 100)
+            })
+        }
+    }, {deep: true});
+
+    watch(() => fields.cardUploadedArtwork, (newUploadedArtwork) => {
+        canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
+    }, {deep: true});
+
+
+
     onMounted(() => {
         fields.cardRarity = 1;
+        canvasHelper.artworkLayer = artwork.value.getStage();
+        canvasHelper.backgroundLayer = background.value.getStage();
+        canvasHelper.footerLayer = footer.value.getStage();
     })
 
     onUnmounted(() => {
@@ -392,5 +570,13 @@ export function useCard() {
         backgroundIndex,
         handleStyleToggle,
         cardRarityImage,
+        stage,
+        artwork,
+        background,
+        footer,
+        footertext,
+        footertextRight,
+        flatFooterText,
+        dentedFooterText,
     };
 }
