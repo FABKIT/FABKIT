@@ -54,7 +54,7 @@
               </a>
 
               <a
-                  href="https://discord.gg/your-discord-invite"
+                  href="https://discord.gg/4twcdby9xp"
                   target="_blank"
                   class="flex items-center gap-4 p-4 border-2 border-primary/20 rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 group"
               >
