@@ -740,7 +740,6 @@ const [defenseImage] = useImage('src/assets/cardsymbol_defense.svg');
           </div>
 
           <div class="flex flex-col w-full overflow-x-auto xs:overflow-none xs:items-center">
-            <div class="exampleCard"><img src="../../public/img/Card_Example4.png" height="628" width="450"/></div>
             <div class="cardParent">
                 <div id="renderedCardText" ref="containerElement" :class="cardTextStyleClass">
                 <div v-if="fields" id="renderedContent" ref="contentElement" v-html="fields.cardText"></div>
