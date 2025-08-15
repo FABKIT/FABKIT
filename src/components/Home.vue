@@ -17,7 +17,6 @@ import {toPng} from "html-to-image";
 import useTinyMCEConfig from "../config/tinyMCE.js";
 import {useImage} from "vue-konva";
 import ButtonDropdown from "./ButtonDropdown.vue";
-import Dropdown from "./Dropdown.vue";
 
 const {
   types,
