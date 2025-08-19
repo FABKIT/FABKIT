@@ -1,0 +1,185 @@
+[
+  {
+    "id": 1,
+    "name": "Aria",
+    "type": "General",
+    "dented": true,
+    "images": [
+      {
+        "id": 1,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/683c9f087f497.png"
+      },
+      {
+        "id": 2,
+        "pitch": 2,
+        "fileName": "./public/img/cardbacks/examples/683c9f087ee5f.png"
+      },
+      {
+        "id": 3,
+        "pitch": 3,
+        "fileName": "./public/img/cardbacks/examples/683c9f087fa14.png"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Aria",
+    "type": "Hero",
+    "dented": true,
+    "images": [
+      {
+        "id": 4,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/683c9f087ff25.png"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Assassin",
+    "type": "General",
+    "dented": false,
+    "images": [
+      {
+        "id": 5,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/assassin-nostats-1-flat-6880352873107.png"
+      },
+      {
+        "id": 6,
+        "pitch": 2,
+        "fileName": "./public/img/cardbacks/examples/assassin-nostats-2-flat-6880352873742.png"
+      },
+      {
+        "id": 7,
+        "pitch": 3,
+        "fileName": "./public/img/cardbacks/examples/assassin-nostats-3-flat-6880352873c99.png"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Blue",
+    "type": "Token",
+    "dented": false,
+    "images": [
+      {
+        "id": 8,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/Blue-Token-Flat-688fb50e27c17.png"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Chaos",
+    "type": "Hero",
+    "dented": false,
+    "images": [
+      {
+        "id": 9,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/chaos-hero-flat-688038591517c.png"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Equipment",
+    "type": "Equipment",
+    "dented": true,
+    "images": [
+      {
+        "id": 10,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/equipment-dented-683e107b17fab.png"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Equipment",
+    "type": "Equipment",
+    "dented": false,
+    "images": [
+      {
+        "id": 11,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/equipment-flat-683e11f01cef0.png"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Fabled",
+    "type": "Resource",
+    "dented": false,
+    "images": [
+      {
+        "id": 12,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/Fabled-Resource-1-Flat-688fb5868f0a2.png"
+      },
+      {
+        "id": 13,
+        "pitch": 2,
+        "fileName": "./public/img/cardbacks/examples/Fabled-Resource-2-Flat-688fb5868fda2.png"
+      },
+      {
+        "id": 14,
+        "pitch": 3,
+        "fileName": "./public/img/cardbacks/examples/Fabled-Resource-3-Flat-688fb5869028a.png"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Fabled",
+    "type": "Resource",
+    "dented": true,
+    "images": [
+      {
+        "id": 15,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/fabled-resource-1-dented-683e109970027.png"
+      },
+      {
+        "id": 16,
+        "pitch": 2,
+        "fileName": "./public/img/cardbacks/examples/fabled-resource-2-dented-683e10997022b.png"
+      },
+      {
+        "id": 17,
+        "pitch": 3,
+        "fileName": "./public/img/cardbacks/examples/fabled-resource-3-dented-683e1099703da.png"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Green",
+    "type": "Token",
+    "dented": true,
+    "images": [
+      {
+        "id": 18,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/683c9f088423a.png"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Weapon",
+    "type": "Weapon",
+    "dented": true,
+    "images": [
+      {
+        "id": 19,
+        "pitch": 1,
+        "fileName": "./public/img/cardbacks/examples/683c9f08916d9.png"
+      }
+    ]
+  }
+]
