@@ -28,11 +28,11 @@ const sortedFuturePlans = computed(() => sortByPriorityAndTitle(futurePlans.valu
 
 const getStatusColor = (status) => {
   switch(status) {
-    case 'completed': return 'text-white bg-primary border-primary'
-    case 'in-progress': return 'text-white bg-secondary border-secondary'
-    case 'planned': return 'text-white bg-tertiary border-tertiary'
+    case 'completed': return 'text-primary dark:text-white bg-primary border-primary'
+    case 'in-progress': return 'text-primary dark:text-white bg-secondary border-secondary'
+    case 'planned': return 'text-primary dark:text-white bg-tertiary border-tertiary'
     case 'idea': return 'text-idea bg-idea-light border-idea-light'
-    default: return 'text-white bg-primary border-primary'
+    default: return 'text-primary dark:text-white bg-primary border-primary'
   }
 }
 
@@ -116,9 +116,9 @@ const getPriorityColor = (priority) => {
                         :is="item.icon"
                         class="h-4 w-4 text-primary"
                     />
-                    <h3 class="font-medium text-white dark:text-white">{{ item.title }}</h3>
+                    <h3 class="font-medium text-primary dark:text-white">{{ item.title }}</h3>
                   </div>
-                  <p class="text-sm text-white/80 dark:text-white/80 mb-3">{{ item.description }}</p>
+                  <p class="text-sm text-primary/80 dark:text-white/80 mb-3">{{ item.description }}</p>
                   <div class="flex items-center gap-2">
                 <span
                     class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border"
@@ -163,9 +163,9 @@ const getPriorityColor = (priority) => {
                         :is="item.icon"
                         class="h-4 w-4 text-primary"
                     />
-                    <h3 class="font-medium text-white dark:text-white">{{ item.title }}</h3>
+                    <h3 class="font-medium text-primary dark:text-white">{{ item.title }}</h3>
                   </div>
-                  <p class="text-sm text-white/80 dark:text-white/80 mb-3">{{ item.description }}</p>
+                  <p class="text-sm text-primary/80 dark:text-white/80 mb-3">{{ item.description }}</p>
                   <div class="flex items-center gap-2">
                 <span
                     class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border"
