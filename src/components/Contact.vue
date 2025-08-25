@@ -110,7 +110,7 @@
             <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 border border-primary/20">
               <div class="flex items-center gap-6">
                 <div class="w-24 h-24 flex items-center justify-center relative">
-                  <img src="../../public/img/Thencros.svg"/>
+                  <img src="/img/Thencros.svg"/>
                 </div>
                 <div>
                   <h3 class="text-lg font-semibold text-primary dark:text-white">@Thencros</h3>
@@ -127,7 +127,7 @@
             <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 border border-primary/20">
               <div class="flex items-center gap-6">
                 <div class="w-24 h-24 flex items-center justify-center relative">
-                  <img src="../../public/img/Lambstream.svg"/>
+                  <img src="/img/Lambstream.svg"/>
                 </div>
                 <div>
                   <h3 class="text-lg font-semibold text-primary dark:text-white">@Lambstream</h3>

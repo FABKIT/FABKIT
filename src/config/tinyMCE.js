@@ -29,7 +29,7 @@ export default function useTinyMCEConfig(fields) {
             buttons.map((b) => 'fab_' + b.name).join(' '),
         promotion: false,
         branding: false,
-        base_url: '/FABKIT/tinymce',
+        base_url: '/tinymce',
         skin_url: window.matchMedia("(prefers-color-scheme: dark)").matches
             ? './tinymce/skins/ui/fabkit_tmce-dark'
             : './tinymce/skins/ui/fabkit_tmce',

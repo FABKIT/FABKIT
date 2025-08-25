@@ -4,7 +4,7 @@
 
 [![License: BSD 3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
 [![Built with Vue](https://img.shields.io/badge/Built%20with-Vue%203-4FC08D.svg)](https://vuejs.org/)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-fabkit.github.io-brightgreen.svg)](https://fabkit.github.io/FABKIT/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-fabkit.github.io-brightgreen.svg)](https://fabkit.io/)
 
 FABKIT is a community-driven toolkit for Flesh and Blood TCG players. Our current flagship feature is a custom card creator that generates high-quality, authentic-looking cards complete with official fonts, symbols, and templates.
 
@@ -29,7 +29,7 @@ FABKIT is a community-driven toolkit for Flesh and Blood TCG players. Our curren
 
 ## Quick Start
 
-[fabkit.github.io/FABKIT](https://fabkit.github.io/FABKIT/)
+[fabkit.github.io/FABKIT](https://fabkit.io/)
 
 ### Local Development
 
@@ -81,7 +81,7 @@ Use our symbol buttons in the text editor to add official FAB symbols:
 
 ## Roadmap
 
-[View Full Roadmap](https://fabkit.github.io/FABKIT/#/roadmap)
+[View Full Roadmap](https://fabkit.io/#/roadmap)
 
 ## Contributing
 
@@ -106,7 +106,7 @@ We welcome all contributions. Whether they're bug reports, code contributions or
 
 - **Discord**: [Join our server](https://discord.gg/4twcdby9xp) for support, discussions, and showcasing your creations
 - **GitHub Issues**: [Report bugs or request features](https://github.com/FABKIT/FABKIT/issues)
-- **Contact**: [Get in touch](https://fabkit.github.io/FABKIT/#/contact) with the development team
+- **Contact**: [Get in touch](https://fabkit.io/#/contact) with the development team
 
 ## Support the Project
 

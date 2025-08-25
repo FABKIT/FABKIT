@@ -13,7 +13,7 @@ export default defineConfig(async ({mode}) => {
     fs.writeFileSync('./src/config/cardbacks.js', await getCardbacks(env.BACKEND_URL));
 
     return {
-        base: '/FABKIT/',
+        base: '/',
         plugins: [
             tailwindcss(),
             vue()
