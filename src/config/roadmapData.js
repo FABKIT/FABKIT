@@ -2,26 +2,19 @@ import * as HeroIcons from '@heroicons/vue/24/outline'
 
 export const currentWorkItems = [
     {
-        title: "Add colour styling to the TinyMCE editor",
-        description: "Implementing our color scheme inside of the TinyMCE editor",
-        status: "in-progress",
-        priority: "high",
-        icon: HeroIcons.PencilSquareIcon
-    },
-    {
-        title: "Clean up the code and divide into components",
-        description: "Adding theme switching functionality to the navigation menu",
-        status: "in-progress",
-        priority: "low",
-        icon: HeroIcons.DivideIcon
-    },
-    {
         title: "Add Ally as a card type",
-        description: "For all the Gravy fans out there, we can't leave you hanging",
+        description: "For all the Gravy fans out there, we can",
         status: "in-progress",
         priority: "high",
         icon: HeroIcons.ClipboardDocumentIcon
     },
+    {
+        title: "Change dropdowns to input fields with suggestions",
+        description: "Instead of selecting your classes/talents from the dropdowns, we are thinking of making it an input field with the existing classes/talents as suggestions while you're typing",
+        status: "planned",
+        priority: "low",
+        icon: HeroIcons.TagIcon
+    }
 ]
 
 export const futurePlans = [
@@ -41,7 +34,7 @@ export const futurePlans = [
     },
     {
         title: "Card Collection Manager",
-        description: "Allow users to save and manage collections of created cards. Won't be coming soon because it's a lot of work, but might be added eventually",
+        description: "Allow users to save and manage collections of created cards. Won",
         status: "idea",
         priority: "low",
         icon: HeroIcons.UserGroupIcon
@@ -62,7 +55,7 @@ export const futurePlans = [
     },
     {
         title: "Community Gallery",
-        description: "Share and browse cards created by the community. We want to highlight the cards that you're making. Featuring a Card of the day somewhere on the website.",
+        description: "Share and browse cards created by the community. We want to highlight the cards that you",
         status: "idea",
         priority: "low",
         icon: HeroIcons.PhotoIcon

@@ -155,14 +155,17 @@
     top:397.3px;
     left: 50.165%;
 }
-
+#renderedContent {
+    max-width: 100%;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
 
 #renderedContent > * {
     word-wrap: break-word;
     overflow-wrap: break-word;
     display:block;
     width:100%;
-    letter-spacing:0.017em;
     text-align:left;
 }
 
@@ -170,7 +173,6 @@
     font-family: 'palatino_lt_stdroman', serif;
     margin: 0;
     padding: 0;
-    letter-spacing:0.014em;
 }
 
 #renderedCardText p + p {
@@ -216,6 +218,8 @@ fab-cost, fab-power, fab-defense, fab-life, fab-intellect, fab-tap, fab-untap {
     display: inline-block !important;
     width: 1em;
     height: 1em;
+    max-width:1em;
+    max-height: 1em;
     background-size: 88%;
     background-repeat: no-repeat;
     background-position: bottom;

@@ -94,7 +94,7 @@ export default function useTinyMCEConfig(fields) {
                     tooltip: `Insert ${button.name} icon`,
                     onAction: () => {
                         // Insert the custom element with a zero-width space after it
-                        const tokenHtml = `<${button.element} contenteditable="false"></${button.element}>&#8203;`;
+                        const tokenHtml = `<${button.element} contenteditable="false"></${button.element}>&nbsp;`;
                         editor.insertContent(tokenHtml);
                         editor.focus();
                     }
@@ -109,6 +109,12 @@ export default function useTinyMCEConfig(fields) {
                     const regex = new RegExp(`<${element}(?![^>]*contenteditable)([^>]*)>`, 'gi');
                     e.content = e.content.replace(regex, `<${element} contenteditable="false" $1>`);
                 });
+            });
+
+            editor.on('BeforeSetContent', function(e) {
+                // Clean up any empty paragraphs that might have been created
+                e.content = e.content.replace(/<p><\/p>/g, '');
+                e.content = e.content.replace(/<p>\s*<\/p>/g, '');
             });
 
             // Handle click events to prevent editing but don't select
@@ -129,105 +135,61 @@ export default function useTinyMCEConfig(fields) {
 
             // Handle content changes
             let editorChangeHandlerId = null;
-            editor.on('Paste Change input Undo Redo', function () {
+            editor.on('Paste Change input Undo Redo', function (e) {
                 clearTimeout(editorChangeHandlerId);
+                const delay = e.type === 'paste' ? 50 : 250;
                 editorChangeHandlerId = setTimeout(function () {
                     fields.cardText = editor.getContent();
-                }, 250);
+                    setTimeout(() => {
+                        const containerEl = document.querySelector('#renderedCardText');
+                        const contentEl = document.querySelector('#renderedContent');
+
+                        if (containerEl && contentEl) {
+                            containerEl.dispatchEvent(new CustomEvent('forceResize'));
+                        }
+                    }, 10);
+                }, delay);
             });
             // Handle backspace for custom elements - single press deletion
             editor.on('keydown', function(e) {
                 if (e.keyCode === 8) { // Backspace key
                     const selection = editor.selection;
                     const range = selection.getRng();
+                    const node = selection.getNode();
+
+                    // If a custom element is selected, delete it
+                    if (node && node.tagName && node.tagName.toLowerCase().startsWith('fab-')) {
+                        e.preventDefault();
+                        editor.dom.remove(node);
+                        editor.fire('input');
+                        fields.cardText = editor.getContent();
+                        return false;
+                    }
+
+                    // Check if cursor is immediately after a custom element
                     const startContainer = range.startContainer;
                     const startOffset = range.startOffset;
 
-                    // If we're in a text node at the start and there's a custom element before us
-                    if (startContainer.nodeType === 3 && startOffset === 0) {
+                    if (startContainer.nodeType === 3 && startOffset > 0) { // Text node
                         const prevSibling = startContainer.previousSibling;
                         if (prevSibling && prevSibling.tagName && prevSibling.tagName.toLowerCase().startsWith('fab-')) {
-                            e.preventDefault();
-                            // Delete the custom element directly and maintain focus
-                            editor.dom.remove(prevSibling);
-
-                            // Ensure cursor stays in the right place and editor keeps focus
-                            const newRange = editor.dom.createRng();
-                            newRange.setStart(startContainer, 0);
-                            newRange.setEnd(startContainer, 0);
-                            selection.setRng(newRange);
-
-                            // Force focus back to editor
-                            editor.focus();
-
-                            // Trigger change detection immediately
-                            editor.fire('input');
-                            fields.cardText = editor.getContent();
-
-                            return false;
-                        }
-                    }
-
-                    // If we're in a text node and about to delete zero-width space after custom element
-                    if (startContainer.nodeType === 3 && startOffset > 0) {
-                        const textContent = startContainer.textContent;
-                        const charToDelete = textContent.charAt(startOffset - 1);
-
-                        if (charToDelete === '\u200B') {
-                            const prevSibling = startContainer.previousSibling;
-                            if (prevSibling && prevSibling.tagName && prevSibling.tagName.toLowerCase().startsWith('fab-')) {
+                            // Check if we're at the beginning of text or the character before is whitespace
+                            const charBefore = startContainer.textContent.charAt(startOffset - 1);
+                            if (charBefore === ' ' || charBefore === '\u00A0') { // space or non-breaking space
                                 e.preventDefault();
-                                // Delete the custom element directly
                                 editor.dom.remove(prevSibling);
-
-                                // Remove the zero-width space and position cursor correctly
-                                startContainer.textContent = textContent.substring(1);
-
+                                // Remove the space too
+                                startContainer.textContent = startContainer.textContent.substring(0, startOffset - 1) +
+                                    startContainer.textContent.substring(startOffset);
                                 const newRange = editor.dom.createRng();
-                                newRange.setStart(startContainer, 0);
-                                newRange.setEnd(startContainer, 0);
+                                newRange.setStart(startContainer, startOffset - 1);
+                                newRange.setEnd(startContainer, startOffset - 1);
                                 selection.setRng(newRange);
-
-                                // Force focus back to editor
-                                editor.focus();
-
-                                // Trigger change detection immediately
                                 editor.fire('input');
                                 fields.cardText = editor.getContent();
-
                                 return false;
                             }
                         }
-                    }
-
-                    // If a custom element is currently selected, delete it directly
-                    const selectedNode = selection.getNode();
-                    if (selectedNode && selectedNode.tagName && selectedNode.tagName.toLowerCase().startsWith('fab-')) {
-                        e.preventDefault();
-                        const parent = selectedNode.parentNode;
-                        const nextSibling = selectedNode.nextSibling;
-
-                        editor.dom.remove(selectedNode);
-
-                        // Position cursor where the element was
-                        const newRange = editor.dom.createRng();
-                        if (nextSibling && nextSibling.nodeType === 3) {
-                            newRange.setStart(nextSibling, 0);
-                            newRange.setEnd(nextSibling, 0);
-                        } else {
-                            newRange.setStart(parent, 0);
-                            newRange.setEnd(parent, 0);
-                        }
-                        selection.setRng(newRange);
-
-                        // Force focus back to editor
-                        editor.focus();
-
-                        // Trigger change detection immediately
-                        editor.fire('input');
-                        fields.cardText = editor.getContent();
-
-                        return false;
                     }
                 }
             });

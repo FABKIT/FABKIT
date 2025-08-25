@@ -1,5 +1,5 @@
 body {
-    font-family: 'palatino_lt_stdlight', serif;
+    font-family: 'palatino_lt_stdroman', serif;
 }
 
 @media (prefers-color-scheme: light) {
@@ -35,6 +35,8 @@ fab-cost, fab-power, fab-defense, fab-life, fab-intellect, fab-tap, fab-untap {
     display: inline-block !important;
     width: 1em;
     height: 1em;
+    max-width: 1em;
+    max-height: 1em;
     background-size: 88%;
     background-repeat: no-repeat;
     background-position: bottom;
