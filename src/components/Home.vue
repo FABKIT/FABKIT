@@ -761,14 +761,14 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                      }"
                   />
                   <v-image
-                      v-if="fields.cardPower"
+                      v-if="fields.cardPower !== ''"
                       :config="{
                        ...getConfig('powerImage'),
                        image: powerImage,
                      }"
                   />
                   <v-image
-                      v-if="fields.cardDefense"
+                      v-if="fields.cardDefense !== ''"
                       :config="{
                        ...getConfig('defenseImage'),
                        image: defenseImage,
