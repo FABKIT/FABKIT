@@ -104,7 +104,7 @@ const cardSettings = {
             },
             copyrightOverlay: {
                 x: 305,  // Position where © appears in the dented footer
-                y: 595,
+                y: 595.5,
                 width: 10,
                 height: 12,
                 fontFamily: 'Arial',
@@ -189,6 +189,32 @@ const cardSettings = {
                 y: 76,
             },
         },
+        weapon: {
+            cardName: {
+                x: 70.5,
+                y: 33,
+                width: 310,
+                height: 41,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
+        },
+        equipment: {
+            cardName: {
+                x: 58,
+                y: 37.5,
+                width: 334,
+                height: 31,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
+        }
     },
     flat: {
         default: {
@@ -343,6 +369,17 @@ const cardSettings = {
                 x: 30,
                 y: 76,
             },
+            cardName: {
+                x: 65.5,
+                y: 38.5,
+                width: 319,
+                height: 27,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 28.5,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
         },
         demi_hero: {
             cardUploadedArtwork: {
@@ -350,6 +387,43 @@ const cardSettings = {
                 height: 628,
                 x: 30,
                 y: 76,
+            },
+            cardName: {
+                x: 65.5,
+                y: 38.5,
+                width: 319,
+                height: 27,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 28.5,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
+        },
+        weapon: {
+            cardName: {
+                x: 70.5,
+                y: 31.9,
+                width: 310,
+                height: 41,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
+        },
+        equipment: {
+            cardName: {
+                x: 68.5,
+                y: 31.9,
+                width: 314,
+                height: 41,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
             },
         }
     }
