@@ -19,7 +19,7 @@ export function useCard() {
         cardType: '',
         cardPitch: '',
         cardName: '',
-        cardCost: '',
+        cardResource: '',
         cardText: '',
         cardPower: '',
         cardHeroIntellect: '',
@@ -584,7 +584,7 @@ export function useCard() {
         fields.cardType = '';
         fields.cardPitch = '';
         fields.cardName = '';
-        fields.cardCost = '';
+        fields.cardResource = '';
         fields.cardText = '';
         fields.cardPower = '';
         fields.cardHeroIntellect = '';

@@ -72,7 +72,7 @@ npm run build
 
 ### FAB Symbol Integration
 Use our symbol buttons in the text editor to add official FAB symbols:
-- Cost symbols
+- Resource symbols
 - Power symbols  
 - Defense symbols
 - Life symbols

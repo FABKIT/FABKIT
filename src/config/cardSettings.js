@@ -25,7 +25,7 @@ const cardSettings = {
                 align: "center",
                 fill: "black",
             },
-            cardCost: {
+            cardResource: {
                 x: 372.1,
                 y: 34.6,
                 width: 48,
@@ -113,7 +113,7 @@ const cardSettings = {
                 fill: "white",
                 align: "center",
             },
-            noCostImage: {
+            noResourceImage: {
                 x: 371,
                 y: 29.9,
                 width: 49.8,
@@ -242,7 +242,7 @@ const cardSettings = {
                 align: "center",
                 fill: "black",
             },
-            cardCost: {
+            cardResource: {
                 x: 373.3,
                 y: 34.8,
                 width: 48,
@@ -343,7 +343,7 @@ const cardSettings = {
                 fill: "white",
                 align: "center",
             },
-            noCostImage: {
+            noResourceImage: {
                 x: 372,  // Adjust these values as needed for flat
                 y: 29,
                 width: 50,

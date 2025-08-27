@@ -89,7 +89,7 @@ const downloadURI = function (uri, name) {
   link.remove();
 }
 
-const [noCostImage] = useImage('/img/symbols/symbol_nocost.png');
+const [noResourceImage] = useImage('/img/symbols/symbol_nocost.png');
 const [powerImage] = useImage('/img/symbols/cardsymbol_power.svg');
 const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
 </script>
@@ -179,12 +179,12 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                   </div>
                 </div>
               </div>
-              <div v-if="isFieldShown('cardCost')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardCost">Cost</label>
+              <div v-if="isFieldShown('cardResource')" class="">
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResource">Resource</label>
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardCost" v-model="fields.cardCost"
+                    <input id="cardResource" v-model="fields.cardResource"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            maxlength="2" type="text">
                   </div>
@@ -746,8 +746,8 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                     <v-image
                         v-if="fields.cardType === 'block'"
                         :config="{
-                       ...getConfig('noCostImage'),
-                       image: noCostImage,
+                       ...getConfig('noResourceImage'),
+                       image: noResourceImage,
                      }"
                     />
                     <v-image
@@ -773,7 +773,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                     fontSize: nameFontSize
                   }
                 }"></v-text>
-                    <v-text v-if="fields.cardCost" :text="fields.cardCost" v-bind="getConfig('cardCost')"></v-text>
+                    <v-text v-if="fields.cardResource" :text="fields.cardResource" v-bind="getConfig('cardResource')"></v-text>
                     <v-text v-if="fields.cardDefense" :text="fields.cardDefense" v-bind="getConfig('cardDefense')"></v-text>
                     <v-text v-if="fields.cardPower" :text="fields.cardPower" v-bind="getConfig('cardPower')"></v-text>
                     <v-text v-if="fields.cardLife" :text="fields.cardLife" v-bind="getConfig('cardLife')"></v-text>

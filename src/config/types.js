@@ -10,7 +10,7 @@ const types = [
                 id: "cardName",
             },
             {
-                id: "cardCost",
+                id: "cardResource",
             },
             {
                 id: "cardText",
@@ -61,7 +61,7 @@ const types = [
                 id: "cardName",
             },
             {
-                id: "cardCost",
+                id: "cardResource",
             },
             {
                 id: "cardText",
@@ -142,7 +142,7 @@ const types = [
                 id: "cardName",
             },
             {
-                id: "cardCost",
+                id: "cardResource",
             },
             {
                 id: "cardText",
@@ -316,7 +316,7 @@ const types = [
                 id: "cardName",
             },
             {
-                id: "cardCost",
+                id: "cardResource",
             },
             {
                 id: "cardText",
