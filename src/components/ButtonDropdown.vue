@@ -3,12 +3,12 @@
     <ListboxLabel class="sr-only">{{ label }}</ListboxLabel>
     <div class="relative">
       <div class="inline-flex rounded-md outline-hidden">
-        <div class="inline-flex items-center gap-x-1.5 rounded-l-md bg-primary px-3 py-2 text-white">
+        <ListboxButton class="inline-flex items-center gap-x-1.5 rounded-l-md bg-primary px-3 py-2 text-white">
           <template slot="icon">
             <CheckIcon v-if="selected" class="-ml-0.5 size-5" aria-hidden="true" />
           </template>
           <p class="text-sm font-semibold">{{ selected?.title || placeholder }}</p>
-        </div>
+        </ListboxButton>
         <ListboxButton class="inline-flex items-center rounded-l-none rounded-r-md bg-primary p-2 outline-hidden hover:bg-gray-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
           <span class="sr-only">{{ label }}</span>
           <ChevronDownIcon class="size-5 text-white forced-colors:text-[Highlight]" aria-hidden="true" />
