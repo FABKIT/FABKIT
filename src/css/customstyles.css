@@ -134,9 +134,6 @@
 
 #renderedCardText {
     position: absolute;
-    height: 135px;
-    width: 345px;
-    transform: translateX(-50%);
     z-index:10;
     display:flex;
     flex-direction:column;
@@ -146,15 +143,6 @@
     text-align:left;
 }
 
-#renderedCardText.dented {
-    top:408px;
-    left: 50%;
-}
-
-#renderedCardText.flat {
-    top:397.3px;
-    left: 50.165%;
-}
 #renderedContent {
     max-width: 100%;
     word-wrap: break-word !important;
