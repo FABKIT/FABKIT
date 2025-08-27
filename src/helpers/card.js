@@ -6,6 +6,7 @@ import useTypes from "../config/types.js";
 import {useCardRarities} from "./cardRarities.js";
 import {useCanvasHelper} from "./canvas.js";
 import {useTextConfig} from "../config/text.js";
+import {toPng} from "html-to-image";
 
 const {clamp} = useMath();
 
@@ -615,6 +616,36 @@ export function useCard() {
         fields.cardUploadedArtwork = '';
         fields.cardFooterText = '';
     });
+
+
+    const downloadImage = function () {
+        const stageInstance = stage.value.getStage();
+        stageInstance.setWidth(450);
+        stageInstance.setHeight(628);
+        stageInstance.setScale(1, 1);
+        scale.value = 1;
+        stageInstance.batchDraw();
+        recalculateRatio();
+        nextTick(() => {
+            toPng(document.querySelector('.cardParent'), {
+                width: 450,
+                canvasWidth: 450,
+                height: 628,
+                canvasHeight: 628,
+            })
+                .then((dataUrl) => {
+                    downloadURI(dataUrl, (fields.cardName || 'card') + '.png');
+                })
+                .catch((err) => {
+                    console.error('oops, something went wrong!', err);
+                }).finally(() => {
+                updateSize();
+                recalculateRatio();
+                stageInstance.batchDraw();
+            });
+        })
+    }
+
     return {
         types,
         fields,
@@ -647,5 +678,6 @@ export function useCard() {
         stageWidth,
         stageHeight,
         scale,
+        downloadImage,
     };
 }

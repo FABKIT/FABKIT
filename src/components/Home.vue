@@ -13,11 +13,9 @@ import {
 } from "@heroicons/vue/24/solid/index.js";
 import Editor from '@tinymce/tinymce-vue'
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
-import {toPng} from "html-to-image";
 import useTinyMCEConfig from "../config/tinyMCE.js";
 import {useImage} from "vue-konva";
 import ButtonDropdown from "./ButtonDropdown.vue";
-import {computed, onMounted, onUnmounted, ref} from "vue";
 
 const {
   types,
@@ -50,6 +48,7 @@ const {
   stageWidth,
   stageHeight,
   scale,
+  downloadImage,
 } = useCard();
 
 const {cardRarities} = useCardRarities();
@@ -68,21 +67,6 @@ const readFile = function readFile(event) {
 }
 
 const tinyMCEConfig = useTinyMCEConfig(fields);
-
-const downloadImage = function () {
-  toPng(document.querySelector('.cardParent'), {
-    width: 450,
-    canvasWidth: 450,
-    height: 628,
-    canvasHeight: 628,
-  })
-      .then((dataUrl) => {
-        downloadURI(dataUrl, (fields.cardName || 'card') + '.png');
-      })
-      .catch((err) => {
-        console.error('oops, something went wrong!', err);
-      });
-}
 
 const printPage = function () {
   const stageInstance = stage.value.getStage();
