@@ -773,11 +773,11 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                     fontSize: nameFontSize
                   }
                 }"></v-text>
-                    <v-text v-if="fields.cardResource" :text="fields.cardResource" v-bind="getConfig('cardResource')"></v-text>
-                    <v-text v-if="fields.cardDefense" :text="fields.cardDefense" v-bind="getConfig('cardDefense')"></v-text>
-                    <v-text v-if="fields.cardPower" :text="fields.cardPower" v-bind="getConfig('cardPower')"></v-text>
-                    <v-text v-if="fields.cardLife" :text="fields.cardLife" v-bind="getConfig('cardLife')"></v-text>
-                    <v-text v-if="fields.cardHeroIntellect" :text="fields.cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
+                    <v-text v-if="fields.cardResource !== ''" :text="fields.cardResource" v-bind="getConfig('cardResource')"></v-text>
+                    <v-text v-if="fields.cardDefense !== ''" :text="fields.cardDefense" v-bind="getConfig('cardDefense')"></v-text>
+                    <v-text v-if="fields.cardPower !== ''" :text="fields.cardPower" v-bind="getConfig('cardPower')"></v-text>
+                    <v-text v-if="fields.cardLife !== ''" :text="fields.cardLife" v-bind="getConfig('cardLife')"></v-text>
+                    <v-text v-if="fields.cardHeroIntellect !== ''" :text="fields.cardHeroIntellect" v-bind="getConfig('cardHeroIntellect')"></v-text>
                     <v-text
                         :fontSize="typeTextFontSize"
                         :text="cardTypeText"
