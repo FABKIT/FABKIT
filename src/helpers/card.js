@@ -617,6 +617,15 @@ export function useCard() {
         fields.cardFooterText = '';
     });
 
+    const downloadURI = function (uri, name) {
+        const link = document.createElement('a');
+        link.download = name;
+        link.href = uri;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        link.remove();
+    }
 
     const downloadImage = function () {
         const stageInstance = stage.value.getStage();

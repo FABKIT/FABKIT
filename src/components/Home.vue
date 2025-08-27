@@ -79,16 +79,6 @@ const printPage = function () {
   }, 100);
 }
 
-const downloadURI = function (uri, name) {
-  const link = document.createElement('a');
-  link.download = name;
-  link.href = uri;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  link.remove();
-}
-
 const [noResourceImage] = useImage('/img/symbols/symbol_nocost.png');
 const [powerImage] = useImage('/img/symbols/cardsymbol_power.svg');
 const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
