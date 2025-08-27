@@ -197,7 +197,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input id="cardPower" v-model="fields.cardPower"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                           type="number">
+                           type="text">
                   </div>
                 </div>
               </div>
@@ -208,7 +208,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input id="cardHeroIntellect" v-model="fields.cardHeroIntellect"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                           type="number">
+                           type="text">
                   </div>
                 </div>
               </div>
@@ -625,7 +625,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input id="cardDefense" v-model="fields.cardDefense"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                           type="number">
+                           type="text">
                   </div>
                 </div>
               </div>
@@ -636,7 +636,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input id="cardLife" v-model="fields.cardLife"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                           type="number">
+                           type="text">
                   </div>
                 </div>
               </div>
