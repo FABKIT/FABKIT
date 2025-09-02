@@ -686,7 +686,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
           </div>
           <div class="w-full flex justify-between items-center mt-2 mb-4 col-start-2 print:hidden cardback-selector-row">
             <button :disabled="loadingBackground" class="cardback-nav-button" type="button"
-                    v-on:click="() => switchBackground('next')">
+                    v-on:click="() => switchBackground('previous')">
               <ArrowLeftIcon aria-hidden="true" class="size-5"/>
             </button>
 
@@ -710,7 +710,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
 
             <button :disabled="loadingBackground"
                     class="cardback-nav-button" type="button"
-                    v-on:click="() => switchBackground('previous')">
+                    v-on:click="() => switchBackground('next')">
               <ArrowRightIcon aria-hidden="true" class="size-5"/>
             </button>
           </div>
