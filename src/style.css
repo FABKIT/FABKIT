@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "./css/animations.css";
 @import "./css/customstyles.css";
-@import "./css/editor.css";
 
 @theme {
     --color-primary: #A6864A;
@@ -11,7 +10,6 @@
 
 .button-primary {
     @apply
-    rounded-md
     bg-primary
     text-sm
     font-semibold
@@ -21,6 +19,11 @@
     focus-visible:outline-2
     focus-visible:outline-offset-2
     focus-visible:outline-white
+}
+
+.button-primary-active {
+    @apply
+    bg-gray-700
 }
 
 /* Tell tailwind to not touch styles inside the cardText */

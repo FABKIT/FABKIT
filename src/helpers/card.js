@@ -501,6 +501,13 @@ export function useCard() {
         })
     });
 
+    watch(fields.cardText, (newText) => {
+        nextTick().then(async () => {
+            updateSize();
+            recalculateRatio();
+        })
+    })
+
     watch(() => fields.cardType, (newCardType) => {
         nextTick().then(() => {
             updateSize();
@@ -553,14 +560,6 @@ export function useCard() {
         canvasHelper.artworkLayer = artwork.value.getStage();
         canvasHelper.backgroundLayer = background.value.getStage();
         canvasHelper.footerLayer = footer.value.getStage();
-        if (containerElement.value) {
-            containerElement.value.addEventListener('forceResize', () => {
-                nextTick().then(() => {
-                    updateSize();
-                    recalculateRatio();
-                });
-            });
-        }
         updateSize();
         recalculateRatio();
         // Add event listener

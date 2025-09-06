@@ -11,11 +11,11 @@ import {
   PrinterIcon,
   TrashIcon
 } from "@heroicons/vue/24/solid/index.js";
-import Editor from '@tinymce/tinymce-vue'
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
 import useTinyMCEConfig from "../config/tinyMCE.js";
 import {useImage} from "vue-konva";
 import ButtonDropdown from "./ButtonDropdown.vue";
+import Editor from "./Editor/Editor.vue";
 
 const {
   types,
@@ -656,11 +656,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 <label v-else id="cardTextLabel" class="block text-sm/6 font-medium text-primary dark:text-white" for="cardText">Card text</label>
                 <div class="col-span-full">
                   <div class="mt-2">
-                    <editor
-                        :init="tinyMCEConfig"
-                        api-key="gpl"
-                        tinymce-script-src="tinymce/tinymce.min.js"
-                    />
+                    <Editor v-model="fields.cardText"></Editor>
                   </div>
                 </div>
               </div>
@@ -801,11 +797,11 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
             </div>
           </div>
           <div class="flex justify-center mt-2 print:hidden gap-4">
-            <button class="inline-flex items-center gap-x-1.5 button-primary px-3.5 py-2.5" type="button" v-on:click="() => downloadImage()">
+            <button class="inline-flex items-center gap-x-1.5 button-primary rounded-md px-3.5 py-2.5" type="button" v-on:click="() => downloadImage()">
               Download Card
               <DocumentArrowDownIcon aria-hidden="true" class="-mr-0.5 size-5"/>
             </button>
-            <button class="inline-flex items-center gap-x-1.5 button-primary px-3.5 py-2.5" type="button" v-on:click="() => printPage()">
+            <button class="inline-flex items-center gap-x-1.5 button-primary rounded-md px-3.5 py-2.5" type="button" v-on:click="() => printPage()">
               Print
               <PrinterIcon aria-hidden="true" class="-mr-0.5 size-5"/>
             </button>

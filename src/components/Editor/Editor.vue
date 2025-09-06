@@ -1,0 +1,380 @@
+<template>
+  <div v-if="editor" class="border rounded-md p-1 border-white min-h-10">
+    <div class="pb-1 border-b border-b-white flex flex-wrap gap-1">
+      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+        <button
+            :class="{ 'button-primary-active': editor.isActive('bold') }"
+            class="relative inline-flex items-center rounded-l-md button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().toggleBold().run()"
+        >
+          <span class="sr-only">Toggle Bold</span>
+          <BoldIcon aria-hidden="true" class="size-5"/>
+        </button>
+        <button
+            :class="{ 'button-primary-active': editor.isActive('italic') }"
+            class="relative inline-flex items-center button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().toggleItalic().run()"
+        >
+          <span class="sr-only">Toggle Italic</span>
+          <ItalicIcon aria-hidden="true" class="size-5"/>
+        </button>
+        <button
+            :class="{ 'button-primary-active': editor.isActive('underline') }"
+            class="relative inline-flex items-center rounded-r-md button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().toggleUnderline().run()"
+        >
+          <span class="sr-only">Toggle Underline</span>
+          <UnderlineIcon aria-hidden="true" class="size-5"/>
+        </button>
+      </div>
+      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+        <button
+            :class="{ 'button-primary-active': editor.isActive('bulletList') }"
+            class="relative inline-flex items-center rounded-l-md button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().toggleBulletList().run()"
+        >
+          <span class="sr-only">Toggle bullet list</span>
+          <ListBulletIcon aria-hidden="true" class="size-5"/>
+        </button>
+        <button
+            :class="{ 'button-primary-active': editor.isActive('orderedList') }"
+            class="relative inline-flex items-center rounded-r-md button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().toggleOrderedList().run()"
+        >
+          <span class="sr-only">Toggle ordered list</span>
+          <NumberedListIcon aria-hidden="true" class="size-5"/>
+        </button>
+      </div>
+      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+        <button
+            :class="{ 'button-primary-active': editor.isActive({ textAlign: 'left' }) }"
+            class="relative inline-flex items-center rounded-l-md button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().setTextAlign('left').run()"
+        >
+          <span class="sr-only">Left</span>
+          <Bars3BottomLeftIcon aria-hidden="true" class="size-5"/>
+        </button>
+        <button
+            :class="{ 'button-primary-active': editor.isActive({ textAlign: 'center' }) }"
+            class="relative inline-flex items-center rounded-r-md button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().setTextAlign('center').run()"
+        >
+          <span class="sr-only">Center</span>
+          <Bars3BottomCenterIcon aria-hidden="true" class="size-5"/>
+        </button>
+      </div>
+      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+        <button
+            v-for="(emoji, index) in customEmojis"
+            :class="{
+              'rounded-l-md': index === 0,
+              'rounded-r-md': index === customEmojis.length - 1,
+            }"
+            class="relative inline-flex items-center button-primary px-2 py-2 focus:z-10"
+            type="button"
+            @click="editor.chain().focus().setEmoji(emoji.name).run()"
+        >
+          <span class="sr-only">Add {{ emoji.name }} icon</span>
+          <img v-if="emoji.fallbackImage" :src="emoji.fallbackImage" aria-hidden="true" :alt="emoji.name" class="size-5"/>
+        </button>
+      </div>
+    </div>
+    <editor-content :editor="editor"/>
+  </div>
+</template>
+
+<script>
+import {Editor, EditorContent} from '@tiptap/vue-3'
+import StarterKit from "@tiptap/starter-kit";
+import {BulletList, ListItem, OrderedList} from "@tiptap/extension-list";
+import Bold from "@tiptap/extension-bold";
+import {BoldIcon, ListBulletIcon, ItalicIcon, NumberedListIcon, UnderlineIcon, Bars3BottomLeftIcon} from "@heroicons/vue/24/solid/index.js";
+import { Bars3BottomCenterIcon } from  "@sidekickicons/vue/24/solid";
+
+import Emoji from "@tiptap/extension-emoji";
+import suggestion from "./suggestion.js";
+import TextAlign from "@tiptap/extension-text-align";
+
+const customEmojis = [
+  {
+    // A unique name of the emoji which will be stored as attribute
+    name: 'cost',
+    // A list of unique shortcodes that are used by input rules to find the emoji
+    shortcodes: ['cost'],
+    // A list of tags that can help for searching emojis
+    tags: ['cost'],
+    // A name that can help to group emojis
+    group: 'General',
+    // The image to be rendered
+    fallbackImage: '/img/symbols/icon_cost.svg',
+  },
+  {
+    // A unique name of the emoji which will be stored as attribute
+    name: 'power',
+    // A list of unique shortcodes that are used by input rules to find the emoji
+    shortcodes: ['power'],
+    // A list of tags that can help for searching emojis
+    tags: ['power'],
+    // A name that can help to group emojis
+    group: 'General',
+    // The image to be rendered
+    fallbackImage: '/img/symbols/icon_pwr.svg',
+  },
+  {
+    // A unique name of the emoji which will be stored as attribute
+    name: 'defense',
+    // A list of unique shortcodes that are used by input rules to find the emoji
+    shortcodes: ['defense'],
+    // A list of tags that can help for searching emojis
+    tags: ['defense'],
+    // A name that can help to group emojis
+    group: 'General',
+    // The image to be rendered
+    fallbackImage: '/img/symbols/icon_def.svg',
+  },
+  {
+    // A unique name of the emoji which will be stored as attribute
+    name: 'life',
+    // A list of unique shortcodes that are used by input rules to find the emoji
+    shortcodes: ['life'],
+    // A list of tags that can help for searching emojis
+    tags: ['life'],
+    // A name that can help to group emojis
+    group: 'General',
+    // The image to be rendered
+    fallbackImage: '/img/symbols/icon_hp.svg',
+  },
+  {
+    // A unique name of the emoji which will be stored as attribute
+    name: 'intellect',
+    // A list of unique shortcodes that are used by input rules to find the emoji
+    shortcodes: ['intellect'],
+    // A list of tags that can help for searching emojis
+    tags: ['intellect'],
+    // A name that can help to group emojis
+    group: 'General',
+    // The image to be rendered
+    fallbackImage: '/img/symbols/icon_int.svg',
+  },
+  {
+    // A unique name of the emoji which will be stored as attribute
+    name: 'tap',
+    // A list of unique shortcodes that are used by input rules to find the emoji
+    shortcodes: ['tap'],
+    // A list of tags that can help for searching emojis
+    tags: ['tap'],
+    // A name that can help to group emojis
+    group: 'General',
+    // The image to be rendered
+    fallbackImage: '/img/symbols/icon_t.svg',
+  },
+  {
+    // A unique name of the emoji which will be stored as attribute
+    name: 'untap',
+    // A list of unique shortcodes that are used by input rules to find the emoji
+    shortcodes: ['untap'],
+    // A list of tags that can help for searching emojis
+    tags: ['untap'],
+    // A name that can help to group emojis
+    group: 'General',
+    // The image to be rendered
+    fallbackImage: '/img/symbols/icon_u.svg',
+  },
+]
+
+export default {
+  components: {
+    EditorContent,
+    BoldIcon,
+    ItalicIcon,
+    UnderlineIcon,
+    ListBulletIcon,
+    NumberedListIcon,
+    Bars3BottomCenterIcon,
+    Bars3BottomLeftIcon,
+  },
+  props: {
+    modelValue: {
+      type: String,
+      default: '',
+    },
+  },
+  emits: ['update:modelValue'],
+  data() {
+    return {
+      editor: null,
+      customEmojis,
+    }
+  },
+  watch: {
+    modelValue(value) {
+      // HTML
+      const isSame = this.editor.getHTML() === value
+
+      if (isSame) {
+        return
+      }
+
+      this.editor.commands.setContent(value)
+    },
+  },
+
+  mounted() {
+    this.editor = new Editor({
+      extensions: [
+        StarterKit,
+        Bold,
+        ListItem,
+        BulletList.configure({
+          HTMLAttributes: {
+            class: "list-disc ml-2",
+          },
+        }),
+        OrderedList.configure({
+          HTMLAttributes: {
+            class: "list-decimal ml-2",
+          },
+        }),
+        TextAlign.configure({
+          types: ['heading', 'paragraph'],
+        }),
+        Emoji.configure({
+          HTMLAttributes: {
+            class: "fab-icon",
+          },
+          emojis: customEmojis,
+          suggestion,
+        })
+      ],
+      content: this.modelValue,
+      onUpdate: () => {
+        // HTML
+        this.$emit('update:modelValue', this.editor.getHTML())
+      },
+      editorProps: {
+        attributes: {
+          class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none',
+        },
+      }
+    })
+  },
+
+  beforeUnmount() {
+    this.editor.destroy()
+  },
+}
+</script>
+
+<style lang="scss">
+/* Basic editor styles */
+.tiptap {
+  // Emoji extension styles
+  [data-type='emoji'] {
+    img {
+      display: inline;
+      height: 1em;
+      width: 1em;
+    }
+  }
+
+  font-family: 'palatino_lt_stdroman', serif;
+
+  @media (prefers-color-scheme: light) {
+    color: #2A2A2A !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    color: white !important;
+  }
+
+  /* Override TinyMCE's default bold behavior */
+  strong, b {
+    font-family: 'palatino_lt_stdmedium', serif !important;
+    font-weight: normal !important;
+  }
+
+  /* Ensure strong inside a paragraph is styled correctly */
+  p strong, p b {
+    font-family: 'palatino_lt_stdmedium', serif !important;
+    font-weight: normal !important;
+  }
+
+  /* Handle cases where TinyMCE uses spans with inline styles */
+  span[style*="font-weight: bold"],
+  span[style*="font-weight: bolder"],
+  [data-mce-style*="font-weight: bold"],
+  [data-mce-style*="font-weight: bolder"] {
+    font-family: 'palatino_lt_stdmedium', serif !important;
+    font-weight: normal !important;
+  }
+
+  fab-cost, fab-power, fab-defense, fab-life, fab-intellect, fab-tap, fab-untap {
+    display: inline-block !important;
+    width: 1em;
+    height: 1em;
+    max-width: 1em;
+    max-height: 1em;
+    background-size: 88%;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    vertical-align: -1px;
+    cursor: pointer;
+    user-select: all;
+    -webkit-user-select: all;
+    -moz-user-select: all;
+    -ms-user-select: all;
+    pointer-events:none;
+  }
+
+  .tox-tbtn img {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Resource icon */
+  fab-cost {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTUxIiBoZWlnaHQ9IjE1MSIgdmlld0JveD0iMCAwIDE1MSAxNTEiPjxwYXRoIGZpbGw9IiMxODE3MTYiIGQ9Ik0wIDc1LjA0MTlDMC43ODEwODUgNzMuOTQxNyAwLjQ3MzEwMiA2OC44MjQ5IDAuNzA0ODUxIDY3LjIwMzlDMS4wOTYzIDY0LjQ2NTggMS41MTIyNCA2MS44Mzk2IDIuMTA2OTcgNTkuMTE2NEM4LjMxMDU3IDMxLjA2MjQgMzAuMDAyNCA5LjAyMTc4IDU3Ljk1MzkgMi4zNzE1M0M3Ny40Mjc3IC0yLjIyNTcyIDk3LjkyOSAxLjA1MTU4IDExNC45OTkgMTEuNDkwN0MxMzEuODI5IDIxLjg2NDggMTQzLjg5MyAzOC40NTE3IDE0OC41NzkgNTcuNjU4M0MxNTMuMzIzIDc3LjI1MjMgMTUwLjA0NyA5Ny45Mjk0IDEzOS40OCAxMTUuMDk4QzEyOS4wMjkgMTMxLjk5MSAxMTIuMzE5IDE0NC4wNjMgOTIuOTk4MSAxNDguNjc5QzczLjQ4MDcgMTUzLjMwMiA1Mi45MjU3IDE0OS45NjggMzUuODcgMTM5LjQxM0MxOS4wMjYxIDEyOC45OTggNi45ODEzOSAxMTIuMzQ3IDIuMzYwNDMgOTMuMDg5OUMxLjQ5MTk1IDg5LjMzMSAwLjg5NzM0NyA4NS41MTQxIDAuNTgxMjk5IDgxLjY2OTJDMC40Njc4NjMgODAuMTA3NSAwLjY1MTc4NiA3Ny4wODk4IDAgNzUuOTU1NEwwIDc1LjA0MTlaIi8+PHBhdGggZmlsbD0iI0MzMDgyMSIgZD0iTTc0LjQxOTUgNi45MjcyOEMxMTIuMjg2IDYuMzI5NTEgMTQzLjQ3IDM2LjUzNTggMTQ0LjA3OCA3NC40MDE4QzE0NC42ODcgMTEyLjI2OCAxMTQuNDg5IDE0My40NiA3Ni42MjM0IDE0NC4wOEMzOC43NDI1IDE0NC42OTkgNy41MzQ2OSAxMTQuNDg3IDYuOTI2IDc2LjYwNTZDNi4zMTczIDM4LjcyNDUgMzYuNTM4MyA3LjUyNTI5IDc0LjQxOTUgNi45MjcyOFoiLz48cGF0aCBmaWxsPSIjMTgxNzE2IiBkPSJNNjUuODI1MyAxNy4zMTczQzY3LjA0MDIgMTcuMDgzMSA3MC4zNzU0IDE3LjY2MDkgNzEuNjUyNSAxNy44MzI1Qzk1Ljc2IDIxLjA3MDYgMTE4LjY0NyAzMy4yNDQ2IDEyMy41NjIgNTguOTY1NkMxMjUuNzUxIDcwLjQyMjkgMTI0LjgxOSA4MS40NjY3IDExOC4xNzcgOTEuNTA5NEMxMTIuNDkgMTAwLjEwOSAxMDUuMDU4IDEwNS44MTUgOTQuOTMxMSAxMDcuOTQ3Qzg5LjM5MzIgMTA5LjA4MSA4My45NzAzIDEwOC43NzMgNzguNDU4OCAxMDcuNzQxQzgwLjYwNjIgMTA2LjIyMiA4Mi43NzUzIDEwNC42ODQgODQuODUyOCAxMDMuMDcyQzk5Ljc5NzUgOTEuNDc2NyAxMTIuMzg2IDcwLjY2NDIgMTA1LjQ3NyA1MS4zODA3QzEwMC4xMzggMzYuNDc2NiA4NS43OTA3IDI2LjM3MzggNzEuOTM1IDIwLjA1MDNDNjkuOTA0NyAxOS4xMjM4IDY3Ljg0MzIgMTguMjkxMSA2NS44MjUzIDE3LjMxNzNaIi8+PHBhdGggZmlsbD0iIzE4MTcxNiIgZD0iTTYwLjY3NyAyOS44NDk1QzYxLjA5NzMgMjkuNzYzNiA2My4yMzEzIDI5LjcyOTMgNjMuNzQ0NSAyOS43MTcyQzcwLjI1MTUgMjkuNTQ4NyA3Ni43MDMyIDMwLjk1MDggODIuNTUzMiAzMy44MDQ3QzkyLjU1MzEgMzguNjg0NCA5Ny42NDc3IDQ3LjA4NjcgMTAxLjEzMiA1Ny4yMzAxQzg1LjI1MjkgNDkuMDA0NyA2Ny4zMDUxIDQ0LjM0MzggNDkuOTUxNCA1MS43OTQxQzQwLjEyMzIgNTYuMDEzNSAzNC4wOTgzIDY0LjExNjMgMzAuMzczNCA3My45Mzg4QzI2LjQ1NjUgODMuOTY0NCAyNS4zMTYyIDEwMS4yNjcgMjcuODE2OCAxMTEuNzIzQzIzLjQyNjcgMTA0LjMyMSAyMS40MzQgOTMuOTAyOCAyMC4wNzMgODUuNDYzNkMxNS44NzUxIDU5LjQzNDEgMzMuMzE0MSAzMi45Mzk0IDYwLjY3NyAyOS44NDk1WiIvPjxwYXRoIGZpbGw9IiMxODE3MTYiIGQ9Ik00NS41MDM0IDYzLjQyOTVDNDUuNzIzNiA2My41NzA1IDQ1Ljk2MzYgNjMuODQ3OCA0NS45OTIxIDY0LjExMDRDNDcuNDcwNCA3Ny43MzA5IDUxLjE5NzggODkuNzA4MyA2MC4yODIyIDEwMC40OUM4MS4wOTE2IDEyNS4xODkgMTExLjQ3NiAxMTIuMjExIDEzMS45NzkgOTQuMzk0NUMxMjkuODMyIDk4LjI0OTIgMTI0LjM2IDEwNC44NjMgMTIxLjQ3IDEwOC4xNDhDMTEyLjE4NSAxMTcuNzE1IDEwMS4yMjMgMTI1Ljk5NyA4Ny41NTE0IDEyNy42ODlDNzUuMTk5NiAxMjkuMjE3IDYxLjM1NjUgMTI1Ljc3NyA1MS41MjI5IDExOC4wMTlDNDMuMTg4OCAxMTEuMzE5IDM3LjgxMjcgMTAxLjYyIDM2LjU0ODEgOTEuMDAxNkMzNS4zMzUzIDgwLjY2MTcgMzkuMTk1NiA3MS40MTM4IDQ1LjUwMzQgNjMuNDI5NVoiLz48L3N2Zz4=');
+  }
+
+  /* Power icon */
+  fab-power {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAyNS4yLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiDQoJIHZpZXdCb3g9IjAgMCAxNTEgMTUxIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCAxNTEgMTUxOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPg0KCS5zdDB7ZmlsbDojMjgyNjI3O30NCgkuc3Qxe2ZpbGw6I0Y5RUI0RDt9DQo8L3N0eWxlPg0KPHBhdGggY2xhc3M9InN0MCIgZD0iTTAsNzUuMWMwLjctMSwwLjYtNywwLjgtOC43YzAuMy0yLjUsMC44LTQuOSwxLjMtNy40QzguMywzMS4yLDI5LjgsOS4zLDU3LjQsMi41YzE5LjQtNC43LDM5LjktMS42LDU3LjEsOC43DQoJYzE3LDEwLjMsMjkuMiwyNi44LDM0LDQ2YzQuOCwxOS41LDEuNyw0MC4xLTguNiw1Ny4zYy0xMC4zLDE3LTI2LjksMjkuMi00Ni4xLDM0Yy0xOS41LDQuOC00MC4xLDEuNy01Ny4zLTguNw0KCWMtMTctMTAuMy0yOS4yLTI2LjktMzQtNDYuMmMtMS4zLTUuNi0yLTEwLjctMi0xNi40YzAtMC40LTAuMi0wLjktMC40LTEuMlY3NS4xeiIvPg0KPHBhdGggY2xhc3M9InN0MSIgZD0iTTEwNy45LDEzNi4xYy0yOS4xLDE0LjEtNjEsOS43LTgzLjMtMTQuNkMtMTEuOSw4MS41LDExLDE2LjMsNjQuNyw3LjdjNTYuOS05LjEsOTkuMSw1Mi41LDcwLjIsMTAyLjINCgljLTQuNSw3LjctOS40LDEyLjktMTYsMTguOGMwLjQsMSwwLjUsMC45LDAuNCwxLjhjLTEuNywyLjUtNy4yLDUuNS05LjksNi45TDEwNy45LDEzNi4xeiIvPg0KPHBhdGggZD0iTTQ2LDI5LjljMjAsMTMuNCw0MC40LDI3LjksNjAuMiw0MS42YzAuNSwyLjgsMC4zLDguMiwwLjMsMTEuM2wwLjIsMTUuNWMwLjEsMTAuNiwwLDkuOSw1LjMsMTguOGMyLjMsMy44LDQuNiw3LjcsNi44LDExLjYNCgljMC40LDEsMC41LDAuOSwwLjQsMS44Yy0xLjcsMi41LTcuMiw1LjUtOS45LDYuOWwtMS41LTEuNGMtMS4zLTIuMy0xMi45LTE3LjYtMTQuMi0xOC42Yy0yLjctMi4yLTguMS00LTExLjUtNS41bC0yMi4xLTEwDQoJYy0wLjYtMi4xLTEuMi01LjYtMS42LTcuOGwtMi44LTE0LjZMNDYsMjkuOXoiLz4NCjxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik01Ni41LDQzLjljMC45LDAuNCw2LjgsNS40LDgsNi40bDIyLDE3LjljMy4xLDIuNSw4LjcsNy4zLDExLjgsOS41bC02LjMsN2wtNS41LDYuMUw2Ni43LDU5LjgNCglDNjMuNCw1NC43LDU5LjYsNDkuMSw1Ni41LDQzLjl6Ii8+DQo8L3N2Zz4NCg=='); /* PASTE POWER SVG BASE64 HERE */
+  }
+
+  /* Defense icon */
+  fab-defense {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAyNS4yLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiDQoJIHZpZXdCb3g9IjAgMCAxNTEgMTUxIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCAxNTEgMTUxOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPg0KCS5zdDB7ZmlsbDojMjcyNTI2O30NCgkuc3Qxe2ZpbGw6I0E4QTdBODt9DQo8L3N0eWxlPg0KPHBhdGggY2xhc3M9InN0MCIgZD0iTTAsNzUuMWMwLjgtMS4yLDAuNS02LjMsMC43LThjMC40LTIuNywwLjgtNS40LDEuNC04LjFDOC40LDMxLDMwLDkuMSw1Ny45LDIuNGMxOS41LTQuNiw0MC0xLjQsNTcuMSw5LjENCgljMTYuOSwxMC40LDI5LDI3LDMzLjcsNDYuM2M0LjcsMTkuNSwxLjQsNDAuMi05LjEsNTcuM2MtMTAuNCwxNi45LTI3LjEsMjguOS00Ni4zLDMzLjZjLTE5LjUsNC43LTQwLjEsMS40LTU3LjItOS4yDQoJQzE5LjIsMTI5LjEsNy4xLDExMi41LDIuNCw5My4zYy0wLjctMy4xLTEuMy02LjMtMS42LTkuNGMtMC4yLTEuOC0wLjItNy4xLTAuOC04Vjc1LjF6Ii8+DQo8cGF0aCBjbGFzcz0ic3QxIiBkPSJNNzQuMSw2LjljMzcuOS0wLjgsNjkuMiwyOS4zLDY5LjksNjcuMmMwLjgsMzcuOS0yOS4zLDY5LjItNjcuMiw2OS45QzM5LDE0NC44LDcuNywxMTQuNyw2LjksNzYuOQ0KCUM2LjIsMzksMzYuMyw3LjcsNzQuMSw2Ljl6Ii8+DQo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNNzUuOSwyOWMxLjEsMC4yLDYuMiwyLjgsNy42LDMuNGM4LjEsMy40LDE2LjQsNi4xLDI1LDcuOGM0LjEsMC44LDcuOSwwLjksMTEuOSwxLjQNCgljMi4yLDMwLjYtNS45LDYzLjEtMzIuOCw4MS4zYy0xLjcsMS4xLTEwLjMsNi40LTExLjgsNi4yYy04LjMtMi4zLTE2LjctOC41LTIyLjYtMTQuNkMzNC45LDk1LjQsMjkuNiw2Ny4yLDMwLDQxLjYNCglDNDguNiwzOS4zLDU4LjcsMzYuNiw3NS45LDI5eiIvPg0KPHBhdGggY2xhc3M9InN0MSIgZD0iTTc1LjcsMzguM2MwLjcsMCw4LjMsMy42LDkuNyw0LjFjOC4zLDMuMiwxNi42LDUuOSwyNS40LDdjMC4xLDE0LjItMS4xLDIzLjEtNi4xLDM2LjQNCgljLTMuNC0xLjQtNy42LTIuNy0xMS4yLTQuMWMtMTAtNC4xLTIwLTkuMS0yOC42LTE1LjdjLTYuNS00LjktMTIuOC0xMS40LTkuNi0yMC4xYzAuNi0wLjMsMS4zLTAuNSwxLjktMC43DQoJQzYzLjUsNDMuMiw2OS42LDQwLjksNzUuNywzOC4zeiIvPg0KPHBhdGggY2xhc3M9InN0MSIgZD0iTTQxLjYsNjRjMC45LDAuMyw3LjcsNCw5LjEsNC44YzEyLjUsNy4zLDI3LjYsMTQuNSwzOC4xLDI0LjRjMi4xLDIsNC45LDYuNSw0LjYsOS4zYy0wLjMsMi44LTUsNi42LTcuMiw4LjUNCgljLTMsMi40LTcuMiw1LjUtMTAuOCw3Yy0yLjItMS4xLTQuMy0yLjQtNi40LTMuOEM1Mi40LDEwMi41LDQ1LjEsODMuNCw0MS42LDY0eiIvPg0KPC9zdmc+DQo='); /* PASTE DEFENSE SVG BASE64 HERE */
+  }
+
+  /* Life icon */
+  fab-life {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTUxIiBoZWlnaHQ9IjE1MSIgdmlld0JveD0iMCAwIDE1MSAxNTEiPjxwYXRoIGZpbGw9IiMyNzI1MjYiIGQ9Ik0wIDc1LjA2NUMwLjgyMTU4OSA3My45MDk5IDAuNDU0OTMyIDY4Ljc4NCAwLjcwMzA5IDY3LjEwMjZDMS4xMDYzNiA2NC4zNzAyIDEuNTM5NjQgNjEuNzExOSAyLjEzNDg1IDU4Ljk5NjhDOC4zODE4OSAzMC45ODUxIDMwLjA3MDcgOC45OTY5NiA1Ny45OTQxIDIuMzY2NDdDNzcuNDY3OSAtMi4yMjM2NiA5Ny45NjY1IDEuMDY1MzUgMTE1LjAyNyAxMS41MTc0QzEzMS44ODIgMjEuOTEyNiAxNDMuOTUyIDM4LjU0MjcgMTQ4LjYxIDU3Ljc5MDRDMTUzLjMyNSA3Ny4zNzE5IDE1MC4wMjIgOTguMDI1NCAxMzkuNDM2IDExNS4xNkMxMjguOTcgMTMyLjAzMSAxMTIuMjYgMTQ0LjA4MyA5Mi45NDgxIDE0OC42ODhDNzMuNDAzIDE1My4yOTMgNTIuODI5MSAxNDkuOTI5IDM1Ljc2ODUgMTM5LjMzOUMxOC45ODA4IDEyOC45MjIgNi45Nzc0OSAxMTIuMzA2IDIuMzYzMDIgOTMuMDk1OEMxLjY2MzYzIDkwLjA2NTMgMS4xNDExNyA4Ni45OTY3IDAuNzk4MzAzIDgzLjkwNTVDMC42MDYyNjIgODIuMTQxMSAwLjU5MDIzNSA3Ni44MjA2IDAgNzUuOTM3OUwwIDc1LjA2NVoiLz48cGF0aCBmaWxsPSIjOTVCQzRDIiBkPSJNNzMuOTM5OCA2LjkyNjQ5QzExMS44IDYuMDY1MjUgMTQzLjE5NSAzNi4wNDk3IDE0NC4wNzQgNzMuOTA5OEMxNDQuOTUzIDExMS43NyAxMTQuOTgzIDE0My4xNzkgNzcuMTIzMSAxNDQuMDc1QzM5LjIzODYgMTQ0Ljk3MiA3LjgwNDg2IDExNC45NzggNi45MjU1NiA3Ny4wOTNDNi4wNDYyNSAzOS4yMDgyIDM2LjA1NDYgNy43ODgyOCA3My45Mzk4IDYuOTI2NDlaIi8+PHBhdGggZmlsbD0iIzI3MjUyNiIgZD0iTTczLjY1MDUgMjcuODU1M0M4MC44NTIyIDI2Ljk1NjggOTEuNjU2MyAyOS43MjY1IDk4LjA2ODQgMzMuMTZDMTA4Ljg3NCAzOS4wNTYyIDExNi45MTEgNDguOTg1NiAxMjAuNDI1IDYwLjc4MzFDMTI1LjExIDc2LjM5MSAxMjEuMTQ2IDg3LjY2ODUgMTEzLjg2MSAxMDEuMTdDMTEzLjkwNiAxMDAuODI4IDExMy45NDggMTAwLjQ4NSAxMTMuOTg3IDEwMC4xNDJDMTE2LjE0OSA4MC44NzM5IDEwNi4yMjQgNTkuNDQ4MyA4OS40MTc3IDQ5LjQ0NTRDODQuODY3NiA0Ni43MzcyIDgwLjAzMSA0NS40NDYzIDc0LjgwOTUgNDQuODYzM0M2Mi4wNzM0IDQyLjI4NzQgNDUuOTg2MyA1OC44NjE3IDU3LjU0MTcgNjkuMDE1MUM1Ny40MzQgNjYuNTQ2IDU3LjQwMDggNjMuNjY5NyA1OS4wNTY5IDYxLjcxMjhDNjEuODEgNTguMzE3MiA2OC43NjA5IDU3LjY2MDEgNzEuOTY5NSA2MC42MDExQzgwLjE1NzggNjguMTA2NiA3Mi45NDIzIDgwLjY0NSA2Mi45MTI5IDgxLjE2NTZDNTYuOTEwNSA4MS40NzcyIDUxLjQ2NDggNzkuNDQ5MSA0Ny4wODQ5IDc1LjgyMzVDNDIuNDczMiA3Mi4wNTU3IDM5LjU5NDIgNjYuNTcyNiAzOS4xMTEgNjAuNjM3QzM3LjE5NTMgMzkuNjAwOSA1NS4wODY4IDI5LjQ5NjEgNzMuNjUwNSAyNy44NTUzWiIvPjxwYXRoIGZpbGw9IiMyNzI1MjYiIGQ9Ik0zNi40OTkzIDUwLjg5NDNMMzYuODU3MSA1MS4xNjAzQzM2LjgyMiA1Mi4zNzA3IDM2LjgwMDkgNTMuNTgxNSAzNi43OTM4IDU0Ljc5MjRDMzYuNzc3NCA1Ni40NzkxIDM2LjYzNzQgNTguODk4NyAzNi43OTg0IDYwLjUzNjFDMzkuMDI2IDgyLjE2NTQgNTQuNjU4OSAxMDUuNDIzIDc4LjE3MjUgMTA2LjIzN0M5MC43OTgzIDEwNi42NzUgMTA0LjE4MyA5Mi40NzA3IDkzLjM4NDcgODEuNzcwMUM5My41MjA1IDgzLjg0MjEgOTMuNjcwNiA4Ni43Njg1IDkyLjUxMzcgODguNDg4OUM4OC4zMzE4IDk0LjcwNzcgNzcuNDg2NSA5Mi44NDcgNzUuNzgzMyA4NS41NDZDNzQuMTA5MyA3OC4zNzAxIDc5LjEzNjcgNzEuODg3MyA4NS44NjEgNzAuMjMxOEM5MS4zOTE0IDY4Ljg3MDIgOTYuNTA1NSA3MC41MTM0IDEwMS4yNDggNzMuMjg1QzEwNS43MzcgNzUuOTkwNyAxMDkuMTIxIDgwLjE5OSAxMTAuODAyIDg1LjE2MzJDMTEyLjkxOCA5MS40NjM2IDExMi4zMTQgOTkuNTgxIDEwOS4yNzQgMTA1LjQ4MUMxMDUuMzEzIDExMy4xNjQgOTcuNDkyNyAxMTguMjI5IDg5LjQ5ODkgMTIwLjg3NEM3Ny43Mzg1IDEyNC43MTQgNjQuOTQxNSAxMjMuNzkgNTMuODU1IDExOC4zQzQyLjkzIDExMi43MDkgMzQuNjc5NiAxMDMgMzAuOTI1NiA5MS4zMTU2QzI3LjcwMDEgODEuMzc3OCAyNy45Njk4IDcwLjYzNTggMzEuNjg5OSA2MC44NzIzQzMyLjkyNzIgNTcuNjY4NiAzNC45MTc4IDU0LjAxNjQgMzYuNDk5MyA1MC44OTQzWiIvPjwvc3ZnPg=='); /* PASTE LIFE SVG BASE64 HERE */
+  }
+
+  /* Intellect icon */
+  fab-intellect {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTUxIiBoZWlnaHQ9IjE1MSIgdmlld0JveD0iMCAwIDE1MSAxNTEiPjxwYXRoIGZpbGw9IiMyNzI1MjYiIGQ9Ik0wIDc1LjA1OThDMC43Mjk2MDkgNzQuMDI1MSAwLjU5NjYzNSA2OC4wMjU2IDAuODIwMDkyIDY2LjM4NjFDMS4xNTcyNCA2My45MTI1IDEuNTc2OTggNjEuNTUyNSAyLjEwODEgNTkuMDk2MkM4LjMwMjkgMzEuMTc2NyAyOS44MzQxIDkuMjA4ODUgNTcuNjIzNSAyLjQ1NDhDNzcuMDcyMSAtMi4yMzIxNyA5Ny41ODQ4IDAuOTUyMTQyIDExNC42OTcgMTEuMzE0N0MxMzEuNjMzIDIxLjY0NDggMTQzLjc5OSAzOC4yNTAxIDE0OC41NDQgNTcuNTExOEMxNTMuMzEyIDc2Ljk5MTYgMTUwLjEzNiA5Ny41Njc4IDEzOS43MTYgMTE0LjcwM0MxMjkuNTE5IDEzMS4zNTIgMTEyLjY3NyAxNDMuOTk0IDkzLjYzNTQgMTQ4LjUzM0M3My45OTggMTUzLjMzNSA1My4yNTU1IDE1MC4wODQgMzYuMDI5NiAxMzkuNTAzQzE5LjEzMDggMTI5LjEwMyA3LjAyODQ5IDExMi40NDUgMi4zNjE1MSA5My4xNTkzQzEuMDk1NTQgODcuNzc3IDAuNDU2MTEgODIuNzE5NiAwLjQzNDM3OCA3Ny4yMTgzQzAuNDMyNzI0IDc2Ljc5OTYgMC4yNTE2MSA3Ni4yNzgyIDAgNzUuOTM3MUwwIDc1LjA1OThaIi8+PHBhdGggZmlsbD0iIzlGQ0ZFRiIgZD0iTTczLjk0MDkgNi45MjQ1NkMxMTEuODAzIDYuMDYzMzggMTQzLjE5OSAzNi4wNDk0IDE0NC4wNzggNzMuOTExMkMxNDQuOTU2IDExMS43NzMgMTE0Ljk4NSAxNDMuMTgzIDc3LjEyMzIgMTQ0LjA3OUMzOS4yMzczIDE0NC45NzUgNy44MDI2MiAxMTQuOTggNi45MjM1NiA3Ny4wOTM2QzYuMDQ0NSAzOS4yMDcyIDM2LjA1NDEgNy43ODYzIDczLjk0MDkgNi45MjQ1NloiLz48cGF0aCBmaWxsPSIjMjcyNTI2IiBkPSJNOTQuNzgwMyA3My40NzA3QzExMC4xMTggNzIuMTQ1NSAxMTkuMDQyIDYwLjIzMzkgMTI0LjA2OSA0Ni44MjE1QzEyMy40MjcgNTUuNjY2MyAxMjIuNDYgNjEuMjI0NyAxMTkuNzYgNjkuODIwM0MxMTEuOTUxIDkyLjg0NiA5NS45MjU1IDExMC42MTUgNzUuMzE1OCAxMjMuMDM1QzY4LjU1MDggMTE5LjcyNiA1OC41NTA3IDExMS4yNDggNTMuMzk1OCAxMDUuOTMxQzQxLjE1MzUgOTMuMzA1OSAzMi4xMTMyIDc3LjQ5NzMgMjguNjIyNiA2MC4xODY1QzI3LjkxOTggNTYuNzAxNCAyNy4wNzA0IDUxLjQzNjIgMjcuMTQyMyA0Ny44NzYzQzI3LjcxMzQgNDguNDg3NyAyOS40MjYzIDUzLjE5NiAzMC4wODI2IDU0LjQwMDVDMzUuMjcwNSA2My45MjIzIDQ0LjE2NTIgNzIuOTUxOCA1NS43Nzc1IDczLjI4NzFDNjAuNDIxMyA4Mi40NzY0IDY2LjQ3MjMgOTIuMDM3NSA3NS4zMzMgOTcuNjI4OUM4NC40NDcxIDkxLjM2ODMgODkuNzYwMiA4My4xNTE3IDk0Ljc4MDMgNzMuNDcwN1oiLz48cGF0aCBmaWxsPSIjMjcyNTI2IiBkPSJNNzUuMjY4NyAyNy45MjU4Qzc2LjA0MiAyOC40NTUgNzkuODU4NiAzMi40NzA2IDgwLjc5ODcgMzMuMzk3N0M4NS42MTY5IDM4LjE0OTMgOTAuMzI4NyA0My4xMjQ5IDk1LjI0MTEgNDcuNzc0QzkxLjUwNDUgNTUuMzIxMiA4Ny43MTUzIDYyLjg0MjMgODMuODczOCA3MC4zMzY3QzgxLjMzMyA3NS4yOTg5IDc3LjU1MjYgODIuNDE5NSA3NS40MTExIDg3LjQ3NjVDNjguMjg1OCA3NS41MTI3IDYyLjE0NTEgNjAuMjI1MyA1NS4xMTE0IDQ3Ljk4MTFDNjEuODg2MiA0MS40NTQxIDY4LjUxOTcgMzQuNTI5MyA3NS4yNjg3IDI3LjkyNThaIi8+PC9zdmc+'); /* PASTE INTELLECT SVG BASE64 HERE */
+  }
+
+  /* Tap icon */
+  fab-tap {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAyNS4yLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiDQoJIHZpZXdCb3g9IjAgMCAxNTEgMTUxIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCAxNTEgMTUxOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPg0KCS5zdDB7ZmlsbDojRkVGRUZFO30NCjwvc3R5bGU+DQo8cGF0aCBkPSJNNzIuMywwaDYuMWwwLjEsMGMyLDAuNyw2LjYsMSw4LjksMS40YzIuOSwwLjUsNS4zLDEsOC4yLDEuOGMyMS40LDYsMzksMjEuMSw0OC4zLDQxLjNjMi40LDUuMiwzLjgsOS45LDUuMSwxNS41DQoJYzAuNiwyLjUsMS4zLDEwLjgsMiwxMi4ydjdsMCwwLjFjLTAuNiwxLjUtMS4zLDcuNi0xLjcsOS44Yy0wLjQsMi41LTEsNS0xLjcsNy40Yy03LjksMjYuNC0yOC43LDQ2LTU1LjMsNTIuMw0KCWMtMi4zLDAuNS0xMS43LDEuNi0xMi45LDIuM2gtNy42Yy0xLjEtMC42LTcuNy0xLjMtOS41LTEuNmMtMi43LTAuNC01LjMtMS03LjktMS43Yy0yNC45LTcuMy00NC4yLTI2LjktNTEuMi01MS44DQoJQzIuNiw5My41LDIsOTEsMS42LDg4LjVDMS4zLDg2LjYsMC44LDgwLDAsNzguN3YtNi40YzAuNi0xLDEuOC0xMS41LDIuNi0xNC40YzEuNC01LjIsMS45LTcuMyw0LjItMTIuNQ0KCUMxNS43LDI0LjcsMzMuNCw5LjIsNTUuMSwzLjJjNC0xLjEsOC0xLjgsMTIuMS0yLjNDNjguNiwwLjcsNzAuOSwwLjYsNzIuMywwTDcyLjMsMHoiLz4NCjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik01NS41LDI1LjZjMC45LTAuMiw0LjQtMC4yLDUuNC0wLjJjMTIuNSwwLjMsMjQuMyw1LjUsMzMsMTQuNWMxMC41LDEwLjksMTMuMywyMiwxMy4xLDM2LjYNCgljLTEyLjQsMC4zLTI2LDAuMS0zOC41LDBDNzgsOTEuNSw4OC40LDEwNi4yLDk4LDEyMS4zYzIuNCwzLjcsNSw3LjksNy42LDExLjRjLTIuOCwxLjUtNS45LDIuOC04LjksMy45Yy00LjIsMS42LTEwLDIuOC0xNC41LDMuMg0KCWMtMTcsMS44LTM0LTMuMi00Ny4zLTEzLjljLTEzLjMtMTAuNy0yMS43LTI2LjItMjMuNS00My4xQzEwLDY3LjksMTIuNiw1NS4yLDIyLjIsNDMuNUMzMC43LDMzLDQyLjEsMjcsNTUuNSwyNS42eiIvPg0KPC9zdmc+DQo='); /* PASTE TAP SVG BASE64 HERE */
+  }
+
+  /* Untap icon */
+  fab-untap {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTUxIiBoZWlnaHQ9IjE1MSIgdmlld0JveD0iMCAwIDE1MSAxNTEiPjxwYXRoIGZpbGw9IiM5RjY2MjgiIGQ9Ik03Mi4zMjI3IDBMNzguNDgxNiAwQzc5LjkxODIgMC44MDI5NTEgODguMzg2NCAxLjQ3NDA0IDkwLjc1MTEgMS45NDczMUMxMDcuMjI5IDUuMjQ1MTQgMTE5LjQwNSAxMy4yMTM1IDEzMS4wMzIgMjQuODcwMUwxMzMuMzMyIDI3LjUyNzVDMTM2LjE2NCAzMC44MTEzIDEzOS4zODMgMzUuODY2IDE0MS41MDIgMzkuNjM1M0MxNDQuMTEyIDQ0LjczMzMgMTQ2LjE3NiA0OS4zMzMgMTQ3Ljc4MyA1NC44NzU2TDE0OC44MTYgNTkuMTQyQzE0OS42MzMgNjIuMDE3MyAxNTAuMjYyIDcwLjQ3NjQgMTUxIDcxLjU2NjlMMTUxIDc5LjQxNzZDMTUwLjUyMSA4MC40NjE2IDE1MC40MjYgODEuNTc4MyAxNTAuMjk4IDgyLjcwNkMxNDkuNzY0IDg3LjQyNDMgMTQ5LjE0NiA5Mi4wNzIyIDE0Ny44MDMgOTYuNjQ3NkMxNDEuMDM2IDExOS4yMzUgMTI0LjE4NSAxMzcuNDEyIDEwMi4xNzQgMTQ1Ljg2OEM5OC4xMTQ1IDE0Ny40NjEgOTQuMDc0OSAxNDguMzA0IDg5LjkwNjQgMTQ5LjI4NkM4Ny43OTgyIDE0OS43ODMgODAuODA5NiAxNTAuMzUyIDc5LjcxOTcgMTUxTDcxLjUzNzEgMTUxQzcwLjI0NDEgMTUwLjE2NCA2NC4xNjEyIDE0OS45MzcgNjIuNDIyNCAxNDkuNjE5QzI5LjU4MzMgMTQzLjYxOSAzLjM4MDg2IDExNi4xOTMgMC44MDM4NzcgODIuNjMxMUMwLjcxMzI1NCA4MS40NTA5IDAuNDkwNDIgNzkuNDc5OCAwIDc4LjQwNTJMMCA3Mi41NzMzQzAuMjA0NTY0IDcyLjI3MTYgMi4yOTY0NiA1OC41NzQgMi44OTMwNCA1Ni4yNDk2QzkuNzcwMjggMzAuNDA2OSAyOS44NDc1IDEwLjE1NjQgNTUuNjMwMSAzLjA1NzNDNTcuNzYxNyAyLjQ4MDM0IDU5LjkxOTYgMi4wMDUwNSA2Mi4wOTYzIDEuNjMzMDJDNjMuODE2NyAxLjM0OTEgNzEuMjE3MSAwLjczNjczNSA3Mi4zMjI3IDBaIi8+PHBhdGggZmlsbD0iI0ZFRkVGRSIgZD0iTTc0LjU0NyA0NC4wNzA4Qzg2LjE4NTcgNDMuNzAwMSA5NS4xNDIyIDQ1LjI5MDQgMTA0Ljg3OSA1Mi4wNTQzQzE0MC41NDEgNzcuMTAwMSAxMjcuNzU0IDEzMC4yMTYgODYuMDA4IDEzOS4xNDJDODMuMDkyOSAxMzkuNzY2IDc5Ljg1NjQgMTM5Ljg5IDc2Ljg4MjggMTM5Ljk1OUM2Mi40NDQ0IDE0MC4yOTggNDkuNjY1NCAxMzYuMTQ2IDM3Ljg0MTEgMTI4LjAxNkMyNy4xMDI2IDEyMC4zMzQgMTguOTY3OSAxMDkuNTU0IDE0LjUyNjcgOTcuMTE5NkM4LjI1NTIzIDc5LjM2MTUgMTAuMzQxOCA2Mi4wNjk2IDE4LjMyNjkgNDUuMzY4M0MxOS45ODg3IDQ2LjcxMDIgMjMuNzA0IDQ5LjA0OTQgMjUuNjA3NCA1MC4zMTQ4TDQwLjU3OSA2MC4xNjE4QzUxLjI5MzcgNjcuMTk3NyA2My43MjY1IDc1Ljg1MzQgNzQuNTM0OSA4Mi4zNjUyQzc0LjMzNTEgNjkuOTMzIDc0LjM4MzQgNTYuNTEyOCA3NC41NDcgNDQuMDcwOFoiLz48L3N2Zz4='); /* PASTE UNTAP SVG BASE64 HERE */
+  }
+
+  :first-child {
+    margin-top: 0;
+  }
+}
+</style>
