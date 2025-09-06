@@ -79,7 +79,7 @@ const printPage = function () {
   }, 100);
 }
 
-const [noResourceImage] = useImage('/img/symbols/symbol_nocost.png');
+const [noResourceImage] = useImage('/img/symbols/cardsymbol_nocost.png');
 const [powerImage] = useImage('/img/symbols/cardsymbol_power.svg');
 const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
 </script>
