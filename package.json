@@ -14,7 +14,6 @@
     "@heroicons/vue": "^2.0.17",
     "@sidekickicons/vue": "^0.14.0",
     "@tailwindcss/vite": "^4.0.9",
-    "@tinymce/tinymce-vue": "^6.1.0",
     "@tiptap/extension-bold": "^3.4.1",
     "@tiptap/extension-emoji": "^3.4.1",
     "@tiptap/extension-italic": "^3.4.1",

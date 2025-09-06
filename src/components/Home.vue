@@ -12,7 +12,6 @@ import {
   TrashIcon
 } from "@heroicons/vue/24/solid/index.js";
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
-import useTinyMCEConfig from "../config/tinyMCE.js";
 import {useImage} from "vue-konva";
 import ButtonDropdown from "./ButtonDropdown.vue";
 import Editor from "./Editor/Editor.vue";
@@ -65,8 +64,6 @@ const readFile = function readFile(event) {
 
   FR.readAsDataURL(event.target.files[0]);
 }
-
-const tinyMCEConfig = useTinyMCEConfig(fields);
 
 const printPage = function () {
   const stageInstance = stage.value.getStage();

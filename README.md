@@ -57,7 +57,7 @@ npm run build
 - **Frontend**: Vue 3 with Composition API
 - **Styling**: Tailwind CSS v4
 - **Canvas Rendering**: Konva.js for high-quality card generation
-- **Text Editor**: TinyMCE with custom FAB symbol integration
+- **Text Editor**: Tiptap with custom FAB symbol integration
 - **Build Tool**: Vite
 - **Deployment**: GitHub Pages
 

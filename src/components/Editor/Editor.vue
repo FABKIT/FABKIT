@@ -294,7 +294,7 @@ export default {
     color: white !important;
   }
 
-  /* Override TinyMCE's default bold behavior */
+  /* Override default bold behavior */
   strong, b {
     font-family: 'palatino_lt_stdmedium', serif !important;
     font-weight: normal !important;
@@ -306,7 +306,7 @@ export default {
     font-weight: normal !important;
   }
 
-  /* Handle cases where TinyMCE uses spans with inline styles */
+  /* Handle cases where editor uses spans with inline styles */
   span[style*="font-weight: bold"],
   span[style*="font-weight: bolder"],
   [data-mce-style*="font-weight: bold"],
