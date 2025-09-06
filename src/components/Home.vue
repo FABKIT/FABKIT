@@ -51,6 +51,9 @@ const {
 } = useCard();
 
 const {cardRarities} = useCardRarities();
+console.log('First rarity:', cardRarities[0]);
+console.log('First rarity image:', cardRarities[0]?.image);
+console.log('Image structure:', cardRarities[0]?.image?.value || cardRarities[0]?.image);
 
 const readFile = function readFile(event) {
 
@@ -167,7 +170,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </div>
               </div>
               <div v-if="isFieldShown('cardResource')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResource">Resource</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResource">Cost</label>
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
@@ -200,7 +203,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </div>
               </div>
               <div v-if="isFieldShown('cardTalent')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTalent">Talent (f.e. Mystic)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTalent">Talent</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardTalent"
@@ -215,6 +218,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                     <option value="Light">Light</option>
                     <option value="Lightning">Lightning</option>
                     <option value="Mystic">Mystic</option>
+                    <option value="Pirate">Mystic</option>
                     <option value="Royal">Royal</option>
                     <option value="Shadow">Shadow</option>
                     <option value="Custom">Custom</option>
@@ -254,6 +258,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                     <option value="Illusionist">Illusionist</option>
                     <option value="Mechanologist">Mechanologist</option>
                     <option value="Merchant">Merchant</option>
+                    <option value="Necromancer">Necromancer</option>
                     <option value="Ninja">Ninja</option>
                     <option value="Ranger">Ranger</option>
                     <option value="Runeblade">Runeblade</option>
@@ -294,6 +299,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                     <option value="Illusionist">Illusionist</option>
                     <option value="Mechanologist">Mechanologist</option>
                     <option value="Merchant">Merchant</option>
+                    <option value="Necromancer">Necromancer</option>
                     <option value="Ninja">Ninja</option>
                     <option value="Ranger">Ranger</option>
                     <option value="Runeblade">Runeblade</option>
@@ -320,9 +326,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </template>
               </div>
               <div v-if="isFieldShown('cardActionSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardActionSubtype">Action subtype (f.e
-                  Attack
-                  Action)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardActionSubtype">Subtype</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardActionSubtype"
@@ -360,8 +364,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </template>
               </div>
               <div v-if="isFieldShown('cardDefenseReactionSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardDefenseReactionSubtype">Defense Reaction
-                  subtype (optional, f.e: Trap)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardDefenseReactionSubtype">Subtype</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardDefenseReactionSubtype"
@@ -390,9 +393,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </template>
               </div>
               <div v-if="isFieldShown('cardEquipmentSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardEquipmentSubtype">Equipment subtype
-                  (f.e.
-                  Legs)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardEquipmentSubtype">Subtype</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardEquipmentSubtype"
@@ -427,8 +428,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </template>
               </div>
               <div v-if="isFieldShown('cardInstantSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardInstantSubtype">Instant subtype (f.e.
-                  Aura)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardInstantSubtype">Subtype</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardInstantSubtype"
@@ -458,9 +458,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </template>
               </div>
               <div v-if="isFieldShown('cardResourceSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtype">Resource subtype
-                  (f.e.
-                  Gem)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtype">Subtype</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardResourceSubtype"
@@ -502,7 +500,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </div>
               </div>
               <div v-if="isFieldShown('cardHeroSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtype">Hero subtype</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtype">Subtype</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardHeroSubtype"
@@ -518,8 +516,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </div>
               </div>
               <div v-if="isFieldShown('cardWeaponSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardWeaponSubtype">Weapon subtype (f.e.
-                  Axe)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardWeaponSubtype">Subtype</label>
                 <div class="mt-2 grid grid-cols-1">
                   <select
                       id="cardWeaponSubtype"
@@ -566,6 +563,17 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                   </div>
                 </template>
               </div>
+              <div v-if="isFieldShown('cardTokenSubtype')" class="">
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTokenSubtype">Subtype</label>
+                <div class="mt-2">
+                  <div
+                      class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
+                    <input id="cardTokenSubtype" v-model="fields.cardTokenSubtype"
+                           class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
+                           type="text">
+                  </div>
+                </div>
+              </div>
               <div v-if="isFieldShown('cardWeapon')" class="">
                 <label id="cardWeapon" class="block text-sm/6 font-medium text-primary dark:text-white">1H or 2H?</label>
                 <fieldset aria-label="1H or 2H?">
@@ -580,29 +588,32 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                 </fieldset>
               </div>
               <div v-if="isFieldShown('cardRarity')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardRarity">Rarity</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardRarity"
-                      v-model="fields.cardRarity"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option v-for="rarity in cardRarities" :value="rarity.id">{{ rarity.label }}</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-                <div v-if="isFieldShown('cardTokenSubtype')" class="">
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTokenSubtype">Subtype (optional)
-                    (f.e. Aura)</label>
-                  <div class="mt-2">
-                    <div
-                        class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardTokenSubtype" v-model="fields.cardTokenSubtype"
-                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                             type="text">
-                    </div>
-                  </div>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white mb-2">Rarity</label>
+                <div class="flex flex-wrap gap-3 w-full">
+                    <button
+                        type="button"
+                        v-for="rarity in cardRarities"
+                        :key="rarity.id"
+                        @click="fields.cardRarity = rarity.id"
+                        :class="[
+                          'h-14 w-14 sm:h-10 sm:w-10 rounded-md border-2 transition-all duration-200 hover:scale-105 focus:outline-none flex items-center justify-center',
+                          fields.cardRarity === rarity.id
+                            ? 'border-primary bg-primary/10 shadow-lg'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-dark hover:border-gray-400 dark:hover:border-gray-500'
+                        ]"
+                        :title="rarity.label"
+                        :aria-label="`Select ${rarity.label} rarity`"
+                    >
+                    <img
+                        v-if="rarity.image[0]?.value && rarity.image[1]?.value === 'loaded'"
+                        :src="rarity.image[0].value.src"
+                        :alt="rarity.label"
+                        class="h-8 w-8 sm:h-6 sm:w-6 object-contain"
+                    />
+                    <span v-else class="text-xs font-medium text-center">
+                      {{ rarity.label.charAt(0) }}
+                    </span>
+                  </button>
                 </div>
               </div>
               <div v-if="isFieldShown('cardDefense')" class="">
