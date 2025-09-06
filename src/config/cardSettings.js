@@ -214,6 +214,19 @@ const cardSettings = {
                 align: "center",
                 fill: "black",
             },
+        },
+        token: {
+            cardName: {
+                x: 58,
+                y: 37.5,
+                width: 334,
+                height: 31,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
         }
     },
     flat: {
@@ -424,6 +437,19 @@ const cardSettings = {
             },
         },
         equipment: {
+            cardName: {
+                x: 68.5,
+                y: 31.9,
+                width: 314,
+                height: 41,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
+        },
+        token: {
             cardName: {
                 x: 68.5,
                 y: 31.9,
