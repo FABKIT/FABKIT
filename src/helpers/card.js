@@ -156,6 +156,9 @@ export function useCard() {
     const availableCardbacks = computed(() => {
         return cardbacks.filter(el => {
             let type = 'General';
+            if (fields.cardType === 'ally') {
+                type = 'token';
+            }
             if (['equipment', 'hero', 'demi_hero', 'equipment', 'weapon', 'token', 'resource'].includes(fields.cardType)) {
                 type = fields.cardType;
                 if (fields.cardType === 'demi_hero') {

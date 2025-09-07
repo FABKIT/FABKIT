@@ -536,6 +536,48 @@ const types = [
                 id: "cardRarity",
             },
         ],
+    },
+    {
+        type: 'ally',
+        label: 'Ally (non-action)',
+        fields: [
+            {
+                id: "cardName",
+            },
+            {
+                id: "cardText",
+            },
+            {
+                id: "cardPower",
+            },
+            {
+                id: "cardTalent",
+            },
+            {
+                id: "cardTalentCustom",
+            },
+            {
+                id: "cardClass",
+            },
+            {
+                id: "cardClassCustom",
+            },
+            {
+                id: "cardSecondaryClass",
+            },
+            {
+                id: "cardSecondaryClassCustom",
+            },
+            {
+                id: "cardAllySubtype",
+            },
+            {
+                id: "cardLife",
+            },
+            {
+                id: "cardRarity",
+            },
+        ],
     }
 ]
 
