@@ -145,10 +145,23 @@ export function useCard() {
         return selectedType.fields.map(el => el.id);
     })
     const isFieldShown = (fieldId) => {
-        if (activeFields.value.includes(fieldId)) return true;
-        // Reset field value when it's not shown
-        fields[fieldId] = '';
-        return false;
+        if (!activeFields.value.includes(fieldId)) {
+            fields[fieldId] = '';
+            return false;
+        }
+
+        if (fields.cardType === 'action') {
+            if (fieldId === 'cardDefense' && fields.cardActionSubtype === 'Ally') {
+                fields.cardDefense = '';
+                return false;
+            }
+            if (fieldId === 'cardLife' && fields.cardActionSubtype !== 'Ally') {
+                fields.cardLife = '';
+                return false;
+            }
+        }
+
+        return true;
     };
 
     const cardbacks = useCardBacks();
@@ -187,11 +200,13 @@ export function useCard() {
         const filtered = filteredAvailableCardbacks.value;
 
         if (backgroundIndex.value > (filtered.length - 1)) {
-            // Reset the index to 0 if it's out of bounds
-            backgroundIndex.value = 0;
+            // Only reset if we have a filtered list and no pending style change
+            if (filtered.length > 0) {
+                backgroundIndex.value = 0;
+            }
         }
 
-        return filtered[backgroundIndex.value];
+        return filtered[backgroundIndex.value] || filtered[0];
     })
 
     const currentBackground = computed(() => {
@@ -336,9 +351,76 @@ export function useCard() {
         backgroundIndex.value = 0;
     });
 
+    const findBestMatch = (targetName, cardbackList) => {
+        if (!targetName || !cardbackList.length) return 0;
+
+        const calculateSimilarity = (str1, str2) => {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+
+            if (longer.length === 0) return 1;
+
+            const editDistance = (s1, s2) => {
+                const matrix = Array(s2.length + 1).fill(null).map(() => Array(s1.length + 1).fill(null));
+
+                for (let i = 0; i <= s1.length; i++) matrix[0][i] = i;
+                for (let j = 0; j <= s2.length; j++) matrix[j][0] = j;
+
+                for (let j = 1; j <= s2.length; j++) {
+                    for (let i = 1; i <= s1.length; i++) {
+                        const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+                        matrix[j][i] = Math.min(
+                            matrix[j][i - 1] + 1,
+                            matrix[j - 1][i] + 1,
+                            matrix[j - 1][i - 1] + cost
+                        );
+                    }
+                }
+
+                return matrix[s2.length][s1.length];
+            };
+
+            return (longer.length - editDistance(longer, shorter)) / longer.length;
+        };
+
+        let bestMatch = 0;
+        let highestSimilarity = 0;
+
+        cardbackList.forEach((cardback, index) => {
+            const similarity = calculateSimilarity(
+                targetName.toLowerCase(),
+                cardback.name.toLowerCase()
+            );
+
+            if (similarity > highestSimilarity) {
+                highestSimilarity = similarity;
+                bestMatch = index;
+            }
+        });
+
+        return bestMatch;
+    };
+
+
     const handleStyleToggle = (event) => {
+        const currentCardbackName = currentCardback.value?.name;
+        const currentIndex = backgroundIndex.value;
+
         selectedStyle.value = event.target.checked ? 'flat' : 'dented';
-    }
+
+        if (currentCardbackName) {
+            nextTick(() => {
+                const newFilteredCardbacks = filteredAvailableCardbacks.value;
+                const exactMatchIndex = newFilteredCardbacks.findIndex(cb => cb.name === currentCardbackName);
+
+                if (exactMatchIndex !== -1) {
+                    backgroundIndex.value = exactMatchIndex;
+                } else {
+                    backgroundIndex.value = findBestMatch(currentCardbackName, newFilteredCardbacks);
+                }
+            });
+        }
+    };
 
     const {cardRarities} = useCardRarities();
     const cardRarityImage = computed(() => {
@@ -529,7 +611,6 @@ export function useCard() {
     watch(() => fields.cardUploadedArtwork, (newUploadedArtwork) => {
         canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
     }, {deep: true});
-
 
     // Define virtual size for our scene
     const sceneWidth = 450;

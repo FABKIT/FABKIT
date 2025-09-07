@@ -82,6 +82,7 @@ const printPage = function () {
 const [noResourceImage] = useImage('/img/symbols/cardsymbol_nocost.png');
 const [powerImage] = useImage('/img/symbols/cardsymbol_power.svg');
 const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
+const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
 </script>
 
 <template>
@@ -334,6 +335,7 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                       class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
                     <option value="">None</option>
                     <option value="Attack">Attack</option>
+                    <option value="Ally">Ally</option>
                     <option value="Arrow Attack">Arrow Attack</option>
                     <option value="Dagger Attack">Dagger Attack</option>
                     <option value="Aura">Aura</option>
@@ -619,19 +621,18 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
               <div v-if="isFieldShown('cardDefense')" class="">
                 <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardDefense">Defense</label>
                 <div class="mt-2">
-                  <div
-                      class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
+                  <div class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input id="cardDefense" v-model="fields.cardDefense"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="text">
                   </div>
                 </div>
               </div>
+
               <div v-if="isFieldShown('cardLife')" class="">
                 <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardLife">Life</label>
                 <div class="mt-2">
-                  <div
-                      class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
+                  <div class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input id="cardLife" v-model="fields.cardLife"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="text">
@@ -756,6 +757,13 @@ const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
                         :config="{
                        ...getConfig('defenseImage'),
                        image: defenseImage,
+                     }"
+                    />
+                    <v-image
+                        v-if="fields.cardLife !== ''"
+                        :config="{
+                       ...getConfig('lifeImage'),
+                       image: lifeImage,
                      }"
                     />
                   </v-layer>
