@@ -48,6 +48,9 @@ const types = [
             {
                 id: "cardDefense",
             },
+            {
+                id: "cardLife",
+            },
         ],
     },
     {

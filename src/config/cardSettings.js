@@ -131,6 +131,12 @@ const cardSettings = {
                 width: 36,
                 height: 36,
             },
+            lifeImage: {
+                x: 383.5,
+                y: 561.3,
+                width: 36,
+                height: 36,
+            },
         },
         // Specialty cases
         hero: {
@@ -226,6 +232,25 @@ const cardSettings = {
                 verticalAlign: "middle",
                 align: "center",
                 fill: "black",
+            },
+        },
+        ally: {
+            cardName: {
+                x: 58,
+                y: 37.5,
+                width: 334,
+                height: 31,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
+            lifeImage: {
+                x: 383.5,
+                y: 561.3,
+                width: 36,
+                height: 36,
             },
         }
     },
@@ -374,6 +399,12 @@ const cardSettings = {
                 width: 30,
                 height: 30,
             },
+            lifeImage: {
+                x: 392,  // Adjust these values as needed for flat
+                y: 553.6,
+                width: 30,
+                height: 30,
+            },
         },
         hero: {
             cardUploadedArtwork: {
@@ -460,6 +491,25 @@ const cardSettings = {
                 verticalAlign: "middle",
                 align: "center",
                 fill: "black",
+            },
+        },
+        ally: {
+            cardName: {
+                x: 68.5,
+                y: 31.9,
+                width: 314,
+                height: 41,
+                fontFamily: 'amanda_std_regular',
+                fontSize: 29.1,
+                verticalAlign: "middle",
+                align: "center",
+                fill: "black",
+            },
+            lifeImage: {
+                x: 392,  // Adjust these values as needed for flat
+                y: 553.6,
+                width: 30,
+                height: 30,
             },
         }
     }
