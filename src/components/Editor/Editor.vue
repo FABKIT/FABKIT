@@ -1,92 +1,116 @@
 <template>
-  <div v-if="editor" class="border rounded-md p-1 border-white min-h-10">
-    <div class="pb-1 border-b border-b-white flex flex-wrap gap-1">
-      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+  <div v-if="editor" class="border rounded-lg p-3 border-white min-h-12 bg-white dark:bg-[#2A2A2A] shadow-sm">
+    <div class="flex flex-wrap gap-2">
+      <div class="inline-flex rounded-lg bg-[#2A2A2A]/5 dark:bg-white/5 p-1">
         <button
-            :class="{ 'button-primary-active': editor.isActive('bold') }"
-            class="relative inline-flex items-center rounded-l-md button-primary px-2 py-2 focus:z-10"
+            :class="{
+              'bg-[#A6864A] text-white shadow-md': editor.isActive('bold'),
+              'text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20': !editor.isActive('bold')
+            }"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1"
             type="button"
             @click="editor.chain().focus().toggleBold().run()"
         >
           <span class="sr-only">Toggle Bold</span>
-          <BoldIcon aria-hidden="true" class="size-5"/>
+          <BoldIcon aria-hidden="true" class="size-4"/>
         </button>
         <button
-            :class="{ 'button-primary-active': editor.isActive('italic') }"
-            class="relative inline-flex items-center button-primary px-2 py-2 focus:z-10"
+            :class="{
+              'bg-[#A6864A] text-white shadow-md': editor.isActive('italic'),
+              'text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20': !editor.isActive('italic')
+            }"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1"
             type="button"
             @click="editor.chain().focus().toggleItalic().run()"
         >
           <span class="sr-only">Toggle Italic</span>
-          <ItalicIcon aria-hidden="true" class="size-5"/>
+          <ItalicIcon aria-hidden="true" class="size-4"/>
         </button>
         <button
-            :class="{ 'button-primary-active': editor.isActive('underline') }"
-            class="relative inline-flex items-center rounded-r-md button-primary px-2 py-2 focus:z-10"
+            :class="{
+              'bg-[#A6864A] text-white shadow-md': editor.isActive('underline'),
+              'text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20': !editor.isActive('underline')
+            }"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1"
             type="button"
             @click="editor.chain().focus().toggleUnderline().run()"
         >
           <span class="sr-only">Toggle Underline</span>
-          <UnderlineIcon aria-hidden="true" class="size-5"/>
+          <UnderlineIcon aria-hidden="true" class="size-4"/>
         </button>
       </div>
-      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+
+      <div class="inline-flex rounded-lg bg-[#2A2A2A]/5 dark:bg-white/5 p-1">
         <button
-            :class="{ 'button-primary-active': editor.isActive('bulletList') }"
-            class="relative inline-flex items-center rounded-l-md button-primary px-2 py-2 focus:z-10"
+            :class="{
+              'bg-[#A6864A] text-white shadow-md': editor.isActive('bulletList'),
+              'text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20': !editor.isActive('bulletList')
+            }"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1"
             type="button"
             @click="editor.chain().focus().toggleBulletList().run()"
         >
           <span class="sr-only">Toggle bullet list</span>
-          <ListBulletIcon aria-hidden="true" class="size-5"/>
+          <ListBulletIcon aria-hidden="true" class="size-4"/>
         </button>
         <button
-            :class="{ 'button-primary-active': editor.isActive('orderedList') }"
-            class="relative inline-flex items-center rounded-r-md button-primary px-2 py-2 focus:z-10"
+            :class="{
+              'bg-[#A6864A] text-white shadow-md': editor.isActive('orderedList'),
+              'text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20': !editor.isActive('orderedList')
+            }"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1"
             type="button"
             @click="editor.chain().focus().toggleOrderedList().run()"
         >
           <span class="sr-only">Toggle ordered list</span>
-          <NumberedListIcon aria-hidden="true" class="size-5"/>
+          <NumberedListIcon aria-hidden="true" class="size-4"/>
         </button>
       </div>
-      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+
+      <div class="inline-flex rounded-lg bg-[#2A2A2A]/5 dark:bg-white/5 p-1">
         <button
-            :class="{ 'button-primary-active': editor.isActive({ textAlign: 'left' }) }"
-            class="relative inline-flex items-center rounded-l-md button-primary px-2 py-2 focus:z-10"
+            :class="{
+              'bg-[#A6864A] text-white shadow-md': editor.isActive({ textAlign: 'left' }),
+              'text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20': !editor.isActive({ textAlign: 'left' })
+            }"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1"
             type="button"
             @click="editor.chain().focus().setTextAlign('left').run()"
         >
           <span class="sr-only">Left</span>
-          <Bars3BottomLeftIcon aria-hidden="true" class="size-5"/>
+          <Bars3BottomLeftIcon aria-hidden="true" class="size-4"/>
         </button>
         <button
-            :class="{ 'button-primary-active': editor.isActive({ textAlign: 'center' }) }"
-            class="relative inline-flex items-center rounded-r-md button-primary px-2 py-2 focus:z-10"
+            :class="{
+              'bg-[#A6864A] text-white shadow-md': editor.isActive({ textAlign: 'center' }),
+              'text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20': !editor.isActive({ textAlign: 'center' })
+            }"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1"
             type="button"
             @click="editor.chain().focus().setTextAlign('center').run()"
         >
           <span class="sr-only">Center</span>
-          <Bars3BottomCenterIcon aria-hidden="true" class="size-5"/>
+          <Bars3BottomCenterIcon aria-hidden="true" class="size-4"/>
         </button>
       </div>
-      <div class="isolate inline-flex rounded-md shadow-xs dark:shadow-none">
+
+      <div class="inline-flex rounded-lg bg-[#2A2A2A]/5 dark:bg-white/5 p-1">
         <button
             v-for="(emoji, index) in customEmojis"
-            :class="{
-              'rounded-l-md': index === 0,
-              'rounded-r-md': index === customEmojis.length - 1,
-            }"
-            class="relative inline-flex items-center button-primary px-2 py-2 focus:z-10"
+            :key="emoji.name"
+            class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1 text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20"
             type="button"
             @click="editor.chain().focus().setEmoji(emoji.name).run()"
         >
           <span class="sr-only">Add {{ emoji.name }} icon</span>
-          <img v-if="emoji.fallbackImage" :src="emoji.fallbackImage" aria-hidden="true" :alt="emoji.name" class="size-5"/>
+          <img v-if="emoji.fallbackImage" :src="emoji.fallbackImage" aria-hidden="true" :alt="emoji.name" class="size-4"/>
         </button>
       </div>
     </div>
-    <editor-content :editor="editor"/>
+
+    <div class="mt-3 min-h-32 focus-within:ring-1 focus-within:ring-[#A6864A]/50 rounded-md transition-all duration-150">
+      <editor-content :editor="editor"/>
+    </div>
   </div>
 </template>
 
@@ -104,87 +128,52 @@ import TextAlign from "@tiptap/extension-text-align";
 
 const customEmojis = [
   {
-    // A unique name of the emoji which will be stored as attribute
     name: 'cost',
-    // A list of unique shortcodes that are used by input rules to find the emoji
     shortcodes: ['cost'],
-    // A list of tags that can help for searching emojis
     tags: ['cost'],
-    // A name that can help to group emojis
     group: 'General',
-    // The image to be rendered
     fallbackImage: '/img/symbols/icon_cost.svg',
   },
   {
-    // A unique name of the emoji which will be stored as attribute
     name: 'power',
-    // A list of unique shortcodes that are used by input rules to find the emoji
     shortcodes: ['power'],
-    // A list of tags that can help for searching emojis
     tags: ['power'],
-    // A name that can help to group emojis
     group: 'General',
-    // The image to be rendered
     fallbackImage: '/img/symbols/icon_pwr.svg',
   },
   {
-    // A unique name of the emoji which will be stored as attribute
     name: 'defense',
-    // A list of unique shortcodes that are used by input rules to find the emoji
     shortcodes: ['defense'],
-    // A list of tags that can help for searching emojis
     tags: ['defense'],
-    // A name that can help to group emojis
     group: 'General',
-    // The image to be rendered
     fallbackImage: '/img/symbols/icon_def.svg',
   },
   {
-    // A unique name of the emoji which will be stored as attribute
     name: 'life',
-    // A list of unique shortcodes that are used by input rules to find the emoji
     shortcodes: ['life'],
-    // A list of tags that can help for searching emojis
     tags: ['life'],
-    // A name that can help to group emojis
     group: 'General',
-    // The image to be rendered
     fallbackImage: '/img/symbols/icon_hp.svg',
   },
   {
-    // A unique name of the emoji which will be stored as attribute
     name: 'intellect',
-    // A list of unique shortcodes that are used by input rules to find the emoji
     shortcodes: ['intellect'],
-    // A list of tags that can help for searching emojis
     tags: ['intellect'],
-    // A name that can help to group emojis
     group: 'General',
-    // The image to be rendered
     fallbackImage: '/img/symbols/icon_int.svg',
   },
   {
-    // A unique name of the emoji which will be stored as attribute
     name: 'tap',
-    // A list of unique shortcodes that are used by input rules to find the emoji
     shortcodes: ['tap'],
-    // A list of tags that can help for searching emojis
     tags: ['tap'],
-    // A name that can help to group emojis
     group: 'General',
-    // The image to be rendered
     fallbackImage: '/img/symbols/icon_t.svg',
   },
   {
-    // A unique name of the emoji which will be stored as attribute
     name: 'untap',
-    // A list of unique shortcodes that are used by input rules to find the emoji
     shortcodes: ['untap'],
-    // A list of tags that can help for searching emojis
     tags: ['untap'],
-    // A name that can help to group emojis
     group: 'General',
-    // The image to be rendered
     fallbackImage: '/img/symbols/icon_u.svg',
   },
 ]
@@ -215,7 +204,6 @@ export default {
   },
   watch: {
     modelValue(value) {
-      // HTML
       const isSame = this.editor.getHTML() === value
 
       if (isSame) {
@@ -255,12 +243,11 @@ export default {
       ],
       content: this.modelValue,
       onUpdate: () => {
-        // HTML
         this.$emit('update:modelValue', this.editor.getHTML())
       },
       editorProps: {
         attributes: {
-          class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none',
+          class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl p-3 focus:outline-none',
         },
       }
     })
@@ -273,9 +260,10 @@ export default {
 </script>
 
 <style lang="scss">
-/* Basic editor styles */
+
 .tiptap {
-  // Emoji extension styles
+  min-height: 8rem;
+  cursor: text;
   [data-type='emoji'] {
     img {
       display: inline;
@@ -294,19 +282,16 @@ export default {
     color: white !important;
   }
 
-  /* Override default bold behavior */
   strong, b {
     font-family: 'palatino_lt_stdmedium', serif !important;
     font-weight: normal !important;
   }
 
-  /* Ensure strong inside a paragraph is styled correctly */
   p strong, p b {
     font-family: 'palatino_lt_stdmedium', serif !important;
     font-weight: normal !important;
   }
 
-  /* Handle cases where editor uses spans with inline styles */
   span[style*="font-weight: bold"],
   span[style*="font-weight: bolder"] {
     font-family: 'palatino_lt_stdmedium', serif !important;
