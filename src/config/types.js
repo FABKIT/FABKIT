@@ -325,6 +325,9 @@ const types = [
             {
                 id: "cardDefense",
             },
+            {
+                id: "cardSubType",
+            },
         ],
     },
     {
@@ -386,6 +389,9 @@ const types = [
                 id: "cardLife",
             },
             {
+                id: "cardSubType",
+            },
+            {
                 id: "cardRarity",
             },
         ],
@@ -421,6 +427,9 @@ const types = [
             {
                 id: "cardRarity",
             },
+            {
+                id: "cardSubType",
+            },
         ],
     },
     {
@@ -453,6 +462,9 @@ const types = [
             },
             {
                 id: "cardRarity",
+            },
+            {
+                id: "cardSubType",
             },
         ],
     }
