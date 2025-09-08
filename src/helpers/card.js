@@ -24,11 +24,8 @@ export function useCard() {
         cardPower: '',
         cardHeroIntellect: '',
         cardTalent: '',
-        cardTalentCustom: '',
         cardClass: '',
-        cardClassCustom: '',
         cardSecondaryClass: '',
-        cardSecondaryClassCustom: '',
         cardSubType: '',
         cardMacroGroup: '',
         cardWeapon: '',
@@ -40,10 +37,7 @@ export function useCard() {
         cardFooterText: '',
     });
     const cardTypeText = computed(() => {
-        let classText = fields.cardClass;
-        if (classText === 'Custom' && fields.cardClassCustom) {
-            classText = fields.cardClassCustom;
-        }
+        const classText = fields.cardClass;
 
         let subtype = '';
         switch (fields.cardType) {
@@ -67,15 +61,9 @@ export function useCard() {
         let secondaryClass = '';
         if (fields.cardSecondaryClass) {
             secondaryClass = ' / ' + fields.cardSecondaryClass;
-            if (fields.cardSecondaryClass === 'Custom') {
-                secondaryClass = ' / ' + fields.cardSecondaryClassCustom;
-            }
         }
 
-        let talent = fields.cardTalent;
-        if (talent === 'Custom') {
-            talent = fields.cardTalentCustom;
-        }
+        const talent = fields.cardTalent;
 
         // Filter out null, undefined, and empty string values before joining
         const parts = [talent, classText, secondaryClass, type, subtype]
@@ -626,11 +614,8 @@ export function useCard() {
         fields.cardPower = '';
         fields.cardHeroIntellect = '';
         fields.cardTalent = '';
-        fields.cardTalentCustom = '';
         fields.cardClass = '';
-        fields.cardClassCustom = '';
         fields.cardSecondaryClass = '';
-        fields.cardSecondaryClassCustom = '';
         fields.subType = '';
         fields.cardMacroGroup = '';
         fields.cardWeapon = '';

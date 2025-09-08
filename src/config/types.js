@@ -22,19 +22,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -70,19 +61,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -112,19 +94,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -157,19 +130,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -199,19 +163,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -238,19 +193,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -280,19 +226,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -325,19 +262,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -383,19 +311,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardRarity",
@@ -422,19 +341,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardSubType",
@@ -461,19 +371,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardTokenSubtype",
@@ -503,25 +404,13 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
-            },
-            {
-                id: "cardClassCustom",
             },
             {
                 id: "cardSecondaryClass",
             },
             {
-                id: "cardSecondaryClassCustom",
-            },
-            {
                 id: "cardWeaponSubtype",
-            },
-            {
-                id: "cardWeaponSubtypeCustom",
             },
             {
                 id: "cardWeapon",
@@ -548,19 +437,10 @@ const types = [
                 id: "cardTalent",
             },
             {
-                id: "cardTalentCustom",
-            },
-            {
                 id: "cardClass",
             },
             {
-                id: "cardClassCustom",
-            },
-            {
                 id: "cardSecondaryClass",
-            },
-            {
-                id: "cardSecondaryClassCustom",
             },
             {
                 id: "cardAllySubtype",
