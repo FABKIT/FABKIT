@@ -4,7 +4,7 @@ import {PhotoIcon} from '@heroicons/vue/24/solid'
 import {ChevronDownIcon} from '@heroicons/vue/16/solid'
 import {useCard} from "../helpers/card.js";
 import {useCardRarities} from "../helpers/cardRarities.js";
-import {fieldOptions} from '../helpers/fieldOptions.js'
+import {useFieldOptions} from '../helpers/fieldOptions.js'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -19,7 +19,7 @@ import ButtonDropdown from "./ButtonDropdown.vue";
 import FormCombobox from "./FormCombobox.vue";
 import Editor from "./Editor/Editor.vue";
 import {useSubtypeOptions} from "../helpers/subtypeOptions.js";
-const { talentOptions, classOptions } = fieldOptions()
+const { talentOptions, classOptions } = useFieldOptions()
 
 const {
   types,
