@@ -68,6 +68,9 @@ export const useSubtypeOptions = (type) => {
             {value: 'Sword', label: 'Sword'},
             {value: 'Wrench', label: 'Wrench'}
         ],
+        token: [
+            {value: '', label: 'None'},
+        ],
     }
 
     return options[type];

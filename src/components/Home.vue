@@ -255,17 +255,6 @@ watch(() => fields.cardClass, (newValue) => {
                   </div>
                 </div>
               </div>
-              <div v-if="isFieldShown('cardTokenSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTokenSubtype">Subtype</label>
-                <div class="mt-2">
-                  <div
-                      class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                    <input id="cardTokenSubtype" v-model="fields.cardTokenSubtype"
-                           class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                           type="text">
-                  </div>
-                </div>
-              </div>
               <div v-if="isFieldShown('cardWeapon')" class="">
                 <label id="cardWeapon" class="block text-sm/6 font-medium text-primary dark:text-white">1H or 2H?</label>
                 <fieldset aria-label="1H or 2H?">
