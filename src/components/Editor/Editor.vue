@@ -96,7 +96,7 @@
 
       <div class="inline-flex rounded-lg bg-[#2A2A2A]/5 dark:bg-white/5 p-1">
         <button
-            v-for="(emoji, index) in customEmojis"
+            v-for="emoji in customEmojis"
             :key="emoji.name"
             class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1 text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20"
             type="button"
@@ -217,7 +217,12 @@ export default {
   mounted() {
     this.editor = new Editor({
       extensions: [
-        StarterKit,
+        StarterKit.configure({
+          bold: false,
+          listItem: false,
+          orderedList: false,
+          bulletList: false,
+        }),
         Bold,
         ListItem,
         BulletList.configure({
