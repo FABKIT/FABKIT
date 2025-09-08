@@ -85,6 +85,9 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
+                id: "cardSubtype",
+            },
+            {
                 id: "cardRarity",
             },
             {
@@ -122,6 +125,9 @@ const types = [
             },
             {
                 id: "cardSecondaryClassCustom",
+            },
+            {
+                id: "cardSubtype",
             },
             {
                 id: "cardRarity",
@@ -356,6 +362,9 @@ const types = [
             // },
             {
                 id: "cardRarity",
+            },
+            {
+                id: "cardSubtype",
             },
         ],
     },

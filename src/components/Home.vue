@@ -245,8 +245,7 @@ watch(() => fields.cardClass, (newValue) => {
                   :options="useSubtypeOptions(fields.cardType)"
               />
               <div v-if="isFieldShown('cardMacroGroup')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardMacroGroup">Macro Group (f.e.
-                  Rosetta)</label>
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardMacroGroup">Macro Type</label>
                 <div class="mt-2">
                   <div
                       class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">

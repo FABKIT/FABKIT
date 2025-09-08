@@ -77,11 +77,13 @@ export function useCard() {
             talent = fields.cardTalentCustom;
         }
 
-        return `${talent} ${classText} ${secondaryClass} ${type} ${subtype}`
+        // Filter out null, undefined, and empty string values before joining
+        const parts = [talent, classText, secondaryClass, type, subtype]
+            .filter(part => part && part !== 'null' && part !== 'undefined' && part.trim() !== '');
+
+        return parts.join(' ')
             .replace(/  +/g, ' ')
-            .replace(/ $/, '')
-            .replace(/^ /, '')
-            ;
+            .trim();
     });
 
     const types = useTypes();
