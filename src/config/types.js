@@ -37,10 +37,7 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
-                id: "cardActionSubtype",
-            },
-            {
-                id: "cardActionSubtypeCustom",
+                id: "cardSubtype",
             },
             {
                 id: "cardRarity",
@@ -169,10 +166,7 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
-                id: "cardDefenseReactionSubtype",
-            },
-            {
-                id: "cardDefenseReactionSubtypeCustom",
+                id: "cardSubtype",
             },
             {
                 id: "cardRarity",
@@ -214,7 +208,7 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
-                id: "cardHeroSubtype",
+                id: "cardSubtype",
             },
             {
                 id: "cardLife",
@@ -253,10 +247,7 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
-                id: "cardEquipmentSubtype",
-            },
-            {
-                id: "cardEquipmentSubtypeCustom",
+                id: "cardSubtype",
             },
             {
                 id: "cardRarity",
@@ -298,7 +289,7 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
-                id: "cardHeroSubtype",
+                id: "cardSubtype",
             },
             {
                 id: "cardLife",
@@ -343,10 +334,7 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
-                id: "cardInstantSubtype",
-            },
-            {
-                id: "cardInstantSubtypeCustom",
+                id: "cardSubtype",
             },
             {
                 id: "cardRarity",
@@ -440,10 +428,7 @@ const types = [
                 id: "cardSecondaryClassCustom",
             },
             {
-                id: "cardResourceSubtype",
-            },
-            {
-                id: "cardResourceSubtypeCustom",
+                id: "cardSubtype",
             },
             {
                 id: "cardRarity",
@@ -483,9 +468,6 @@ const types = [
             },
             {
                 id: "cardTokenSubtype",
-            },
-            {
-                id: "cardTokenSubtypeCustom",
             },
             {
                 id: "cardLife",

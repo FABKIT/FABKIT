@@ -18,7 +18,8 @@ import { watch } from 'vue';
 import ButtonDropdown from "./ButtonDropdown.vue";
 import FormCombobox from "./FormCombobox.vue";
 import Editor from "./Editor/Editor.vue";
-const { talentOptions, classOptions, weaponSubtypeOptions } = fieldOptions()
+import {useSubtypeOptions} from "../helpers/subtypeOptions.js";
+const { talentOptions, classOptions } = fieldOptions()
 
 const {
   types,
@@ -236,169 +237,13 @@ watch(() => fields.cardClass, (newValue) => {
                   input-id="cardSecondaryClass"
                   :options="classOptions"
               />
-              <div v-if="isFieldShown('cardActionSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardActionSubtype">Subtype</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardActionSubtype"
-                      v-model="fields.cardActionSubtype"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="">None</option>
-                    <option value="Attack">Attack</option>
-                    <option value="Ally">Ally</option>
-                    <option value="Arrow Attack">Arrow Attack</option>
-                    <option value="Dagger Attack">Dagger Attack</option>
-                    <option value="Aura">Aura</option>
-                    <option value="Affliction Aura">Affliction Aura</option>
-                    <option value="Construct">Construct</option>
-                    <option value="Invocation">Invocation</option>
-                    <option value="Item">Item</option>
-                    <option value="Shuriken Item">Shuriken Item</option>
-                    <option value="Landmark">Landmark</option>
-                    <option value="Song">Song</option>
-                    <option value="Custom">Custom...</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-                <template v-if="fields.cardActionSubtype === 'Custom'">
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardActionSubtypeCustom">Custom action subtype</label>
-                  <div class="mt-2">
-                    <div
-                        class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardActionSubtypeCustom" v-model="fields.cardActionSubtypeCustom"
-                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
-                             placeholder="Enter custom action subtype"
-                             type="text">
-                    </div>
-                  </div>
-                </template>
-              </div>
-              <div v-if="isFieldShown('cardDefenseReactionSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardDefenseReactionSubtype">Subtype</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardDefenseReactionSubtype"
-                      v-model="fields.cardDefenseReactionSubtype"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="">None</option>
-                    <option value="Trap">Trap</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-                <template v-if="fields.cardDefenseReactionSubtype === 'Custom'">
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardDefenseReactionSubtypeCustom">Custom Defense Reaction
-                    subtype</label>
-                  <div class="mt-2">
-                    <div
-                        class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardDefenseReactionSubtypeCustom" v-model="fields.cardDefenseReactionSubtypeCustom"
-                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
-                             placeholder="Enter custom defense reaction subtype"
-                             type="text">
-                    </div>
-                  </div>
-                </template>
-              </div>
-              <div v-if="isFieldShown('cardEquipmentSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardEquipmentSubtype">Subtype</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardEquipmentSubtype"
-                      v-model="fields.cardEquipmentSubtype"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="">None</option>
-                    <option value="Head">Head</option>
-                    <option value="Chest">Chest</option>
-                    <option value="Arms">Arms</option>
-                    <option value="Legs">Legs</option>
-                    <option value="Base">Base</option>
-                    <option value="Off-Hand">Off-Hand</option>
-                    <option value="Item">Item</option>
-                    <option value="Custom">Custom...</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-                <template v-if="fields.cardEquipmentSubtype === 'Custom'">
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardEquipmentSubtypeCustom">Custom equipment
-                    subtype</label>
-                  <div class="mt-2">
-                    <div
-                        class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardEquipmentSubtypeCustom" v-model="fields.cardEquipmentSubtypeCustom"
-                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
-                             placeholder="Enter custom equipment subtype"
-                             type="text">
-                    </div>
-                  </div>
-                </template>
-              </div>
-              <div v-if="isFieldShown('cardInstantSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardInstantSubtype">Subtype</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardInstantSubtype"
-                      v-model="fields.cardInstantSubtype"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="">None</option>
-                    <option value="Aura">Aura</option>
-                    <option value="Figment">Figment</option>
-                    <option value="Trap">Trap</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-                <template v-if="fields.cardInstantSubtype === 'Custom'">
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardInstantSubtypeCustom">Custom instant subtype</label>
-                  <div class="mt-2">
-                    <div
-                        class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardInstantSubtypeCustom" v-model="fields.cardInstantSubtypeCustom"
-                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
-                             placeholder="Enter custom instant subtype"
-                             type="text">
-                    </div>
-                  </div>
-                </template>
-              </div>
-              <div v-if="isFieldShown('cardResourceSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtype">Subtype</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardResourceSubtype"
-                      v-model="fields.cardResourceSubtype"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="">None</option>
-                    <option value="Gem">Gem</option>
-                    <option value="Chi">Chi</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-                <template v-if="fields.cardResourceSubtype === 'Custom'">
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtypeCustom">Custom resource
-                    subtype</label>
-                  <div class="mt-2">
-                    <div
-                        class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardResourceSubtypeCustom" v-model="fields.cardResourceSubtypeCustom"
-                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
-                             placeholder="Enter custom resource subtype"
-                             type="text">
-                    </div>
-                  </div>
-                </template>
-              </div>
+              <FormCombobox
+                  v-if="isFieldShown('cardSubtype')"
+                  v-model="fields.cardSubType"
+                  label="Subtype"
+                  input-id="cardTalent"
+                  :options="useSubtypeOptions(fields.cardType)"
+              />
               <div v-if="isFieldShown('cardMacroGroup')" class="">
                 <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardMacroGroup">Macro Group (f.e.
                   Rosetta)</label>
@@ -410,70 +255,6 @@ watch(() => fields.cardClass, (newValue) => {
                            type="text">
                   </div>
                 </div>
-              </div>
-              <div v-if="isFieldShown('cardHeroSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardResourceSubtype">Subtype</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardHeroSubtype"
-                      v-model="fields.cardHeroSubtype"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="">None</option>
-                    <option value="Demon">Demon</option>
-                    <option value="Young">Young</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-              </div>
-              <div v-if="isFieldShown('cardWeaponSubtype')" class="">
-                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardWeaponSubtype">Subtype</label>
-                <div class="mt-2 grid grid-cols-1">
-                  <select
-                      id="cardWeaponSubtype"
-                      v-model="fields.cardWeaponSubtype"
-                      class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary dark:text-white outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6">
-                    <option value="">None</option>
-                    <option value="Axe">Axe</option>
-                    <option value="Book">Book</option>
-                    <option value="Bow">Bow</option>
-                    <option value="Brush">Brush</option>
-                    <option value="Club">Club</option>
-                    <option value="Dagger">Dagger</option>
-                    <option value="Fiddle">Fiddle</option>
-                    <option value="Flail">Flail</option>
-                    <option value="Gun">Gun</option>
-                    <option value="Hammer">Hammer</option>
-                    <option value="Lute">Lute</option>
-                    <option value="Orb">Orb</option>
-                    <option value="Pistol">Pistol</option>
-                    <option value="Polearm">Polearm</option>
-                    <option value="Scepter">Scepter</option>
-                    <option value="Scroll">Scroll</option>
-                    <option value="Scythe">Scythe</option>
-                    <option value="Staff">Staff</option>
-                    <option value="Sword">Sword</option>
-                    <option value="Wrench">Wrench</option>
-                    <option value="Custom">Custom...</option>
-                  </select>
-                  <ChevronDownIcon
-                      aria-hidden="true"
-                      class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"/>
-                </div>
-                <template v-if="fields.cardWeaponSubtype === 'Custom'">
-                  <!-- Custom input field for weapon type -->
-                  <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardWeaponSubtypeCustom"></label>
-                  <div class="mt-2">
-                    <div
-                        class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
-                      <input id="cardWeaponSubtypeCustom" v-model="fields.cardWeaponSubtypeCustom"
-                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6 "
-                             placeholder="Enter custom weapon subtype"
-                             type="text">
-                    </div>
-                  </div>
-                </template>
               </div>
               <div v-if="isFieldShown('cardTokenSubtype')" class="">
                 <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardTokenSubtype">Subtype</label>
