@@ -39,21 +39,21 @@ export function useCard() {
     const cardTypeText = computed(() => {
         const classText = fields.cardClass;
 
-        let subtype = '';
+        let subTypeText;
         switch (fields.cardType) {
             case 'token':
-                subtype = fields.cardTokenSubtype;
+                subTypeText = fields.cardTokenSubtype;
                 break;
             default:
-                subtype = fields.cardSubType;
+                subTypeText = fields.cardSubType;
                 break;
         }
 
-        if (subtype) {
-            subtype = ' - ' + subtype;
+        if (subTypeText) {
+            subTypeText = ' - ' + subTypeText;
         }
         if (fields.cardType === 'weapon') {
-            subtype += ' ' + fields.cardWeapon;
+            subTypeText += ' ' + fields.cardWeapon;
         }
 
         let type = capitalizeFirstLetter(fields.cardType).split('_').map((word) => capitalizeFirstLetter(word)).join(' ');
@@ -66,7 +66,7 @@ export function useCard() {
         const talent = fields.cardTalent;
 
         // Filter out null, undefined, and empty string values before joining
-        const parts = [talent, classText, secondaryClass, type, subtype]
+        const parts = [talent, classText, secondaryClass, type, subTypeText]
             .filter(part => part && part !== 'null' && part !== 'undefined' && part.trim() !== '');
 
         return parts.join(' ')
@@ -92,11 +92,11 @@ export function useCard() {
         }
 
         if (fields.cardType === 'action') {
-            if (fieldId === 'cardDefense' && fields.cardActionSubtype === 'Ally') {
+            if (fieldId === 'cardDefense' && fields.cardSubType === 'Ally') {
                 fields.cardDefense = '';
                 return false;
             }
-            if (fieldId === 'cardLife' && fields.cardActionSubtype !== 'Ally') {
+            if (fieldId === 'cardLife' && fields.cardSubType !== 'Ally') {
                 fields.cardLife = '';
                 return false;
             }
@@ -345,7 +345,6 @@ export function useCard() {
 
     const handleStyleToggle = (event) => {
         const currentCardbackName = currentCardback.value?.name;
-        const currentIndex = backgroundIndex.value;
 
         selectedStyle.value = event.target.checked ? 'flat' : 'dented';
 
@@ -527,7 +526,7 @@ export function useCard() {
         })
     });
 
-    watch(fields.cardText, (newText) => {
+    watch(fields.cardText, () => {
         nextTick().then(async () => {
             updateSize();
             recalculateRatio();
