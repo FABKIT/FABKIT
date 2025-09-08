@@ -29,20 +29,8 @@ export function useCard() {
         cardClassCustom: '',
         cardSecondaryClass: '',
         cardSecondaryClassCustom: '',
-        cardActionSubtype: '',
-        cardActionSubtypeCustom: '',
-        cardDefenseReactionSubtype: '',
-        cardDefenseReactionSubtypeCustom: '',
-        cardEquipmentSubtype: '',
-        cardEquipmentSubtypeCustom: '',
-        cardInstantSubtype: '',
-        cardInstantSubtypeCustom: '',
-        cardResourceSubtype: '',
-        cardResourceSubtypeCustom: '',
+        cardSubType: '',
         cardMacroGroup: '',
-        cardHeroSubtype: '',
-        cardWeaponSubtype: '',
-        cardWeaponSubtypeCustom: '',
         cardWeapon: '',
         cardRarity: 0,
         cardTokenSubtype: '',
@@ -59,48 +47,11 @@ export function useCard() {
 
         let subtype = '';
         switch (fields.cardType) {
-            case 'action':
-                subtype = fields.cardActionSubtype;
-                if (subtype === 'Custom') {
-                    subtype = fields.cardActionSubtypeCustom;
-                }
-                break;
-            case 'defense_reaction':
-                subtype = fields.cardDefenseReactionSubtype;
-                if (subtype === 'Custom') {
-                    subtype = fields.cardDefenseReactionSubtypeCustom;
-                }
-                break;
-            case 'equipment':
-                subtype = fields.cardEquipmentSubtype;
-                if (subtype === 'Custom') {
-                    subtype = fields.cardEquipmentSubtypeCustom;
-                }
-                break;
-            case 'instant':
-                subtype = fields.cardInstantSubtype;
-                if (subtype === 'Custom') {
-                    subtype = fields.cardInstantSubtypeCustom;
-                }
-                break;
-            case 'resource':
-                subtype = fields.cardResourceSubtype;
-                if (subtype === 'Custom') {
-                    subtype = fields.cardResourceSubtypeCustom;
-                }
-                break;
-            case 'hero':
-            case 'demi_hero':
-                subtype = fields.cardHeroSubtype;
-                break;
-            case 'weapon':
-                subtype = fields.cardWeaponSubtype;
-                if (subtype === 'Custom') {
-                    subtype = fields.cardWeaponSubtypeCustom;
-                }
-                break;
             case 'token':
                 subtype = fields.cardTokenSubtype;
+                break;
+            default:
+                subtype = fields.cardSubType;
                 break;
         }
 
@@ -146,6 +97,7 @@ export function useCard() {
     })
     const isFieldShown = (fieldId) => {
         if (!activeFields.value.includes(fieldId)) {
+            console.log('Field not shown', fieldId);
             fields[fieldId] = '';
             return false;
         }
@@ -677,20 +629,8 @@ export function useCard() {
         fields.cardClassCustom = '';
         fields.cardSecondaryClass = '';
         fields.cardSecondaryClassCustom = '';
-        fields.cardActionSubtype = '';
-        fields.cardActionSubtypeCustom = '';
-        fields.cardDefenseReactionSubtype = '';
-        fields.cardDefenseReactionSubtypeCustom = '';
-        fields.cardEquipmentSubtype = '';
-        fields.cardEquipmentSubtypeCustom = '';
-        fields.cardInstantSubtype = '';
-        fields.cardInstantSubtypeCustom = '';
-        fields.cardResourceSubtype = '';
-        fields.cardResourceSubtypeCustom = '';
+        fields.subType = '';
         fields.cardMacroGroup = '';
-        fields.cardHeroSubtype = '';
-        fields.cardWeaponSubtype = '';
-        fields.cardWeaponSubtypeCustom = '';
         fields.cardWeapon = '';
         fields.cardRarity = 0;
         fields.cardTokenSubtype = '';
