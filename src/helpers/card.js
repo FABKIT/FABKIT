@@ -87,7 +87,6 @@ export function useCard() {
     })
     const isFieldShown = (fieldId) => {
         if (!activeFields.value.includes(fieldId)) {
-            console.log('Field not shown', fieldId);
             fields[fieldId] = '';
             return false;
         }
