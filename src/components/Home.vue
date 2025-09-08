@@ -238,7 +238,7 @@ watch(() => fields.cardClass, (newValue) => {
                   :options="classOptions"
               />
               <FormCombobox
-                  v-if="isFieldShown('cardSubtype')"
+                  v-if="isFieldShown('cardSubType')"
                   v-model="fields.cardSubType"
                   label="Subtype"
                   input-id="cardTalent"
