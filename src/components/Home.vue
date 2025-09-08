@@ -56,9 +56,6 @@ const {
 } = useCard();
 
 const {cardRarities} = useCardRarities();
-console.log('First rarity:', cardRarities[0]);
-console.log('First rarity image:', cardRarities[0]?.image);
-console.log('Image structure:', cardRarities[0]?.image?.value || cardRarities[0]?.image);
 
 const readFile = function readFile(event) {
 
