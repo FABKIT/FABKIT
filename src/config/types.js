@@ -317,6 +317,9 @@ const types = [
                 id: "cardSecondaryClass",
             },
             {
+                id: "cardSubtype",
+            },
+            {
                 id: "cardRarity",
             },
             {
@@ -377,7 +380,7 @@ const types = [
                 id: "cardSecondaryClass",
             },
             {
-                id: "cardTokenSubtype",
+                id: "cardSubtype",
             },
             {
                 id: "cardLife",
@@ -410,7 +413,7 @@ const types = [
                 id: "cardSecondaryClass",
             },
             {
-                id: "cardWeaponSubtype",
+                id: "cardSubtype",
             },
             {
                 id: "cardWeapon",
@@ -443,7 +446,7 @@ const types = [
                 id: "cardSecondaryClass",
             },
             {
-                id: "cardAllySubtype",
+                id: "cardSubtype",
             },
             {
                 id: "cardLife",
