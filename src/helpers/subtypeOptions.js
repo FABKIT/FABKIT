@@ -1,5 +1,8 @@
 export const useSubtypeOptions = (type) => {
     const options = {
+        ally: [
+            {value: '', label: 'None'},
+        ],
         action: [
             {value: '', label: 'None'},
             {value: 'Attack', label: 'Attack'},
