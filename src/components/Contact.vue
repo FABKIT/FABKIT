@@ -80,16 +80,16 @@
             </div>
             <div class="p-6">
               <p class="text-primary/80 dark:text-white/80 leading-relaxed mb-4">
-                Our goal is simple: creating high-quality tools that the Flesh and Blood TCG community actually wants to use. As passionate FaB players ourselves, we saw opportunities to build something meaningful for fellow enthusiasts.
+                Our goal is simple: creating high-quality tools for the Flesh and Blood TCG community. As passionate FaB players ourselves, we saw opportunities to build meaningful tools for fellow enthusiasts.
               </p>
               <p class="text-primary/80 dark:text-white/80 leading-relaxed mb-4">
-                Our flagship tool, the Custom Card Creator, reflects our commitment to authenticity. We've invested considerable effort into making custom cards that look as close to real Flesh and Blood cards as possible – complete with official fonts, proper symbols, and meticulously crafted templates. The result? Custom cards that genuinely feel like they belong in the FaB universe.
+                Our current flagship tool is the Custom Card Creator. We've invested considerable effort into making sure our tool generates cards that look as close to real Flesh and Blood cards as possible – complete with official fonts, proper symbols, and meticulously crafted templates.
               </p>
               <p class="text-primary/80 dark:text-white/80 leading-relaxed mb-4">
-                We believe great tools should be accessible to everyone, which is why FABKIT runs entirely in your browser without requiring downloads. Our commitment to the community extends to making the platform open source, allowing players to contribute and help shape our future.
+                We believe these great tools should be accessible to everyone, which is why FABKIT runs entirely in your browser without requiring downloads. Our commitment to the community extends to making the platform open source, allowing players to contribute and help shape our future.
               </p>
               <p class="text-primary/80 dark:text-white/80 leading-relaxed">
-                This project is a labor of love that we develop in our spare time, driven purely by our passion for the game and a desire to contribute to this amazing community. We're not sponsored or backed by anyone – just some friends who wanted to build something awesome for fellow players. Any  <a href="https://ko-fi.com/fabkit" style="color:#A6864A; text-decoration:underline;">support</a>  helps us dedicate more time to bringing new features to life and keeping everything free for the community.
+                This project is a labor of love that we actively develop in our spare time, driven purely by our passion for the game. We're not sponsored or backed by anyone, we're just some friends who wanted to build something awesome for fellow players. However, any  <a href="https://ko-fi.com/fabkit" style="color:#A6864A; text-decoration:underline;">support</a>  will helps us dedicate more time to bringing new features to life and keeping everything free for the community.
               </p>
             </div>
           </div>
