@@ -30,7 +30,6 @@ export function useCard() {
         cardMacroGroup: '',
         cardWeapon: '',
         cardRarity: 0,
-        cardTokenSubtype: '',
         cardDefense: '',
         cardLife: '',
         cardUploadedArtwork: '',
@@ -41,9 +40,6 @@ export function useCard() {
 
         let subTypeText;
         switch (fields.cardType) {
-            case 'token':
-                subTypeText = fields.cardTokenSubtype;
-                break;
             default:
                 subTypeText = fields.cardSubType;
                 break;
@@ -618,7 +614,6 @@ export function useCard() {
         fields.cardMacroGroup = '';
         fields.cardWeapon = '';
         fields.cardRarity = 0;
-        fields.cardTokenSubtype = '';
         fields.cardDefense = '';
         fields.cardLife = '';
         fields.cardUploadedArtwork = '';
