@@ -1,8 +1,5 @@
 export const useSubtypeOptions = (type) => {
     const options = {
-        ally: [
-            {value: '', label: 'None'},
-        ],
         action: [
             {value: '', label: 'None'},
             {value: 'Attack', label: 'Attack'},
@@ -71,10 +68,12 @@ export const useSubtypeOptions = (type) => {
             {value: 'Sword', label: 'Sword'},
             {value: 'Wrench', label: 'Wrench'}
         ],
-        token: [
-            {value: '', label: 'None'},
-        ],
     }
 
+    if (!options[type]) {
+        return [
+            {value: '', label: 'None'},
+        ];
+    }
     return options[type];
 }
