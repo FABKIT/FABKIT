@@ -53,10 +53,15 @@ export function useCard() {
         }
 
         let type = capitalizeFirstLetter(fields.cardType).split('_').map((word) => capitalizeFirstLetter(word)).join(' ');
+        if (type === 'Demi Hero') type = 'Demi-Hero';
 
         let secondaryClass = '';
         if (fields.cardSecondaryClass) {
-            secondaryClass = ' / ' + fields.cardSecondaryClass;
+            const separator = ['hero', 'demi_hero'].includes(fields.cardType) ? ' ' : ' / ';
+            secondaryClass = separator + fields.cardSecondaryClass;
+            if (fields.cardSecondaryClass === 'Custom') {
+                secondaryClass = separator + fields.cardSecondaryClassCustom;
+            }
         }
 
         const talent = fields.cardTalent;
@@ -631,6 +636,7 @@ export function useCard() {
     }
 
     const downloadImage = function () {
+        downloadingImage.value = true;
         const stageInstance = stage.value.getStage();
         stageInstance.setWidth(450);
         stageInstance.setHeight(628);
@@ -651,12 +657,15 @@ export function useCard() {
                 .catch((err) => {
                     console.error('oops, something went wrong!', err);
                 }).finally(() => {
+                downloadingImage.value = false;
                 updateSize();
                 recalculateRatio();
                 stageInstance.batchDraw();
             });
         })
     }
+
+    const downloadingImage = ref(false);
 
     return {
         types,
@@ -691,5 +700,6 @@ export function useCard() {
         stageHeight,
         scale,
         downloadImage,
+        downloadingImage,
     };
 }
