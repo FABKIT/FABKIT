@@ -665,6 +665,39 @@ export function useCard() {
 
     const downloadingImage = ref(false);
 
+    const generateAndOpen = function () {
+        downloadingImage.value = true;
+        const stageInstance = stage.value.getStage();
+        stageInstance.setWidth(450);
+        stageInstance.setHeight(628);
+        stageInstance.setScale(1, 1);
+        scale.value = 1;
+        stageInstance.batchDraw();
+        recalculateRatio();
+        nextTick(() => {
+            toPng(document.querySelector('.cardParent'), {
+                width: 450,
+                canvasWidth: 450,
+                height: 628,
+                canvasHeight: 628,
+            })
+                .then((dataUrl) => {
+                    // Open in new tab instead of downloading
+                    const newWindow = window.open();
+                    newWindow.document.write(`<img src="${dataUrl}" style="max-width:100%;height:auto;" alt="Generated Card">`);
+                    newWindow.document.title = fields.cardName || 'Generated Card';
+                })
+                .catch((err) => {
+                    console.error('oops, something went wrong!', err);
+                }).finally(() => {
+                downloadingImage.value = false;
+                updateSize();
+                recalculateRatio();
+                stageInstance.batchDraw();
+            });
+        })
+    }
+
     return {
         types,
         fields,
@@ -700,5 +733,6 @@ export function useCard() {
         downloadImage,
         loadingBackground,
         downloadingImage,
+        generateAndOpen,
     };
 }
