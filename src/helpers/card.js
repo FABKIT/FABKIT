@@ -51,6 +51,9 @@ export function useCard() {
         if (fields.cardType === 'weapon') {
             subTypeText += ' ' + fields.cardWeapon;
         }
+        if (fields.cardType === 'weapon_equipment') {
+            subTypeText += ' ' + fields.cardWeapon;
+        }
 
         let type = capitalizeFirstLetter(fields.cardType).split('_').map((word) => capitalizeFirstLetter(word)).join(' ');
         if (type === 'Demi Hero') type = 'Demi-Hero';
@@ -119,6 +122,9 @@ export function useCard() {
                 if (fields.cardType === 'demi_hero') {
                     type = 'hero';
                 }
+            }
+            if (fields.cardType === 'weapon_equipment') {
+                type = 'weapon';
             }
             return el.type.toLowerCase() === type.toLowerCase();
         });

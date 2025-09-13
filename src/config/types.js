@@ -433,6 +433,42 @@ const types = [
         ],
     },
     {
+        type: 'weapon_equipment',
+        label: 'Weapon Equipment',
+        fields: [
+            {
+                id: "cardName",
+            },
+            {
+                id: "cardText",
+            },
+            {
+                id: "cardPower",
+            },
+            {
+                id: "cardTalent",
+            },
+            {
+                id: "cardClass",
+            },
+            {
+                id: "cardSecondaryClass",
+            },
+            {
+                id: "cardSubtype",
+            },
+            {
+                id: "cardWeapon",
+            },
+            {
+                id: "cardDefense",
+            },
+            {
+                id: "cardRarity",
+            },
+        ],
+    },
+    {
         type: 'ally',
         label: 'Ally (non-action)',
         fields: [
