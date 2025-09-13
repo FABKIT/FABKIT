@@ -306,5 +306,32 @@ export default {
   :first-child {
     margin-top: 0;
   }
+  .fab-icon {
+    display: inline-block !important;
+    width: 0.9em !important;
+    height: 0.9em !important;
+    max-width: 0.9em !important;
+    max-height: 0.9em !important;
+    background-size: 88% !important;
+    background-repeat: no-repeat !important;
+    background-position: bottom !important;
+    vertical-align: 0.05em !important;
+    cursor: pointer !important;
+    user-select: all !important;
+    -webkit-user-select: all !important;
+    -moz-user-select: all !important;
+    -ms-user-select: all !important;
+    pointer-events: none !important;
+  }
+
+  // Also target any nested emoji containers
+  [data-type='emoji'] .fab-icon {
+    display: inline-block !important;
+    width: 0.9em !important;
+    height: 0.9em !important;
+    max-width: 0.9em !important;
+    max-height: 0.9em !important;
+    vertical-align: 0.05em !important;
+  }
 }
 </style>

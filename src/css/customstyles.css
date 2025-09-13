@@ -208,20 +208,20 @@
 
 .fab-icon {
     display: inline-block !important;
-    width: 1em;
-    height: 1em;
-    max-width:1em;
-    max-height: 1em;
+    width: 0.9em;
+    height: 0.9em;
+    max-width: 0.9em;
+    max-height: 0.9em;
     background-size: 88%;
     background-repeat: no-repeat;
     background-position: bottom;
-    vertical-align: -1px;
+    vertical-align: -0.15em;
     cursor: pointer;
     user-select: all;
     -webkit-user-select: all;
     -moz-user-select: all;
     -ms-user-select: all;
-    pointer-events:none;
+    pointer-events: none;
 }
 
 .cardback-selector-row {
@@ -298,4 +298,36 @@
 
 .dark .cardback-nav-button:hover:not(:disabled) {
     filter: brightness(1.1);
+}
+
+#renderedContent ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+#renderedContent ul li {
+    position: relative;
+    margin-left: 1.2em;
+}
+
+#renderedContent ul li::before {
+    content: "•";
+    position: absolute;
+    left: -1.2em;  /* Move bullet to the left of the text area */
+    top: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+#renderedContent p:empty {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove margin from paragraphs that might appear empty */
+#renderedContent p:only-child:empty {
+    display: none;
 }
