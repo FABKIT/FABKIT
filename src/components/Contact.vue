@@ -95,52 +95,88 @@
           </div>
         </div>
 
-        <!-- Right Section: Our Team -->
-        <div class="bg-white dark:bg-dark rounded-lg shadow-lg border-2 border-primary/20">
-          <div class="px-6 py-4 border-b border-primary/20 bg-primary/5 dark:bg-primary/10">
-            <h2 class="text-xl font-semibold text-primary dark:text-white">
-              Our Team
-            </h2>
-            <p class="text-sm text-primary/70 dark:text-white/70 mt-1">
-              The people behind FABKIT
-            </p>
+        <div class="space-y-8">
+          <div class="bg-white dark:bg-dark rounded-lg shadow-lg border-2 border-primary/20">
+            <div class="px-6 py-4 border-b border-primary/20 bg-primary/5 dark:bg-primary/10">
+              <h2 class="text-xl font-semibold text-primary dark:text-white">
+                Our Team
+              </h2>
+              <p class="text-sm text-primary/70 dark:text-white/70 mt-1">
+                The people behind FABKIT
+              </p>
+            </div>
+            <div class="p-6 space-y-6">
+              <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 border border-primary/20">
+                <div class="flex items-center gap-6">
+                  <div class="w-24 h-24 flex items-center justify-center relative">
+                    <img src="/img/Thencros.svg"/>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-semibold text-primary dark:text-white">@Thencros</h3>
+                    <p class="text-primary/70 dark:text-white/70">UI/UX Designer, Creative Director</p>
+                    <p class="text-sm text-primary/60 dark:text-white/60 mt-1">Product concept, graphic design & UI development</p>
+                  </div>
+                </div>
+                <div class="mt-3 text-right">
+                  <p class="text-xs text-primary/40 dark:text-white/40">Avatar by Diana Johanna Velasquez</p>
+                </div>
+              </div>
+
+              <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 border border-primary/20">
+                <div class="flex items-center gap-6">
+                  <div class="w-24 h-24 flex items-center justify-center relative">
+                    <img src="/img/Lambstream.svg"/>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-semibold text-primary dark:text-white">@Lambstream</h3>
+                    <p class="text-primary/70 dark:text-white/70">Lead Developer</p>
+                    <p class="text-sm text-primary/60 dark:text-white/60 mt-1">Frontend development & application architecture</p>
+                  </div>
+                </div>
+                <div class="mt-3 text-right">
+                  <p class="text-xs text-primary/40 dark:text-white/40">Avatar by Diana Johanna Velasquez</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="p-6 space-y-6">
-            <!-- Team Member 1 -->
-            <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 border border-primary/20">
-              <div class="flex items-center gap-6">
-                <div class="w-24 h-24 flex items-center justify-center relative">
-                  <img src="/img/Thencros.svg"/>
+
+          <div class="bg-white dark:bg-dark rounded-lg shadow-lg border-2 border-primary/20">
+            <div class="px-6 py-4 border-b border-primary/20 bg-primary/5 dark:bg-primary/10">
+              <h2 class="text-xl font-semibold text-primary dark:text-white">
+                Special Mentions
+              </h2>
+            </div>
+            <div class="p-4 max-h-32 overflow-y-auto">
+              <div class="space-y-2">
+                <div class="text-sm text-primary/80 dark:text-white/80 p-3 bg-primary/5 dark:bg-primary/10 rounded">
+                  <span class="font-semibold text-primary dark:text-white">Animoose</span>
+                  <span class="text-primary/60 dark:text-white/60"> - Creator of FabCustomCardCreator.com, a huge inspiration!</span>
                 </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-primary dark:text-white">@Thencros</h3>
-                  <p class="text-primary/70 dark:text-white/70">UI/UX Designer, Creative Director</p>
-                  <p class="text-sm text-primary/60 dark:text-white/60 mt-1">Product concept, graphic design & UI development</p>
+                <div class="text-sm text-primary/80 dark:text-white/80 p-3 bg-primary/5 dark:bg-primary/10 rounded">
+                  <span class="font-semibold text-primary dark:text-white">SalisburyBavo</span>
+                  <span class="text-primary/60 dark:text-white/60"> - Beta tester in the early stages of FABKIT</span>
                 </div>
-              </div>
-              <div class="mt-3 text-right">
-                <p class="text-xs text-primary/40 dark:text-white/40">Avatar by Diana Johanna Velasquez</p>
               </div>
             </div>
+          </div>
 
-            <!-- Team Member 2 -->
-            <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 border border-primary/20">
-              <div class="flex items-center gap-6">
-                <div class="w-24 h-24 flex items-center justify-center relative">
-                  <img src="/img/Lambstream.svg"/>
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-primary dark:text-white">@Lambstream</h3>
-                  <p class="text-primary/70 dark:text-white/70">Lead Developer</p>
-                  <p class="text-sm text-primary/60 dark:text-white/60 mt-1">Frontend development & application architecture</p>
+          <div class="bg-white dark:bg-dark rounded-lg shadow-lg border-2 border-primary/20">
+            <div class="px-6 py-4 border-b border-primary/20 bg-primary/5 dark:bg-primary/10">
+              <h2 class="text-xl font-semibold text-primary dark:text-white">
+                Ko-Fi Supporters
+              </h2>
+            </div>
+            <div class="p-4 max-h-32 overflow-y-auto">
+              <div class="text-xs text-primary/60 dark:text-white/60 italic text-center py-4">
+                <div class="text-sm text-primary/80 dark:text-white/80 p-3 bg-primary/5 dark:bg-primary/10 rounded">
+                  <span class="font-medium">SalisburyBavo</span
                 </div>
               </div>
-              <div class="mt-3 text-right">
-                <p class="text-xs text-primary/40 dark:text-white/40">Avatar by Diana Johanna Velasquez</p>
+              <div class="text-xs text-primary/60 dark:text-white/60 italic text-center py-4">
+                Every supporter gets their name on our website as well as a role on our discord server!
               </div>
             </div>
-
-            <!-- Optional: Add more team members here -->
+          </div>
           </div>
         </div>
       </div>
