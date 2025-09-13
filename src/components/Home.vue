@@ -55,7 +55,7 @@ const {
   scale,
   downloadImage,
   downloadingImage,
-    generateAndOpen,
+  generateAndOpen,
 } = useCard();
 
 const {cardRarities} = useCardRarities();
