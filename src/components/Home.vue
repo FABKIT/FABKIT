@@ -89,12 +89,6 @@ const [powerImage] = useImage('/img/symbols/cardsymbol_power.svg');
 const [defenseImage] = useImage('/img/symbols/cardsymbol_defense.svg');
 const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
 
-watch(() => fields.cardClass, (newValue) => {
-  if (!newValue) {
-    fields.cardSecondaryClass = ''
-  }
-})
-
 </script>
 
 <template>

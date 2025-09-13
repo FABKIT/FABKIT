@@ -550,6 +550,12 @@ export function useCard() {
         canvasHelper.drawUploadedArtwork(newUploadedArtwork, getConfig('cardUploadedArtwork'));
     }, {deep: true});
 
+    watch(() => fields.cardClass, (newValue) => {
+        if (!newValue) {
+            fields.cardSecondaryClass = ''
+        }
+    })
+
     // Define virtual size for our scene
     const sceneWidth = 450;
     const sceneHeight = 628;
