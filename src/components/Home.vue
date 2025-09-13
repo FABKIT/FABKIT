@@ -15,7 +15,6 @@ import {
 } from "@heroicons/vue/24/solid/index.js";
 import {RadioGroup, RadioGroupOption} from "@headlessui/vue";
 import {useImage} from "vue-konva";
-import { watch, nextTick } from 'vue';
 import ButtonDropdown from "./ButtonDropdown.vue";
 import FormCombobox from "./FormCombobox.vue";
 import Editor from "./Editor/Editor.vue";
