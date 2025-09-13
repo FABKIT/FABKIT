@@ -16,7 +16,7 @@
       </div>
 
       <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <ListboxOptions class="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white dark:bg-dark shadow-lg ring-1 ring-black/5 dark:ring-white/5 focus:outline-hidden">
+        <ListboxOptions class="absolute left-1/2 transform -translate-x-1/2 z-50 mt-2 w-72 max-h-[calc(100vh-280px)] origin-top divide-y divide-gray-200 overflow-auto rounded-md bg-white dark:bg-dark shadow-lg ring-1 ring-black/5 dark:ring-white/5 focus:outline-hidden">
           <ListboxOption as="template" v-for="option in options" :key="option.title" :value="option" :disabled="option.disabled" v-slot="{ active, selected }">
             <li :class="[
                 active ? 'bg-primary text-white' : '',
