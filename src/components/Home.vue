@@ -338,7 +338,9 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                   <div class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input id="cardLife" v-model="fields.cardArtworkCredits"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                           type="text">
+                           type="text"
+                           :maxlength="selectedStyle === 'flat' ? 36 : 34"
+                    />
                   </div>
                 </div>
               </div>
