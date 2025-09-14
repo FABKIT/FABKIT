@@ -40,11 +40,9 @@ const {
   stage,
   artwork,
   background,
-  footer,
-  footertext,
-  footertextRight,
   flatFooterText,
   dentedFooterText,
+  artworkCreditsText,
   loadingBackground,
   containerElement,
   contentElement,
@@ -334,6 +332,16 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                   </div>
                 </div>
               </div>
+              <div v-if="fields.cardType !== ''" class="">
+                <label class="block text-sm/6 font-medium text-primary dark:text-white" for="cardLife">Artwork credits</label>
+                <div class="mt-2">
+                  <div class="flex items-center rounded-md bg-white dark:bg-dark pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
+                    <input id="cardLife" v-model="fields.cardArtworkCredits"
+                           class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
+                           type="text">
+                  </div>
+                </div>
+              </div>
               <div v-show="isFieldShown('cardText')" class="sm:col-span-2">
                 <label v-if="['hero', 'demi_hero'].includes(fields.cardType)" id="cardHeroPowerLabel" class="block text-sm/6 font-medium text-primary dark:text-white" for="cardText">Hero power</label>
                 <label v-else id="cardTextLabel" class="block text-sm/6 font-medium text-primary dark:text-white" for="cardText">Card text</label>
@@ -466,27 +474,62 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                         v-bind="{...getConfig('cardTypeText'), fontSize: typeTextFontSize}"
                     ></v-text>
                   </v-layer>
-                  <v-layer id="footer" ref="footer">
+                  <v-layer id="footer">
                     <v-image v-if="fields.cardRarity" id="cardRarity" :image="cardRarityImage" v-bind="getConfig('cardRarity')"></v-image>
-                    <v-text
-                        ref="footertext"
-                        :fontSize="footerTextFontSize"
-                        :text="dentedFooterText"
-                        v-bind="getConfig('cardFooterText')"
-                    />
-                    <v-text
-                        v-if="selectedStyle === 'flat'"
-                        ref="footertextRight"
-                        :fontSize="footerTextFontSize"
-                        :text="flatFooterText"
-                        v-bind="getConfig('cardFooterTextRight')"
-                    />
-
-                    <!-- Copyright overlay -->
-                    <v-text
-                        text="©"
-                        v-bind="getConfig('copyrightOverlay')"
-                    />
+                    <template v-if="selectedStyle === 'dented'">
+                      <v-text
+                          :fontSize="footerTextFontSize"
+                          :text="artworkCreditsText"
+                          v-bind="getConfig('cardArtworkCredits')"
+                      />
+                      <v-text
+                          v-if="fields.cardArtworkCredits !== ''"
+                          :fontSize="footerTextFontSize"
+                          :text="dentedFooterText"
+                          v-bind="getConfig('cardFooterText')"
+                      />
+                      <v-text
+                          v-if="fields.cardArtworkCredits !== ''"
+                          text="©"
+                          v-bind="{...getConfig('copyrightOverlayBottom')}"
+                      />
+                      <v-text
+                          v-else
+                          text="©"
+                          v-bind="{...getConfig('copyrightOverlay')}"
+                      />
+                    </template>
+                    <template v-if="selectedStyle === 'flat'">
+                      <template v-if="fields.cardArtworkCredits !== ''">
+                        <v-text
+                            :fontSize="footerTextFontSize"
+                            :text="artworkCreditsText"
+                            v-bind="getConfig('cardFooterText')"
+                        />
+                        <v-text
+                            :fontSize="footerTextFontSize"
+                            text="NOT TOURNAMENT LEGAL"
+                            v-bind="getConfig('cardFooterTextBottom')"
+                        />
+                      </template>
+                      <template v-else>
+                        <v-text
+                            :fontSize="footerTextFontSize"
+                            text="FABKIT  |  NOT TOURNAMENT LEGAL"
+                            v-bind="getConfig('cardFooterText')"
+                        />
+                      </template>
+                      <v-text
+                          :fontSize="footerTextFontSize"
+                          :text="flatFooterText"
+                          v-bind="getConfig('cardFooterTextRight')"
+                      />
+                      <!-- Copyright overlay -->
+                      <v-text
+                          text="©"
+                          v-bind="getConfig('copyrightOverlay')"
+                      />
+                    </template>
                   </v-layer>
                 </v-stage>
               </div>

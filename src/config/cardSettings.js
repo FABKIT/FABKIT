@@ -93,6 +93,17 @@ const cardSettings = {
             },
             cardFooterText: {
                 x: 128,
+                y: 607.9,
+                width: 204,
+                height: 12,
+                fontFamily: 'dialog_cond_semiboldregular, Arial, sans-serif',
+                fontSize: 10.43,
+                verticalAlign: "top",
+                fill: "white",
+                align: "left",
+            },
+            cardArtworkCredits: {
+                x: 128,
                 y: 595.9,
                 width: 204,
                 height: 12,
@@ -105,6 +116,17 @@ const cardSettings = {
             copyrightOverlay: {
                 x: 305,  // Position where © appears in the dented footer
                 y: 595.5,
+                width: 10,
+                height: 12,
+                fontFamily: 'Arial',
+                fontSize: 10.43,
+                verticalAlign: "top",
+                fill: "white",
+                align: "center",
+            },
+            copyrightOverlayBottom: {
+                x: 272,  // Position where © appears in the dented footer
+                y: 607.5,
                 width: 10,
                 height: 12,
                 fontFamily: 'Arial',
@@ -350,6 +372,17 @@ const cardSettings = {
                 x: 30,
                 y: 76,
             },
+            cardArtworkCredits: {
+                x: 128,
+                y: 595.9,
+                width: 204,
+                height: 12,
+                fontFamily: 'dialog_cond_semiboldregular, Arial, sans-serif',
+                fontSize: 10.43,
+                verticalAlign: "top",
+                fill: "white",
+                align: "left",
+            },
             cardFooterText: {
                 x: 46.4,  // Adjust for left alignment
                 y: 598.4,
@@ -358,8 +391,19 @@ const cardSettings = {
                 fontFamily: 'dialog_cond_semiboldregular, "Arial Narrow", "Helvetica Condensed", Arial, sans-serif',
                 fontSize: 10,
                 verticalAlign: "top",
-                fill: "white",  // Changed to black for flat
+                fill: "white",
                 align: "left",
+            },
+            cardFooterTextBottom: {
+                x: 0,  // Adjust for left alignment
+                y: 610.4,
+                width: 450,
+                height: 12,
+                fontFamily: 'dialog_cond_semiboldregular, "Arial Narrow", "Helvetica Condensed", Arial, sans-serif',
+                fontSize: 10,
+                verticalAlign: "top",
+                fill: "white",
+                align: "center",
             },
             cardFooterTextRight: {
                 x: 222.5,  // Adjust for right side positioning

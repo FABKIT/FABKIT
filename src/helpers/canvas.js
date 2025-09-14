@@ -4,7 +4,6 @@ const CanvasHelpers = class CanvasHelper {
     background = '';
     artworkLayer;
     backgroundLayer;
-    footerLayer;
 
     constructor() {
     }

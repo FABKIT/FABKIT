@@ -34,6 +34,7 @@ export function useCard() {
         cardLife: '',
         cardUploadedArtwork: '',
         cardFooterText: '',
+        cardArtworkCredits: '',
     });
     const cardTypeText = computed(() => {
         const classText = fields.cardClass;
@@ -400,11 +401,22 @@ export function useCard() {
         if (!fontsLoaded.value) {
             return '';
         }
-        if (selectedStyle.value === 'flat') {
-            return 'FABKIT  |  NOT TOURNAMENT LEGAL';
-        }
-        return `FABKIT - NOT TOURNAMENT LEGAL - FaB TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}LSS`;
+        return `NOT TOURNAMENT LEGAL - FaB TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}LSS`;
     });
+
+    const artworkCreditsText = computed(() => {
+        if (!fontsLoaded.value) {
+            return '';
+        }
+        if (selectedStyle.value === 'flat') {
+            if (!fields.cardArtworkCredits) return '';
+            return 'FABKIT  | ' + fields.cardArtworkCredits;
+        }
+
+        if (!fields.cardArtworkCredits) return 'FABKIT - ' + dentedFooterText.value;
+
+        return `FABKIT - ` + fields.cardArtworkCredits;
+    })
 
     const resizeText = ({element, minSize = frameTypeTextConfig.value.minFontSize, maxSize = frameTypeTextConfig.value.maxFontSize, step = frameTypeTextConfig.value.step, unit = 'px'}) => {
         if (!element) {
@@ -516,9 +528,6 @@ export function useCard() {
     const stage = ref();
     const artwork = ref();
     const background = ref();
-    const footer = ref();
-    const footertext = ref();
-    const footertextRight = ref();
 
     const canvasHelper = new CanvasHelper();
 
@@ -593,7 +602,6 @@ export function useCard() {
         fields.cardRarity = 1;
         canvasHelper.artworkLayer = artwork.value.getStage();
         canvasHelper.backgroundLayer = background.value.getStage();
-        canvasHelper.footerLayer = footer.value.getStage();
         updateSize();
         recalculateRatio();
         // Add event listener
@@ -731,11 +739,9 @@ export function useCard() {
         stage,
         artwork,
         background,
-        footer,
-        footertext,
-        footertextRight,
         flatFooterText,
         dentedFooterText,
+        artworkCreditsText,
         containerElement,
         contentElement,
         stageContainerRef,
