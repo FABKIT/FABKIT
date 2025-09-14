@@ -394,7 +394,7 @@ export function useCard() {
         if (!fontsLoaded.value) {
             return '';
         }
-        return `FLESH AND BLOOD TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}Legend Story Studios`;
+        return `FaB TCG BY${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}${String.fromCharCode(0x00A0)}LSS`;
     });
 
     const dentedFooterText = computed(() => {
@@ -410,12 +410,12 @@ export function useCard() {
         }
         if (selectedStyle.value === 'flat') {
             if (!fields.cardArtworkCredits) return '';
-            return 'FABKIT  | ' + fields.cardArtworkCredits;
+            return 'FABKIT  | ' + fields.cardArtworkCredits.toUpperCase() + ' NOT TOURNAMENT LEGAL';
         }
 
         if (!fields.cardArtworkCredits) return 'FABKIT - ' + dentedFooterText.value;
 
-        return `FABKIT - ` + fields.cardArtworkCredits;
+        return `FABKIT - ` + fields.cardArtworkCredits.toUpperCase();
     })
 
     const resizeText = ({element, minSize = frameTypeTextConfig.value.minFontSize, maxSize = frameTypeTextConfig.value.maxFontSize, step = frameTypeTextConfig.value.step, unit = 'px'}) => {

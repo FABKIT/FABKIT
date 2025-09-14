@@ -506,11 +506,6 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                             :text="artworkCreditsText"
                             v-bind="getConfig('cardFooterText')"
                         />
-                        <v-text
-                            :fontSize="footerTextFontSize"
-                            text="NOT TOURNAMENT LEGAL"
-                            v-bind="getConfig('cardFooterTextBottom')"
-                        />
                       </template>
                       <template v-else>
                         <v-text
