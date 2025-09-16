@@ -4,8 +4,48 @@ const CanvasHelpers = class CanvasHelper {
     background = '';
     artworkLayer;
     backgroundLayer;
+    stageLayer;
 
     constructor() {
+    }
+
+    initWheelResize() {
+        if (!this.stageLayer) return;
+
+        this.stageLayer.off('wheel');
+        this.stageLayer.on('wheel', (e) => {
+            e.evt.preventDefault();
+
+            const oldScale = this.artworkLayer.scaleX();
+            const pointer = this.stageLayer.getPointerPosition();
+
+            // Calculate pointer position relative to layer
+            const mousePointTo = {
+                x: (pointer.x - this.artworkLayer.x()) / oldScale,
+                y: (pointer.y - this.artworkLayer.y()) / oldScale,
+            };
+
+            // Determine zoom direction
+            let direction = e.evt.deltaY > 0 ? 1 : -1;
+
+            // Reverse direction for trackpad pinch gestures
+            if (e.evt.ctrlKey) {
+                direction = -direction;
+            }
+
+            const scaleBy = 1.1; // Adjust zoom sensitivity
+            const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+            // Apply scale to layer
+            this.artworkLayer.scale({ x: newScale, y: newScale });
+
+            // Adjust position to zoom relative to pointer
+            const newPos = {
+                x: pointer.x - mousePointTo.x * newScale,
+                y: pointer.y - mousePointTo.y * newScale,
+            };
+            this.artworkLayer.position(newPos);
+        });
     }
 
     // function to calculate crop values from source image, its visible size and a crop strategy
@@ -112,12 +152,14 @@ const CanvasHelpers = class CanvasHelper {
                         ...{
                             name: 'artwork',
                             id: 'img-artwork',
-                            draggable: false,
+                            draggable: true,
                         }
                     });
                 self.artworkLayer.add(img);
                 // apply default left-top crop
                 applyCrop('center-middle');
+                self.artworkLayer.draggable(true);
+                self.initWheelResize();
             }
         );
     }
@@ -140,6 +182,7 @@ const CanvasHelpers = class CanvasHelper {
                         name: 'background',
                         id: 'img-background',
                         draggable: false,
+                        listening: false,
                     });
                     if (existing) {
                         // disable clear before draw
@@ -149,6 +192,7 @@ const CanvasHelpers = class CanvasHelper {
                     // Enable clear before draw
                     self.backgroundLayer.clearBeforeDraw(true);
                     self.backgroundLayer.add(img);
+                    self.backgroundLayer.listening(false);
 
                     resolve();
                 }

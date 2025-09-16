@@ -605,6 +605,7 @@ export function useCard() {
         fields.cardRarity = 1;
         canvasHelper.artworkLayer = artwork.value.getStage();
         canvasHelper.backgroundLayer = background.value.getStage();
+        canvasHelper.stageLayer = stage.value.getStage();
         updateSize();
         recalculateRatio();
         // Add event listener
