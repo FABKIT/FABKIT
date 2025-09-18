@@ -2,6 +2,7 @@
 @use "animations";
 @use "custom";
 
+/* stylelint-disable-next-line scss/at-rule-no-unknown */
 @theme {
   --color-primary: #A6864A;
   --color-dark: #2A2A2A;
