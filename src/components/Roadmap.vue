@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { ClockIcon, LightBulbIcon } from '@heroicons/vue/24/outline'
 import { currentWorkItems as currentWorkData, futurePlans as futurePlansData } from '../config/roadmapData.js'
-import '../css/roadmap.css'
+import '../styles/roadmap.scss'
 
 const currentWorkItems = ref(currentWorkData)
 const futurePlans = ref(futurePlansData)
