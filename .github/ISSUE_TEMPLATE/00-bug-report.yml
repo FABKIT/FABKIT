@@ -1,0 +1,125 @@
+name: "🐛 Bug report"
+description: Report something that isn't working as it should or is outright broken
+title: "[BUG]: "
+labels: ["bug"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              **Before You Start...**
+
+              This form is only for submitting bug reports. If you have a usage question
+              or are unsure if this is really a bug, make sure to:
+
+              - Read the [documentation](https://github.com/FABKIT/FABKIT/blob/master/README.md)
+              - Check [existing issues](https://github.com/FABKIT/FABKIT/issues) for similar problems
+              - Ask on [GitHub Discussions](https://github.com/FABKIT/FABKIT/discussions)
+
+              Also try to search for your issue - it may have already been answered or even fixed in the development branch.
+              However, if you find that an old, closed issue still persists in the latest version,
+              you should open a new issue using the form below instead of commenting on the old issue.
+
+    - type: dropdown
+      id: operating-system
+      attributes:
+          label: Operating System
+          description: Which operating system are you using?
+          options:
+              - Windows (Computer / Laptop)
+              - Linux (specify distro below)
+              - macOS (MacBook / Mac)
+              - Android (specify version below)
+              - iOS
+              - Other
+      validations:
+          required: true
+
+    - type: textarea
+      id: operating-system-extra
+      attributes:
+          label: Provide additional information
+          description: Most operating systems request additional information like the version
+      validations:
+          required: false
+
+    - type: textarea
+      id: steps-to-reproduce
+      attributes:
+          label: Steps to reproduce
+          description: |
+              Please provide clear, step-by-step instructions to reproduce the bug.
+              Include specific actions like "Select Card type", "Select Type", etc.
+          placeholder: |
+              1. Open FABKIT
+              2. Select Card Type
+              3. Click on...
+              4. See error
+      validations:
+          required: true
+
+    - type: textarea
+      id: expected-behaviour
+      attributes:
+          label: Expected behaviour
+          description: |
+              What did you expect to happen? Describe the intended behaviour clearly.
+      validations:
+          required: true
+
+    - type: textarea
+      id: actual-behaviour
+      attributes:
+          label: Actual behaviour
+          description: |
+              What actually happened? Describe what went wrong, including any error messages,
+              crashes, or unexpected behaviour.
+              Most browsers allow you to open developer information using `F12`, include contents of the `console` tab
+      validations:
+          required: true
+
+    - type: textarea
+      id: card-details
+      attributes:
+          label: Card details
+          description: |
+              If this bug occurs with a card setup, please provide details:
+              - Card Type
+              - Pitch
+              - Name
+              - Image
+          placeholder: |
+              - Action card
+              - Old style
+              - Custom image (uploaded by dragging here)
+              - Special description
+
+    - type: textarea
+      id: additional-context
+      attributes:
+          label: Additional context
+          description: |
+              Add any other context about the problem here. This might include:
+              - Screenshots or recordings (drag and drop files here)
+              - Workarounds you've discovered
+              - Similar issues in other applications
+              - When the problem started occurring
+          placeholder: Any additional information that might help us understand and fix the issue...
+
+    - type: markdown
+      attributes:
+          value: |
+              ---
+
+              **Important Notes:**
+
+              - **Complete information required**: Issues that are incomplete or missing required information will be automatically closed. Please fill out all required fields thoroughly.
+
+              - **Additional information**: Maintainers may request additional information, logs, or steps to reproduce the issue. Please respond promptly to help us resolve your issue quickly.
+
+              - **Attachments**: You can drag and drop files (screenshots, crash reports, log files, project files) directly into any text area above.
+
+              - **Response time**: We'll do our best to respond quickly, but please be patient as this is a volunteer-maintained project.
+
+              - **Duplicates**: Before submitting, please search existing issues to avoid duplicates. We may close duplicate reports in favour of the original issue.
+
+              Thank you for helping improve FABKIT! 🗺️

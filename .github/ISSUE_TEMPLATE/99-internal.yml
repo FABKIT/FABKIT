@@ -1,0 +1,21 @@
+name: "🔧 Technical/Internal"
+description: "[CONTRIBUTORS ONLY] Technical discussion, refactoring, or internal work"
+labels: ["internal"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              **⚠️ This template is intended for project contributors and maintainers only.**
+
+              If you're not a contributor, please use the appropriate template:
+              - [Bug Report](https://github.com/FABKIT/FABKIT/issues/new?assignees=&labels=bug&template=00-bug-report.yml) for issues
+              - [Feature Request](https://github.com/FABKIT/FABKIT/issues/new?assignees=&labels=enhancement&template=01-feature-request.yml) for enhancements
+              - [Discussions](https://github.com/FABKIT/FABKIT/discussions) for questions
+
+              Tickets created using this template by non-maintainers will be closed without exception.
+
+    - type: textarea
+      id: body
+      attributes:
+          label: Required work
+          description: What needs to be worked on.

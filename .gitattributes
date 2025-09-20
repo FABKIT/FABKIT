@@ -1,0 +1,103 @@
+# Set default behavior to automatically normalize line endings
+* text=auto eol=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout
+*.js text eol=lf
+*.ts text eol=lf
+*.vue text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+*.editorconfig text eol=lf
+
+# Package files
+package.json text eol=lf
+package-lock.json text eol=lf -diff
+yarn.lock text eol=lf -diff
+pnpm-lock.yaml text eol=lf -diff
+
+# Configuration files
+*.config.js text eol=lf
+*.config.mjs text eol=lf
+*.config.ts text eol=lf
+*.config.json text eol=lf
+vite.config.* text eol=lf
+.env* text eol=lf
+
+# Declare files that will always have CRLF line endings on checkout
+
+# Denote all files that are truly binary and should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.flv binary
+*.fla binary
+*.swf binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+*.pyc binary
+*.pdf binary
+*.ez binary
+*.bz2 binary
+*.swp binary
+*.jar binary
+*.class binary
+*.so binary
+*.dll binary
+*.exe binary
+
+# Fonts
+*.otf binary
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+
+# Images
+*.ai binary
+*.bmp binary
+*.eps binary
+*.gif binary
+*.gifv binary
+*.ico binary
+*.jng binary
+*.jp2 binary
+*.jpg binary
+*.jpeg binary
+*.jpx binary
+*.jxr binary
+*.pdf binary
+*.png binary
+*.psb binary
+*.psd binary
+*.svg text
+*.svgz binary
+*.tif binary
+*.tiff binary
+*.wbmp binary
+*.webp binary
+
+# Linguist overrides for generated files
+dist/* linguist-generated=true
+build/* linguist-generated=true
+coverage/* linguist-generated=true
+*.min.js linguist-generated=true
+*.min.css linguist-generated=true
+/src/config/cardbacks.js linguist-generated=true

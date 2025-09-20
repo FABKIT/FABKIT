@@ -1,0 +1,13 @@
+# Defines owners of specific parts of the codebase.
+
+# As recommended by Github, owner of this file (https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-and-branch-protection)
+.github/CODEOWNERS    @lambstream
+
+# Style and visual related changes
+/src/styles/**/*      @LouisVanKey
+/src/assets/**/*      @LouisVanKey
+/public/**/*          @LouisVanKey
+
+# Code / Functionality related ownership
+*.js                  @lambstream
+*.vue                 @lambstream

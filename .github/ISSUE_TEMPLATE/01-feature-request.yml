@@ -1,0 +1,133 @@
+name: "✨ Feature request"
+description: Suggest a new feature or enhancement for FABKIT
+title: "[FEATURE]: "
+labels: ["enhancement"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              **Before You Start...**
+
+              This form is for requesting new features or enhancements to FABKIT. Please:
+
+              - Check [existing issues](https://github.com/FABKIT/FABKIT/issues) to avoid duplicates
+              - Search [GitHub Discussions](https://github.com/FABKIT/FABKIT/discussions) for similar requests
+              - Consider if this is truly a new feature or if it's a bug in existing functionality
+
+              **Note:** Feature requests are evaluated based on community interest, alignment with project goals, and development resources.
+
+    - type: dropdown
+      id: feature-category
+      attributes:
+          label: Feature Category
+          description: What area of FABKIT would this feature affect?
+          options:
+              - "Card Types"
+              - "Additional text options"
+              - "Artwork customization"
+              - "Export / Save related"
+              - "Missing options"
+              - "Performance (speed, memory)"
+              - "Other (specify in description)"
+      validations:
+          required: true
+
+    - type: textarea
+      id: feature-summary
+      attributes:
+          label: Feature Summary
+          description: |
+              Provide a clear, concise summary of the feature you're requesting.
+              What should FABKIT be able to do that it currently can't?
+          placeholder: "e.g., Add support for even more awesome cards!"
+      validations:
+          required: true
+
+    - type: textarea
+      id: use-case
+      attributes:
+          label: Use Case & Problem
+          description: |
+              Describe the specific problem or need this feature would address.
+              What workflow or task would this improve?
+          placeholder: |
+              This would help me because...
+              Without this feature, I have to work around it by...
+      validations:
+          required: true
+
+    - type: textarea
+      id: proposed-solution
+      attributes:
+          label: Proposed Solution
+          description: |
+              Describe your ideal solution. How would you like this feature to work?
+              Be as specific as possible about the user experience.
+          placeholder: |
+              The interface could have...
+              When I do X, it should...
+      validations:
+          required: true
+
+    - type: textarea
+      id: alternatives
+      attributes:
+          label: Alternative Solutions
+          description: |
+              Have you considered other ways to solve this problem?
+              Are there alternative approaches or workarounds?
+          placeholder: |
+              Other editors handle this by...
+              An alternative approach could be...
+              Currently I work around this by...
+
+    - type: textarea
+      id: examples
+      attributes:
+          label: Examples or References
+          description: |
+              If this feature exists elsewhere, please provide examples, screenshots, or links.
+              You can drag and drop images or files here.
+          placeholder: |
+              Similar to this feature in Photoshop...
+              Example image: [drag and drop here]
+
+    - type: textarea
+      id: implementation-thoughts
+      attributes:
+          label: Implementation Thoughts
+          description: |
+              If you have technical knowledge, do you have thoughts on how this might be implemented?
+              (This is optional and intended for developers or technically-minded users)
+          placeholder: |
+              This might require changes to...
+              Could potentially use the existing... system
+              Might be challenging because...
+
+    - type: textarea
+      id: additional-context
+      attributes:
+          label: Additional Context
+          description: |
+              Any other information, screenshots, mockups, or context that would help us understand your request.
+              You can drag and drop files here.
+          placeholder: |
+              Mockup image showing the proposed UI...
+              Link to community discussion about this...
+              Related to issue #123...
+
+    - type: markdown
+      attributes:
+          value: |
+              ---
+
+              **What Happens Next?**
+
+              1. **Community Discussion**: Feature requests are often discussed in the community before implementation
+              2. **Evaluation**: We'll evaluate the request based on project goals, technical feasibility, and resources
+              3. **Roadmap**: Accepted features will be added to our roadmap and assigned to future milestones
+              4. **Updates**: We'll keep you informed of the status and any decisions made
+
+              **Note:** Not all feature requests can be implemented immediately. We prioritise based on community needs, project direction, and available development time.
+
+              Thank you for helping make FABKIT better! 🗺️

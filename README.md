@@ -1,8 +1,8 @@
 # FABKIT
 
-> **Your Flesh and Blood Toolbox** 
+> **Your Flesh and Blood Toolbox**
 
-[![License: BSD 3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
+[![License: BSD 3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE.md)
 [![Built with Vue](https://img.shields.io/badge/Built%20with-Vue%203-4FC08D.svg)](https://vuejs.org/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-fabkit.github.io-brightgreen.svg)](https://fabkit.io/)
 
@@ -73,7 +73,7 @@ npm run build
 ### FAB Symbol Integration
 Use our symbol buttons in the text editor to add official FAB symbols:
 - Resource symbols
-- Power symbols  
+- Power symbols
 - Defense symbols
 - Life symbols
 - Intellect symbols
@@ -118,7 +118,7 @@ Your support helps us dedicate more time to bringing new features to life and ke
 
 ## License
 
-This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE.md) file for details.
 
 ## Legal
 

@@ -1,0 +1,55 @@
+name: Internal Issue Guard
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  check-technical-issues:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: contains(github.event.issue.labels.*.name, 'internal')
+    steps:
+      - name: Check if user has write permission
+        id: check-permission
+        uses: actions/github-script@v8
+        with:
+          script: |
+            try {
+              const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: context.payload.issue.user.login
+              });
+
+              const hasWriteAccess = ['write', 'admin'].includes(permission.permission);
+              core.setOutput('has-access', hasWriteAccess);
+
+            } catch (error) {
+              // If user is not a collaborator, the API returns 404
+              if (error.status === 404) {
+                core.setOutput('has-access', false);
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Close Issue
+        if: steps.check-permission.outputs.has-access == 'false'
+        uses: peter-evans/close-issue@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: |
+            Thanks for your interest in FABKIT!
+
+            The **Technical/Internal** template is reserved for project maintainers and contributors with write access.
+
+            For your issue, please use one of these templates instead:
+            - 🐛 [**Bug Report**](https://github.com/FABKIT/FABKIT/issues/new?template=bug-report.yml) - if something isn't working correctly
+            - ✨ [**Feature Request**](https://github.com/FABKIT/FABKIT/issues/new?template=feature-request.yml) - if you'd like to suggest an enhancement
+            - 💬 [**Discussions**](https://github.com/FABKIT/FABKIT/discussions) - for questions or general discussion
+
+            This helps us keep technical issues organised and ensures your feedback gets the attention it deserves in the right place.

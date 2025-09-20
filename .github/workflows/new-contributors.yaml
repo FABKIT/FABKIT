@@ -1,0 +1,32 @@
+name: Welcome new contributors
+on:
+  pull_request:
+    types: [ opened, closed ]
+  issues:
+    types: [ opened ]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  greet-if-new:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: ${{ ! contains(github.event.issue.labels.*.name, 'internal') }}
+    steps:
+      - uses: wow-actions/welcome@v1
+        with:
+          FIRST_ISSUE: |
+            👋 @{{ author }}, this is the first time you're opening an issue.
+            Take a moment to read the [contribution guidelines](https://github.com/FABKIT/FABKIT/blob/master/CONTRIBUTING).
+
+          FIRST_PR: |
+            👋 @{{ author }}
+            Thanks for opening this pull request! Please check out our [contribution guidelines](https://github.com/FABKIT/FABKIT/blob/master/CONTRIBUTING).
+
+          FIRST_PR_MERGED: |
+            🎉 @{{ author }}
+            Congrats on merging your first pull request, we appreciate your contribution!
+
+          FIRST_PR_MERGED_REACTIONS: hooray
