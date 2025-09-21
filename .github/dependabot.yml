@@ -23,8 +23,10 @@ updates:
         exclude-patterns:
           - "@types/*"
           - "stylelint*"
-          - "vite*"
+          - "vite"
+          - "vite-plugin-*"
           - "@vitejs/*"
+          - "@tiptap/*"
         update-types:
           - "patch"
           - "minor"
@@ -32,8 +34,20 @@ updates:
         patterns:
           - "@types/*"
           - "stylelint*"
-          - "vite*"
+        update-types:
+          - "patch"
+          - "minor"
+      vite-ecosystem:
+        patterns:
+          - "vite"
+          - "vite-plugin-*"
           - "@vitejs/*"
+        update-types:
+          - "patch"
+          - "minor"
+      tiptap-ecosystem:
+        patterns:
+          - "@tiptap/*"
         update-types:
           - "patch"
           - "minor"
