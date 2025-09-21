@@ -21,5 +21,17 @@ export default defineConfig(async ({mode}) => {
             // host: '0.0.0.0',
             port: 8080,
         },
+        build: {
+          rollupOptions: {
+            output: {
+              manualChunks: {
+                lottie: ['lottie-web'],
+                tiptap: ['@tiptap/core', 'prosemirror-transform', 'prosemirror-model', 'prosemirror-view'],
+                emoji: ['@tiptap/extension-emoji'],
+                konva: ['konva'],
+              }
+            }
+          }
+        }
     }
 })
