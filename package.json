@@ -24,7 +24,7 @@
     "@tiptap/pm": "^3.4.1",
     "@tiptap/starter-kit": "^3.4.4",
     "@tiptap/vue-3": "^3.4.4",
-    "html-to-image": "1.11.13",
+    "html-to-image": "^1.11.11",
     "konva": "^9.3.18",
     "lottie-web": "^5.13.0",
     "tippy.js": "^6.3.7",
