@@ -22,6 +22,7 @@ export default defineConfig(async ({mode}) => {
             port: 8080,
         },
         build: {
+          cssCodeSplit: true,
           rollupOptions: {
             output: {
               manualChunks: {
