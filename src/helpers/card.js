@@ -607,44 +607,18 @@ export function useCard() {
     }
   });
 
-  // Function to handle resize
+  const gridRightColumn = ref();
+
   const updateSize = () => {
-    if (!stageContainerRef.value) return;
+    if (!gridRightColumn.value) return;
 
-    // Get the viewport width directly instead of walking up the DOM
-    const viewportWidth = window.innerWidth;
+    let availableWidth = gridRightColumn.value.clientWidth;
 
-    // Use a more reliable container width calculation
-    let availableWidth;
-
-    if (viewportWidth >= 640) { // sm breakpoint in Tailwind
-      // Desktop: find the actual grid column container
-      let containerElement = stageContainerRef.value.parentElement;
-      while (containerElement && !containerElement.classList.contains('grid')) {
-        containerElement = containerElement.parentElement;
-        if (!containerElement || containerElement === document.body) break;
-      }
-
-      if (containerElement) {
-        // This should be the right column of the grid
-        availableWidth = containerElement.clientWidth * 0.33 - 32; // Roughly 1/3 for the right column minus padding
-      } else {
-        availableWidth = viewportWidth * 0.33 - 32;
-      }
-    } else {
-      // Mobile: use most of the viewport width
-      availableWidth = viewportWidth - 32;
+    if (availableWidth <= 0) {
+      availableWidth = sceneWidth;
     }
 
-    availableWidth = Math.max(availableWidth, 200);
-
-    // Calculate scale
-    const newScale = availableWidth >= sceneWidth ? 1 : availableWidth / sceneWidth;
-
-    // Force update even if the difference is small, since this might be a viewport change
-    if (Math.abs(scale.value - newScale) > 0.001) {
-      scale.value = newScale;
-    }
+    scale.value = Math.min(1, (availableWidth - 16) / sceneWidth);
   };
 
   onMounted(() => {
@@ -664,11 +638,6 @@ export function useCard() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         updateSize();
-        const viewportWidth = window.innerWidth;
-        if (viewportWidth >= 640 && scale.value < 1) {
-          scale.value = 1;
-        }
-
         nextTick().then(() => {
           recalculateRatio();
         });
@@ -888,5 +857,6 @@ export function useCard() {
     sceneWidth,
     sceneHeight,
     nonDentedTypes,
+    gridRightColumn,
   };
 }
