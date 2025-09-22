@@ -21,6 +21,11 @@
   focus-visible:outline-offset-2
   focus-visible:outline-white
 }
+.button-primary:disabled {
+  @apply
+  bg-gray-600
+  cursor-not-allowed
+}
 
 .button-primary-active {
   @apply
