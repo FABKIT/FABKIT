@@ -749,23 +749,14 @@ export function useCard() {
             clonedTextOverlay.style.pointerEvents = 'none';
         }
 
-        if (clonedTextContent) {
-            // Force the text content to full scale (scale = 1) regardless of current mobile scale
-            const baseConfig = frameTypeTextConfig.value;
-            clonedTextContent.style.fontSize = `${baseConfig.maxFontSize}px`;
-            clonedTextContent.style.lineHeight = `${(baseConfig.maxFontSize / baseConfig.baseFontSize) * baseConfig.baseLineHeight}px`;
-
-            // Apply paragraph spacing at full scale
-            const paragraphs = clonedTextContent.querySelectorAll('p');
-            paragraphs.forEach((p, index) => {
-                p.style.margin = '0';
-                p.style.padding = '0';
-                if (index > 0) {
-                    const lineHeight = (baseConfig.maxFontSize / baseConfig.baseFontSize) * baseConfig.baseLineHeight;
-                    p.style.marginTop = `${lineHeight * baseConfig.paragraphSpacing}px`;
-                }
-            });
-        }
+      if (clonedTextContent) {
+        resizeText({
+          element: clonedTextContent,
+          minSize: frameTypeTextConfig.value.minFontSize,
+          maxSize: frameTypeTextConfig.value.maxFontSize,
+          step: frameTypeTextConfig.value.step
+        });
+      }
 
         // Create new Konva stage in the cloned container
         const konvaContainer = clonedStageContainer.querySelector('canvas')?.parentElement;
@@ -839,20 +830,20 @@ export function useCard() {
                     <head>
                         <title>${fields.cardName || 'Generated Card'}</title>
                         <style>
-                            body { 
-                                margin: 0; 
-                                padding: 20px; 
-                                background: #f0f0f0; 
-                                display: flex; 
-                                justify-content: center; 
-                                align-items: center; 
-                                min-height: 100vh; 
+                            body {
+                                margin: 0;
+                                padding: 20px;
+                                background: #f0f0f0;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                min-height: 100vh;
                             }
-                            img { 
-                                max-width: 100%; 
-                                height: auto; 
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
-                                border-radius: 8px; 
+                            img {
+                                max-width: 100%;
+                                height: auto;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                border-radius: 8px;
                             }
                         </style>
                     </head>
