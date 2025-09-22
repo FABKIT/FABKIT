@@ -621,6 +621,13 @@ export function useCard() {
     scale.value = Math.min(1, (availableWidth - 16) / sceneWidth);
   };
 
+  const handleResize = () => {
+    updateSize();
+    nextTick().then(() => {
+      recalculateRatio();
+    });
+  };
+
   onMounted(() => {
     fields.cardRarity = 1;
     canvasHelper.artworkLayer = artwork.value.getStage();
@@ -632,28 +639,11 @@ export function useCard() {
       recalculateRatio();
     });
 
-    // Debounced resize handler to prevent excessive calls
-    let resizeTimeout;
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        updateSize();
-        nextTick().then(() => {
-          recalculateRatio();
-        });
-      }, 100);
-    };
-
     window.addEventListener('resize', handleResize);
-
-    // Store the handler reference for cleanup
-    stageContainerRef.value._resizeHandler = handleResize;
   });
 
   onUnmounted(() => {
-    if (stageContainerRef.value?._resizeHandler) {
-      window.removeEventListener('resize', stageContainerRef.value._resizeHandler);
-    }
+    window.removeEventListener('resize', handleResize);
 
     fields.cardType = '';
     fields.cardPitch = '';
