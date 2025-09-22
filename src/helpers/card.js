@@ -580,7 +580,7 @@ export function useCard() {
       recalculateRatio();
     });
     if (!newCardType) return;
-    console.log(newCardType);
+
     if (nonDentedTypes.includes(newCardType)) {
       selectedStyle.value = 'flat';
     }
