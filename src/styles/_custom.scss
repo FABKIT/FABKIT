@@ -196,6 +196,8 @@
 .cardParent {
   font-family: 'palatino_lt_stdlight', serif;
   position:relative;
+  display: flex;
+  justify-content: center;
 }
 
 .exampleCard {
