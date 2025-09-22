@@ -786,31 +786,29 @@ export function useCard() {
     return {clonedCardParent, tempContainer, exportStage};
   }
 
-  const konvaToPng = function(callback) {
+  const konvaToPng = function (callback) {
     downloadingImage.value = true;
 
     const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
 
-    setTimeout(() => {
-      toPng(clonedCardParent, {
-        width: sceneWidth,
-        canvasWidth: sceneWidth,
-        height: sceneHeight,
-        canvasHeight: sceneHeight,
-        backgroundColor: 'transparent',
-        pixelRatio: 1,
+    toPng(clonedCardParent, {
+      width: sceneWidth,
+      canvasWidth: sceneWidth,
+      height: sceneHeight,
+      canvasHeight: sceneHeight,
+      backgroundColor: 'transparent',
+      pixelRatio: 1,
+    })
+      .then(callback)
+      .catch((err) => {
+        console.error('Export failed:', err);
       })
-        .then(callback)
-        .catch((err) => {
-          console.error('Export failed:', err);
-        })
-        .finally(() => {
-          // Cleanup
-          document.body.removeChild(tempContainer);
-          downloadingImage.value = false;
-          exportStage.destroy();
-        });
-    }, 300);
+      .finally(() => {
+        // Cleanup
+        document.body.removeChild(tempContainer);
+        downloadingImage.value = false;
+        exportStage.destroy();
+      });
   }
 
   const downloadImage = function () {
