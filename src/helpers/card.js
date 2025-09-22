@@ -15,6 +15,7 @@ const capitalizeFirstLetter = function (val) {
 }
 
 export function useCard() {
+  const nonDentedTypes = ['event'];
   const fields = reactive({
     cardType: '',
     cardPitch: '',
@@ -163,15 +164,15 @@ export function useCard() {
 
   const currentBackground = computed(() => {
     let currentPitch = fields.cardPitch || 1;
-    if (currentCardback.value.images.length < currentPitch) {
+    if (currentCardback.value?.images.length < currentPitch) {
       // Reset pitch to 1 if the current pitch is invalid
       currentPitch = 1;
     }
-    return currentCardback.value.images.find(el => String(el.pitch) === String(currentPitch)).url
+    return currentCardback.value?.images.find(el => String(el.pitch) === String(currentPitch)).url
   });
 
   const frameType = computed(() => {
-    if (currentCardback.value.dented) {
+    if (currentCardback.value?.dented) {
       return 'dented';
     }
 
@@ -577,6 +578,10 @@ export function useCard() {
       recalculateRatio();
     });
     if (!newCardType) return;
+    console.log(newCardType);
+    if (nonDentedTypes.includes(newCardType)) {
+      selectedStyle.value = 'flat';
+    }
     canvasHelper.drawBackground(currentBackground.value);
     canvasHelper.drawUploadedArtwork(fields.cardUploadedArtwork, getConfig('cardUploadedArtwork'));
     if (fontsLoaded.value === false) {
@@ -882,5 +887,6 @@ export function useCard() {
     generateAndOpen,
     sceneWidth,
     sceneHeight,
+    nonDentedTypes,
   };
 }

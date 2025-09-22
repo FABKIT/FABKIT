@@ -52,6 +52,7 @@ const {
   generateAndOpen,
   sceneWidth,
   sceneHeight,
+  nonDentedTypes,
 } = useCard();
 
 const {cardRarities} = useCardRarities();
@@ -366,6 +367,7 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                     name="cardStyle"
                     type="checkbox"
                     @change="handleStyleToggle"
+                    :disabled="nonDentedTypes.includes(fields.cardType)"
                 />
                 <div class="knobs"></div>
                 <div class="layer"></div>
