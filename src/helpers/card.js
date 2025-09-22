@@ -766,32 +766,30 @@ export function useCard() {
 
     // Create new Konva stage in the cloned container
     const konvaContainer = clonedStageContainer.querySelector('canvas')?.parentElement;
-    if (konvaContainer) {
-      // Clear existing canvas
-      konvaContainer.innerHTML = '';
+    // Clear existing canvas
+    konvaContainer.innerHTML = '';
 
-      const exportStage = new Konva.Stage({
-        container: konvaContainer,
-        width: sceneWidth,
-        height: sceneHeight,
-      });
+    const exportStage = new Konva.Stage({
+      container: konvaContainer,
+      width: sceneWidth,
+      height: sceneHeight,
+    });
 
-      // Clone all layers from original stage
-      const originalStage = stage.value.getStage();
-      originalStage.children.forEach(layer => {
-        const clonedLayer = layer.clone();
-        exportStage.add(clonedLayer);
-      });
+    // Clone all layers from original stage
+    const originalStage = stage.value.getStage();
+    originalStage.children.forEach(layer => {
+      const clonedLayer = layer.clone();
+      exportStage.add(clonedLayer);
+    });
 
-      exportStage.batchDraw();
-    }
-    return {clonedCardParent, tempContainer};
+    exportStage.batchDraw();
+    return {clonedCardParent, tempContainer, exportStage};
   }
 
   const downloadImage = function () {
     downloadingImage.value = true;
 
-    const {clonedCardParent, tempContainer} = getCardParentClone();
+    const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
 
     setTimeout(() => {
       toPng(clonedCardParent, {
@@ -812,13 +810,14 @@ export function useCard() {
           // Cleanup
           document.body.removeChild(tempContainer);
           downloadingImage.value = false;
+          exportStage.destroy();
         });
     }, 300);
   };
 
   const generateAndOpen = function () {
     downloadingImage.value = true;
-    const {clonedCardParent, tempContainer} = getCardParentClone();
+    const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
 
     setTimeout(() => {
       toPng(clonedCardParent, {
@@ -865,6 +864,7 @@ export function useCard() {
         .finally(() => {
           document.body.removeChild(tempContainer);
           downloadingImage.value = false;
+          exportStage.destroy();
         });
     }, 300);
   };
