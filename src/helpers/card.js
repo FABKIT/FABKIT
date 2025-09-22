@@ -786,7 +786,7 @@ export function useCard() {
     return {clonedCardParent, tempContainer, exportStage};
   }
 
-  const downloadImage = function () {
+  const konvaToPng = function(callback) {
     downloadingImage.value = true;
 
     const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
@@ -800,9 +800,7 @@ export function useCard() {
         backgroundColor: 'transparent',
         pixelRatio: 1,
       })
-        .then((dataUrl) => {
-          downloadURI(dataUrl, (fields.cardName || 'card') + '.png');
-        })
+        .then(callback)
         .catch((err) => {
           console.error('Export failed:', err);
         })
@@ -813,60 +811,43 @@ export function useCard() {
           exportStage.destroy();
         });
     }, 300);
+  }
+
+  const downloadImage = function () {
+    konvaToPng((dataUrl) => downloadURI(dataUrl, (fields.cardName || 'card') + '.png'));
   };
 
   const generateAndOpen = function () {
-    downloadingImage.value = true;
-    const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
-
-    setTimeout(() => {
-      toPng(clonedCardParent, {
-        width: sceneWidth,
-        canvasWidth: sceneWidth,
-        height: sceneHeight,
-        canvasHeight: sceneHeight,
-        backgroundColor: 'transparent',
-        pixelRatio: 1,
-      })
-        .then((dataUrl) => {
-          const newWindow = window.open();
-          newWindow.document.write(`
-                <html lang="en">
-                    <head>
-                        <title>${fields.cardName || 'Generated Card'}</title>
-                        <style>
-                            body {
-                                margin: 0;
-                                padding: 20px;
-                                background: #f0f0f0;
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-                                min-height: 100vh;
-                            }
-                            img {
-                                max-width: 100%;
-                                height: auto;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                                border-radius: 8px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <img src="${dataUrl}" alt="Generated Card" />
-                    </body>
-                </html>
-            `);
-        })
-        .catch((err) => {
-          console.error('Export failed:', err);
-        })
-        .finally(() => {
-          document.body.removeChild(tempContainer);
-          downloadingImage.value = false;
-          exportStage.destroy();
-        });
-    }, 300);
+    konvaToPng((dataUrl) => {
+      const newWindow = window.open();
+      newWindow.document.write(`
+        <html lang="en">
+            <head>
+                <title>${fields.cardName || 'Generated Card'}</title>
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 20px;
+                        background: #f0f0f0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                    }
+                    img {
+                        max-width: 100%;
+                        height: auto;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        border-radius: 8px;
+                    }
+                </style>
+            </head>
+            <body>
+                <img src="${dataUrl}" alt="Generated Card" />
+            </body>
+        </html>
+        `);
+    });
   };
 
   return {
