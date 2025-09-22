@@ -436,7 +436,8 @@ export function useCard() {
                         minSize = frameTypeTextConfig.value.minFontSize,
                         maxSize = frameTypeTextConfig.value.maxFontSize,
                         step = frameTypeTextConfig.value.step,
-                        unit = 'px'
+                        unit = 'px',
+                        scaleValue = 1,
                       }) => {
     if (!element) {
       return;
@@ -451,12 +452,12 @@ export function useCard() {
 
     // Helper function to calculate line height based on font size
     const calculateLineHeight = (fontSize) => {
-      return ((fontSize / frameTypeTextConfig.value.baseFontSize) * frameTypeTextConfig.value.baseLineHeight) * scale.value;
+      return ((fontSize / frameTypeTextConfig.value.baseFontSize) * frameTypeTextConfig.value.baseLineHeight) * scaleValue;
     };
 
     // UPDATED: Apply styles to element and paragraphs
     const applyStyles = (size) => {
-      element.style.fontSize = `${(size * scale.value)}${unit}`;
+      element.style.fontSize = `${(size * scaleValue)}${unit}`;
       element.style.lineHeight = `${calculateLineHeight(size)}${unit}`;
 
       // Apply paragraph spacing
@@ -508,7 +509,8 @@ export function useCard() {
       element: contentElement.value,
       minSize: frameTypeTextConfig.value.minFontSize,
       maxSize: frameTypeTextConfig.value.maxFontSize,
-      step: frameTypeTextConfig.value.step
+      step: frameTypeTextConfig.value.step,
+      scale: scale.value,
     });
   }
 
@@ -722,9 +724,13 @@ export function useCard() {
     if (clonedTextContent) {
       resizeText({
         element: clonedTextContent,
-        minSize: frameTypeTextConfig.value.minFontSize,
+        // Because this will be a normal-sized card
+        // Size the minSize to the maxFontSize
+        minSize: frameTypeTextConfig.value.maxFontSize,
         maxSize: frameTypeTextConfig.value.maxFontSize,
-        step: frameTypeTextConfig.value.step
+        step: frameTypeTextConfig.value.step,
+        // Also set the scale to one
+        scale: 1,
       });
     }
 
