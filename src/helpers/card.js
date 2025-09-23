@@ -726,7 +726,7 @@ export function useCard() {
         element: clonedTextContent,
         // Because this will be a normal-sized card
         // Size the minSize to the maxFontSize
-        minSize: frameTypeTextConfig.value.maxFontSize,
+        minSize: frameTypeTextConfig.value.minFontSize,
         maxSize: frameTypeTextConfig.value.maxFontSize,
         step: frameTypeTextConfig.value.step,
         // Also set the scale to one
