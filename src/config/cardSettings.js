@@ -86,9 +86,7 @@ const cardSettings = {
                 height: 12,
             },
             cardUploadedArtwork: {
-                width: 390,
-                height: 309,
-                x: 30,
+                x: 0,
                 y: 76,
             },
             cardFooterText: {

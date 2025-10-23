@@ -664,6 +664,7 @@ export function useCard() {
     fields.cardRarity = 2;
     canvasHelper.artworkLayer = artwork.value.getStage();
     canvasHelper.backgroundLayer = background.value.getStage();
+    canvasHelper.stageLayer = stage.value.getStage();
 
     // Initial size calculation
     nextTick().then(() => {
