@@ -54,6 +54,7 @@ const {
   sceneHeight,
   nonDentedTypes,
   gridRightColumn,
+  generatingAndOpening,
 } = useCard();
 
 const {cardRarities} = useCardRarities();
