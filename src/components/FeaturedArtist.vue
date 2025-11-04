@@ -126,7 +126,7 @@ onUnmounted(() => {
             <ChevronLeftIcon class="w-6 h-6 text-primary"/>
           </button>
 
-          <div class="relative w-full max-w-[450px] lg:w-[450px] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden aspect-450/628">
+          <div class="relative w-full max-w-[450px] lg:w-[450px] rounded-lg overflow-hidden aspect-450/628">
             <div class="relative w-full h-full">
               <transition-group name="fade">
                 <img
