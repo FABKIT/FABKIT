@@ -1,6 +1,13 @@
 <script setup>
 import {ref, onMounted, onUnmounted} from 'vue'
 import {ChevronLeftIcon, ChevronRightIcon, StarIcon} from '@heroicons/vue/24/solid'
+import Artist_1 from '../assets/featuredartist/Featured_Artist_1.png'
+import Artist_2 from '../assets/featuredartist/Featured_Artist_2.png'
+import Artist_3 from '../assets/featuredartist/Featured_Artist_3.png'
+import Artist_4 from '../assets/featuredartist/Featured_Artist_4.png'
+import Artist_5 from '../assets/featuredartist/Featured_Artist_5.png'
+import Artist_6 from '../assets/featuredartist/Featured_Artist_6.png'
+import Artist_7 from '../assets/featuredartist/Featured_Artist_7.png'
 
 const artist = {
   name: 'MalZenith',
@@ -52,13 +59,13 @@ this design creates an entirely different playstyle that emphasizes incremental 
           </a>
         </div>`,
   images: [
-    '/src/assets/featuredartist/Featured_Artist_1.png',
-    '/src/assets/featuredartist/Featured_Artist_2.png',
-    '/src/assets/featuredartist/Featured_Artist_3.png',
-    '/src/assets/featuredartist/Featured_Artist_4.png',
-    '/src/assets/featuredartist/Featured_Artist_5.png',
-    '/src/assets/featuredartist/Featured_Artist_6.png',
-    '/src/assets/featuredartist/Featured_Artist_7.png',
+    Artist_1,
+    Artist_2,
+    Artist_3,
+    Artist_4,
+    Artist_5,
+    Artist_6,
+    Artist_7,
   ],
 };
 
