@@ -40,7 +40,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="rounded-lg shadow-lg border-2 border-primary/20 overflow-hidden max-w-[1600px] mx-auto backdrop-blur-sm bg-white/50 dark:bg-dark/50">
+  <div class="rounded-lg shadow-lg border-2 border-primary/20 overflow-hidden max-w-[1600px] mx-auto backdrop-blur-sm bg-white/20 dark:bg-dark/50">
     <div class="flex flex-col xl:flex-row gap-6 lg:gap-8 p-6 items-start">
       <!-- Left side: Image slideshow with header on mobile/tablet -->
       <div class="flex flex-col gap-4 w-full xl:w-auto">
