@@ -115,7 +115,7 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
             </div>
           </div>
         </div>
-        <div class="p-4 mx-auto fade-in-fwd">
+        <div class="mt-10 mb-5 mx-auto xl:mx-24 fade-in-fwd">
           <FeaturedArtist />
         </div>
       </div>
