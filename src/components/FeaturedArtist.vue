@@ -3,24 +3,49 @@ import {ref, onMounted, onUnmounted} from 'vue'
 import {ChevronLeftIcon, ChevronRightIcon, StarIcon} from '@heroicons/vue/24/solid'
 
 const artist = {
-  name: 'Artist name',
-  collection: 'Collection Title',
+  name: 'MalZenith',
+  collection: 'Verdance Armory Deck',
   description: `
         <p class="text-primary/80 dark:text-white/80 leading-relaxed">
-          Winner of our Custom Card Contest hosted on the <a href="https://discord.gg/fabdb" target="_blank" class="text-primary dark:text-white underline hover:no-underline">Flesh and Blood TCG Discord</a>! These stunning cards showcase the incredible creativity possible with FABKIT's card creator.
+In this showcase we are highlighting MalZenith who won the Flesh and Blood discord's custom card contest with his Armory Deck for Verdance.
+it features seven carefully designed custom cards that explore an alternate build path focused on making Verdance feel more "wizard-y",
+whilst also utilizing underplayed cards from her Rosetta suite.<br><br>
+The centerpiece of this design is <strong>Sigil of Lifecycles</strong>, a Majestic Earth Wizard Action that functions as Verdance's version of Blazing Aether or Freezing Point.
+Unlike those straightforward damage dealers, this Sigil requires clever sequencing to unlock its potential since it deals no inherent damage when triggered by itself.
+There are three paths to breaking this card: instant-speed lifegain combos, start-of-turn lifegain triggers,
+or creative ways to remove the Sigil from play at unexpected moments. This creates puzzle-like gameplay where small,
+consistent combos chip away at opponents rather than delivering explosive knockouts.<br><br>
+<strong>Seeds of Potential</strong> offers a new Earth Action that enables Decompose without attacking, creating embodiments of earth tokens.
+<strong>Enchanted Reflection</strong> brings dangerous versatility by copying action auras from the graveyard with cost reduction, and a potential go again,
+carefully balanced to prevent abuse while opening possibilities for creative Sigil chains.<br><br>
+Also note the equipment suite. <strong>Dreaming Beauty</strong> is a zero-armor Blade Break headpiece enabling infinite Sigil of Fyendal loops at the cost of extreme vulnerability.
+<strong>Faerie Court Tunic</strong> builds energy counters through lifegain, offering multi-turn planning opportunities as an alternative to standard Tunic.
+<strong>Inked Etchings</strong> provides minimal defense but crucial Sigil timing manipulation, delaying or protecting key pieces for optimal combo execution.
+<strong>Sugarplum Dance</strong> reimagines Storm Striders, enabling surprise damage through early Sigil activation while maintaining deliberate weaknesses to counter-strategies.<br><br>
+Each card includes intentional limitations preventing power creep while expanding Verdance's toolkit meaningfully.
+The deck rewards careful resource management, precise timing, and deep understanding of lifegain trigger interactions. Rather than simply making Verdance stronger,
+this design creates an entirely different playstyle that emphasizes incremental value and defensive positioning over traditional aggressive strategies.
         </p>
 
-        <p class="text-primary/80 dark:text-white/80 leading-relaxed">
-          [Add 1-2 more sentences about the artist's style, their inspiration, or what makes their cards special]
-        </p>
+        <div class="pt-2">
 
+          <a href="https://discord.com/invite/vMRMdqJc4V"
+          target="_blank"
+          class="inline-flex items-center gap-2 text-sm font-semibold text-primary dark:text-white hover:underline"
+          >
+          Join the Flesh and Blood discord and follow the custom-card channel for future contests
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+          </a>
+        </div>
         <div class="pt-2">
 
           <a href="https://discord.gg/4twcdby9xp"
           target="_blank"
           class="inline-flex items-center gap-2 text-sm font-semibold text-primary dark:text-white hover:underline"
           >
-          Join our Discord to participate in future contests
+          Join our discord
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
           </svg>
@@ -54,7 +79,7 @@ const goToSlide = (index) => {
 
 onMounted(() => {
   // Auto-advance slides every 4 seconds
-  intervalId = setInterval(nextSlide, 4000)
+  intervalId = setInterval(nextSlide, 7000)
 })
 
 onUnmounted(() => {
