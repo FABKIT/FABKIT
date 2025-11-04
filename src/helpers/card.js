@@ -1,12 +1,12 @@
-import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {useCardBacks} from "../config/cardbacks.js";
 import {useCardBackSettings} from "../config/cardSettings.js";
 import {useMath} from "./math.js";
 import useTypes from "../config/types.js";
-import {useCardRarities} from "./cardRarities.js";
 import {useCanvasHelper} from "./canvas.js";
 import {useTextConfig} from "../config/text.js";
 import {toPng} from "html-to-image";
+import {useFieldsStore} from "../stores/fieldStore.js";
 
 const {clamp} = useMath();
 
@@ -16,28 +16,7 @@ const capitalizeFirstLetter = function (val) {
 
 export function useCard() {
   const nonDentedTypes = ['event'];
-  const fields = reactive({
-    cardType: '',
-    cardPitch: '',
-    cardName: '',
-    cardResource: '',
-    cardText: '',
-    cardPower: '',
-    cardHeroIntellect: '',
-    cardTalent: '',
-    cardClass: '',
-    cardSecondaryClass: '',
-    cardSubType: '',
-    cardMacroGroup: '',
-    cardWeapon: '',
-    cardRarity: 2,
-    cardDefense: '',
-    cardLife: '',
-    cardUploadedArtwork: '',
-    cardFooterText: '',
-    cardSetNumber: '',
-    cardArtworkCredits: '',
-  });
+  const fields = useFieldsStore();
   const cardTypeText = computed(() => {
     const classText = fields.cardClass;
 
@@ -65,9 +44,6 @@ export function useCard() {
     if (fields.cardSecondaryClass) {
       const separator = ['hero', 'demi_hero'].includes(fields.cardType) ? ' ' : ' / ';
       secondaryClass = separator + fields.cardSecondaryClass;
-      if (fields.cardSecondaryClass === 'Custom') {
-        secondaryClass = separator + fields.cardSecondaryClassCustom;
-      }
     }
 
     const talent = fields.cardTalent;
@@ -94,6 +70,11 @@ export function useCard() {
   })
   const isFieldShown = (fieldId) => {
     if (!activeFields.value.includes(fieldId)) {
+      if (fieldId === 'cardRarity') {
+        // set rarity to 2 by default
+        fields[fieldId] = 2;
+        return false;
+      }
       fields[fieldId] = '';
       return false;
     }
@@ -309,7 +290,6 @@ export function useCard() {
 
     return scaledFontsize(cardTypeText.value, footerTextConfig.fontSize, footerTextConfig.fontFamily, footerTextConfig.width);
   })
-
   watch(selectedStyle, () => {
     backgroundIndex.value = 0;
   });
@@ -383,14 +363,6 @@ export function useCard() {
       });
     }
   };
-
-  const {cardRarities} = useCardRarities();
-  const cardRarityImage = computed(() => {
-    const rarity = cardRarities.find(value => value.id === fields.cardRarity);
-    if (!rarity || !rarity.image[0]?.value) return null;
-    return rarity.image[0].value;
-  })
-
 
   const containerElement = ref();
   const contentElement = ref();
@@ -583,33 +555,12 @@ export function useCard() {
 
   watch(fields.cardText, () => {
     nextTick().then(async () => {
-      updateSize();
-      recalculateRatio();
+      handleResize();
     })
   })
 
-  watch(() => fields.cardType, (newCardType) => {
-    nextTick().then(() => {
-      updateSize();
-      recalculateRatio();
-    });
-
-    nextTick().then(() => {
-      updateSize();
-      recalculateRatio();
-    });
+  function processCardTypeChange(newCardType) {
     if (!newCardType) return;
-
-    const currentRarity = fields.cardRarity;
-    if (currentRarity === 0 || !currentRarity) {
-      fields.cardRarity = 2;
-    } else {
-      // Force reactivity update
-      fields.cardRarity = 0;
-      nextTick(() => {
-        fields.cardRarity = currentRarity;
-      });
-    }
 
     if (nonDentedTypes.includes(newCardType)) {
       selectedStyle.value = 'flat';
@@ -621,6 +572,10 @@ export function useCard() {
         setTimeout(() => fontsLoaded.value = true, 100)
       })
     }
+  }
+
+  watch(() => fields.cardType, (newCardType) => {
+    processCardTypeChange(newCardType);
   }, {deep: true});
 
   watch(() => fields.cardUploadedArtwork, (newUploadedArtwork) => {
@@ -661,41 +616,19 @@ export function useCard() {
   };
 
   onMounted(() => {
-    fields.cardRarity = 2;
     canvasHelper.artworkLayer = artwork.value.getStage();
     canvasHelper.backgroundLayer = background.value.getStage();
     canvasHelper.stageLayer = stage.value.getStage();
 
-    // Initial size calculation
-    nextTick().then(() => {
-      updateSize();
-      recalculateRatio();
-    });
+    if (fields.cardType) {
+      processCardTypeChange(fields.cardType);
+    }
 
     window.addEventListener('resize', handleResize);
   });
 
   onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
-
-    fields.cardType = '';
-    fields.cardPitch = '';
-    fields.cardName = '';
-    fields.cardResource = '';
-    fields.cardText = '';
-    fields.cardPower = '';
-    fields.cardHeroIntellect = '';
-    fields.cardTalent = '';
-    fields.cardClass = '';
-    fields.cardSecondaryClass = '';
-    fields.cardSubType = '';
-    fields.cardMacroGroup = '';
-    fields.cardWeapon = '';
-    fields.cardRarity = 0;
-    fields.cardDefense = '';
-    fields.cardLife = '';
-    fields.cardUploadedArtwork = '';
-    fields.cardFooterText = '';
   });
 
   const downloadURI = function (uri, name) {
@@ -844,7 +777,6 @@ export function useCard() {
   }
 
   const downloadImage = function () {
-
     konvaToPng((dataUrl) => downloadURI(dataUrl, (fields.cardName || 'card') + '.png'));
   };
 
@@ -884,8 +816,6 @@ export function useCard() {
   };
 
   return {
-    types,
-    fields,
     cardTypeText,
     isFieldShown,
     currentBackground,
@@ -900,7 +830,6 @@ export function useCard() {
     filteredAvailableCardbacks,
     backgroundIndex,
     handleStyleToggle,
-    cardRarityImage,
     stage,
     artwork,
     background,
