@@ -114,9 +114,9 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                 <div slot="icon"></div>
               </ButtonDropdown>
             </div>
+          </div>
         </div>
-        </div>
-        <div class="mt-12 px-4 max-w-5xl mx-auto fade-in-fwd relative">
+        <div class="p-4 mx-auto fade-in-fwd">
           <FeaturedArtist />
         </div>
       </div>
