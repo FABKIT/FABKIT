@@ -3,13 +3,13 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/solid'
 
 const cardImages = [
-  '/img/featuredartist/Featured_Artist_1.png',
-  '/img/featuredartist/Featured_Artist_2.png',
-  '/img/featuredartist/Featured_Artist_3.png',
-  '/img/featuredartist/Featured_Artist_4.png',
-  '/img/featuredartist/Featured_Artist_5.png',
-  '/img/featuredartist/Featured_Artist_6.png',
-  '/img/featuredartist/Featured_Artist_7.png',
+  '/src/assets/featuredartist/Featured_Artist_1.png',
+  '/src/assets/featuredartist/Featured_Artist_2.png',
+  '/src/assets/featuredartist/Featured_Artist_3.png',
+  '/src/assets/featuredartist/Featured_Artist_4.png',
+  '/src/assets/featuredartist/Featured_Artist_5.png',
+  '/src/assets/featuredartist/Featured_Artist_6.png',
+  '/src/assets/featuredartist/Featured_Artist_7.png',
 ]
 
 const currentSlide = ref(0)
@@ -40,12 +40,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="rounded-lg shadow-lg border-2 border-primary/20 overflow-hidden max-w-[1600px] mx-auto backdrop-blur-sm bg-white/95 dark:bg-[#2A2A2A]/95">
-    <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 p-6 items-start">
+  <div class="rounded-lg shadow-lg border-2 border-primary/20 overflow-hidden max-w-[1600px] mx-auto backdrop-blur-sm bg-white/50 dark:bg-dark/50">
+    <div class="flex flex-col xl:flex-row gap-6 lg:gap-8 p-6 items-start">
       <!-- Left side: Image slideshow with header on mobile/tablet -->
-      <div class="flex flex-col gap-4 w-full lg:w-auto">
+      <div class="flex flex-col gap-4 w-full xl:w-auto">
         <!-- Featured Artist header - shows above card on mobile/tablet -->
-        <div class="lg:hidden space-y-2 text-center">
+        <div class="xl:hidden space-y-2 text-center">
           <div class="inline-flex items-center gap-2 text-sm font-semibold text-primary dark:text-white">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
@@ -109,8 +109,8 @@ onUnmounted(() => {
           />
         </div>
       </div>
-      <div class="flex flex-col justify-center space-y-4 lg:flex-1 lg:min-w-0">
-        <div class="hidden lg:block space-y-2">
+      <div class="flex flex-col justify-center space-y-4 xl:flex-1 xl:min-w-0">
+        <div class="hidden xl:block space-y-2">
           <div class="inline-flex items-center gap-2 text-sm font-semibold text-primary dark:text-white">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
