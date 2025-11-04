@@ -6,13 +6,15 @@ import {
   XMarkIcon,
   PaintBrushIcon,
   MapIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  HomeIcon,
 } from '@heroicons/vue/24/outline'
 import {useRoute} from "vue-router";
 
 
 const navigation = [
-  {name: 'Card Creator', route: 'home', icon: PaintBrushIcon},
+  {name: 'Home', route: 'home', icon: HomeIcon},
+  {name: 'Card Creator', route: 'card-creator', icon: PaintBrushIcon},
   {name: 'Roadmap', route: 'roadmap', icon: MapIcon},
   {name: 'Contact', route: 'contact', icon: ChatBubbleLeftRightIcon},
 ];
