@@ -96,11 +96,23 @@
 
       <div class="inline-flex rounded-lg bg-[#2A2A2A]/5 dark:bg-white/5 p-1">
         <button
-            v-for="emoji in customEmojis"
+            v-for="emoji in customEmojisRow1"
             :key="emoji.name"
             class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1 text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20"
             type="button"
             @click="editor.chain().focus().setEmoji(emoji.name).run()"
+        >
+          <span class="sr-only">Add {{ emoji.name }} icon</span>
+          <img v-if="emoji.fallbackImage" :src="emoji.fallbackImage" aria-hidden="true" :alt="emoji.name" class="size-4"/>
+        </button>
+      </div>
+      <div class="inline-flex rounded-lg bg-[#2A2A2A]/5 dark:bg-white/5 p-1">
+        <button
+          v-for="emoji in customEmojisRow2"
+          :key="emoji.name"
+          class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-[#A6864A] focus:ring-offset-1 text-[#2A2A2A] dark:text-white hover:bg-[#A6864A]/10 dark:hover:bg-[#A6864A]/20"
+          type="button"
+          @click="editor.chain().focus().setEmoji(emoji.name).run()"
         >
           <span class="sr-only">Add {{ emoji.name }} icon</span>
           <img v-if="emoji.fallbackImage" :src="emoji.fallbackImage" aria-hidden="true" :alt="emoji.name" class="size-4"/>
@@ -126,7 +138,7 @@ import Emoji from "@tiptap/extension-emoji";
 import suggestion from "./suggestion.js";
 import TextAlign from "@tiptap/extension-text-align";
 
-const customEmojis = [
+const customEmojisRow1 = [
   {
     name: 'cost',
     shortcodes: ['cost'],
@@ -176,6 +188,9 @@ const customEmojis = [
     group: 'General',
     fallbackImage: '/img/symbols/icon_u.svg',
   },
+]
+
+const customEmojisRow2 = [
   {
     name: 'chi',
     shortcodes: ['chi'],
@@ -206,7 +221,7 @@ export default {
   data() {
     return {
       editor: null,
-      customEmojis,
+      customEmojisRow1, customEmojisRow2,
     }
   },
   watch: {
@@ -249,7 +264,7 @@ export default {
           HTMLAttributes: {
             class: "fab-icon",
           },
-          emojis: customEmojis,
+          emojis: [...customEmojisRow1,...customEmojisRow2],
           suggestion,
         })
       ],
