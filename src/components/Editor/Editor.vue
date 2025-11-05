@@ -176,6 +176,13 @@ const customEmojis = [
     group: 'General',
     fallbackImage: '/img/symbols/icon_u.svg',
   },
+  {
+    name: 'chi',
+    shortcodes: ['chi'],
+    tags: ['chi'],
+    group: 'General',
+    fallbackImage: '/img/symbols/icon_chi.svg',
+  },
 ]
 
 export default {
