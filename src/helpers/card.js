@@ -631,15 +631,46 @@ export function useCard() {
     window.removeEventListener('resize', handleResize);
   });
 
+  const b64toBlob = (b64Data, contentType = "", sliceSize = 512) => {
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
+
+    for (
+      let offset = 0;
+      offset < byteCharacters.length;
+      offset += sliceSize
+    ) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+      const byteNumbers = new Array(slice.length);
+
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, {type: contentType});
+  };
+
   const downloadURI = function (uri, name) {
-    const link = document.createElement('a');
-    link.download = name;
-    link.href = uri;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    link.remove();
+    const contentType = "data:image/png;base64";
+    const b64Data = uri.replace(contentType+',', '');
+
+    const blob = b64toBlob(b64Data, contentType);
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const a = document.createElement("a")
+      a.href = reader.result
+      a.style.display = 'none'
+      a.download = name
+      document.body.appendChild(a)
+      a.click()
+      a.parentNode.removeChild(a)
+    }
+    reader.readAsDataURL(blob)
   }
 
   const downloadingImage = ref(false);
