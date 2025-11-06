@@ -5,10 +5,11 @@ import {createRouter, createWebHashHistory} from "vue-router";
 import Home from "./components/Home.vue";
 import App from "./App.vue";
 import VueKonva from 'vue-konva';
+import CardCreator from "./components/CardCreator.vue";
 
 const routes = [
   {path: '/', name: 'home', component: Home},
-  {path: '/card-creator', name: 'card-creator', component: () => import('./components/CardCreator.vue')},
+  {path: '/card-creator', name: 'card-creator', component: CardCreator},
   {path: '/roadmap', name: 'roadmap', component: () => import('./components/Roadmap.vue')},
   {path: '/contact', name: 'contact', component: () => import('./components/Contact.vue')},
 ]
