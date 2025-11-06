@@ -7,7 +7,6 @@ import {useCanvasHelper} from "./canvas.js";
 import {useTextConfig} from "../config/text.js";
 import {toPng} from "html-to-image";
 import {useFieldsStore} from "../stores/fieldStore.js";
-import {useRouter} from "vue-router";
 
 const {clamp} = useMath();
 
@@ -616,11 +615,7 @@ export function useCard() {
     });
   };
 
-  let router = null;
   onMounted(async () => {
-    router = useRouter();
-    await router.isReady();
-
     canvasHelper.artworkLayer = artwork.value.getStage();
     canvasHelper.backgroundLayer = background.value.getStage();
     canvasHelper.stageLayer = stage.value.getStage();
@@ -658,25 +653,6 @@ export function useCard() {
 
     return new Blob(byteArrays, {type: contentType});
   };
-
-  const downloadURI = function (uri, name) {
-    const contentType = "data:image/png;base64";
-    const b64Data = uri.replace(contentType+',', '');
-
-    const blob = b64toBlob(b64Data, contentType);
-
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const a = document.createElement("a")
-      a.href = reader.result
-      a.style.display = 'none'
-      a.download = name
-      document.body.appendChild(a)
-      a.click()
-      a.parentNode.removeChild(a)
-    }
-    reader.readAsDataURL(blob)
-  }
 
   const downloadingImage = ref(false);
 
@@ -756,12 +732,16 @@ export function useCard() {
     return {clonedCardParent, tempContainer, exportStage};
   }
 
-  const konvaToPng = function (callback) {
+  const konvaToPng = function () {
     downloadingImage.value = true;
 
     const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
 
-    const options = {
+    // iOS-specific settings
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
+    const baseOptions = {
       width: sceneWidth,
       canvasWidth: sceneWidth,
       height: sceneHeight,
@@ -770,21 +750,54 @@ export function useCard() {
       pixelRatio: 1,
     };
 
+    // Add iOS-specific options only when needed
+    const options = isIOS ? {
+      ...baseOptions,
+      useCORS: true
+    } : baseOptions;
+
+    let resultDataUrl = '';
     toPng(clonedCardParent, options)
-      .then(callback)
+      .then((dataUrl) => {
+        resultDataUrl = dataUrl;
+      })
       .catch((err) => {
         console.error('Export failed:', err);
       })
       .finally(() => {
         // Cleanup
         document.body.removeChild(tempContainer);
-        downloadingImage.value = false;
         exportStage.destroy();
+
+        const contentType = "data:image/png;base64";
+        const b64Data = resultDataUrl.replace(contentType+',', '');
+
+        const blob = b64toBlob(b64Data, contentType);
+
+        if (isIOS && blob.size < 50000) {
+          // Sometimes, on iOS devices the card blob is too small because the toPng didn't work properly
+          // If it's smaller than this => retry
+          konvaToPng();
+          return;
+        }
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const a = document.createElement("a")
+          a.href = reader.result
+          a.style.display = 'none'
+          a.download = 'card.png'
+          document.body.appendChild(a)
+          a.click()
+          a.parentNode.removeChild(a)
+        }
+        reader.readAsDataURL(blob)
+
+        downloadingImage.value = false;
       });
   }
 
   const downloadImage = function () {
-    konvaToPng((dataUrl) => downloadURI(dataUrl, (fields.cardName || 'card') + '.png'));
+    konvaToPng();
   };
 
   return {
