@@ -732,7 +732,7 @@ export function useCard() {
     return {clonedCardParent, tempContainer, exportStage};
   }
 
-  const konvaToPng = function () {
+  const konvaToPng = function (retry = 0) {
     downloadingImage.value = true;
 
     const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
@@ -774,10 +774,10 @@ export function useCard() {
 
         const blob = b64toBlob(b64Data, contentType);
 
-        if (isIOS && blob.size < 50000) {
+        if (isIOS && blob.size < 50000 && retry < 5) {
           // Sometimes, on iOS devices the card blob is too small because the toPng didn't work properly
           // If it's smaller than this => retry
-          konvaToPng();
+          konvaToPng(retry++);
           return;
         }
         const reader = new FileReader()
