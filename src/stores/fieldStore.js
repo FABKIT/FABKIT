@@ -23,6 +23,7 @@ export const useFieldsStore = defineStore('fieldsStore', {
       cardFooterText: '',
       cardSetNumber: '',
       cardArtworkCredits: '',
+      cardBackgroundIndex: 0,
     }
   }
 })

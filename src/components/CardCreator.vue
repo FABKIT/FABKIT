@@ -33,7 +33,6 @@ const {
   typeTextFontSize,
   footerTextFontSize,
   filteredAvailableCardbacks,
-  backgroundIndex,
   cardTextStyle,
   handleStyleToggle,
   stage,
@@ -395,7 +394,7 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
 
             <div class="grid grid-cols-1 w-full">
               <select
-                  v-model="backgroundIndex"
+                  v-model="fields.cardBackgroundIndex"
                   class="col-start-1 row-start-1 appearance-none text-center font-bold bg-white dark:bg-dark py-1.5 pr-8 pl-3 text-base text-primary sm:text-sm/6">
                 <option
                     v-for="(cardback, index) in filteredAvailableCardbacks"

@@ -144,14 +144,14 @@ export function useCard() {
   const currentCardback = computed(() => {
     const filtered = filteredAvailableCardbacks.value;
 
-    if (backgroundIndex.value > (filtered.length - 1)) {
+    if (fields.cardBackgroundIndex > (filtered.length - 1)) {
       // Only reset if we have a filtered list and no pending style change
       if (filtered.length > 0) {
-        backgroundIndex.value = 0;
+        fields.cardBackgroundIndex = 0;
       }
     }
 
-    return filtered[backgroundIndex.value] || filtered[0];
+    return filtered[fields.cardBackgroundIndex] || filtered[0];
   })
 
   const currentBackground = computed(() => {
@@ -207,15 +207,13 @@ export function useCard() {
 
     return {};
   }
-
-  const backgroundIndex = ref(0);
   const selectedStyle = ref('dented');
 
   const switchBackground = function (dir) {
     const available = filteredAvailableCardbacks.value;
     if (dir === 'next') {
-      backgroundIndex.value = clamp(
-        (backgroundIndex.value + 1) % available.length,
+      fields.cardBackgroundIndex = clamp(
+        (fields.cardBackgroundIndex + 1) % available.length,
         0,
         available.length - 1
       );
@@ -223,8 +221,8 @@ export function useCard() {
       return Promise.resolve();
     }
     if (dir === 'previous') {
-      backgroundIndex.value = clamp(
-        (backgroundIndex.value - 1 + available.length) % available.length,
+      fields.cardBackgroundIndex = clamp(
+        (fields.cardBackgroundIndex - 1 + available.length) % available.length,
         0,
         available.length - 1
       );
@@ -301,7 +299,7 @@ export function useCard() {
     return scaledFontsize(cardTypeText.value, footerTextConfig.fontSize, footerTextConfig.fontFamily, footerTextConfig.width);
   })
   watch(selectedStyle, () => {
-    backgroundIndex.value = 0;
+    fields.cardBackgroundIndex = 0;
   });
 
   const findBestMatch = (targetName, cardbackList) => {
@@ -366,9 +364,9 @@ export function useCard() {
         const exactMatchIndex = newFilteredCardbacks.findIndex(cb => cb.name === currentCardbackName);
 
         if (exactMatchIndex !== -1) {
-          backgroundIndex.value = exactMatchIndex;
+          fields.cardBackgroundIndex = exactMatchIndex;
         } else {
-          backgroundIndex.value = findBestMatch(currentCardbackName, newFilteredCardbacks);
+          fields.cardBackgroundIndex = findBestMatch(currentCardbackName, newFilteredCardbacks);
         }
       });
     }
@@ -824,7 +822,6 @@ export function useCard() {
     frameType,
     cardTextStyle,
     filteredAvailableCardbacks,
-    backgroundIndex,
     handleStyleToggle,
     stage,
     artwork,
