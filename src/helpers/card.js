@@ -7,6 +7,9 @@ import {useCanvasHelper} from "./canvas.js";
 import {useTextConfig} from "../config/text.js";
 import {toPng} from "html-to-image";
 import {useFieldsStore} from "../stores/fieldStore.js";
+import {useSavedCardsStore} from "../stores/savedCardsStore.js";
+import { v4 as uuidv4 } from "uuid";
+import {useRouter} from "vue-router";
 
 const {clamp} = useMath();
 
@@ -15,8 +18,15 @@ const capitalizeFirstLetter = function (val) {
 }
 
 export function useCard() {
+
+  const router = useRouter();
+
   const nonDentedTypes = ['event'];
+
   const fields = useFieldsStore();
+  const savedCardsStore = useSavedCardsStore();
+
+
   const cardTypeText = computed(() => {
     const classText = fields.cardClass;
 
@@ -782,13 +792,14 @@ export function useCard() {
         }
         const reader = new FileReader()
         reader.onloadend = () => {
-          const a = document.createElement("a")
-          a.href = reader.result
-          a.style.display = 'none'
-          a.download = 'card.png'
-          document.body.appendChild(a)
-          a.click()
-          a.parentNode.removeChild(a)
+          const uuid = uuidv4();
+          savedCardsStore.addCard(
+            uuid,
+            fields.cardName,
+            reader.result
+          );
+
+          router.push({name: 'card-preview', params: {uuid}});
         }
         reader.readAsDataURL(blob)
 
