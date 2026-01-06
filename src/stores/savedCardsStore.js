@@ -29,7 +29,6 @@ export const useSavedCardsStore = defineStore('savedCards', () => {
       name: useUtil().escapeHTML(name),
       src: src,
     };
-    console.log(card);
     cards.value.push(card);
   }
 
