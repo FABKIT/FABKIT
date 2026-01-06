@@ -24,7 +24,7 @@ const currentRouteName = ref('');
 const sidebarOpen = ref(false);
 
 watch(route, (oldValue, newValue) => {
-      currentRouteName.value = navigation.find(v => v.route === newValue.name).name;
+      currentRouteName.value = navigation.find(v => v.route === newValue.name)?.name;
     },
     {deep: true}
 );
@@ -107,7 +107,7 @@ watch(route, (oldValue, newValue) => {
         <span class="sr-only">Open sidebar</span>
         <Bars3Icon aria-hidden="true" class="size-6"/>
       </button>
-      <div class="flex flex-row items-center text-sm/6 font-semibold text-primary"> <img src="/src/assets/Fabkitlogo_notext.svg" alt="FABKIT Logo" class="h-8 pr-2"> FaBKit - {{ currentRouteName }}</div>
+      <div class="flex flex-row items-center text-sm/6 font-semibold text-primary"> <img src="/src/assets/Fabkitlogo_notext.svg" alt="FABKIT Logo" class="h-8 pr-2"> FaBKit<template v-if="currentRouteName"> - {{ currentRouteName }}</template></div>
     </div>
   </div>
 </template>

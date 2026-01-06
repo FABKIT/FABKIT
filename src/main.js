@@ -10,6 +10,7 @@ import CardCreator from "./components/CardCreator.vue";
 const routes = [
   {path: '/', name: 'home', component: Home},
   {path: '/card-creator', name: 'card-creator', component: CardCreator},
+  {path: '/card-preview/:uuid', name: 'card-preview', component: () => import('./components/CardPreview.vue')},
   {path: '/roadmap', name: 'roadmap', component: () => import('./components/Roadmap.vue')},
   {path: '/contact', name: 'contact', component: () => import('./components/Contact.vue')},
 ]
