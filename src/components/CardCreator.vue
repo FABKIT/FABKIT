@@ -349,7 +349,7 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                     <input id="cardSetNumber" v-model="fields.cardSetNumber"
                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-primary dark:text-white placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                            type="text"
-                           maxlength="6"
+                           maxlength="7"
                            @input="fields.cardSetNumber = fields.cardSetNumber.toUpperCase()"
                            placeholder="e.g. MON168"
                     />
