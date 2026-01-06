@@ -779,8 +779,8 @@ export function useCard() {
         document.body.removeChild(tempContainer);
         exportStage.destroy();
 
-        const contentType = "data:image/png;base64";
-        const b64Data = resultDataUrl.replace(contentType+',', '');
+        const contentType = "image/png";
+        const b64Data = resultDataUrl.replace('data:image/png;base64,', '');
 
         const blob = b64toBlob(b64Data, contentType);
 
