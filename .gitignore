@@ -1,5 +1,7 @@
 public/img/cardbacks/generated/*.png
 src/config/cardbacks.js
+cardbacks
+.env
 # Logs
 logs
 *.log
