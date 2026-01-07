@@ -9,7 +9,7 @@ export default defineConfig(async ({mode}) => {
     // Set the third parameter to '' to load all env regardless of the
     // `VITE_` prefix.
     const env = loadEnv(mode, process.cwd(), '');
-    fs.writeFileSync('./src/config/cardbacks.js', await getCardbacks());
+    fs.writeFileSync('./src/config/cardbacks.js', await getCardbacks(env.CARDBACKS_JSON_PATH));
 
     return {
         base: '/',

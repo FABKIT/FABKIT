@@ -12,6 +12,9 @@ cd FABKIT
 # Install dependencies
 npm install
 
+# Set up environment variables
+cp .env.example .env
+
 # Start development server
 npm run dev
 
