@@ -1,8 +1,7 @@
-import {copyFile} from 'fs';
-import repoCardbacks from './cardbacks/cardbacks.json' with {type: "json"};
+import {copyFile, readFileSync} from 'fs';
 
-const getCardbacks = async function () {
-  let cardbacks = repoCardbacks;
+const getCardbacks = async function (cardbacksJsonPath) {
+  let cardbacks = readJson(cardbacksJsonPath);
   const downloads = getDownloads(cardbacks);
 
   downloads.forEach(download => {
@@ -37,6 +36,10 @@ function getDownloads(cardbacks) {
   })
 
   return downloads;
+}
+
+const readJson = (path) => {
+  return JSON.parse(readFileSync(path).toString());
 }
 
 export default getCardbacks;
