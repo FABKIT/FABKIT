@@ -30,6 +30,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Pull Cardbacks
+        uses: actions/checkout@v2
+        with:
+          repository: FABKIT/cardbacks
+          ssh-key: ${{ secrets.CARDBACK_KEY }}
+          path: 'cardbacks'
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -41,11 +47,6 @@ jobs:
         run: npm run build
         env:
           BACKEND_URL: ${{ secrets.SOURCE }}
-      - name: debugging Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload all for debug
-          path: './'
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact

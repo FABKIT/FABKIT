@@ -8,17 +8,17 @@
       {
         "id": 1,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/683c9f087f497.png"
+        "fileName": "./generated/683c9f087f497.png"
       },
       {
         "id": 2,
         "pitch": 2,
-        "fileName": "./public/img/cardbacks/examples/683c9f087ee5f.png"
+        "fileName": "./generated/683c9f087ee5f.png"
       },
       {
         "id": 3,
         "pitch": 3,
-        "fileName": "./public/img/cardbacks/examples/683c9f087fa14.png"
+        "fileName": "./generated/683c9f087fa14.png"
       }
     ]
   },
@@ -31,7 +31,7 @@
       {
         "id": 4,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/683c9f087ff25.png"
+        "fileName": "./generated/683c9f087ff25.png"
       }
     ]
   },
@@ -44,17 +44,17 @@
       {
         "id": 5,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/assassin-nostats-1-flat-6880352873107.png"
+        "fileName": "./generated/assassin-nostats-1-flat-6880352873107.png"
       },
       {
         "id": 6,
         "pitch": 2,
-        "fileName": "./public/img/cardbacks/examples/assassin-nostats-2-flat-6880352873742.png"
+        "fileName": "./generated/assassin-nostats-2-flat-6880352873742.png"
       },
       {
         "id": 7,
         "pitch": 3,
-        "fileName": "./public/img/cardbacks/examples/assassin-nostats-3-flat-6880352873c99.png"
+        "fileName": "./generated/assassin-nostats-3-flat-6880352873c99.png"
       }
     ]
   },
@@ -67,7 +67,7 @@
       {
         "id": 8,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/Blue-Token-Flat-688fb50e27c17.png"
+        "fileName": "./generated/Blue-Token-Flat-688fb50e27c17.png"
       }
     ]
   },
@@ -80,7 +80,7 @@
       {
         "id": 9,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/chaos-hero-flat-688038591517c.png"
+        "fileName": "./generated/chaos-hero-flat-688038591517c.png"
       }
     ]
   },
@@ -93,7 +93,7 @@
       {
         "id": 10,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/equipment-dented-683e107b17fab.png"
+        "fileName": "./generated/equipment-dented-683e107b17fab.png"
       }
     ]
   },
@@ -106,7 +106,7 @@
       {
         "id": 11,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/equipment-flat-683e11f01cef0.png"
+        "fileName": "./generated/equipment-flat-683e11f01cef0.png"
       }
     ]
   },
@@ -119,17 +119,17 @@
       {
         "id": 12,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/Fabled-Resource-1-Flat-688fb5868f0a2.png"
+        "fileName": "./generated/Fabled-Resource-1-Flat-688fb5868f0a2.png"
       },
       {
         "id": 13,
         "pitch": 2,
-        "fileName": "./public/img/cardbacks/examples/Fabled-Resource-2-Flat-688fb5868fda2.png"
+        "fileName": "./generated/Fabled-Resource-2-Flat-688fb5868fda2.png"
       },
       {
         "id": 14,
         "pitch": 3,
-        "fileName": "./public/img/cardbacks/examples/Fabled-Resource-3-Flat-688fb5869028a.png"
+        "fileName": "./generated/Fabled-Resource-3-Flat-688fb5869028a.png"
       }
     ]
   },
@@ -142,17 +142,17 @@
       {
         "id": 15,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/fabled-resource-1-dented-683e109970027.png"
+        "fileName": "./generated/fabled-resource-1-dented-683e109970027.png"
       },
       {
         "id": 16,
         "pitch": 2,
-        "fileName": "./public/img/cardbacks/examples/fabled-resource-2-dented-683e10997022b.png"
+        "fileName": "./generated/fabled-resource-2-dented-683e10997022b.png"
       },
       {
         "id": 17,
         "pitch": 3,
-        "fileName": "./public/img/cardbacks/examples/fabled-resource-3-dented-683e1099703da.png"
+        "fileName": "./generated/fabled-resource-3-dented-683e1099703da.png"
       }
     ]
   },
@@ -165,7 +165,7 @@
       {
         "id": 18,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/683c9f088423a.png"
+        "fileName": "./generated/683c9f088423a.png"
       }
     ]
   },
@@ -178,7 +178,7 @@
       {
         "id": 19,
         "pitch": 1,
-        "fileName": "./public/img/cardbacks/examples/683c9f08916d9.png"
+        "fileName": "./generated/683c9f08916d9.png"
       }
     ]
   }
