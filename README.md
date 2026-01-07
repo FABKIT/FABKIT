@@ -41,10 +41,6 @@ cd FABKIT
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your backend URL if needed
-
 # Start development server
 npm run dev
 
