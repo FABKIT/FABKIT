@@ -40,7 +40,12 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          BACKEND_URL: ${{ secrets.SOURCE }}
+      - name: debugging Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload all for debug
+          path: './'
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
