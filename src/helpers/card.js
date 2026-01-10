@@ -107,23 +107,23 @@ export function useCard() {
 
   const availableCardbacks = computed(() => {
     return cardbacks.filter(el => {
-      let type = 'General';
+      let types = ['General'];
       if (fields.cardType === 'ally') {
-        type = 'token';
+        types = ['token', 'hero'];
       }
       if (['equipment', 'hero', 'demi_hero', 'equipment', 'weapon', 'token', 'resource'].includes(fields.cardType)) {
-        type = fields.cardType;
+        types = [fields.cardType];
         if (fields.cardType === 'demi_hero') {
-          type = 'hero';
+          types = ['hero'];
         }
       }
       if (fields.cardType === 'weapon_equipment') {
-        type = 'weapon';
+        types = ['weapon'];
       }
       if (fields.cardType === 'event') {
-        type = 'event';
+        types = ['event'];
       }
-      return el.type.toLowerCase() === type.toLowerCase();
+      return types.map(el => el.toLowerCase()).includes(el.type.toLowerCase())
     });
   });
 
