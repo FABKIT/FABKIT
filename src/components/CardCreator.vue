@@ -448,7 +448,7 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                          }"
                         />
                         <v-image
-                            v-if="fields.cardPower !== ''"
+                            v-if="fields.cardPower !== '' || fields.cardType === 'ally'"
                             :config="{
                            ...getConfig('powerImage'),
                            image: powerImage,
