@@ -5,7 +5,7 @@ import {useMath} from "./math.js";
 import useTypes from "../config/types.js";
 import {useCanvasHelper} from "./canvas.js";
 import {useTextConfig} from "../config/text.js";
-import {toPng} from "html-to-image";
+import {getFontEmbedCSS, toPng} from "html-to-image";
 import {useFieldsStore} from "../stores/fieldStore.js";
 import {useSavedCardsStore} from "../stores/savedCardsStore.js";
 import { v4 as uuidv4 } from "uuid";
@@ -666,7 +666,7 @@ export function useCard() {
 
   const getCardParentClone = function () {
     // Clone the entire card parent structure
-    const originalCardParent = document.querySelector('.cardParent');
+    const originalCardParent = document.querySelector('#cardHolder');
     const clonedCardParent = originalCardParent.cloneNode(true);
 
     // Create invisible container
@@ -681,8 +681,7 @@ export function useCard() {
     document.body.appendChild(tempContainer);
 
     // Force the cloned card to export dimensions
-    const clonedStageContainer = clonedCardParent.querySelector('[ref="stageContainerRef"]') ||
-      clonedCardParent.querySelector('.overflow-hidden');
+    const clonedStageContainer = clonedCardParent;
     const clonedTextOverlay = clonedCardParent.querySelector('#renderedCardText');
     const clonedTextContent = clonedCardParent.querySelector('#renderedContent');
 
@@ -756,12 +755,15 @@ export function useCard() {
       canvasHeight: sceneHeight,
       backgroundColor: 'transparent',
       pixelRatio: 1,
+      fontEmbedCSS: getFontEmbedCSS(
+        clonedCardParent
+      ),
     };
 
     // Add iOS-specific options only when needed
     const options = isIOS ? {
       ...baseOptions,
-      useCORS: true
+      useCORS: false,
     } : baseOptions;
 
     let resultDataUrl = '';
