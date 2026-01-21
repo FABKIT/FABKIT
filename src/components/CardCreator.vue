@@ -427,7 +427,7 @@ const [lifeImage] = useImage('/img/symbols/cardsymbol_life.svg');
                 <span class="sr-only">Loading...</span>
               </div>
               <div class="relative">
-                <div ref="stageContainerRef" class="overflow-hidden mx-auto w-full" id="cardHolder">
+                <div ref="stageContainerRef" class="overflow-hidden mx-auto w-full">
                     <v-stage
                         ref="stage"
                         :config="{
