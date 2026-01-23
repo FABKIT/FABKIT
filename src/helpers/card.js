@@ -24,7 +24,30 @@ export function useCard() {
   const nonDentedTypes = ['event'];
 
   const fields = useFieldsStore();
+  watch(() => fields.cardText, () => {
+    nextTick().then(() => {
+      recalculateRatio();
+    })
+  }, {deep: true});
+
   const savedCardsStore = useSavedCardsStore();
+
+  // Reactive references
+  const stage = ref();
+  const artwork = ref();
+  const background = ref();
+  const stageContainerRef = ref(null);
+  const scale = ref(1);
+
+  const containerElement = ref();
+  const contentElement = ref();
+
+  const selectedStyle = ref('dented');
+
+  watch(selectedStyle, () => {
+    fields.cardBackgroundIndex = 0;
+  });
+
 
 
   const cardTypeText = computed(() => {
@@ -163,12 +186,29 @@ export function useCard() {
     return currentCardback.value?.images.find(el => String(el.pitch) === String(currentPitch)).url
   });
 
+  watch(currentBackground, (newBackground) => {
+    nextTick().then(async () => {
+      await doLoading(async () => {
+        return canvasHelper.drawBackground(newBackground);
+      })
+    })
+  });
+
   const frameType = computed(() => {
     if (currentCardback.value?.dented) {
       return 'dented';
     }
 
     return 'flat';
+  });
+
+  watch(frameType, (newFrameType) => {
+    // Only proceed if frameType is actually defined
+    if (newFrameType) {
+      nextTick().then(() => {
+        recalculateRatio();
+      });
+    }
   });
 
   const cardTextStyle = computed(() => {
@@ -207,8 +247,6 @@ export function useCard() {
 
     return {};
   }
-  const selectedStyle = ref('dented');
-
   const switchBackground = function (dir) {
     const available = filteredAvailableCardbacks.value;
     if (dir === 'next') {
@@ -298,9 +336,6 @@ export function useCard() {
 
     return scaledFontsize(cardTypeText.value, footerTextConfig.fontSize, footerTextConfig.fontFamily, footerTextConfig.width);
   })
-  watch(selectedStyle, () => {
-    fields.cardBackgroundIndex = 0;
-  });
 
   const findBestMatch = (targetName, cardbackList) => {
     if (!targetName || !cardbackList.length) return 0;
@@ -371,9 +406,6 @@ export function useCard() {
       });
     }
   };
-
-  const containerElement = ref();
-  const contentElement = ref();
 
   const {flatConfig, dentedConfig} = useTextConfig();
   const frameTypeTextConfig = computed(() => {
@@ -508,21 +540,6 @@ export function useCard() {
     });
   }
 
-  watch(() => fields.cardText, () => {
-    nextTick().then(() => {
-      recalculateRatio();
-    })
-  }, {deep: true});
-
-  watch(frameType, (newFrameType) => {
-    // Only proceed if frameType is actually defined
-    if (newFrameType) {
-      nextTick().then(() => {
-        recalculateRatio();
-      });
-    }
-  });
-
   const loadingBackground = ref(false);
 
   const doLoading = async function (callback) {
@@ -540,32 +557,11 @@ export function useCard() {
 
 
   const CanvasHelper = useCanvasHelper();
-  const stage = ref();
-  const artwork = ref();
-  const background = ref();
-
   const canvasHelper = new CanvasHelper();
 
   const sceneWidth = 450;
   const sceneHeight = 628;
 
-  // Reactive references
-  const stageContainerRef = ref(null);
-  const scale = ref(1);
-
-  watch(currentBackground, (newBackground) => {
-    nextTick().then(async () => {
-      await doLoading(async () => {
-        return canvasHelper.drawBackground(newBackground);
-      })
-    })
-  });
-
-  watch(fields.cardText, () => {
-    nextTick().then(async () => {
-      handleResize();
-    })
-  })
 
   function processCardTypeChange(newCardType) {
     if (!newCardType) return;
@@ -623,7 +619,7 @@ export function useCard() {
     });
   };
 
-  onMounted(async () => {
+  onMounted(() => {
     canvasHelper.artworkLayer = artwork.value.getStage();
     canvasHelper.backgroundLayer = background.value.getStage();
     canvasHelper.stageLayer = stage.value.getStage();
@@ -664,108 +660,25 @@ export function useCard() {
 
   const downloadingImage = ref(false);
 
-  const getCardParentClone = function () {
-    // Clone the entire card parent structure
-    const originalCardParent = document.querySelector('.cardParent');
-    const clonedCardParent = originalCardParent.cloneNode(true);
-
-    // Create invisible container
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.top = '-9999px';
-    tempContainer.style.width = `${sceneWidth}px`;
-    tempContainer.style.height = `${sceneHeight}px`;
-    tempContainer.style.overflow = 'visible';
-    tempContainer.appendChild(clonedCardParent);
-    document.body.appendChild(tempContainer);
-
-    // Force the cloned card to export dimensions
-    const clonedStageContainer = clonedCardParent.querySelector('[ref="stageContainerRef"]') ||
-      clonedCardParent.querySelector('.overflow-hidden');
-    const clonedTextOverlay = clonedCardParent.querySelector('#renderedCardText');
-    const clonedTextContent = clonedCardParent.querySelector('#renderedContent');
-
-    if (clonedStageContainer) {
-      clonedStageContainer.style.width = `${sceneWidth}px`;
-      clonedStageContainer.style.height = `${sceneHeight}px`;
-      clonedStageContainer.style.transform = 'none';
-    }
-
-    if (clonedTextOverlay) {
-      // Apply export-scale text positioning (scale = 1)
-      const textY = frameType.value === 'flat' ? 397.3 : 408;
-      clonedTextOverlay.style.position = 'absolute';
-      clonedTextOverlay.style.left = '50%';
-      clonedTextOverlay.style.top = `${textY}px`;
-      clonedTextOverlay.style.transform = 'translateX(-50%)';
-      clonedTextOverlay.style.width = '345px';
-      clonedTextOverlay.style.height = '135px';
-      clonedTextOverlay.style.zIndex = '10';
-      clonedTextOverlay.style.pointerEvents = 'none';
-    }
-
-    if (clonedTextContent) {
-      resizeText({
-        element: clonedTextContent,
-        // Because this will be a normal-sized card
-        // Size the minSize to the maxFontSize
-        minSize: frameTypeTextConfig.value.minFontSize,
-        maxSize: frameTypeTextConfig.value.maxFontSize,
-        step: frameTypeTextConfig.value.step,
-        // Also set the scale to one
-        scaleValue: 1,
-      });
-    }
-
-    // Create new Konva stage in the cloned container
-    const konvaContainer = clonedStageContainer.querySelector('canvas')?.parentElement;
-    // Clear existing canvas
-    konvaContainer.innerHTML = '';
-
-    const exportStage = new Konva.Stage({
-      container: konvaContainer,
-      width: sceneWidth,
-      height: sceneHeight,
-    });
-
-    // Clone all layers from original stage
-    const originalStage = stage.value.getStage();
-    originalStage.children.forEach(layer => {
-      const clonedLayer = layer.clone();
-      exportStage.add(clonedLayer);
-    });
-
-    exportStage.batchDraw();
-    return {clonedCardParent, tempContainer, exportStage};
-  }
-
   const konvaToPng = function (retry = 0) {
     downloadingImage.value = true;
-
-    const {clonedCardParent, tempContainer, exportStage} = getCardParentClone();
 
     // iOS-specific settings
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
 
-    const baseOptions = {
+    const options = {
       width: sceneWidth,
       canvasWidth: sceneWidth,
       height: sceneHeight,
       canvasHeight: sceneHeight,
       backgroundColor: 'transparent',
+      skipFonts: true,
       pixelRatio: 1,
-    };
-
-    // Add iOS-specific options only when needed
-    const options = isIOS ? {
-      ...baseOptions,
       useCORS: true
-    } : baseOptions;
-
+    };
     let resultDataUrl = '';
-    toPng(clonedCardParent, options)
+    toPng(document.querySelector('.cardParent'), options)
       .then((dataUrl) => {
         resultDataUrl = dataUrl;
       })
@@ -773,10 +686,6 @@ export function useCard() {
         console.error('Export failed:', err);
       })
       .finally(() => {
-        // Cleanup
-        document.body.removeChild(tempContainer);
-        exportStage.destroy();
-
         const contentType = "image/png";
         const b64Data = resultDataUrl.replace('data:image/png;base64,', '');
 
