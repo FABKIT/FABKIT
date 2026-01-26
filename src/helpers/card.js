@@ -5,7 +5,7 @@ import {useMath} from "./math.js";
 import useTypes from "../config/types.js";
 import {useCanvasHelper} from "./canvas.js";
 import {useTextConfig} from "../config/text.js";
-import {toPng} from "html-to-image";
+import {toPng} from "@jpinsonneau/html-to-image";
 import {useFieldsStore} from "../stores/fieldStore.js";
 import {useSavedCardsStore} from "../stores/savedCardsStore.js";
 import { v4 as uuidv4 } from "uuid";
@@ -673,9 +673,7 @@ export function useCard() {
       height: sceneHeight,
       canvasHeight: sceneHeight,
       backgroundColor: 'transparent',
-      skipFonts: true,
-      pixelRatio: 1,
-      useCORS: true
+      quality: 1
     };
     let resultDataUrl = '';
     toPng(document.querySelector('.cardParent'), options)
