@@ -1,0 +1,80 @@
+.renderedContent {
+    max-width: 100%;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+.renderedContent > * {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.renderedCardText p {
+    margin: 0;
+    padding: 0;
+}
+
+.renderedCardText li p {
+    display: inline;
+}
+
+.renderedCardText p + p {
+    margin-top: 1em; /* This adds space between paragraphs, matching a single line break */
+}
+
+.renderedCardText br {
+    line-height: inherit;
+}
+
+.renderedContent strong {
+    font-family: 'palatino_lt_stdbold', serif;
+    font-weight: normal;
+    font-size: 0.99em;
+    letter-spacing: 0.016em;
+}
+
+.renderedContent em {
+    font-family: 'palatino_lt_italic', serif;
+    font-style: normal;
+    letter-spacing: 0.0128em;
+    font-size: 1.0001em;
+}
+
+.renderedContent {
+    padding-left: 0.08em;
+}
+
+.renderedContent ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.renderedContent ul li {
+    position: relative;
+    margin-left: 1.2em;
+}
+
+.renderedContent ul li::before {
+    content: "•";
+    position: absolute;
+    left: -1.2em; /* Move bullet to the left of the text area */
+    top: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.renderedContent p:empty {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove margin from paragraphs that might appear empty */
+.renderedContent p:only-child:empty {
+    display: none;
+}

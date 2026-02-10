@@ -44,6 +44,7 @@ import {
 	useScaledFontSize,
 	useScaledFontSizeFromHTML,
 } from "../hooks/useScaledFontSize.ts";
+import "../../../styles/components/normal-renderer.css";
 
 export type NormalRendererProps = {
 	/** Render configuration preset (flat or dented variant) */
@@ -198,9 +199,9 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 					width={config.elements.CardText.width}
 					height={config.elements.CardText.height}
 				>
-					<div className="flex h-full w-full flex-col justify-center">
-						<span
-							className="text-black text-center font-card-text"
+					<div className="flex h-full w-full flex-col justify-center items-center">
+						<div
+							className="renderedContent text-black text-center font-card-text"
 							style={{ fontSize: CardTextFontSize }}
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: editor content is HTML
 							dangerouslySetInnerHTML={{ __html: CardTextHTML }}
