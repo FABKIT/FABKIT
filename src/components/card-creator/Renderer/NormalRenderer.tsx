@@ -66,8 +66,10 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	const CardName = useCardCreator((state) => state.CardName);
 	const CardResource = useCardCreator((state) => state.CardResource);
 	const CardPower = useCardCreator((state) => state.CardPower);
+	const CardIntellect = useCardCreator((state) => state.CardHeroIntellect);
 	const CardRarity = useCardCreator((state) => state.CardRarity);
 	const CardDefense = useCardCreator((state) => state.CardDefense);
+	const CardLife = useCardCreator((state) => state.CardLife);
 	const CardArtwork = useCardCreator((state) => state.CardArtwork);
 	const CardTextHTML = useCardCreator((state) => state.CardTextHTML);
 	const CardArtPosition = useCardCreator((state) => state.CardArtPosition);
@@ -236,6 +238,23 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				</>
 			)}
 
+			{CardIntellect && (
+				<>
+					<text
+						x={config.elements.CardIntellectText.x}
+						y={config.elements.CardIntellectText.y}
+						textAnchor={config.elements.CardIntellectText.textAnchor || "middle"}
+						dominantBaseline="middle"
+						fill={config.elements.CardIntellectText.fill}
+						fontFamily={config.elements.CardIntellectText.fontFamily}
+						fontSize={config.elements.CardIntellectText.fontSize}
+						fontWeight={config.elements.CardIntellectText.fontWeight}
+					>
+						{CardIntellect}
+					</text>
+				</>
+			)}
+
 			{CardDefense && (
 				<>
 					<image
@@ -257,6 +276,31 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 						fontWeight={config.elements.CardDefenseText.fontWeight}
 					>
 						{CardDefense}
+					</text>
+				</>
+			)}
+
+			{CardLife && (
+				<>
+					<image
+						href="/img/symbols/cardsymbol_life.svg"
+						x={config.elements.CardDefenseImage.x}
+						y={config.elements.CardDefenseImage.y}
+						width={config.elements.CardDefenseImage.width}
+						height={config.elements.CardDefenseImage.height}
+						preserveAspectRatio="xMidYMid slice"
+					/>
+					<text
+						x={config.elements.CardLifeText.x}
+						y={config.elements.CardLifeText.y}
+						textAnchor={config.elements.CardLifeText.textAnchor || "middle"}
+						dominantBaseline="middle"
+						fill={config.elements.CardLifeText.fill}
+						fontFamily={config.elements.CardLifeText.fontFamily}
+						fontSize={config.elements.CardLifeText.fontSize}
+						fontWeight={config.elements.CardLifeText.fontWeight}
+					>
+						{CardLife}
 					</text>
 				</>
 			)}

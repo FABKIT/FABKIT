@@ -187,11 +187,17 @@ export interface NormalFlatRenderConfig extends NormalCardRenderConfig {
 		/** Power value text */
 		CardPowerText: CardTextConfig;
 
+		/** Intellect value text */
+		CardIntellectText: CardTextConfig;
+
 		/** Defense symbol icon (bottom right) */
 		CardDefenseImage: CardImageConfig;
 
 		/** Defense value text */
 		CardDefenseText: CardTextConfig;
+
+		/** Life value text */
+		CardLifeText: CardTextConfig;
 
 		/** Bottom center text (class/subtype) */
 		CardBottomText: CardTextConfig;
@@ -247,11 +253,17 @@ export interface NormalDentedRenderConfig extends NormalCardRenderConfig {
 		/** Power value text */
 		CardPowerText: CardTextConfig;
 
+		/** Intellect value text */
+		CardIntellectText: CardTextConfig;
+
 		/** Defense symbol icon (bottom right) */
 		CardDefenseImage: CardImageConfig;
 
 		/** Defense value text */
 		CardDefenseText: CardTextConfig;
+
+		/** Life value text */
+		CardLifeText: CardTextConfig;
 
 		/** Bottom center text (class/subtype) */
 		CardBottomText: CardTextConfig;

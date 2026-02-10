@@ -76,6 +76,15 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 			fontSize: 20.6,
 			fontWeight: 400,
 		},
+		// These values should be the same as CardPowerText
+		CardIntellectText: {
+			x: 85,
+			y: 587,
+			fill: "black",
+			fontFamily: "palatino_lt_stdlight",
+			fontSize: 20.6,
+			fontWeight: 400,
+		},
 		CardDefenseImage: {
 			x: 383,
 			y: 561.2,
@@ -83,6 +92,15 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 			height: 37,
 		},
 		CardDefenseText: {
+			x: 362.8,
+			y: 587,
+			fill: "black",
+			fontFamily: "palatino_lt_stdlight",
+			fontSize: 17.2,
+			fontWeight: 400,
+		},
+		// These values should be the same as CardDefenseText
+		CardLifeText: {
 			x: 362.8,
 			y: 587,
 			fill: "black",
@@ -184,6 +202,15 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 			fontSize: 17.2,
 			fontWeight: 400,
 		},
+		// These values should be the same as CardPowerText
+		CardIntellectText: {
+			x: 75.5,
+			y: 577,
+			fill: "black",
+			fontFamily: "palatino_lt_stdroman",
+			fontSize: 17.2,
+			fontWeight: 400,
+		},
 		CardDefenseImage: {
 			x: 393,
 			y: 553.6,
@@ -191,6 +218,15 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 			height: 30,
 		},
 		CardDefenseText: {
+			x: 375,
+			y: 577,
+			fill: "black",
+			fontFamily: "palatino_lt_stdroman",
+			fontSize: 17.2,
+			fontWeight: 400,
+		},
+		// These values should be the same as CardDefenseText
+		CardLifeText: {
 			x: 375,
 			y: 577,
 			fill: "black",
