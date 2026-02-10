@@ -43,6 +43,10 @@
     font-size: 1.0001em;
 }
 
+.renderedContent em strong, .renderedContent strong em {
+	font-family: 'palatino_lt_stdbold_italic', serif;
+}
+
 .renderedContent {
     padding-left: 0.08em;
 }
