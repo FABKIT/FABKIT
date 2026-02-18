@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { EditorCustomEmojiRows } from "../../config/editor.ts";
 import "../../styles/components/rich-text-editor.css";
-import { useEffect } from "react";
 
 const customEmojisRow1 = EditorCustomEmojiRows[0];
 const customEmojisRow2 = EditorCustomEmojiRows[1];
@@ -61,7 +60,7 @@ export default function RichTextEditor({
 				emojis: [...customEmojisRow1, ...customEmojisRow2],
 			}),
 		],
-		content: "",
+		content: content,
 		onUpdate: ({ editor }) => {
 			if (onChange) {
 				onChange(editor.getHTML(), editor.getJSON());
@@ -74,15 +73,6 @@ export default function RichTextEditor({
 			},
 		},
 	});
-
-	// // Sync external content changes to editor
-	useEffect(() => {
-		if (editor?.isFocused !== true && content) {
-			editor.commands.setContent(content, {
-				emitUpdate: false,
-			});
-		}
-	}, [editor, content]);
 
 	if (!editor) {
 		return <p>Editor failed to load...</p>;
