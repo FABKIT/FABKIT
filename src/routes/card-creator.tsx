@@ -84,10 +84,10 @@ function RouteComponent() {
 			<section className="flex flex-col gap-4">
 				{/* Card background selector placeholder */}
 				<div className="space-y-3">
-					<h3 className="text-sm font-medium text-muted">
+					<h3 className="text-sm font-medium text-center text-muted">
 						Select Card Background
 					</h3>
-					<div className="flex items-center gap-4 p-2 border border-border rounded-lg bg-surface">
+					<div className="flex items-center justify-center gap-4 p-2 bg-surface">
 						<CardBackStyleField />
 					</div>
 					<div className="p-3 bg-surface text-sm text-muted">
