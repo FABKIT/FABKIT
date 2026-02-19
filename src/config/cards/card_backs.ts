@@ -56,7 +56,71 @@ export function getCardBacksForTypeAndStyle(
 	);
 }
 
-export function getSuggestedCardBack(available: CardBack[]): CardBack | null {
+export function getSuggestedCardBack(
+	available: CardBack[],
+	cardback: CardBack | null = null,
+): CardBack | null {
 	if (available.length === 0) return null;
-	return available[0];
+
+	if (cardback === null) {
+		return available[0];
+	}
+
+	const exactMatch = available.find((back) => back.name === cardback.name);
+	if (exactMatch) {
+		return exactMatch;
+	}
+	// If no exact match, find the most similar name using Levenshtein distance
+	let bestMatch = available[0];
+	let bestSimilarity = 0;
+
+	for (const back of available) {
+		const similarity = stringSimilarity(
+			back.name.toLowerCase(),
+			cardback.name.toLowerCase(),
+		);
+		if (similarity > bestSimilarity) {
+			bestSimilarity = similarity;
+			bestMatch = back;
+		}
+	}
+
+	return bestMatch;
+}
+
+// Helper function to calculate string similarity using Levenshtein distance
+function stringSimilarity(str1: string, str2: string): number {
+	// Convert to lowercase for case-insensitive comparison
+	const s1 = str1.toLowerCase();
+	const s2 = str2.toLowerCase();
+
+	// Calculate Levenshtein distance
+	const track = Array(s2.length + 1)
+		.fill(null)
+		.map(() => Array(s1.length + 1).fill(null));
+
+	for (let i = 0; i <= s1.length; i++) {
+		track[0][i] = i;
+	}
+
+	for (let j = 0; j <= s2.length; j++) {
+		track[j][0] = j;
+	}
+
+	for (let j = 1; j <= s2.length; j++) {
+		for (let i = 1; i <= s1.length; i++) {
+			const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
+			track[j][i] = Math.min(
+				track[j][i - 1] + 1, // deletion
+				track[j - 1][i] + 1, // insertion
+				track[j - 1][i - 1] + indicator, // substitution
+			);
+		}
+	}
+
+	const distance = track[s2.length][s1.length];
+	const maxLength = Math.max(s1.length, s2.length);
+
+	// Return similarity score (higher is better)
+	return 1 - distance / maxLength;
 }

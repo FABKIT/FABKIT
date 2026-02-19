@@ -299,7 +299,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			set((state) => {
 				// When changing card back style, we select the first available card back for that style.
 				const available = getCardBacksForTypeAndStyle(state.CardType, backType);
-				const cardBack = getSuggestedCardBack(available);
+				const cardBack = getSuggestedCardBack(available, state.CardBack);
 
 				return { CardBackStyle: backType, CardBack: cardBack };
 			}),
