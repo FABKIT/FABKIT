@@ -93,12 +93,12 @@ function ButtonDropdown<T extends string>({
 		<Listbox value={value || undefined} onChange={onChange}>
 			<div className="relative inline-flex">
 				{/* Main button */}
-				<button
+				<ListboxButton
 					type="button"
 					className="rounded-l-lg bg-primary px-6 py-3 text-base font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-surface"
 				>
 					{displayText}
-				</button>
+				</ListboxButton>
 
 				{/* Dropdown toggle button */}
 				<ListboxButton className="rounded-r-lg border-l border-white/20 bg-primary px-3 py-3 text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-surface">
