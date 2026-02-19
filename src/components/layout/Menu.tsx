@@ -17,7 +17,6 @@ import {
 import { useState } from "react";
 import FabkitLogo from "../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../assets/Fabkitlogo_notext.svg";
-import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
 const navigation = [
@@ -137,8 +136,8 @@ export function Menu() {
 						<img className="h-30 w-auto" src={FabkitLogo} alt="FABKIT Logo" />
 					</div>
 					<hr className="h-px border-0 bg-border" />
-					<nav className="mt-5 flex flex-1 flex-col">
-						<ul className="flex flex-1 flex-col gap-y-7">
+					<nav className="mt-5 flex flex-1 flex-col gap-y-5">
+						<ul className="flex flex-col gap-y-7">
 							<li>
 								<ul className="-mx-2 space-y-1">
 									{navigation.map((item) => (
@@ -168,6 +167,7 @@ export function Menu() {
 								</ul>
 							</li>
 						</ul>
+						<ThemeToggle />
 					</nav>
 				</div>
 			</div>
@@ -194,15 +194,8 @@ export function Menu() {
 					</div>
 				</div>
 				<div className="flex items-center gap-2">
-					<LanguageToggle />
 					<ThemeToggle />
 				</div>
-			</div>
-
-			{/* Desktop utility bar */}
-			<div className="fixed top-4 right-4 z-50 hidden lg:flex lg:items-center lg:gap-2">
-				<LanguageToggle />
-				<ThemeToggle />
 			</div>
 		</div>
 	);
