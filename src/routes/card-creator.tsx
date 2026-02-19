@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { CardArtworkCreditsField } from "../components/card-creator/fields/CardArtworkCreditsField.tsx";
 import { CardArtworkField } from "../components/card-creator/fields/CardArtworkField.tsx";
 import { CardArtworkPositionContainer } from "../components/card-creator/fields/CardArtworkPositionContainer.tsx";
@@ -36,11 +37,14 @@ export const Route = createFileRoute("/card-creator")({
 function RouteComponent() {
 	const CardType = useCardCreator((state) => state.CardType);
 	const previewRef = useRef<SVGSVGElement>(null);
+	const { t } = useTranslation();
 
 	if (CardType === null) {
 		return (
 			<div className="flex flex-1 flex-col justify-center items-center gap-8">
-				<h2 className="text-4xl font-bold text-heading">Start creating!</h2>
+				<h2 className="text-4xl font-bold text-heading">
+					{t("card_creator.title")}
+				</h2>
 				<div className="w-64">
 					<CardTypeField />
 				</div>
@@ -85,7 +89,7 @@ function RouteComponent() {
 				{/* Card background selector placeholder */}
 				<div className="space-y-3">
 					<h3 className="text-sm font-medium text-center text-muted">
-						Select Card Background
+						{t("card_creator.background_label")}
 					</h3>
 					<div className="flex items-center justify-center gap-4 p-2 bg-surface">
 						<CardBackStyleField />
@@ -107,7 +111,7 @@ function RouteComponent() {
 					to="/export"
 					className="px-6 py-3 bg-primary disabled:bg-border text-white font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
 				>
-					Generate
+					{t("card_creator.generate_button_label")}
 				</Link>
 
 				<SaveButton previewRef={previewRef} />

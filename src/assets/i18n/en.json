@@ -171,7 +171,10 @@
 		"save_error": "Failed to save card. Please try again.",
 		"save_error_no_name": "Please enter a card name before saving.",
 		"overlay_label": "Card overlay (for tracing, ...)",
-		"overlay_opacity_label": "Overlay opacity ({{value}})"
+		"overlay_opacity_label": "Overlay opacity ({{value}})",
+		"background_label": "Select Card Background",
+		"generate_button_label": "Generate",
+		"title": "Start creating!"
 	},
 	"gallery": {
 		"title": "Saved Cards",
