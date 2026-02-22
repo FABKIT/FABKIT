@@ -241,5 +241,8 @@
 		"toggle_dark": "Switch to system theme",
 		"toggle_system": "Switch to light theme",
 		"toggle_language": "Change language"
+	},
+	"index": {
+		"title": "Start creating!"
 	}
 }
