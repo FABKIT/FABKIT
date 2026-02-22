@@ -189,6 +189,9 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 					fontFamily={config.elements.CardResource.fontFamily}
 					fontSize={config.elements.CardResource.fontSize}
 					fontWeight={config.elements.CardResource.fontWeight}
+					stroke={config.elements.CardResource.stroke}
+					strokeWidth={config.elements.CardResource.strokeWidth}
+					paintOrder={config.elements.CardResource.paintOrder}
 				>
 					{CardResource}
 				</text>

@@ -46,6 +46,15 @@ export interface CardTextConfig {
 
 	/** Horizontal text alignment relative to x position */
 	textAnchor?: "start" | "middle" | "end";
+
+	/** Add a stroke around a text object */
+	stroke?: string;
+
+	/** Determine the width of said stroke */
+	strokeWidth?: number;
+
+	/** Determine in which order the stroke is painted */
+	paintOrder?: string;
 }
 
 /**
