@@ -144,6 +144,7 @@
 	},
 	"card_creator": {
 		"type_label": "Type",
+		"type_placeholder": "Select Card Type",
 		"pitch_label": "Pitch",
 		"name_label": "Name",
 		"resource_label": "Cost",

@@ -95,19 +95,22 @@ function ButtonDropdown<T extends string>({
 				{/* Main button */}
 				<ListboxButton
 					type="button"
-					className="rounded-l-lg bg-primary px-6 py-3 text-base font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-surface"
+					className="rounded-l-md bg-primary px-3 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 				>
 					{displayText}
 				</ListboxButton>
 
 				{/* Dropdown toggle button */}
-				<ListboxButton className="rounded-r-lg border-l border-white/20 bg-primary px-3 py-3 text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-surface">
-					<ChevronDown className="h-5 w-5" aria-hidden="true" />
+				<ListboxButton className="rounded-r-md bg-primary px-3 py-2 text-white transition-opacity hover:opacity-90">
+					<ChevronDown
+						className="size-5 text-white forced-colors:text-[Highlight]"
+						aria-hidden="true"
+					/>
 				</ListboxButton>
 
 				<ListboxOptions
 					anchor="bottom end"
-					className="mt-2 w-64 origin-top-right rounded-lg bg-surface shadow-lg ring-1 ring-border focus:outline-none [--anchor-gap:8px]"
+					className="mt-2 w-64 origin-top-right rounded-md bg-surface shadow-lg ring-1 ring-border [--anchor-gap:8px]"
 				>
 					<div className="py-1">
 						{options.map((option) => (
@@ -133,16 +136,18 @@ function ButtonDropdown<T extends string>({
 	// Otherwise wrap in Field with label
 	return (
 		<Field>
-			<Label className="block text-sm font-medium text-heading">
-				{label}
-				{required && <span className="ml-1 text-primary">*</span>}
-			</Label>
+			{label && (
+				<Label className="block text-sm font-medium text-heading">
+					{label}
+					{required && <span className="ml-1 text-primary">*</span>}
+				</Label>
+			)}
 			{description && (
 				<Description className="mt-1 text-sm text-muted">
 					{description}
 				</Description>
 			)}
-			<div className="mt-3">{dropdownContent}</div>
+			<div>{dropdownContent}</div>
 		</Field>
 	);
 }

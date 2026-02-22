@@ -31,14 +31,15 @@ export function CardTypeField() {
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-12">
-				<LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+				<LoaderCircle className="size-5 animate-spin text-primary" />
 			</div>
 		);
 	}
 
 	return (
 		<ButtonDropdown
-			label={t("card_creator.type_label")}
+			placeholder={t("card_creator.type_placeholder")}
+			label=""
 			value={null}
 			onChange={async (type) => {
 				setIsLoading(true);
