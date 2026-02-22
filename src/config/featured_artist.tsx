@@ -12,7 +12,7 @@ export const featuredArtists = [
 		collection: "Verdance Armory Deck",
 		description: (
 			<>
-				<p className="text-primary/80 dark:text-white/80 leading-relaxed">
+				<p className="text-heading/80 leading-relaxed">
 					In this showcase we are highlighting MalZenith who won the Flesh and
 					Blood discord's custom card contest with his Armory Deck for Verdance.
 					it features seven carefully designed custom cards that explore an
