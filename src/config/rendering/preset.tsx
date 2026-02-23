@@ -151,6 +151,62 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 	},
 };
 
+export const NormalDentedHeroRenderConfigPreset = {
+	...NormalDentedRenderConfigPreset,
+	elements: {
+		...NormalDentedRenderConfigPreset.elements,
+		CardName: {
+			...NormalDentedRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
+		},
+	},
+};
+
+export const NormalDentedWeaponRenderConfigPreset = {
+	...NormalDentedRenderConfigPreset,
+	elements: {
+		...NormalDentedRenderConfigPreset.elements,
+		CardName: {
+			...NormalDentedRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
+		},
+	},
+};
+
+export const NormalDentedEquipmentRenderConfigPreset = {
+	...NormalDentedRenderConfigPreset,
+	elements: {
+		...NormalDentedRenderConfigPreset.elements,
+		CardName: {
+			...NormalDentedRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
+		},
+	},
+};
+
+export const NormalDentedTokenRenderConfigPreset = {
+	...NormalDentedRenderConfigPreset,
+	elements: {
+		...NormalDentedRenderConfigPreset.elements,
+		CardName: {
+			...NormalDentedRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
+		},
+	},
+};
+
 export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 	renderer: "normal",
 	variant: "flat",
@@ -267,6 +323,62 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 			fontSize: 10,
 			fontWeight: 400,
 			textAnchor: "end",
+		},
+	},
+};
+
+export const NormalFlatHeroRenderConfigPreset = {
+	...NormalFlatRenderConfigPreset,
+	elements: {
+		...NormalFlatRenderConfigPreset.elements,
+		CardName: {
+			...NormalFlatRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
+		},
+	},
+};
+
+export const NormalFlatWeaponRenderConfigPreset = {
+	...NormalFlatRenderConfigPreset,
+	elements: {
+		...NormalFlatRenderConfigPreset.elements,
+		CardName: {
+			...NormalFlatRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
+		},
+	},
+};
+
+export const NormalFlatEquipmentRenderConfigPreset = {
+	...NormalFlatRenderConfigPreset,
+	elements: {
+		...NormalFlatRenderConfigPreset.elements,
+		CardName: {
+			...NormalFlatRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
+		},
+	},
+};
+
+export const NormalFlatTokenRenderConfigPreset = {
+	...NormalFlatRenderConfigPreset,
+	elements: {
+		...NormalFlatRenderConfigPreset.elements,
+		CardName: {
+			...NormalFlatRenderConfigPreset.elements.CardName,
+			x: 225,
+			y: 57,
+			width: 37,
+			height: 37,
 		},
 	},
 };

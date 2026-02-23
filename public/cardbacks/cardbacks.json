@@ -28,7 +28,7 @@
 		"name": "Aria",
 		"type": "hero",
 		"dented": true,
-		"renderer": "normal_dented",
+		"renderer": "normal_dented_hero",
 		"images": [
 			{
 				"id": 4,
@@ -66,7 +66,7 @@
 		"name": "Blue",
 		"type": "token",
 		"dented": false,
-		"renderer": "normal_flat",
+		"renderer": "normal_flat_token",
 		"images": [
 			{
 				"id": 8,
@@ -80,7 +80,7 @@
 		"name": "Chaos",
 		"type": "hero",
 		"dented": false,
-		"renderer": "normal_flat",
+		"renderer": "normal_flat_hero",
 		"images": [
 			{
 				"id": 9,
@@ -94,7 +94,7 @@
 		"name": "Equipment",
 		"type": "equipment",
 		"dented": true,
-		"renderer": "normal_dented",
+		"renderer": "normal_dented_equipment",
 		"images": [
 			{
 				"id": 10,
@@ -108,7 +108,7 @@
 		"name": "Equipment",
 		"type": "equipment",
 		"dented": false,
-		"renderer": "normal_flat",
+		"renderer": "normal_flat_equipment",
 		"images": [
 			{
 				"id": 11,
@@ -170,7 +170,7 @@
 		"name": "Green",
 		"type": "token",
 		"dented": true,
-		"renderer": "normal_dented",
+		"renderer": "normal_dented_token",
 		"images": [
 			{
 				"id": 18,
@@ -184,7 +184,7 @@
 		"name": "Weapon",
 		"type": "weapon",
 		"dented": true,
-		"renderer": "normal_dented",
+		"renderer": "normal_dented_weapon",
 		"images": [
 			{
 				"id": 19,
