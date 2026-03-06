@@ -63,7 +63,7 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 			type="button"
 			onClick={handleSave}
 			disabled={isSaving || !state.CardName}
-			className="px-6 py-3 bg-primary disabled:bg-border text-white font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+			className="inline-flex items-center justify-center gap-x-1.5 bg-primary text-sm font-semibold text-white rounded-md px-3.5 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
 		>
 			<Save className="h-4 w-4" />
 			{isSaving ? t("card_creator.saving") : t("card_creator.save")}

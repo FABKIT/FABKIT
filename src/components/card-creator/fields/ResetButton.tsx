@@ -1,16 +1,21 @@
-import { Link } from "@tanstack/react-router";
+import { RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-export function ResetButton() {
+interface ResetButtonProps {
+	onClick: () => void;
+}
+
+export function ResetButton({ onClick }: ResetButtonProps) {
 	const { t } = useTranslation();
 
 	return (
-		<Link
-			to="/reset-form"
-			mask={{ to: "/card-creator" }}
-			className="px-6 py-3 bg-primary-dark text-white font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+		<button
+			type="button"
+			className="inline-flex items-center justify-center gap-x-1.5 bg-primary text-sm font-semibold text-white rounded-md px-3.5 py-2.5 hover:opacity-90 transition-opacity"
+			onClick={onClick}
 		>
 			{t("card_creator.reset_label")}
-		</Link>
+			<RotateCcw className="w-4 h-4" />
+		</button>
 	);
 }

@@ -96,7 +96,7 @@ export function Combobox<T extends string>({
 				);
 
 	return (
-		<Field className="space-y-1" data-value={value}>
+		<Field className="space-y-1.5" data-value={value}>
 			{label && (
 				<Label className="block text-sm font-medium text-muted">
 					{label}
@@ -124,7 +124,7 @@ export function Combobox<T extends string>({
 						onChange={(event) => setQuery(event.target.value)}
 						onFocus={() => setQuery("")}
 						placeholder={placeholder || "Select an option"}
-						className="w-full px-3 py-2 pr-10 bg-surface border border-border rounded-lg text-body placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
+						className="w-full px-3 py-1.5 pr-10 bg-surface border border-border rounded-md text-body placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
 					/>
 					<ComboboxButton className="absolute right-3 top-1/2 -translate-y-1/2 group">
 						<ChevronDown
@@ -135,7 +135,7 @@ export function Combobox<T extends string>({
 				</div>
 				<ComboboxOptions
 					anchor="bottom"
-					className="mt-1 w-(--input-width) bg-surface border border-border rounded-lg shadow-lg py-1 focus:outline-none z-10 max-h-60 overflow-auto empty:invisible"
+					className="mt-1 w-(--input-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-10 max-h-60 overflow-auto empty:invisible"
 				>
 					{query.length > 0 && (
 						<ComboboxOption

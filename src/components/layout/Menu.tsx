@@ -19,19 +19,148 @@ import FabkitLogo from "../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../assets/Fabkitlogo_notext.svg";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
-const navigation = [
+type NavChild = { name: string; route: string; icon: React.ElementType };
+type NavItem = NavChild & { children?: NavChild[] };
+
+const navigation: NavItem[] = [
 	{ name: "Home", route: "/", icon: Home },
-	{ name: "Card Creator", route: "/card-creator", icon: Paintbrush },
-	{ name: "Gallery", route: "/gallery", icon: Images },
+	{
+		name: "Card Creator",
+		route: "/card-creator",
+		icon: Paintbrush,
+		children: [{ name: "Gallery", route: "/gallery", icon: Images }],
+	},
 	{ name: "Roadmap", route: "/roadmap", icon: MapIcon },
 	{ name: "Contact", route: "/contact", icon: MessageCircle },
 ];
+
+function NavLink({
+	item,
+	currentPath,
+	onClick,
+}: {
+	item: NavItem;
+	currentPath: string;
+	onClick?: () => void;
+}) {
+	const isActive =
+		item.route === currentPath ||
+		item.children?.some((child) => child.route === currentPath);
+	return (
+		<Link
+			to={item.route}
+			onClick={onClick}
+			className={[
+				isActive
+					? "bg-surface-active text-heading"
+					: "text-menu-inactive hover:bg-surface-active hover:text-heading",
+				"group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+			].join(" ")}
+		>
+			<item.icon
+				className={[
+					isActive
+						? "text-heading"
+						: "text-menu-icon-inactive group-hover:text-heading",
+					"size-6 shrink-0",
+				].join(" ")}
+				aria-hidden="true"
+			/>
+			{item.name}
+		</Link>
+	);
+}
+
+function SubNavLink({
+	item,
+	currentPath,
+	onClick,
+}: {
+	item: NavChild;
+	currentPath: string;
+	onClick?: () => void;
+}) {
+	const isActive = item.route === currentPath;
+	return (
+		<Link
+			to={item.route}
+			onClick={onClick}
+			className={[
+				isActive ? "text-heading" : "text-menu-inactive hover:text-heading",
+				"group flex items-center gap-x-2 rounded-sm px-2 py-1 text-xs font-semibold",
+			].join(" ")}
+		>
+			<item.icon
+				className={[
+					isActive
+						? "text-primary"
+						: "text-menu-icon-inactive group-hover:text-heading",
+					"size-3.5 shrink-0",
+				].join(" ")}
+				aria-hidden="true"
+			/>
+			<span
+				className={[
+					"border-b-2 pb-1 leading-tight",
+					isActive ? "border-primary" : "border-transparent",
+				].join(" ")}
+			>
+				{item.name}
+			</span>
+		</Link>
+	);
+}
+
+function SubNavList({
+	items,
+	currentPath,
+	onClick,
+}: {
+	items: NavChild[];
+	currentPath: string;
+	onClick?: () => void;
+}) {
+	return (
+		<ul className="mt-1.5 space-y-0.5">
+			{items.map((child, idx) => {
+				const isLast = idx === items.length - 1;
+				return (
+					<li key={child.name} className="flex items-stretch">
+						{/* L-connector: vertical runs full height on non-last items to connect
+						    to the next sibling; last item only runs top-to-center. Horizontal
+						    is always at 50% so it aligns with the sub-item icon regardless of
+						    active state. */}
+						<div className="relative ml-3 w-3 shrink-0">
+							<div
+								className={[
+									"absolute left-0 top-0 border-l border-border",
+									isLast ? "bottom-1/2" : "bottom-0",
+								].join(" ")}
+							/>
+							<div className="absolute left-0 right-0 top-1/2 border-t border-border" />
+						</div>
+						<div className="flex items-center flex-1 min-w-0 py-0.5 pl-1">
+							<SubNavLink
+								item={child}
+								currentPath={currentPath}
+								onClick={onClick}
+							/>
+						</div>
+					</li>
+				);
+			})}
+		</ul>
+	);
+}
 
 export function Menu() {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const location = useLocation();
 
-	const currentRouteName = navigation.find(
+	const allItems = navigation.flatMap((item) =>
+		item.children ? [item, ...item.children] : [item],
+	);
+	const currentRouteName = allItems.find(
 		(item) => item.route === location.pathname,
 	)?.name;
 
@@ -95,27 +224,18 @@ export function Menu() {
 												<ul className="-mx-2 space-y-1">
 													{navigation.map((item) => (
 														<li key={item.name}>
-															<Link
-																to={item.route}
+															<NavLink
+																item={item}
+																currentPath={location.pathname}
 																onClick={() => setSidebarOpen(false)}
-																className={[
-																	item.route === location.pathname
-																		? "bg-surface-active text-heading"
-																		: "text-menu-inactive hover:bg-surface-active hover:text-heading",
-																	"group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
-																].join(" ")}
-															>
-																<item.icon
-																	className={[
-																		item.route === location.pathname
-																			? "text-heading"
-																			: "text-menu-icon-inactive group-hover:text-heading",
-																		"size-6 shrink-0",
-																	].join(" ")}
-																	aria-hidden="true"
+															/>
+															{item.children && item.children.length > 0 && (
+																<SubNavList
+																	items={item.children}
+																	currentPath={location.pathname}
+																	onClick={() => setSidebarOpen(false)}
 																/>
-																{item.name}
-															</Link>
+															)}
 														</li>
 													))}
 												</ul>
@@ -142,26 +262,13 @@ export function Menu() {
 								<ul className="-mx-2 space-y-1">
 									{navigation.map((item) => (
 										<li key={item.name}>
-											<Link
-												to={item.route}
-												className={[
-													item.route === location.pathname
-														? "bg-surface-active text-heading"
-														: "text-menu-inactive hover:bg-surface-active hover:text-heading",
-													"group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
-												].join(" ")}
-											>
-												<item.icon
-													className={[
-														item.route === location.pathname
-															? "text-heading"
-															: "text-menu-icon-inactive group-hover:text-heading",
-														"size-6 shrink-0",
-													].join(" ")}
-													aria-hidden="true"
+											<NavLink item={item} currentPath={location.pathname} />
+											{item.children && item.children.length > 0 && (
+												<SubNavList
+													items={item.children}
+													currentPath={location.pathname}
 												/>
-												{item.name}
-											</Link>
+											)}
 										</li>
 									))}
 								</ul>

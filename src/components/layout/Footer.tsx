@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import { useTranslation } from "react-i18next";
+import { Bluesky } from "../icons/Bluesky.tsx";
 import { Discord } from "../icons/Discord.tsx";
 import { Github } from "../icons/Github.tsx";
 
@@ -19,6 +20,11 @@ const navigation: NavItem[] = [
 		name: "Discord",
 		href: "https://discord.gg/4twcdby9xp",
 		icon: Discord,
+	},
+	{
+		name: "Bluesky",
+		href: "https://bsky.app/profile/teamfabkit.bsky.social",
+		icon: Bluesky,
 	},
 ];
 

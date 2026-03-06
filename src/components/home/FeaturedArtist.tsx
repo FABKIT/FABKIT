@@ -28,7 +28,7 @@ export function FeaturedArtist() {
 	}, [nextSlide]);
 
 	return (
-		<div className="mx-auto max-w-[1600px] overflow-hidden rounded-lg border-2 border-border-primary bg-surface/20 shadow-lg backdrop-blur-sm">
+		<div className="mx-auto max-w-[1600px] overflow-hidden rounded-lg border-2 border-border-primary bg-surface/50 shadow-lg backdrop-blur-sm">
 			<div className="flex flex-col items-start gap-6 p-6 lg:gap-8 xl:flex-row">
 				{/* Left side: Image slideshow with header on mobile/tablet */}
 				<div className="flex w-full flex-col gap-4 xl:w-auto">

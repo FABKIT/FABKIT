@@ -93,7 +93,7 @@ export default function Select<T extends string>({
 	const selectedOption = options.find((opt) => opt.value === value);
 
 	return (
-		<Field className="space-y-1" data-value={value}>
+		<Field className="space-y-1.5" data-value={value}>
 			{label && (
 				<Label className="block text-sm font-medium text-muted">
 					{label}
@@ -104,7 +104,7 @@ export default function Select<T extends string>({
 				<Description className="text-xs text-subtle">{description}</Description>
 			)}
 			<Listbox value={value || undefined} onChange={onChange}>
-				<ListboxButton className="relative w-full px-3 py-2 bg-surface border border-border rounded-lg text-left text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed">
+				<ListboxButton className="relative w-full px-3 py-1.5 bg-surface border border-border rounded-md text-left text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed">
 					<span className={selectedOption ? "text-body" : "text-faint"}>
 						{selectedOption?.label || placeholder || "Select an option"}
 					</span>
@@ -115,7 +115,7 @@ export default function Select<T extends string>({
 				</ListboxButton>
 				<ListboxOptions
 					anchor="bottom"
-					className="mt-1 w-(--button-width) bg-surface border border-border rounded-lg shadow-lg py-1 focus:outline-none z-10 max-h-60 overflow-auto"
+					className="mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-10 max-h-60 overflow-auto"
 				>
 					{options.map((option) => (
 						<ListboxOption

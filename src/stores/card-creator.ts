@@ -208,11 +208,18 @@ export interface CardCreatorActions {
  * - "dented" back style (most common)
  * - "basic" rarity
  */
+const defaultCardType: CardType = "action";
+const defaultCardStyle: CardStyle = "dented";
+const defaultCardBack =
+	getSuggestedCardBack(
+		getCardBacksForTypeAndStyle(defaultCardType, defaultCardStyle),
+	) ?? CardBacks[0];
+
 const initialState: CardCreatorState = {
 	__version: uuid(),
-	CardType: null,
-	CardBack: CardBacks[0],
-	CardBackStyle: "dented",
+	CardType: defaultCardType,
+	CardBack: defaultCardBack,
+	CardBackStyle: defaultCardStyle,
 	CardArtwork: null,
 	CardArtPosition: null,
 	CardArtworkCredits: null,
