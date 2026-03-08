@@ -12,8 +12,10 @@ export const Route = createFileRoute("/export")({
 function RouteComponent() {
 	const { t } = useTranslation();
 	const svgRef = useRef<SVGSVGElement>(null);
+	const shouldReRender = useRef(true);
 	const [exportedCard, setExportedCard] = useState<Blob | null>(null);
 	const [isExporting, setIsExporting] = useState(true);
+
 	const imageUrl = useMemo(
 		() => (exportedCard ? URL.createObjectURL(exportedCard) : null),
 		[exportedCard],
@@ -26,8 +28,10 @@ function RouteComponent() {
 				setIsExporting(false);
 				return;
 			}
+			if (!shouldReRender.current) return;
 
 			try {
+				shouldReRender.current = false;
 				const blob = await convertToImage(svgRef.current);
 				setExportedCard(blob);
 			} catch (error) {
