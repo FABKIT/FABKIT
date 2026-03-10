@@ -1,5 +1,109 @@
 import { useMemo } from "react";
 
+// ---------------------------------------------------------------------------
+// Card name scaling — width-box approach (mirrors real F&B card behaviour)
+// ---------------------------------------------------------------------------
+
+export type CardNameScalingOptions = {
+	/** The card name text to measure */
+	text: string;
+	/** Font family name — must match the SVG text element font */
+	fontFamily: string;
+	/** Font weight (default 400) */
+	fontWeight?: number;
+	/** Base font size used when the text fits within maxWidth */
+	baseFontSize: number;
+	/** Y position at baseFontSize (from preset) */
+	baseY: number;
+	/**
+	 * Maximum allowed rendered text width in SVG units.
+	 * Scaling only kicks in when this threshold is exceeded.
+	 */
+	maxWidth: number;
+	/**
+	 * Y position at minFontSize, used to interpolate the slight baseline shift
+	 * observed on real cards when long names shrink.
+	 * Defaults to baseY (no shift).
+	 */
+	scaledY?: number;
+	/** Hard floor for font size (default 10) */
+	minFontSize?: number;
+};
+
+/**
+ * Scales the card name font size to fit a fixed-width box, only activating
+ * when the text would exceed maxWidth at baseFontSize.
+ *
+ * Behaviour mirrors real Flesh and Blood cards:
+ * - Short names → full baseFontSize, no scaling
+ * - Long names  → font scales down so the text just fits maxWidth
+ *
+ * Uses canvas measureText() for font-aware width measurement, so the font
+ * must be loaded in the browser for accurate results (it will be by the time
+ * the user types a name).
+ *
+ * Also interpolates the Y position between baseY and scaledY to reproduce
+ * the subtle baseline shift seen on real cards as font size decreases.
+ */
+export function useCardNameFontSize(options: CardNameScalingOptions): {
+	fontSize: number;
+	y: number;
+} {
+	const {
+		text,
+		fontFamily,
+		fontWeight = 400,
+		baseFontSize,
+		baseY,
+		maxWidth,
+		scaledY = baseY,
+		minFontSize = 10,
+	} = options;
+
+	return useMemo(() => {
+		if (!text) return { fontSize: baseFontSize, y: baseY };
+
+		const canvas = document.createElement("canvas");
+		const ctx = canvas.getContext("2d");
+
+		// Fallback to base values if canvas is unavailable (SSR / test env)
+		if (!ctx) return { fontSize: baseFontSize, y: baseY };
+
+		ctx.font = `${fontWeight} ${baseFontSize}px ${fontFamily}`;
+		const measuredWidth = ctx.measureText(text).width;
+
+		// Text fits — no scaling needed
+		if (measuredWidth <= maxWidth) {
+			return { fontSize: baseFontSize, y: baseY };
+		}
+
+		// Scale font down proportionally so text just fills maxWidth
+		const scaledFontSize = Math.max(
+			minFontSize,
+			baseFontSize * (maxWidth / measuredWidth),
+		);
+
+		// Interpolate y: t=0 at baseFontSize (no scaling), t=1 at minFontSize (max scaling)
+		const t = (baseFontSize - scaledFontSize) / (baseFontSize - minFontSize);
+		const y = baseY + (scaledY - baseY) * t;
+
+		return { fontSize: scaledFontSize, y };
+	}, [
+		text,
+		fontFamily,
+		fontWeight,
+		baseFontSize,
+		baseY,
+		maxWidth,
+		scaledY,
+		minFontSize,
+	]);
+}
+
+// ---------------------------------------------------------------------------
+// Generic length-based scaling (used for card body text and bottom text)
+// ---------------------------------------------------------------------------
+
 export type ScaledFontSizeOptions = {
 	/** The text content to measure */
 	text: string;

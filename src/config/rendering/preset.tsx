@@ -41,12 +41,14 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 	},
 	elements: {
 		CardName: {
-			x: 225,
-			y: 58.8,
+			x: 224.6,
+			y: 58.5,
 			fill: "black",
 			fontFamily: "amanda_std_regular",
-			fontSize: 18.3,
+			fontSize: 25,
 			fontWeight: 400,
+			maxWidth: 270,
+			scaledY: 57.75,
 		},
 		CardResource: {
 			x: 396,
@@ -120,22 +122,22 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 			fontWeight: 400,
 		},
 		CardRarity: {
-			x: 114.5,
-			y: 594.5,
-			width: 12,
-			height: 12,
+			x: 120.5,
+			y: 595,
+			width: 11.2,
+			height: 11.2,
 		},
 		CardFooterTextSingle: {
-			x: 225,
-			y: 601,
+			x: 229.9,
+			y: 601.25,
 			fill: "white",
 			fontFamily: "dialog_cond_semiboldregular, Arial, sans-serif",
-			fontSize: 10.43,
+			fontSize: 10.38,
 			fontWeight: 400,
 		},
 		CardFooterTextMulti: [
 			{
-				x: 225,
+				x: 229.9,
 				y: 601,
 				fill: "white",
 				fontFamily: "dialog_cond_semiboldregular, Arial, sans-serif",
@@ -143,7 +145,7 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 				fontWeight: 400,
 			},
 			{
-				x: 225,
+				x: 229.9,
 				y: 611.43,
 				fill: "white",
 				fontFamily: "dialog_cond_semiboldregular, Arial, sans-serif",
@@ -162,8 +164,8 @@ export const NormalDentedHeroRenderConfigPreset = {
 			...NormalDentedRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			// scaledY matches y — no y-shift until measured for this card type
+			scaledY: 57,
 		},
 	},
 };
@@ -176,8 +178,7 @@ export const NormalDentedWeaponRenderConfigPreset = {
 			...NormalDentedRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			scaledY: 57,
 		},
 	},
 };
@@ -190,8 +191,7 @@ export const NormalDentedEquipmentRenderConfigPreset = {
 			...NormalDentedRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			scaledY: 57,
 		},
 	},
 };
@@ -204,8 +204,7 @@ export const NormalDentedTokenRenderConfigPreset = {
 			...NormalDentedRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			scaledY: 57,
 		},
 	},
 };
@@ -226,12 +225,14 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 	},
 	elements: {
 		CardName: {
-			x: 225,
-			y: 57,
+			x: 225.5,
+			y: 58,
 			fill: "black",
 			fontFamily: "amanda_std_regular",
 			fontSize: 25,
 			fontWeight: 400,
+			maxWidth: 260,
+			scaledY: 57.2,
 		},
 		CardResource: {
 			x: 397.6,
@@ -309,7 +310,7 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 		},
 		CardFooterTextLeft: {
 			x: 46,
-			y: 603.275,
+			y: 603.7,
 			fill: "white",
 			fontFamily:
 				'dialog_cond_semiboldregular, "Arial Narrow", "Helvetica Condensed", Arial, sans-serif',
@@ -338,8 +339,8 @@ export const NormalFlatHeroRenderConfigPreset = {
 			...NormalFlatRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			// scaledY matches y — no y-shift until measured for this card type
+			scaledY: 57,
 		},
 	},
 };
@@ -352,8 +353,7 @@ export const NormalFlatWeaponRenderConfigPreset = {
 			...NormalFlatRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			scaledY: 57,
 		},
 	},
 };
@@ -366,8 +366,7 @@ export const NormalFlatEquipmentRenderConfigPreset = {
 			...NormalFlatRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			scaledY: 57,
 		},
 	},
 };
@@ -380,8 +379,7 @@ export const NormalFlatTokenRenderConfigPreset = {
 			...NormalFlatRenderConfigPreset.elements.CardName,
 			x: 225,
 			y: 57,
-			width: 37,
-			height: 37,
+			scaledY: 57,
 		},
 	},
 };

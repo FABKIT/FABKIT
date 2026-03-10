@@ -41,6 +41,7 @@ import { useCardCreator } from "../../../stores/card-creator.ts";
 import { useCardBottomText } from "../hooks/useCardBottomText.ts";
 import { useCardFooterText } from "../hooks/useCardFooterText.ts";
 import {
+	useCardNameFontSize,
 	useScaledFontSize,
 	useScaledFontSizeFromHTML,
 } from "../hooks/useScaledFontSize.ts";
@@ -78,14 +79,16 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 		(state) => state.CardOverlayOpacity,
 	);
 
-	// Dynamically scale the font of the card name based on it's length.
-	const CardNameFontSize = useScaledFontSize({
+	// Scale the card name font size to fit its fixed-width box, mirroring real F&B cards.
+	// Scaling only activates when the rendered text exceeds config.elements.CardName.maxWidth.
+	const { fontSize: CardNameFontSize, y: CardNameY } = useCardNameFontSize({
 		text: CardName || "",
+		fontFamily: config.elements.CardName.fontFamily,
+		fontWeight: config.elements.CardName.fontWeight,
 		baseFontSize: config.elements.CardName.fontSize,
-		referenceLength: 20,
-		minFontSize: 12,
-		maxFontSize: 32,
-		scalingFactor: 0.7,
+		baseY: config.elements.CardName.y,
+		maxWidth: config.elements.CardName.maxWidth ?? config.viewBox.width,
+		scaledY: config.elements.CardName.scaledY,
 	});
 
 	const CardTextFontSize = useScaledFontSizeFromHTML({
@@ -166,7 +169,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 			{CardName && (
 				<text
 					x={config.elements.CardName.x}
-					y={config.elements.CardName.y}
+					y={CardNameY}
 					textAnchor={config.elements.CardName.textAnchor || "middle"}
 					dominantBaseline="middle"
 					fill={config.elements.CardName.fill}

@@ -55,6 +55,23 @@ export interface CardTextConfig {
 
 	/** Determine in which order the stroke is painted */
 	paintOrder?: string;
+
+	/**
+	 * Maximum rendered text width in SVG units before font scaling kicks in.
+	 * When the text at baseFontSize exceeds this width, the font scales down
+	 * proportionally so the text fits exactly within this box — mirroring
+	 * real Flesh and Blood card name behaviour.
+	 * If omitted, no width-based scaling is applied.
+	 */
+	maxWidth?: number;
+
+	/**
+	 * Y position used when the font is fully scaled down (at minFontSize).
+	 * Interpolated against the base y to reproduce the slight baseline shift
+	 * observed on real cards as longer names shrink.
+	 * Defaults to the base y (no shift) when omitted.
+	 */
+	scaledY?: number;
 }
 
 /**
