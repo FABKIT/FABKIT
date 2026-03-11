@@ -42,7 +42,6 @@ import { useCardBottomText } from "../hooks/useCardBottomText.ts";
 import { useCardFooterText } from "../hooks/useCardFooterText.ts";
 import {
 	useCardNameFontSize,
-	useScaledFontSize,
 	useScaledFontSizeFromHTML,
 } from "../hooks/useScaledFontSize.ts";
 import "../../../styles/components/normal-renderer.css";
@@ -87,7 +86,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 		fontWeight: config.elements.CardName.fontWeight,
 		baseFontSize: config.elements.CardName.fontSize,
 		baseY: config.elements.CardName.y,
-		maxWidth: config.elements.CardName.maxWidth ?? config.viewBox.width,
+		maxWidth: config.elements.CardName.maxWidth ?? Number.POSITIVE_INFINITY,
 		scaledY: config.elements.CardName.scaledY,
 	});
 
@@ -111,14 +110,17 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 
 	const cardBottomText = useCardBottomText();
 	const footer = useCardFooterText();
-	const cardBottomTextFontSize = useScaledFontSize({
-		text: cardBottomText,
-		baseFontSize: config.elements.CardBottomText.fontSize,
-		referenceLength: 20,
-		minFontSize: 10,
-		maxFontSize: 20,
-		scalingFactor: 0.6,
-	});
+	// Scale the bottom text font size to fit its fixed-width box, same approach as card name.
+	const { fontSize: cardBottomTextFontSize, y: cardBottomTextY } =
+		useCardNameFontSize({
+			text: cardBottomText,
+			fontFamily: config.elements.CardBottomText.fontFamily,
+			fontWeight: config.elements.CardBottomText.fontWeight,
+			baseFontSize: config.elements.CardBottomText.fontSize,
+			baseY: config.elements.CardBottomText.y,
+			maxWidth: config.elements.CardBottomText.maxWidth ?? config.viewBox.width,
+			scaledY: config.elements.CardBottomText.scaledY,
+		});
 
 	const svgStyle = useMemo(
 		() => ({
@@ -312,7 +314,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 			{cardBottomText && (
 				<text
 					x={config.elements.CardBottomText.x}
-					y={config.elements.CardBottomText.y}
+					y={cardBottomTextY}
 					textAnchor={config.elements.CardBottomText.textAnchor || "middle"}
 					dominantBaseline="middle"
 					fill={config.elements.CardBottomText.fill}

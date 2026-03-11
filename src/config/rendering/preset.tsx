@@ -114,12 +114,14 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 			fontWeight: 400,
 		},
 		CardBottomText: {
-			x: 225,
+			x: 224.8,
 			y: 574.6,
 			fill: "black",
 			fontFamily: "amanda_std_regular",
-			fontSize: 20,
+			fontSize: 17.6,
 			fontWeight: 400,
+			maxWidth: 218,
+			scaledY: 573.85,
 		},
 		CardRarity: {
 			x: 120.5,
@@ -158,40 +160,57 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 
 export const NormalDentedHeroRenderConfigPreset = {
 	...NormalDentedRenderConfigPreset,
+	clips: {
+		...NormalDentedRenderConfigPreset.clips,
+		Title: <rect x="58" y="40" width="334" height="30" />,
+	},
 	elements: {
 		...NormalDentedRenderConfigPreset.elements,
 		CardName: {
 			...NormalDentedRenderConfigPreset.elements.CardName,
-			x: 225,
-			y: 57,
-			// scaledY matches y — no y-shift until measured for this card type
-			scaledY: 57,
+			x: 224.9,
+			y: 55,
+			fontSize: 28,
+			maxWidth: 333,
+			scaledY: 54.3,
 		},
 	},
 };
 
 export const NormalDentedWeaponRenderConfigPreset = {
 	...NormalDentedRenderConfigPreset,
+	clips: {
+		...NormalDentedRenderConfigPreset.clips,
+		Title: <rect x="58" y="40" width="334" height="30" />,
+	},
 	elements: {
 		...NormalDentedRenderConfigPreset.elements,
 		CardName: {
 			...NormalDentedRenderConfigPreset.elements.CardName,
-			x: 225,
-			y: 57,
-			scaledY: 57,
+			x: 224.8,
+			y: 54.9,
+			fontSize: 28.8,
+			maxWidth: 333,
+			scaledY: 53.48,
 		},
 	},
 };
 
 export const NormalDentedEquipmentRenderConfigPreset = {
 	...NormalDentedRenderConfigPreset,
+	clips: {
+		...NormalDentedRenderConfigPreset.clips,
+		Title: <rect x="58" y="40" width="334" height="30" />,
+	},
 	elements: {
 		...NormalDentedRenderConfigPreset.elements,
 		CardName: {
 			...NormalDentedRenderConfigPreset.elements.CardName,
-			x: 225,
-			y: 57,
-			scaledY: 57,
+			x: 224.8,
+			y: 54.9,
+			fontSize: 28.8,
+			maxWidth: 333,
+			scaledY: 53.48,
 		},
 	},
 };
@@ -295,22 +314,24 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 			fontWeight: 400,
 		},
 		CardBottomText: {
-			x: 225,
-			y: 575,
+			x: 225.25,
+			y: 575.3,
 			fill: "black",
 			fontFamily: "amanda_std_regular",
-			fontSize: 17.6,
+			fontSize: 17.7,
 			fontWeight: 400,
+			maxWidth: 223,
+			scaledY: 574.15,
 		},
 		CardRarity: {
 			x: 27.6,
 			y: 596.8,
-			width: 12.2,
-			height: 12.2,
+			width: 11.6,
+			height: 11.6,
 		},
 		CardFooterTextLeft: {
-			x: 46,
-			y: 603.7,
+			x: 45.8,
+			y: 603,
 			fill: "white",
 			fontFamily:
 				'dialog_cond_semiboldregular, "Arial Narrow", "Helvetica Condensed", Arial, sans-serif',
@@ -333,40 +354,57 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 
 export const NormalFlatHeroRenderConfigPreset = {
 	...NormalFlatRenderConfigPreset,
+	clips: {
+		...NormalFlatRenderConfigPreset.clips,
+		Title: <rect x="67" y="40" width="316" height="30" />,
+	},
 	elements: {
 		...NormalFlatRenderConfigPreset.elements,
 		CardName: {
 			...NormalFlatRenderConfigPreset.elements.CardName,
-			x: 225,
-			y: 57,
-			// scaledY matches y — no y-shift until measured for this card type
-			scaledY: 57,
+			x: 225.2,
+			y: 53.6,
+			fontSize: 28.8,
+			maxWidth: 315,
+			scaledY: 52.3,
 		},
 	},
 };
 
 export const NormalFlatWeaponRenderConfigPreset = {
 	...NormalFlatRenderConfigPreset,
+	clips: {
+		...NormalFlatRenderConfigPreset.clips,
+		Title: <rect x="67" y="40" width="316" height="30" />,
+	},
 	elements: {
 		...NormalFlatRenderConfigPreset.elements,
 		CardName: {
 			...NormalFlatRenderConfigPreset.elements.CardName,
 			x: 225,
-			y: 57,
-			scaledY: 57,
+			y: 53.4,
+			fontSize: 29.1,
+			maxWidth: 315,
+			scaledY: 53,
 		},
 	},
 };
 
 export const NormalFlatEquipmentRenderConfigPreset = {
 	...NormalFlatRenderConfigPreset,
+	clips: {
+		...NormalFlatRenderConfigPreset.clips,
+		Title: <rect x="67" y="40" width="316" height="30" />,
+	},
 	elements: {
 		...NormalFlatRenderConfigPreset.elements,
 		CardName: {
 			...NormalFlatRenderConfigPreset.elements.CardName,
 			x: 225,
-			y: 57,
-			scaledY: 57,
+			y: 53.4,
+			fontSize: 29.1,
+			maxWidth: 315,
+			scaledY: 53,
 		},
 	},
 };
