@@ -109,6 +109,16 @@ export interface CardObjectConfig {
 
 	/** Container height in pixels */
 	height: number;
+
+	/**
+	 * Base (maximum) font size for dynamic text content scaling.
+	 * When the rendered content overflows the box at this size,
+	 * the font scales down until it fits.
+	 */
+	fontSize?: number;
+
+	/** Minimum font size floor for dynamic text content scaling (default 6) */
+	minFontSize?: number;
 }
 
 /**

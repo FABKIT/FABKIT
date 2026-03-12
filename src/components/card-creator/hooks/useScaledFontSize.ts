@@ -101,6 +101,124 @@ export function useCardNameFontSize(options: CardNameScalingOptions): {
 }
 
 // ---------------------------------------------------------------------------
+// Card text (description) scaling — binary search with DOM measurement
+// ---------------------------------------------------------------------------
+
+export type CardTextScalingOptions = {
+	/** HTML content from the Tiptap editor */
+	html: string;
+	/** Width of the foreignObject box in SVG units */
+	boxWidth: number;
+	/** Height of the foreignObject box in SVG units */
+	boxHeight: number;
+	/** Maximum (base) font size — used when text easily fits the box */
+	maxFontSize: number;
+	/** Minimum font size floor (default 6) */
+	minFontSize?: number;
+	/** Binary search precision in px (default 0.1) */
+	precision?: number;
+};
+
+/**
+ * Persistent hidden measurement elements, created once and reused.
+ * Avoids repeated DOM creation/destruction on every render.
+ */
+let measureContainer: HTMLDivElement | null = null;
+let measureInner: HTMLDivElement | null = null;
+
+function getMeasurementElements(): {
+	container: HTMLDivElement;
+	inner: HTMLDivElement;
+} {
+	if (!measureContainer || !measureInner) {
+		measureContainer = document.createElement("div");
+		measureContainer.style.position = "absolute";
+		measureContainer.style.visibility = "hidden";
+		measureContainer.style.left = "-9999px";
+		measureContainer.style.top = "0";
+		// Outer flex wrapper matching the NormalRenderer foreignObject layout
+		measureContainer.style.display = "flex";
+		measureContainer.style.flexDirection = "column";
+		measureContainer.style.justifyContent = "center";
+		measureContainer.style.alignItems = "center";
+
+		measureInner = document.createElement("div");
+		// Same CSS classes as the rendered card text div in NormalRenderer
+		measureInner.className =
+			"renderedContent text-black text-center font-card-text";
+
+		measureContainer.appendChild(measureInner);
+		document.body.appendChild(measureContainer);
+	}
+	return { container: measureContainer, inner: measureInner };
+}
+
+/**
+ * Scales the card description font size to fit within a fixed-size box,
+ * using a hidden DOM element for accurate measurement.
+ *
+ * This approach handles the full complexity of the card text:
+ * - Rich text from the Tiptap editor (bold/italic font-family swaps)
+ * - Custom emoji icons (.fab-icon, sized in em units)
+ * - Lists, line breaks, and paragraph spacing
+ * - Single-line center / multi-line left alignment (via CSS)
+ *
+ * Binary search converges in ~7 iterations (precision 0.1px) and reuses
+ * a single persistent hidden DOM element to avoid layout thrashing.
+ *
+ * Compatible with the export system (html-to-image captures the final
+ * fontSize set on the rendered element).
+ */
+export function useCardTextFontSize(options: CardTextScalingOptions): number {
+	const {
+		html,
+		boxWidth,
+		boxHeight,
+		maxFontSize,
+		minFontSize = 6,
+		precision = 0.1,
+	} = options;
+
+	return useMemo(() => {
+		if (!html) return maxFontSize;
+
+		// Check for actual content (text or emoji icons)
+		const plainText = html.replace(/<[^>]*>/g, "").trim();
+		const hasEmojis = html.includes("fab-icon");
+		if (!plainText && !hasEmojis) return maxFontSize;
+
+		const { container, inner } = getMeasurementElements();
+
+		// Match the foreignObject box width
+		container.style.width = `${boxWidth}px`;
+		inner.innerHTML = html;
+
+		// Quick check: does everything fit at the base font size?
+		inner.style.fontSize = `${maxFontSize}px`;
+		if (inner.offsetHeight <= boxHeight) {
+			return maxFontSize;
+		}
+
+		// Binary search for the largest font size that fits the box
+		let lo = minFontSize;
+		let hi = maxFontSize;
+
+		while (hi - lo > precision) {
+			const mid = (lo + hi) / 2;
+			inner.style.fontSize = `${mid}px`;
+
+			if (inner.offsetHeight <= boxHeight) {
+				lo = mid; // Fits — try larger
+			} else {
+				hi = mid; // Overflows — try smaller
+			}
+		}
+
+		return lo;
+	}, [html, boxWidth, boxHeight, maxFontSize, minFontSize, precision]);
+}
+
+// ---------------------------------------------------------------------------
 // Generic length-based scaling (used for card body text and bottom text)
 // ---------------------------------------------------------------------------
 

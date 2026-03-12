@@ -66,6 +66,8 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 			y: 395,
 			width: 340,
 			height: 160,
+			fontSize: 20,
+			minFontSize: 6,
 		},
 		CardPowerImage: {
 			x: 30,
@@ -115,10 +117,10 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 		},
 		CardBottomText: {
 			x: 224.8,
-			y: 574.6,
+			y: 575.6,
 			fill: "black",
 			fontFamily: "amanda_std_regular",
-			fontSize: 17.6,
+			fontSize: 17.4,
 			fontWeight: 400,
 			maxWidth: 218,
 			scaledY: 573.85,
@@ -263,9 +265,11 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 		},
 		CardText: {
 			x: 55,
-			y: 395,
+			y: 385,
 			width: 340,
 			height: 160,
+			fontSize: 17.82,
+			minFontSize: 6,
 		},
 		CardPowerImage: {
 			x: 28.4,

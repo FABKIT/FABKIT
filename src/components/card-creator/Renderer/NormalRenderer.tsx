@@ -42,7 +42,7 @@ import { useCardBottomText } from "../hooks/useCardBottomText.ts";
 import { useCardFooterText } from "../hooks/useCardFooterText.ts";
 import {
 	useCardNameFontSize,
-	useScaledFontSizeFromHTML,
+	useCardTextFontSize,
 } from "../hooks/useScaledFontSize.ts";
 import "../../../styles/components/normal-renderer.css";
 
@@ -90,13 +90,14 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 		scaledY: config.elements.CardName.scaledY,
 	});
 
-	const CardTextFontSize = useScaledFontSizeFromHTML({
+	// Scale the card description font size to fit its fixed-size box.
+	// Uses binary search with hidden DOM measurement for accurate rich text handling.
+	const CardTextFontSize = useCardTextFontSize({
 		html: CardTextHTML || "",
-		baseFontSize: 20,
-		referenceLength: 100,
-		minFontSize: 10,
-		maxFontSize: 20,
-		scalingFactor: 0.5,
+		boxWidth: config.elements.CardText.width,
+		boxHeight: config.elements.CardText.height,
+		maxFontSize: config.elements.CardText.fontSize ?? 20,
+		minFontSize: config.elements.CardText.minFontSize,
 	});
 
 	const artwork = useObjectURL(CardArtwork);
