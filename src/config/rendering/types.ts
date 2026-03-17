@@ -119,6 +119,35 @@ export interface CardObjectConfig {
 
 	/** Minimum font size floor for dynamic text content scaling (default 6) */
 	minFontSize?: number;
+
+	/** Line height for dynamic text content (e.g. 1.3). Falls back to browser default if unset. */
+	lineHeight?: number;
+
+	/** Space between paragraphs in em (e.g. 0.8). Falls back to 0.8em if unset. */
+	paragraphSpacing?: number;
+
+	/** Font size multiplier for bold text relative to base font size (e.g. 0.99). Defaults to 0.99. */
+	boldFontSize?: number;
+
+	/** Font size multiplier for italic text relative to base font size (e.g. 1.0). Defaults to 1.0001. */
+	italicFontSize?: number;
+
+	/** Letter spacing for normal text in em (e.g. 0.01). Defaults to 0. */
+	letterSpacing?: number;
+
+	/** Letter spacing for bold text in em (e.g. 0.016). Defaults to 0. */
+	boldLetterSpacing?: number;
+
+	/** Letter spacing for italic text in em (e.g. 0.013). Defaults to 0.0128. */
+	italicLetterSpacing?: number;
+
+	/**
+	 * Extra scaling factor applied on top of the binary search result,
+	 * only when the text actually overflows the box (i.e. scaling was needed).
+	 * Use values slightly below 1 (e.g. 0.95) to scale down a bit further.
+	 * Defaults to 1 (no extra scaling).
+	 */
+	overflowScalingFactor?: number;
 }
 
 /**

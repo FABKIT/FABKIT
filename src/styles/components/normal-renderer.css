@@ -10,39 +10,44 @@
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	display: block;
-	width: 100%;
 	text-align: left;
 }
 
-.renderedCardText p {
+.renderedContent p {
 	margin: 0;
 	padding: 0;
 }
 
-.renderedCardText li p {
+.renderedContent li p {
 	display: inline;
 }
 
-.renderedCardText p + p {
-	margin-top: 1em; /* This adds space between paragraphs, matching a single line break */
+.renderedContent p + p {
+	margin-top: var(--paragraph-spacing, 0.8em);
 }
 
-.renderedCardText br {
+/* Multiple paragraphs or hard line breaks → full width so text is left-aligned */
+.renderedContent:has(p + p),
+.renderedContent:has(br) {
+	width: 100%;
+}
+
+.renderedContent br {
 	line-height: inherit;
 }
 
 .renderedContent strong {
 	font-family: "palatino_lt_stdbold", serif;
 	font-weight: normal;
-	font-size: 0.99em;
-	letter-spacing: 0.016em;
+	font-size: var(--bold-font-size, 0.99em);
+	letter-spacing: var(--bold-letter-spacing, 0em);
 }
 
 .renderedContent em {
 	font-family: "palatino_lt_italic", serif;
 	font-style: normal;
-	letter-spacing: 0.0128em;
-	font-size: 1.0001em;
+	font-size: var(--italic-font-size, 1.0001em);
+	letter-spacing: var(--italic-letter-spacing, 0.0128em);
 }
 
 .renderedContent em strong,
@@ -50,9 +55,6 @@
 	font-family: "palatino_lt_stdbold_italic", serif;
 }
 
-.renderedContent {
-	padding-left: 0.08em;
-}
 
 .renderedContent ul {
 	list-style: none;

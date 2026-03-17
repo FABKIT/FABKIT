@@ -98,6 +98,9 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 		boxHeight: config.elements.CardText.height,
 		maxFontSize: config.elements.CardText.fontSize ?? 20,
 		minFontSize: config.elements.CardText.minFontSize,
+		lineHeight: config.elements.CardText.lineHeight,
+		paragraphSpacing: config.elements.CardText.paragraphSpacing,
+		overflowScalingFactor: config.elements.CardText.overflowScalingFactor,
 	});
 
 	const artwork = useObjectURL(CardArtwork);
@@ -203,7 +206,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				</text>
 			)}
 
-			{CardTextHTML && (
+{CardTextHTML && (
 				<foreignObject
 					x={config.elements.CardText.x}
 					y={config.elements.CardText.y}
@@ -213,7 +216,28 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 					<div className="flex h-full w-full flex-col justify-center items-center">
 						<div
 							className="renderedContent text-black text-center font-card-text"
-							style={{ fontSize: CardTextFontSize }}
+							style={{
+						fontSize: CardTextFontSize,
+						lineHeight: config.elements.CardText.lineHeight,
+						"--paragraph-spacing": config.elements.CardText.paragraphSpacing != null
+							? `${config.elements.CardText.paragraphSpacing}em`
+							: undefined,
+						"--bold-font-size": config.elements.CardText.boldFontSize != null
+							? `${config.elements.CardText.boldFontSize}em`
+							: undefined,
+						"--italic-font-size": config.elements.CardText.italicFontSize != null
+							? `${config.elements.CardText.italicFontSize}em`
+							: undefined,
+						letterSpacing: config.elements.CardText.letterSpacing != null
+							? `${config.elements.CardText.letterSpacing}em`
+							: undefined,
+						"--bold-letter-spacing": config.elements.CardText.boldLetterSpacing != null
+							? `${config.elements.CardText.boldLetterSpacing}em`
+							: undefined,
+						"--italic-letter-spacing": config.elements.CardText.italicLetterSpacing != null
+							? `${config.elements.CardText.italicLetterSpacing}em`
+							: undefined,
+					} as React.CSSProperties}
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: editor content is HTML
 							dangerouslySetInnerHTML={{ __html: CardTextHTML }}
 						/>

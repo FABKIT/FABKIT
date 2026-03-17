@@ -117,6 +117,15 @@ export type CardTextScalingOptions = {
 	minFontSize?: number;
 	/** Binary search precision in px (default 0.1) */
 	precision?: number;
+	/** Line height — must match the rendered div to measure correctly */
+	lineHeight?: number;
+	/** Paragraph spacing in em — must match the rendered div to measure correctly */
+	paragraphSpacing?: number;
+	/**
+	 * Extra scaling factor applied only when overflow scaling was needed.
+	 * Defaults to 1 (no extra scaling).
+	 */
+	overflowScalingFactor?: number;
 };
 
 /**
@@ -177,6 +186,9 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 		maxFontSize,
 		minFontSize = 6,
 		precision = 0.1,
+		lineHeight,
+		paragraphSpacing,
+		overflowScalingFactor = 1,
 	} = options;
 
 	return useMemo(() => {
@@ -191,6 +203,12 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 
 		// Match the foreignObject box width
 		container.style.width = `${boxWidth}px`;
+		// Apply the same spacing as the rendered div so measurement is accurate
+		inner.style.lineHeight = lineHeight != null ? String(lineHeight) : "";
+		inner.style.setProperty(
+			"--paragraph-spacing",
+			paragraphSpacing != null ? `${paragraphSpacing}em` : null,
+		);
 		inner.innerHTML = html;
 
 		// Quick check: does everything fit at the base font size?
@@ -214,8 +232,9 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 			}
 		}
 
-		return lo;
-	}, [html, boxWidth, boxHeight, maxFontSize, minFontSize, precision]);
+		// Apply extra scaling only when overflow scaling was needed
+		return lo < maxFontSize ? lo * overflowScalingFactor : lo;
+	}, [html, boxWidth, boxHeight, maxFontSize, minFontSize, precision, lineHeight, paragraphSpacing, overflowScalingFactor]);
 }
 
 // ---------------------------------------------------------------------------
