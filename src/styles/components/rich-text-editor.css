@@ -23,3 +23,16 @@
 	margin-left: 0;
 }
 
+/*
+ * Custom F&B card dash — horizontal bar matching the separator used on real
+ * Flesh and Blood cards (e.g. "Action — {cost}, ...").
+ * Tune width, height, and vertical-align to match the card font exactly.
+ */
+.fab-dash {
+	display: inline-block;
+	width: 0.72em;
+	height: 0.07em;
+	min-height: 1px;
+	background-color: currentColor;
+	vertical-align: 0.25em;
+}

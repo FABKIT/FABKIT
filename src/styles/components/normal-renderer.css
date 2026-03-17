@@ -1,5 +1,6 @@
 .renderedContent {
 	max-width: 100%;
+	line-height: 1.18;
 	/* biome-ignore lint/complexity/noImportantStyles: force correct styling */
 	word-wrap: break-word !important;
 	/* biome-ignore lint/complexity/noImportantStyles: force correct styling */
@@ -23,7 +24,7 @@
 }
 
 .renderedContent p + p {
-	margin-top: var(--paragraph-spacing, 0.8em);
+	margin-top: var(--paragraph-spacing, 0.65em);
 }
 
 /* Multiple paragraphs or hard line breaks → full width so text is left-aligned */
@@ -39,14 +40,14 @@
 .renderedContent strong {
 	font-family: "palatino_lt_stdbold", serif;
 	font-weight: normal;
-	font-size: var(--bold-font-size, 0.99em);
+	font-size: var(--bold-font-size, 1em);
 	letter-spacing: var(--bold-letter-spacing, 0em);
 }
 
 .renderedContent em {
 	font-family: "palatino_lt_italic", serif;
 	font-style: normal;
-	font-size: var(--italic-font-size, 1.0001em);
+	font-size: var(--italic-font-size, 0.97em);
 	letter-spacing: var(--italic-letter-spacing, 0.0128em);
 }
 
@@ -54,7 +55,6 @@
 .renderedContent strong em {
 	font-family: "palatino_lt_stdbold_italic", serif;
 }
-
 
 .renderedContent ul {
 	list-style: none;

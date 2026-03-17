@@ -204,7 +204,7 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 		// Match the foreignObject box width
 		container.style.width = `${boxWidth}px`;
 		// Apply the same spacing as the rendered div so measurement is accurate
-		inner.style.lineHeight = lineHeight != null ? String(lineHeight) : "";
+		inner.style.lineHeight = lineHeight != null ? String(lineHeight) : "1.18";
 		inner.style.setProperty(
 			"--paragraph-spacing",
 			paragraphSpacing != null ? `${paragraphSpacing}em` : null,
@@ -234,7 +234,17 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 
 		// Apply extra scaling only when overflow scaling was needed
 		return lo < maxFontSize ? lo * overflowScalingFactor : lo;
-	}, [html, boxWidth, boxHeight, maxFontSize, minFontSize, precision, lineHeight, paragraphSpacing, overflowScalingFactor]);
+	}, [
+		html,
+		boxWidth,
+		boxHeight,
+		maxFontSize,
+		minFontSize,
+		precision,
+		lineHeight,
+		paragraphSpacing,
+		overflowScalingFactor,
+	]);
 }
 
 // ---------------------------------------------------------------------------
