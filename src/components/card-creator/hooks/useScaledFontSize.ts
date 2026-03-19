@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 
-// ---------------------------------------------------------------------------
-// Card name scaling — width-box approach (mirrors real F&B card behaviour)
-// ---------------------------------------------------------------------------
-
+/**
+ * Card name scaling — width-box approach (mirrors real F&B card behaviour)
+ */
 export type CardNameScalingOptions = {
 	/** The card name text to measure */
 	text: string;
@@ -100,10 +99,9 @@ export function useCardNameFontSize(options: CardNameScalingOptions): {
 	]);
 }
 
-// ---------------------------------------------------------------------------
-// Card text (description) scaling — binary search with DOM measurement
-// ---------------------------------------------------------------------------
-
+/**
+ * Card text (description) scaling — binary search with DOM measurement
+ */
 export type CardTextScalingOptions = {
 	/** HTML content from the Tiptap editor */
 	html: string;
@@ -251,10 +249,9 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 	]);
 }
 
-// ---------------------------------------------------------------------------
-// Generic length-based scaling (used for card body text and bottom text)
-// ---------------------------------------------------------------------------
-
+/**
+ * Generic length-based scaling (used for card body text and bottom text)
+ */
 export type ScaledFontSizeOptions = {
 	/** The text content to measure */
 	text: string;
