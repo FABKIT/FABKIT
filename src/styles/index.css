@@ -22,6 +22,9 @@
 	--color-idea: oklch(0.65 0.1 85);
 	--color-idea-light: oklch(0.95 0.02 85);
 
+	/* Slider */
+	--color-slider: #a6864a4d;
+
 	/* Semantic background colors */
 	--color-surface: #ffffff;
 	--color-surface-muted: rgba(166, 134, 74, 0.05);

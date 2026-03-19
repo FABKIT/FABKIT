@@ -38,7 +38,7 @@ export function CardBackStyleField() {
 							className={`
         absolute top-0 right-0 bottom-0 left-0 w-full z-[1] 
         transition-colors duration-300 ease-in-out
-        ${CardBackType === "flat" ? "bg-[#a6864a4d]" : "bg-white"}
+        ${CardBackType === "flat" ? "bg-slider" : "bg-white"}
       `}
 						></div>
 					</div>
