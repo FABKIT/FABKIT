@@ -192,12 +192,16 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 	} = options;
 
 	return useMemo(() => {
-		if (!html) return maxFontSize;
+		if (!html) {
+			return maxFontSize;
+		}
 
 		// Check for actual content (text or emoji icons)
 		const plainText = html.replace(/<[^>]*>/g, "").trim();
 		const hasEmojis = html.includes("fab-icon");
-		if (!plainText && !hasEmojis) return maxFontSize;
+		if (!plainText && !hasEmojis) {
+			return maxFontSize;
+		}
 
 		const { container, inner } = getMeasurementElements();
 
