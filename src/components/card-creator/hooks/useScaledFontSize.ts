@@ -222,22 +222,22 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 		}
 
 		// Binary search for the largest font size that fits the box
-		let lo = minFontSize;
-		let hi = maxFontSize;
+		let low = minFontSize;
+		let high = maxFontSize;
 
-		while (hi - lo > precision) {
-			const mid = (lo + hi) / 2;
+		while (high - low > precision) {
+			const mid = (low + high) / 2;
 			inner.style.fontSize = `${mid}px`;
 
 			if (inner.offsetHeight <= boxHeight) {
-				lo = mid; // Fits — try larger
+				low = mid; // Fits — try larger
 			} else {
-				hi = mid; // Overflows — try smaller
+				high = mid; // Overflows — try smaller
 			}
 		}
 
 		// Apply extra scaling only when overflow scaling was needed
-		return lo < maxFontSize ? lo * overflowScalingFactor : lo;
+		return low < maxFontSize ? low * overflowScalingFactor : low;
 	}, [
 		html,
 		boxWidth,
