@@ -194,14 +194,16 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 			return maxFontSize;
 		}
 
+		const { container, inner } = getMeasurementElements();
+
+		inner.innerHTML = html;
+
 		// Check for actual content (text or emoji icons)
-		const plainText = html.replace(/<[^>]*>/g, "").trim();
+		const plainText = inner.innerText.trim();
 		const hasEmojis = html.includes("fab-icon");
 		if (!plainText && !hasEmojis) {
 			return maxFontSize;
 		}
-
-		const { container, inner } = getMeasurementElements();
 
 		// Match the foreignObject box width
 		container.style.width = `${boxWidth}px`;
@@ -211,7 +213,6 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 			"--paragraph-spacing",
 			paragraphSpacing != null ? `${paragraphSpacing}em` : null,
 		);
-		inner.innerHTML = html;
 
 		// Quick check: does everything fit at the base font size?
 		inner.style.fontSize = `${maxFontSize}px`;
