@@ -317,31 +317,3 @@ export function useScaledFontSize(options: ScaledFontSizeOptions): number {
 		scalingFactor,
 	]);
 }
-
-/**
- * Calculate a font size for HTML content based on plain text length.
- * Use this for foreignObject scenarios where you can't control inner HTML.
- *
- * @example
- * // For foreignObject with uncontrolled HTML
- * const fontSize = useScaledFontSizeFromHTML({
- *   html: CardTextHTML,
- *   baseFontSize: 14,
- *   referenceLength: 100
- * });
- */
-export function useScaledFontSizeFromHTML(
-	options: Omit<ScaledFontSizeOptions, "text"> & { html: string },
-): number {
-	const { html, ...restOptions } = options;
-
-	// Strip HTML tags to get approximate text length
-	const plainText = useMemo(() => {
-		return html.replace(/<[^>]*>/g, "");
-	}, [html]);
-
-	return useScaledFontSize({
-		text: plainText,
-		...restOptions,
-	});
-}
