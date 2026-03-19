@@ -90,9 +90,9 @@ export function getSuggestedCardBack(
 
 // Helper function to calculate string similarity using Levenshtein distance
 function stringSimilarity(str1: string, str2: string): number {
-	// Convert to lowercase for case-insensitive comparison
-	const s1 = str1.toLowerCase();
-	const s2 = str2.toLowerCase();
+	// Convert to uppercase for case-insensitive comparison
+	const s1 = str1.toUpperCase();
+	const s2 = str2.toUpperCase();
 
 	// Calculate Levenshtein distance
 	const track = Array(s2.length + 1)
