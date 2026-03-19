@@ -208,7 +208,7 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 		// Match the foreignObject box width
 		container.style.width = `${boxWidth}px`;
 		// Apply the same spacing as the rendered div so measurement is accurate
-		inner.style.lineHeight = lineHeight != null ? String(lineHeight) : "1.18";
+		inner.style.lineHeight = lineHeight != null ? `${lineHeight}` : "1.18";
 		inner.style.setProperty(
 			"--paragraph-spacing",
 			paragraphSpacing != null ? `${paragraphSpacing}em` : null,
