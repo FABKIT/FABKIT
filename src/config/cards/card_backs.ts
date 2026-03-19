@@ -89,27 +89,33 @@ export function getSuggestedCardBack(
 }
 
 // Helper function to calculate string similarity using Levenshtein distance
-function stringSimilarity(str1: string, str2: string): number {
+function stringSimilarity(
+	baseString: string,
+	comparisonString: string,
+): number {
 	// Convert to uppercase for case-insensitive comparison
-	const s1 = str1.toUpperCase();
-	const s2 = str2.toUpperCase();
+	const normalizedBaseString = baseString.toUpperCase();
+	const normalizedComparisonString = comparisonString.toUpperCase();
 
 	// Calculate Levenshtein distance
-	const track = Array(s2.length + 1)
+	const track = Array(normalizedComparisonString.length + 1)
 		.fill(null)
-		.map(() => Array(s1.length + 1).fill(null));
+		.map(() => Array(normalizedBaseString.length + 1).fill(null));
 
-	for (let i = 0; i <= s1.length; i++) {
+	for (let i = 0; i <= normalizedBaseString.length; i++) {
 		track[0][i] = i;
 	}
 
-	for (let j = 0; j <= s2.length; j++) {
+	for (let j = 0; j <= normalizedComparisonString.length; j++) {
 		track[j][0] = j;
 	}
 
-	for (let j = 1; j <= s2.length; j++) {
-		for (let i = 1; i <= s1.length; i++) {
-			const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
+	for (let j = 1; j <= normalizedComparisonString.length; j++) {
+		for (let i = 1; i <= normalizedBaseString.length; i++) {
+			const indicator =
+				normalizedBaseString[i - 1] === normalizedComparisonString[j - 1]
+					? 0
+					: 1;
 			track[j][i] = Math.min(
 				track[j][i - 1] + 1, // deletion
 				track[j - 1][i] + 1, // insertion
@@ -118,8 +124,12 @@ function stringSimilarity(str1: string, str2: string): number {
 		}
 	}
 
-	const distance = track[s2.length][s1.length];
-	const maxLength = Math.max(s1.length, s2.length);
+	const distance =
+		track[normalizedComparisonString.length][normalizedBaseString.length];
+	const maxLength = Math.max(
+		normalizedBaseString.length,
+		normalizedComparisonString.length,
+	);
 
 	// Return similarity score (higher is better)
 	return 1 - distance / maxLength;
