@@ -215,7 +215,7 @@
 			"preview_alt": "Image preview"
 		},
 		"renderer": {
-			"unsupported": "Unsupported render mode requested, this is a bug. Please report it on GitHub / Discord."
+			"unsupported": "This card style and card type combination returns no eligible cardbacks. If you think this is a bug, please report it on GitHub / Discord."
 		},
 		"reset-creator": {
 			"title": "Reset Card Creator",
