@@ -126,7 +126,7 @@ export interface CardCreatorActions {
 		} | null,
 	) => void;
 
-	/** Sets artist credit text (automatically uppercased) */
+	/** Sets artist credit text */
 	setCardArtworkCredits: (credits: string | null) => void;
 
 	/** Sets card set number text (automatically uppercased) */
@@ -347,7 +347,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			// biome-ignore lint/suspicious/noExplicitAny: Zustand uses merging, not overwriting.
 			set({ CardArtPosition: position as any }),
 		setCardArtworkCredits: (credits: string | null) =>
-			set({ CardArtworkCredits: credits?.toUpperCase() }),
+			set({ CardArtworkCredits: credits }),
 		setCardSetNumber: (setNumber: string | null) =>
 			set({ CardSetNumber: setNumber?.toUpperCase() }),
 		setCardText: (html: string, content: Content) =>
