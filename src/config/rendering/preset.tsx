@@ -303,6 +303,9 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 			fontFamily: "palatino_lt_light",
 			fontSize: 17.9,
 			fontWeight: 400,
+			stroke: "#C42025",
+			strokeWidth: 2,
+			paintOrder: "stroke",
 		},
 		CardText: {
 			x: 54,

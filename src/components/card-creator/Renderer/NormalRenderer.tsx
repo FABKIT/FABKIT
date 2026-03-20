@@ -194,13 +194,27 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 					y={config.elements.CardResource.y}
 					textAnchor={config.elements.CardResource.textAnchor || "middle"}
 					dominantBaseline="middle"
-					fill={config.elements.CardResource.fill}
+					fill="none"
 					fontFamily={config.elements.CardResource.fontFamily}
 					fontSize={config.elements.CardResource.fontSize}
 					fontWeight={config.elements.CardResource.fontWeight}
 					stroke={config.elements.CardResource.stroke}
 					strokeWidth={config.elements.CardResource.strokeWidth}
 					paintOrder={config.elements.CardResource.paintOrder}
+				>
+					{CardResource}
+				</text>
+			)}
+			{CardResource && (
+				<text
+					x={config.elements.CardResource.x}
+					y={config.elements.CardResource.y}
+					textAnchor={config.elements.CardResource.textAnchor || "middle"}
+					dominantBaseline="middle"
+					fill={config.elements.CardResource.fill}
+					fontFamily={config.elements.CardResource.fontFamily}
+					fontSize={config.elements.CardResource.fontSize}
+					fontWeight={config.elements.CardResource.fontWeight}
 				>
 					{CardResource}
 				</text>
