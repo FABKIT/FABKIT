@@ -32,6 +32,7 @@ function RouteComponent() {
 
 			try {
 				shouldReRender.current = false;
+				await document.fonts.ready;
 				const blob = await convertToImage(svgRef.current);
 				setExportedCard(blob);
 			} catch (error) {

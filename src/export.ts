@@ -36,6 +36,75 @@ const serializer = new XMLSerializer();
 const preset = presets.offscreen();
 
 /**
+ * Cached CSS string with all @font-face rules and their font files embedded
+ * as base64 data URLs. Built once on first export and reused thereafter.
+ */
+let cachedFontEmbedCSS: string | null = null;
+
+/**
+ * Builds a CSS string containing all @font-face rules with font files
+ * embedded as base64 data URLs, suitable for passing to html-to-image as
+ * `fontEmbedCSS`. This bypasses html-to-image's own font detection, which
+ * can fail when fonts are applied via CSS custom properties or when
+ * stylesheet URL resolution goes wrong.
+ *
+ * The result is cached so subsequent exports reuse the already-fetched data.
+ */
+async function buildFontEmbedCSS(): Promise<string> {
+	if (cachedFontEmbedCSS !== null) return cachedFontEmbedCSS;
+
+	const cssRules: string[] = [];
+
+	for (const sheet of Array.from(document.styleSheets)) {
+		let rules: CSSRuleList;
+		try {
+			rules = sheet.cssRules;
+		} catch {
+			continue; // skip cross-origin stylesheets
+		}
+
+		for (const rule of Array.from(rules)) {
+			if (!(rule instanceof CSSFontFaceRule)) continue;
+
+			const src = rule.style.getPropertyValue("src");
+			// Prefer woff2 for smallest size; fall back to woff.
+			const woff2 = src.match(/url\(["']?([^"')]+\.woff2)["']?\)/);
+			const woff = src.match(/url\(["']?([^"')]+\.woff)["']?\)/);
+			const match = woff2 ?? woff;
+			if (!match) continue;
+
+			const fontUrl = new URL(match[1], location.href).href;
+			const isWoff2 = fontUrl.endsWith(".woff2");
+
+			try {
+				const response = await fetch(fontUrl);
+				const blob = await response.blob();
+				const base64 = await new Promise<string>((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onload = () => resolve(reader.result as string);
+					reader.onerror = reject;
+					reader.readAsDataURL(blob);
+				});
+
+				const family = rule.style.getPropertyValue("font-family");
+				const weight = rule.style.getPropertyValue("font-weight") || "normal";
+				const style = rule.style.getPropertyValue("font-style") || "normal";
+				const format = isWoff2 ? "woff2" : "woff";
+
+				cssRules.push(
+					`@font-face { font-family: ${family}; src: url("${base64}") format("${format}"); font-weight: ${weight}; font-style: ${style}; }`,
+				);
+			} catch (err) {
+				console.warn(`Failed to embed font from ${fontUrl}:`, err);
+			}
+		}
+	}
+
+	cachedFontEmbedCSS = cssRules.join("\n");
+	return cachedFontEmbedCSS;
+}
+
+/**
  * Converts an SVG card element to a PNG image Blob.
  *
  * Performs two-phase rendering:
@@ -73,7 +142,6 @@ export async function convertToImage(
 	for (const foreignObject of svg.querySelectorAll("foreignObject")) {
 		const image = await exportForeignObject(foreignObject);
 
-		// TODO: splice `image` onto `canvas` as the coordinates of the `foreignObject`
 		ctx.drawImage(
 			image,
 			foreignObject.x.baseVal.value * scale,
@@ -97,9 +165,11 @@ export async function convertToImage(
 async function exportForeignObject(
 	object: SVGForeignObjectElement,
 ): Promise<HTMLCanvasElement> {
+	const fontEmbedCSS = await buildFontEmbedCSS();
 	return await toCanvas(object.children[0] as HTMLElement, {
 		backgroundColor: "transparent",
 		canvasWidth: object.width.baseVal.value,
 		canvasHeight: object.height.baseVal.value,
+		fontEmbedCSS,
 	});
 }
