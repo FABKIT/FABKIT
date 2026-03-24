@@ -1,9 +1,6 @@
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
-import {
-	CardBacks,
-	getCardBacksForTypeAndStyle,
-} from "../../../config/cards/card_backs.ts";
+import { getCardBacksForTypeAndStyle } from "../../../config/cards/card_backs.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 
 export function CardBackField() {
@@ -49,7 +46,7 @@ export function CardBackField() {
 					value={CardBack?.id ?? ""}
 					onChange={(e) => {
 						const id = parseInt(e.target.value, 10);
-						const result = CardBacks.find((b) => b.id === id);
+						const result = options.find((b) => b.id === id);
 						if (result) setCardBack(result);
 					}}
 					className="col-start-1 row-start-1 w-full appearance-none text-center font-bold bg-transparent py-1.5 pr-8 pl-3 text-sm text-body focus:outline-none"
