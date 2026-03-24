@@ -151,7 +151,7 @@ export async function convertToImage(
 		);
 	}
 
-	return await canvas.convertToBlob({ type, quality: scale });
+	return await canvas.convertToBlob({ type, quality: 1 });
 }
 
 /**
