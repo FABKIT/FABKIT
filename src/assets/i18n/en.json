@@ -195,6 +195,8 @@
 	},
 	"export": {
 		"exporting_label": "Exporting your card, this may take a few seconds...",
+		"exporting_error": "Whoops, something went wrong.",
+		"try_again": "Try again",
 		"download": "Download"
 	},
 	"components": {

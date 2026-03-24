@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -91,6 +91,17 @@ function RouteComponent() {
 						<Download className="h-5 w-5" />
 						{t("export.download")}
 					</button>
+				</div>
+			)}
+			{!isExporting && !exportedCard && (
+				<div className="flex flex-1 flex-col justify-center items-center p-4 gap-6">
+					<span className="text-body">{t("export.exporting_error")}</span>
+					<Link
+						to="/card-creator"
+						className="rounded-lg bg-surface-active px-4 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
+					>
+						{t("export.try_again")}
+					</Link>
 				</div>
 			)}
 		</>
