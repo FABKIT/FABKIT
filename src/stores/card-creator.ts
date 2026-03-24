@@ -385,6 +385,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 		setOverlayOpacity: (overlayOpacity: number) =>
 			set({ CardOverlayOpacity: Math.max(0, Math.min(1, overlayOpacity)) }),
 		reset: () => set({ ...store.getInitialState(), __version: uuid() }),
-		loadCard: (state: Partial<CardCreatorState>) => set(state),
+		loadCard: (state: Partial<CardCreatorState>) =>
+			set({ ...store.getInitialState(), ...state }),
 	})),
 );
