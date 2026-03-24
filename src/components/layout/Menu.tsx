@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import FabkitLogo from "../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../assets/Fabkitlogo_notext.svg";
+import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
 type NavChild = { name: string; route: string; icon: React.ElementType };
@@ -275,6 +276,7 @@ export function Menu() {
 							</li>
 						</ul>
 						<ThemeToggle />
+						<LanguageToggle />
 					</nav>
 				</div>
 			</div>
@@ -302,6 +304,7 @@ export function Menu() {
 				</div>
 				<div className="flex items-center gap-2">
 					<ThemeToggle />
+					<LanguageToggle />
 				</div>
 			</div>
 		</div>
