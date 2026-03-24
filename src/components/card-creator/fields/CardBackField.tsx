@@ -17,8 +17,12 @@ export function CardBackField() {
 		[CardBackStyle, CardType],
 	);
 
-	const currentIndex =
+	let currentIndex =
 		CardBack === null ? 0 : options.findIndex((b) => b.id === CardBack?.id);
+
+	if (currentIndex === -1) {
+		currentIndex = 0;
+	}
 
 	const navigate = (dir: "prev" | "next") => {
 		if (options.length === 0) return;
