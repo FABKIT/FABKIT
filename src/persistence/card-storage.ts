@@ -75,7 +75,7 @@ export interface StoredCard {
 export interface SerializedCardState
 	extends Omit<CardCreatorState, "CardBack"> {
 	/** CardBack ID instead of full object */
-	CardBack: number;
+	CardBack: number | null;
 }
 
 /** Cached database instance to avoid multiple open requests */
@@ -127,7 +127,7 @@ export function serializeCardState(
 	return {
 		__version: state.__version,
 		CardType: state.CardType,
-		CardBack: state.CardBack?.id || 1,
+		CardBack: state.CardBack?.id || null,
 		CardBackStyle: state.CardBackStyle,
 		CardArtwork: state.CardArtwork,
 		CardArtPosition: state.CardArtPosition,
