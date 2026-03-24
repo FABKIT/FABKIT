@@ -203,7 +203,11 @@
 		"featured_artist": {
 			"label": "Featured Artist",
 			"fab_discord_link": "Join the Flesh and Blood discord and follow the custom-card channel for future contests",
-			"our_discord_link": "Join our Discord server"
+			"our_discord_link": "Join our Discord server",
+			"previous_slide": "Previous slide",
+			"card_alt": "The featured custom card",
+			"next_slide": "Next slide",
+			"go_to_slide": "Go to slide"
 		},
 		"image_upload": {
 			"drag_or_click": "Drop your image here or click to browse",
