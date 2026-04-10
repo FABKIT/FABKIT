@@ -47,16 +47,28 @@ export function ThemeToggle() {
 		}
 	};
 
+	const getThemeName = () => {
+		switch (theme) {
+			case "light":
+				return t("theme.light");
+			case "dark":
+				return t("theme.dark");
+			default:
+				return t("theme.system");
+		}
+	};
+
 	return (
 		<button
 			type="button"
 			onClick={cycleTheme}
 			aria-label={getLabel()}
-			className="group relative size-10 rounded-lg bg-surface-muted text-body transition-all duration-200 hover:bg-surface-active hover:text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface"
+			className="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-menu-inactive transition-colors hover:bg-surface-active hover:text-heading"
 		>
-			<span className="absolute inset-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+			<span className="size-6 shrink-0 flex items-center justify-center text-menu-icon-inactive transition-colors group-hover:text-heading">
 				{getIcon()}
 			</span>
+			{getThemeName()}
 		</button>
 	);
 }

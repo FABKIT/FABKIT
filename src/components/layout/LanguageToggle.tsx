@@ -13,19 +13,18 @@ export function LanguageToggle() {
 		<Menu as="div" className="relative">
 			<MenuButton
 				aria-label={t("theme.toggle_language")}
-				className="group relative size-10 rounded-lg bg-surface-muted text-body transition-all duration-200 hover:bg-surface-active hover:text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface"
+				className="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-menu-inactive transition-colors hover:bg-surface-active hover:text-heading"
 			>
-				<span className="absolute inset-0 flex items-center justify-center">
-					<Globe className="size-5 transition-transform duration-300 group-hover:scale-110" />
-				</span>
-				<span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white shadow-sm">
-					{i18n.language.toUpperCase().slice(0, 2)}
-				</span>
+				<Globe
+					className="size-6 shrink-0 text-menu-icon-inactive transition-colors group-hover:text-heading"
+					aria-hidden="true"
+				/>
+				<span className="flex-1 text-left">{i18n.language.toUpperCase()}</span>
 			</MenuButton>
 
 			<MenuItems
-				anchor="bottom end"
-				className="mt-2 w-32 origin-top-right rounded-lg bg-surface shadow-lg ring-1 ring-border focus:outline-none"
+				anchor="bottom start"
+				className="mt-2 w-40 origin-top-left rounded-lg bg-surface shadow-lg ring-1 ring-border focus:outline-none"
 			>
 				<div className="py-1">
 					{i18n.languages.map((lang) => (

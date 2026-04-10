@@ -241,9 +241,9 @@
 		"ok": "OK"
 	},
 	"theme": {
-		"light": "Light",
-		"dark": "Dark",
-		"system": "System",
+		"light": "Light theme",
+		"dark": "Dark theme",
+		"system": "System theme",
 		"toggle_light": "Switch to dark theme",
 		"toggle_dark": "Switch to system theme",
 		"toggle_system": "Switch to light theme",

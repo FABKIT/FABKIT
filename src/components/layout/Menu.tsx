@@ -241,6 +241,17 @@ export function Menu() {
 													))}
 												</ul>
 											</li>
+											<li>
+												<hr className="h-px border-0 bg-border" />
+												<ul className="-mx-2 mt-3 space-y-1">
+													<li>
+														<ThemeToggle />
+													</li>
+													<li>
+														<LanguageToggle />
+													</li>
+												</ul>
+											</li>
 										</ul>
 									</nav>
 								</div>
@@ -257,8 +268,8 @@ export function Menu() {
 						<img className="h-30 w-auto" src={FabkitLogo} alt="FABKIT Logo" />
 					</div>
 					<hr className="h-px border-0 bg-border" />
-					<nav className="mt-5 flex flex-1 flex-col gap-y-5">
-						<ul className="flex flex-col gap-y-7">
+					<nav className="mt-5 flex flex-1 flex-col">
+						<ul className="flex flex-1 flex-col gap-y-7">
 							<li>
 								<ul className="-mx-2 space-y-1">
 									{navigation.map((item) => (
@@ -274,37 +285,36 @@ export function Menu() {
 									))}
 								</ul>
 							</li>
+							<li className="mt-auto pb-16">
+								<hr className="h-px border-0 bg-border" />
+								<ul className="-mx-2 mt-3 space-y-1">
+									<li>
+										<ThemeToggle />
+									</li>
+									<li>
+										<LanguageToggle />
+									</li>
+								</ul>
+							</li>
 						</ul>
-						<ThemeToggle />
-						<LanguageToggle />
 					</nav>
 				</div>
 			</div>
 
 			{/* Mobile top bar */}
-			<div className="sticky top-0 z-40 flex items-center justify-between gap-x-6 bg-surface px-4 py-4 shadow-xs sm:px-6 lg:hidden">
-				<div className="flex items-center gap-x-6">
-					<button
-						type="button"
-						className="-m-2.5 p-2.5 text-primary lg:hidden"
-						onClick={() => setSidebarOpen(true)}
-					>
-						<span className="sr-only">Open sidebar</span>
-						<MenuIcon className="size-6" aria-hidden="true" />
-					</button>
-					<div className="flex flex-row items-center text-sm/6 font-semibold text-primary">
-						<img
-							src={FabkitLogoNotext}
-							alt="FABKIT Logo"
-							className="h-8 pr-2"
-						/>
-						FaBKit
-						{currentRouteName && ` - ${currentRouteName}`}
-					</div>
-				</div>
-				<div className="flex items-center gap-2">
-					<ThemeToggle />
-					<LanguageToggle />
+			<div className="sticky top-0 z-40 flex items-center gap-x-6 bg-surface px-4 py-4 shadow-xs sm:px-6 lg:hidden">
+				<button
+					type="button"
+					className="-m-2.5 p-2.5 text-primary lg:hidden"
+					onClick={() => setSidebarOpen(true)}
+				>
+					<span className="sr-only">Open sidebar</span>
+					<MenuIcon className="size-6" aria-hidden="true" />
+				</button>
+				<div className="flex flex-row items-center text-sm/6 font-semibold text-primary">
+					<img src={FabkitLogoNotext} alt="FABKIT Logo" className="h-8 pr-2" />
+					FaBKit
+					{currentRouteName && ` - ${currentRouteName}`}
 				</div>
 			</div>
 		</div>
