@@ -3,7 +3,7 @@ import Emoji from "@tiptap/extension-emoji";
 import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
-import { type Content, EditorContent, useEditor } from "@tiptap/react";
+import { type Content, EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
 	AlignCenter as AlignCenterIcon,
@@ -76,6 +76,19 @@ export default function RichTextEditor({
 		},
 	});
 
+	const editorState = useEditorState({
+		editor,
+		selector: ({ editor: e }) => ({
+			isBold: e?.isActive("bold") ?? false,
+			isItalic: e?.isActive("italic") ?? false,
+			isUnderline: e?.isActive("underline") ?? false,
+			isBulletList: e?.isActive("bulletList") ?? false,
+			isOrderedList: e?.isActive("orderedList") ?? false,
+			isAlignLeft: e?.isActive({ textAlign: "left" }) ?? false,
+			isAlignCenter: e?.isActive({ textAlign: "center" }) ?? false,
+		}),
+	});
+
 	if (!editor) {
 		return <p>Editor failed to load...</p>;
 	}
@@ -89,7 +102,7 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().toggleBold().run()}
 						className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-							editor.isActive("bold")
+							editorState.isBold
 								? "bg-primary text-white shadow-md"
 								: "text-body hover:bg-primary/10"
 						}`}
@@ -101,7 +114,7 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().toggleItalic().run()}
 						className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-							editor.isActive("italic")
+							editorState.isItalic
 								? "bg-primary text-white shadow-md"
 								: "text-body hover:bg-primary/10"
 						}`}
@@ -113,7 +126,7 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().toggleUnderline().run()}
 						className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-							editor.isActive("underline")
+							editorState.isUnderline
 								? "bg-primary text-white shadow-md"
 								: "text-body hover:bg-primary/10"
 						}`}
@@ -129,7 +142,7 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().toggleBulletList().run()}
 						className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-							editor.isActive("bulletList")
+							editorState.isBulletList
 								? "bg-primary text-white shadow-md"
 								: "text-body hover:bg-primary/10"
 						}`}
@@ -141,7 +154,7 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().toggleOrderedList().run()}
 						className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-							editor.isActive("orderedList")
+							editorState.isOrderedList
 								? "bg-primary text-white shadow-md"
 								: "text-body hover:bg-primary/10"
 						}`}
@@ -157,7 +170,7 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().setTextAlign("left").run()}
 						className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-							editor.isActive({ textAlign: "left" })
+							editorState.isAlignLeft
 								? "bg-primary text-white shadow-md"
 								: "text-body hover:bg-primary/10"
 						}`}
@@ -169,7 +182,7 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().setTextAlign("center").run()}
 						className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${
-							editor.isActive({ textAlign: "center" })
+							editorState.isAlignCenter
 								? "bg-primary text-white shadow-md"
 								: "text-body hover:bg-primary/10"
 						}`}
