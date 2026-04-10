@@ -251,5 +251,17 @@
 	},
 	"index": {
 		"title": "Start creating!"
+	},
+	"nav": {
+		"home": "Home",
+		"card_creator": "Card Creator",
+		"gallery": "Gallery",
+		"roadmap": "Roadmap",
+		"contact": "Contact",
+		"open_sidebar": "Open sidebar",
+		"close_sidebar": "Close sidebar",
+		"logo_alt": "FABKIT",
+		"logo_with_text_alt": "FABKIT Logo",
+		"brand": "FaBKit"
 	}
 }
