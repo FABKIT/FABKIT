@@ -177,6 +177,13 @@ export interface BaseCardRenderConfig {
 	};
 
 	/**
+	 * SVG-coordinate rectangle defining the region where touch/mouse drag initiates artwork movement.
+	 * Touches outside this zone fall through to native scroll behaviour.
+	 * Coordinates are in the same SVG viewBox space as all other element positions.
+	 */
+	artworkDragZone: { x: number; y: number; width: number; height: number };
+
+	/**
 	 * SVG mask definitions for clipping artwork to card shape.
 	 * Masks use luminance (white areas visible, black areas hidden).
 	 * Applied via mask="url(#mask-id)" attribute.

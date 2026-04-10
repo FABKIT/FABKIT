@@ -32,6 +32,8 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 		width: 450,
 		height: 628,
 	},
+	// Stops just before CardText.y (400) — the lowest text-box top across all dented variants
+	artworkDragZone: { x: 10, y: 10, width: 430, height: 385 },
 	masks: {
 		CardArtWork: <rect x="10" y="10" width="430" height="608" fill="white" />,
 	},
@@ -278,6 +280,8 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 		width: 450,
 		height: 628,
 	},
+	// Stops just before CardText.y (~392) — the lowest text-box top across all flat variants
+	artworkDragZone: { x: 10, y: 10, width: 430, height: 380 },
 	masks: {
 		CardArtWork: <rect x="10" y="10" width="430" height="608" fill="white" />,
 	},

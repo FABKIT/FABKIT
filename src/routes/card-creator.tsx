@@ -35,6 +35,7 @@ import { CardWeaponField } from "../components/card-creator/fields/CardWeaponFie
 import { ResetButton } from "../components/card-creator/fields/ResetButton.tsx";
 import { SaveButton } from "../components/card-creator/fields/SaveButton.tsx";
 import { Renderer } from "../components/card-creator/Renderer.tsx";
+import { AllRenderConfigVariations } from "../config/rendering.ts";
 import { useCardCreator } from "../stores/card-creator.ts";
 
 export const Route = createFileRoute("/card-creator")({
@@ -48,6 +49,8 @@ function RouteComponent() {
 	const reset = useCardCreator((state) => state.reset);
 	const setCardType = useCardCreator((state) => state.setCardType);
 	const currentCardType = useCardCreator((state) => state.CardType);
+	const CardBack = useCardCreator((state) => state.CardBack);
+	const renderConfig = AllRenderConfigVariations[CardBack?.renderer || ""] ?? null;
 
 	return (
 		<div className="flex flex-1 flex-col w-full px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8 gap-4 pt-6 sm:pt-8 lg:pt-10">
@@ -101,7 +104,10 @@ function RouteComponent() {
 
 					{/* Card preview */}
 					<div className="w-full max-w-[450px] mt-1">
-						<CardArtworkPositionContainer>
+						<CardArtworkPositionContainer
+							artworkDragZone={renderConfig?.artworkDragZone}
+							viewBox={renderConfig?.viewBox}
+						>
 							<Renderer ref={previewRef} />
 						</CardArtworkPositionContainer>
 					</div>
