@@ -6,8 +6,11 @@ import i18n from "../../i18n.ts";
 export function LanguageToggle() {
 	const { t } = useTranslation();
 
+	// Use defined resource keys, not i18n.languages (which is the fallback chain, not configured languages)
+	const availableLanguages = Object.keys(i18n.options.resources ?? {});
+
 	// Only show if multiple languages are available
-	if (i18n.languages.length <= 1) return null;
+	if (availableLanguages.length <= 1) return null;
 
 	return (
 		<Menu as="div" className="relative">
@@ -27,7 +30,7 @@ export function LanguageToggle() {
 				className="mt-2 w-40 origin-top-left rounded-lg bg-surface shadow-lg ring-1 ring-border focus:outline-none"
 			>
 				<div className="py-1">
-					{i18n.languages.map((lang) => (
+					{availableLanguages.map((lang) => (
 						<MenuItem key={lang}>
 							{({ focus }) => (
 								<button
