@@ -29,6 +29,7 @@
         "react-dom": "^19.2.0",
         "react-i18next": "^16.5.3",
         "tailwindcss": "^4.1.18",
+        "use-debounce": "^10.1.1",
         "use-object-url": "^1.0.0",
         "uuid": "^13.0.0",
         "zustand": "^5.0.10",
@@ -1206,6 +1207,8 @@
     "upath": ["upath@1.2.0", "", {}, "sha512-aZwGpamFO61g3OlfT7OQCHqhGnW43ieH9WZeP7QxN/G/jS4jfqUkZxoryvJgVPEcrl5NL/ggHsSmLMHuH64Lhg=="],
 
     "update-browserslist-db": ["update-browserslist-db@1.2.3", "", { "dependencies": { "escalade": "^3.2.0", "picocolors": "^1.1.1" }, "peerDependencies": { "browserslist": ">= 4.21.0" }, "bin": { "update-browserslist-db": "cli.js" } }, "sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w=="],
+
+    "use-debounce": ["use-debounce@10.1.1", "", { "peerDependencies": { "react": "*" } }, "sha512-kvds8BHR2k28cFsxW8k3nc/tRga2rs1RHYCqmmGqb90MEeE++oALwzh2COiuBLO1/QXiOuShXoSN2ZpWnMmvuQ=="],
 
     "use-object-url": ["use-object-url@1.0.0", "", { "peerDependencies": { "react": ">= 16.8.0" } }, "sha512-fkCvjOINCKzxMOqG/PNWt3B9zLOmbltM4cihsQO82OClQoixRfSEcA6MaD7eFMGwAQw4BMSRWD8NM31L5e50LQ=="],
 

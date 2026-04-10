@@ -31,6 +31,7 @@
  */
 
 import { type ReactNode, type Ref, useMemo } from "react";
+import { useDebounce } from "use-debounce";
 import useObjectURL from "use-object-url";
 import { CardRarities } from "../../../config/cards/rarities.ts";
 import type {
@@ -72,6 +73,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	const CardLife = useCardCreator((state) => state.CardLife);
 	const CardArtwork = useCardCreator((state) => state.CardArtwork);
 	const CardTextHTML = useCardCreator((state) => state.CardTextHTML);
+	const [debouncedCardTextHTML] = useDebounce(CardTextHTML, 150);
 	const CardArtPosition = useCardCreator((state) => state.CardArtPosition);
 	const CardOverlay = useCardCreator((state) => state.CardOverlay);
 	const CardOverlayOpacity = useCardCreator(
@@ -93,7 +95,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	// Scale the card description font size to fit its fixed-size box.
 	// Uses binary search with hidden DOM measurement for accurate rich text handling.
 	const CardTextFontSize = useCardTextFontSize({
-		html: CardTextHTML || "",
+		html: debouncedCardTextHTML || "",
 		boxWidth: config.elements.CardText.width,
 		boxHeight: config.elements.CardText.height,
 		maxFontSize: config.elements.CardText.fontSize ?? 20,
@@ -222,7 +224,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				</text>
 			)}
 
-			{CardTextHTML && (
+			{debouncedCardTextHTML && (
 				<foreignObject
 					x={config.elements.CardText.x}
 					y={config.elements.CardText.y}
@@ -263,7 +265,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 								} as React.CSSProperties
 							}
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: editor content is HTML
-							dangerouslySetInnerHTML={{ __html: CardTextHTML }}
+							dangerouslySetInnerHTML={{ __html: debouncedCardTextHTML ?? "" }}
 						/>
 					</div>
 				</foreignObject>

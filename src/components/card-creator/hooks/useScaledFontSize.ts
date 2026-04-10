@@ -194,16 +194,16 @@ export function useCardTextFontSize(options: CardTextScalingOptions): number {
 			return maxFontSize;
 		}
 
+		// Fast string-level content check — avoids a forced reflow from innerText
+		const hasEmojis = html.includes("fab-icon");
+		const hasText = html.replace(/<[^>]*>/g, "").trim().length > 0;
+		if (!hasText && !hasEmojis) {
+			return maxFontSize;
+		}
+
 		const { container, inner } = getMeasurementElements();
 
 		inner.innerHTML = html;
-
-		// Check for actual content (text or emoji icons)
-		const plainText = inner.innerText.trim();
-		const hasEmojis = html.includes("fab-icon");
-		if (!plainText && !hasEmojis) {
-			return maxFontSize;
-		}
 
 		// Match the foreignObject box width
 		container.style.width = `${boxWidth}px`;
