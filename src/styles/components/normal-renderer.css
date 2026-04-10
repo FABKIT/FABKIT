@@ -27,9 +27,15 @@
 	margin-top: var(--paragraph-spacing, 0.65em);
 }
 
-/* Multiple paragraphs or hard line breaks → full width so text is left-aligned */
+/*
+ * Force full width when content can't be treated as a single centered inline block.
+ * Without this the div shrinks to min-content, list items never wrap in the hidden
+ * measurement container, and useCardTextFontSize picks a font size that overflows.
+ */
 .renderedContent:has(p + p),
-.renderedContent:has(br) {
+.renderedContent:has(br),
+.renderedContent:has(ul),
+.renderedContent:has(ol) {
 	width: 100%;
 }
 
