@@ -356,6 +356,7 @@ export async function exportCardToJSON(card: StoredCard): Promise<string> {
 
 	// Create exportable object with base64 images
 	const exportData = {
+		appVersion: __GIT_HASH__,
 		version: card.version,
 		cardName: card.cardName,
 		createdAt: card.createdAt,

@@ -53,6 +53,9 @@ export function Footer() {
 					<p className="mt-8 text-left text-sm/6 text-primary md:order-1 md:mt-0">
 						{t("footer.credits")}
 					</p>
+					<p className="mt-2 text-left text-xs/6 text-muted md:order-1 lg:hidden">
+						{t("footer.version", { hash: __GIT_SHORT_HASH__ })}
+					</p>
 				</div>
 			</div>
 		</footer>

@@ -310,12 +310,15 @@ export function Menu() {
 			{/* Static sidebar for desktop */}
 			<div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
 				<div className="flex grow flex-col border-r border-border bg-surface px-6">
-					<div className="flex h-48 items-center justify-center">
+					<div className="flex h-48 flex-col items-center justify-center gap-1">
 						<img
 							className="h-30 w-auto"
 							src={FabkitLogo}
 							alt={t("nav.logo_with_text_alt")}
 						/>
+						<p className="text-xs text-muted">
+							{t("footer.version", { hash: __GIT_SHORT_HASH__ })}
+						</p>
 					</div>
 					<hr className="h-px border-0 bg-border" />
 					<nav className="mt-5 flex flex-1 flex-col">
