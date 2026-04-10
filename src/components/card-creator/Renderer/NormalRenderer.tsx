@@ -74,6 +74,13 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	const CardArtwork = useCardCreator((state) => state.CardArtwork);
 	const CardTextHTML = useCardCreator((state) => state.CardTextHTML);
 	const [debouncedCardTextHTML] = useDebounce(CardTextHTML, 150);
+	// Inside SVG foreignObject, browsers (especially on macOS) do not trigger lazy
+	// loading for img elements because the element is never considered "in viewport".
+	// Strip loading="lazy" so symbols load eagerly and appear correctly on export.
+	const eagerCardTextHTML = useMemo(
+		() => debouncedCardTextHTML?.replace(/\bloading="lazy"\b/g, "") ?? null,
+		[debouncedCardTextHTML],
+	);
 	const CardArtPosition = useCardCreator((state) => state.CardArtPosition);
 	const CardOverlay = useCardCreator((state) => state.CardOverlay);
 	const CardOverlayOpacity = useCardCreator(
@@ -95,7 +102,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	// Scale the card description font size to fit its fixed-size box.
 	// Uses binary search with hidden DOM measurement for accurate rich text handling.
 	const CardTextFontSize = useCardTextFontSize({
-		html: debouncedCardTextHTML || "",
+		html: eagerCardTextHTML || "",
 		boxWidth: config.elements.CardText.width,
 		boxHeight: config.elements.CardText.height,
 		maxFontSize: config.elements.CardText.fontSize ?? 20,
@@ -224,7 +231,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				</text>
 			)}
 
-			{debouncedCardTextHTML && (
+			{eagerCardTextHTML && (
 				<foreignObject
 					x={config.elements.CardText.x}
 					y={config.elements.CardText.y}
@@ -265,7 +272,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 								} as React.CSSProperties
 							}
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: editor content is HTML
-							dangerouslySetInnerHTML={{ __html: debouncedCardTextHTML ?? "" }}
+							dangerouslySetInnerHTML={{ __html: eagerCardTextHTML }}
 						/>
 					</div>
 				</foreignObject>
