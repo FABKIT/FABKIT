@@ -180,30 +180,26 @@ export default function RichTextEditor({
 				</div>
 
 				{/* Special Characters */}
-			<div className="inline-flex rounded-lg bg-surface-muted p-1">
-				<button
-					type="button"
-					onClick={() =>
-						editor
-							.chain()
-							.focus()
-							.insertContent({ type: "fabDash" })
-							.run()
-					}
-					className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
-					title="Insert F&B dash"
-				>
-					<span className="sr-only">Insert F&B dash</span>
-					{/* Visual preview of the dash bar */}
-					<span
-						aria-hidden="true"
-						className="inline-block w-4 rounded-full bg-current"
-						style={{ height: "2px", verticalAlign: "middle" }}
-					/>
-				</button>
-			</div>
+				<div className="inline-flex rounded-lg bg-surface-muted p-1">
+					<button
+						type="button"
+						onClick={() =>
+							editor.chain().focus().insertContent({ type: "fabDash" }).run()
+						}
+						className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
+						title="Insert F&B dash"
+					>
+						<span className="sr-only">Insert F&B dash</span>
+						{/* Visual preview of the dash bar */}
+						<span
+							aria-hidden="true"
+							className="inline-block w-4 rounded-full bg-current"
+							style={{ height: "2px", verticalAlign: "middle" }}
+						/>
+					</button>
+				</div>
 
-			{/* Custom Emojis Row 1 */}
+				{/* Custom Emojis Row 1 */}
 				<div className="inline-flex rounded-lg bg-surface-muted p-1">
 					{customEmojisRow1.map((emoji) => (
 						<button

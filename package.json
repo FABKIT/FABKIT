@@ -13,7 +13,6 @@
 	},
 	"dependencies": {
 		"@headlessui/react": "^2.2.9",
-		"@jpinsonneau/html-to-image": "^1.11.13",
 		"@tanstack/react-router": "^1.157.10",
 		"@tanstack/react-router-devtools": "^1.157.10",
 		"@tiptap/extension-bold": "^3.17.1",
@@ -28,7 +27,7 @@
 		"@tiptap/extension-underline": "^3.17.1",
 		"@tiptap/react": "^3.17.1",
 		"@tiptap/starter-kit": "^3.17.1",
-		"canvg": "^4.0.3",
+		"@zumer/snapdom": "^2.8.0",
 		"i18next": "^25.8.0",
 		"i18next-browser-languagedetector": "^8.2.0",
 		"lucide-react": "^0.563.0",
