@@ -3,7 +3,7 @@
 > **Your Flesh and Blood Toolbox**
 
 [![License: BSD 3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE.md)
-[![Built with Vue](https://img.shields.io/badge/Built%20with-Vue%203-4FC08D.svg)](https://vuejs.org/)
+[![Built with React](https://img.shields.io/badge/Built%20with-React%2019-61DAFB.svg)](https://react.dev/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-fabkit.github.io-brightgreen.svg)](https://fabkit.io/)
 
 FABKIT is a community-driven toolkit for Flesh and Blood TCG players. Our current flagship feature is a custom card creator that generates high-quality, authentic-looking cards complete with official fonts, symbols, and templates.
@@ -19,10 +19,16 @@ FABKIT is a community-driven toolkit for Flesh and Blood TCG players. Our curren
 - **Smart Text Scaling**: Automatic font sizing to fit card templates perfectly
 - **High-Quality Export**: Download PNG images ready for printing
 - **Print Optimization**: Built-in print scaling for standard card sizes
-- **Current supported card types**: Action, Attack Reaction, Defense Reaction, Block, Hero/Demi-Hero, Equipment, Instant, Resource, Token, Weapon
+- **Current supported card types**: Action, Attack Reaction, Defense Reaction, Block, Hero/Demi-Hero, Equipment, Instant, Resource, Token, Weapon, Macro, Mentor, Weapon Equipment, Ally, Event
+
+### Card Gallery
+- **Local Storage**: Cards are saved in your browser and persist between sessions
+- **Gallery View**: Browse all your saved cards with thumbnail previews
+- **Import/Export**: Export cards as `.fabkit` files (JSON with embedded artwork) and re-import them via drag-and-drop or file picker
 
 ### Key Highlights
 - **Browser-Based**: No downloads required, works entirely in your browser
+- **Offline Support**: Installable as a PWA — works without an internet connection
 - **Mobile Friendly**: Responsive design for desktop and tablet use
 - **Open Source**: Community-driven development
 - **Free Forever**: No paywalls or premium features
@@ -39,25 +45,26 @@ git clone https://github.com/FABKIT/FABKIT.git
 cd FABKIT
 
 # Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
+bun install
 
 # Start development server
-npm run dev
+bun dev
 
 # Build for production
-npm run build
+bun build
 ```
 
 ## Tech Stack
 
-- **Frontend**: Vue 3 with Composition API
+- **Frontend**: React 19
 - **Styling**: Tailwind CSS v4
-- **Canvas Rendering**: Konva.js for high-quality card generation
+- **Router**: TanStack Router (file-based routing)
+- **State Management**: Zustand
+- **Card Export**: snapdom for high-quality PNG generation
 - **Text Editor**: Tiptap with custom FAB symbol integration
-- **Build Tool**: Vite
+- **Build Tool**: Vite (Rolldown)
+- **Linting/Formatting**: Biome
+- **Package Manager**: Bun
 - **Deployment**: GitHub Pages
 
 ## Usage
@@ -104,6 +111,7 @@ We welcome all contributions. Whether they're bug reports, code contributions or
 ## Community
 
 - **Discord**: [Join our server](https://discord.gg/4twcdby9xp) for support, discussions, and showcasing your creations
+- **Bluesky**: [Follow us](https://bsky.app/profile/teamfabkit.bsky.social) for updates and announcements
 - **GitHub Issues**: [Report bugs or request features](https://github.com/FABKIT/FABKIT/issues)
 - **Contact**: [Get in touch](https://fabkit.io/#/contact) with the development team
 

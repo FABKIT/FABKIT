@@ -10,16 +10,13 @@ git clone https://github.com/FABKIT/FABKIT.git
 cd FABKIT
 
 # Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
+bun install
 
 # Start development server
-npm run dev
+bun dev
 
 # Build for production
-npm run build
+bun build
 ```
 
 ### Ways to Contribute
@@ -39,9 +36,13 @@ npm run build
 
 ## Tech Stack
 
-- **Frontend**: Vue 3 with Composition API
+- **Frontend**: React 19
 - **Styling**: Tailwind CSS v4
-- **Canvas Rendering**: Konva.js for high-quality card generation
+- **Router**: TanStack Router (file-based routing)
+- **State Management**: Zustand
+- **Card Export**: snapdom for high-quality PNG generation
 - **Text Editor**: Tiptap with custom FAB symbol integration
-- **Build Tool**: Vite
+- **Build Tool**: Vite (Rolldown)
+- **Linting/Formatting**: Biome
+- **Package Manager**: Bun
 - **Deployment**: GitHub Pages
