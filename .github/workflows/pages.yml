@@ -2,9 +2,9 @@
 name: Deploy static content to Pages
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ['master']
+  # Runs on published releases
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,30 +30,47 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Remove placeholder cardbacks
+        if: ${{ startsWith(github.repository, 'FABKIT/') }}
+        run: rm -rf public/cardbacks/generated
+
       - name: Pull Cardbacks
-        uses: actions/checkout@v2
+        if: ${{ startsWith(github.repository, 'FABKIT/') }}
+        uses: actions/checkout@v4
         with:
           repository: FABKIT/cardbacks
           ssh-key: ${{ secrets.CARDBACK_KEY }}
-          path: 'cardbacks'
-      - name: Set up Node
-        uses: actions/setup-node@v4
+          path: 'public/cardbacks'
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: 'npm'
+          bun-version: latest
+
       - name: Install dependencies
-        run: npm ci
-      - name: Build
-        run: npm run build
-        env:
-          CARDBACKS_JSON_PATH: './cardbacks/cardbacks.json'
+        run: bun install --frozen-lockfile
+
+      - name: Update PWA assets
+        run: bun run scripts/update-pwa-assets
+
+      - name: Build (Production)
+        if: ${{ github.repository == 'FABKIT/FABKIT' }}
+        run: bun run build
+
+      - name: Build (Production)
+        if: ${{ github.repository != 'FABKIT/FABKIT' }}
+        run: bun run build -- --mode staging
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload dist folder
           path: './dist'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

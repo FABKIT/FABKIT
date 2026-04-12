@@ -1,0 +1,109 @@
+@import "tailwindcss";
+@import "./fonts.css";
+
+@theme {
+	--color-primary: #a6864a;
+	--color-secondary: oklch(0.55 0.1 45);
+	--color-tertiary: oklch(0.55 0.1 250);
+
+	/* Primary variants */
+	--color-primary-light: oklch(0.75 0.1 85);
+	--color-primary-dark: oklch(0.45 0.1 85);
+
+	/* Secondary variants */
+	--color-secondary-light: oklch(0.75 0.1 45);
+	--color-secondary-dark: oklch(0.35 0.1 45);
+
+	/* Tertiary variants */
+	--color-tertiary-light: oklch(0.75 0.1 250);
+	--color-tertiary-dark: oklch(0.35 0.1 250);
+
+	/* Idea status */
+	--color-idea: oklch(0.65 0.1 85);
+	--color-idea-light: oklch(0.95 0.02 85);
+
+	/* Slider */
+	--color-slider: #a6864a4d;
+
+	/* Semantic background colors */
+	--color-surface: #ffffff;
+	--color-surface-muted: rgba(166, 134, 74, 0.05);
+	--color-surface-active: #f9fafb;
+
+	/* Semantic text colors */
+	--color-heading: #a6864a;
+	--color-body: #1f2937;
+	--color-muted: #374151;
+	--color-subtle: #4b5563;
+	--color-faint: #9ca3af;
+
+	/* Menu-specific */
+	--color-menu-inactive: #6b7280;
+	--color-menu-icon-inactive: #9ca3af;
+
+	/* Borders */
+	--color-border: #e5e7eb;
+	--color-border-primary: rgba(166, 134, 74, 0.2);
+
+	--breakpoint-xs: 30rem;
+
+	/* Fonts */
+	--font-card-text: "palatino_lt_stdroman", serif;
+}
+
+[data-theme="dark"] {
+	--color-surface: #2a2a2a;
+	--color-surface-muted: rgba(166, 134, 74, 0.1);
+	--color-surface-active: #a6864a;
+
+	--color-heading: #ffffff;
+	--color-body: rgba(255, 255, 255, 0.8);
+	--color-muted: rgba(255, 255, 255, 0.7);
+	--color-subtle: rgba(255, 255, 255, 0.6);
+	--color-faint: rgba(255, 255, 255, 0.4);
+
+	--color-menu-inactive: rgba(255, 255, 255, 0.7);
+	--color-menu-icon-inactive: rgba(255, 255, 255, 0.6);
+
+	--color-border: #e5e7eb;
+	--color-border-primary: rgba(166, 134, 74, 0.2);
+}
+
+@keyframes fade-in-bottom {
+	0% {
+		transform: translateY(50px);
+		opacity: 0;
+	}
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+@keyframes fade-in-fwd {
+	0% {
+		transform: translateZ(-80px);
+		opacity: 0;
+	}
+	100% {
+		transform: translateZ(0);
+		opacity: 1;
+	}
+}
+
+.fade-in-bottom {
+	animation: fade-in-bottom 0.9s cubic-bezier(0.39, 0.575, 0.565, 1) both;
+}
+
+.fade-in-fwd {
+	animation: fade-in-fwd 0.6s cubic-bezier(0.39, 0.575, 0.565, 1) both;
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-surface text-body;
+	}
+}

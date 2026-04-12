@@ -1,0 +1,196 @@
+[
+	{
+		"id": 1,
+		"name": "Aria",
+		"type": "general",
+		"dented": true,
+		"renderer": "normal_dented",
+		"images": [
+			{
+				"id": 1,
+				"pitch": 1,
+				"fileName": "./generated/683c9f087f497.png"
+			},
+			{
+				"id": 2,
+				"pitch": 2,
+				"fileName": "./generated/683c9f087ee5f.png"
+			},
+			{
+				"id": 3,
+				"pitch": 3,
+				"fileName": "./generated/683c9f087fa14.png"
+			}
+		]
+	},
+	{
+		"id": 2,
+		"name": "Aria",
+		"type": "hero",
+		"dented": true,
+		"renderer": "normal_dented_hero",
+		"images": [
+			{
+				"id": 4,
+				"pitch": 1,
+				"fileName": "./generated/683c9f087ff25.png"
+			}
+		]
+	},
+	{
+		"id": 3,
+		"name": "Assassin",
+		"type": "general",
+		"dented": false,
+		"renderer": "normal_flat",
+		"images": [
+			{
+				"id": 5,
+				"pitch": 1,
+				"fileName": "./generated/assassin-nostats-1-flat-6880352873107.png"
+			},
+			{
+				"id": 6,
+				"pitch": 2,
+				"fileName": "./generated/assassin-nostats-2-flat-6880352873742.png"
+			},
+			{
+				"id": 7,
+				"pitch": 3,
+				"fileName": "./generated/assassin-nostats-3-flat-6880352873c99.png"
+			}
+		]
+	},
+	{
+		"id": 4,
+		"name": "Blue",
+		"type": "token",
+		"dented": false,
+		"renderer": "normal_flat_token",
+		"images": [
+			{
+				"id": 8,
+				"pitch": 1,
+				"fileName": "./generated/Blue-Token-Flat-688fb50e27c17.png"
+			}
+		]
+	},
+	{
+		"id": 5,
+		"name": "Chaos",
+		"type": "hero",
+		"dented": false,
+		"renderer": "normal_flat_hero",
+		"images": [
+			{
+				"id": 9,
+				"pitch": 1,
+				"fileName": "./generated/chaos-hero-flat-688038591517c.png"
+			}
+		]
+	},
+	{
+		"id": 6,
+		"name": "Equipment",
+		"type": "equipment",
+		"dented": true,
+		"renderer": "normal_dented_equipment",
+		"images": [
+			{
+				"id": 10,
+				"pitch": 1,
+				"fileName": "./generated/equipment-dented-683e107b17fab.png"
+			}
+		]
+	},
+	{
+		"id": 7,
+		"name": "Equipment",
+		"type": "equipment",
+		"dented": false,
+		"renderer": "normal_flat_equipment",
+		"images": [
+			{
+				"id": 11,
+				"pitch": 1,
+				"fileName": "./generated/equipment-flat-683e11f01cef0.png"
+			}
+		]
+	},
+	{
+		"id": 8,
+		"name": "Fabled",
+		"type": "resource",
+		"dented": false,
+		"renderer": "normal_flat",
+		"images": [
+			{
+				"id": 12,
+				"pitch": 1,
+				"fileName": "./generated/Fabled-Resource-1-Flat-688fb5868f0a2.png"
+			},
+			{
+				"id": 13,
+				"pitch": 2,
+				"fileName": "./generated/Fabled-Resource-2-Flat-688fb5868fda2.png"
+			},
+			{
+				"id": 14,
+				"pitch": 3,
+				"fileName": "./generated/Fabled-Resource-3-Flat-688fb5869028a.png"
+			}
+		]
+	},
+	{
+		"id": 9,
+		"name": "Fabled",
+		"type": "resource",
+		"dented": true,
+		"renderer": "normal_dented",
+		"images": [
+			{
+				"id": 15,
+				"pitch": 1,
+				"fileName": "./generated/fabled-resource-1-dented-683e109970027.png"
+			},
+			{
+				"id": 16,
+				"pitch": 2,
+				"fileName": "./generated/fabled-resource-2-dented-683e10997022b.png"
+			},
+			{
+				"id": 17,
+				"pitch": 3,
+				"fileName": "./generated/fabled-resource-3-dented-683e1099703da.png"
+			}
+		]
+	},
+	{
+		"id": 10,
+		"name": "Green",
+		"type": "token",
+		"dented": true,
+		"renderer": "normal_dented_token",
+		"images": [
+			{
+				"id": 18,
+				"pitch": 1,
+				"fileName": "./generated/683c9f088423a.png"
+			}
+		]
+	},
+	{
+		"id": 11,
+		"name": "Weapon",
+		"type": "weapon",
+		"dented": true,
+		"renderer": "normal_dented_weapon",
+		"images": [
+			{
+				"id": 19,
+				"pitch": 1,
+				"fileName": "./generated/683c9f08916d9.png"
+			}
+		]
+	}
+]

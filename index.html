@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html class="h-full" lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>FABKIT</title>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Flesh and Blood TCG tools built by the community, for the community. Browser-based, open source, no downloads required.">
     <meta name="keywords" content="Flesh and Blood, FaB, TCG, custom cards, card creator, trading card game, Legend Story Studios, LSS, browser tools, open source">
     <meta name="author" content="Team FABKIT">
@@ -13,46 +12,37 @@
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="FABKIT" />
-    <link rel="manifest" href="/site.webmanifest" />
     <meta content="#603cba" name="msapplication-TileColor">
     <meta content="#A6864A" name="theme-color">
     <link rel="canonical" href="https://fabkit.io">
-    <meta property="og:title" content="FABKIT - Your Flesh and Blood Toolbox">
-    <meta property="og:description" content="Flesh and Blood TCG tools built by the community, for the community. Browser-based, open source, no downloads required.">
-    <meta property="og:image" content="/fabkit_preview_image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:url" content="https://fabkit.io">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="FABKIT">
+    <title>FABKIT</title>
     <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "WebApplication",
-            "name": "FABKIT",
-            "description": "Flesh and Blood TCG tools built by the community, for the community. Browser-based, open source, no downloads required.",
-            "url": "https://fabkit.io",
-            "applicationCategory": "GameApplication",
-            "operatingSystem": "Web Browser",
-            "creator": {
-                "@type": "Organization",
-                "name": "Team FABKIT"
-            }
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "FABKIT",
+        "description": "Flesh and Blood TCG tools built by the community, for the community. Browser-based, open source, no downloads required.",
+        "url": "https://fabkit.io",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web Browser",
+        "creator": {
+          "@type": "Organization",
+          "name": "Team FABKIT"
         }
+      }
     </script>
-    </head>
-<body class="h-full bg-white dark:bg-dark">
-<div id="app"></div>
-<script src="src/main.js" type="module"></script>
-<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
-<script>
-    kofiWidgetOverlay.draw('fabkit', {
+  </head>
+  <body class="flex flex-col min-h-screen">
+    <div class="flex flex-col flex-1" id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>
+      kofiWidgetOverlay.draw('fabkit', {
         'type': 'floating-chat',
         'floating-chat.donateButton.text': 'Support Us',
         'floating-chat.donateButton.background-color': '#323842',
         'floating-chat.donateButton.text-color': '#fff'
-    });
-</script>
-<script defer src="https://cloud.umami.is/script.js" data-website-id="9b21c323-63e4-4ca0-abb1-e079dc2fa989"></script>
-</body>
+      });
+    </script>
+  </body>
 </html>

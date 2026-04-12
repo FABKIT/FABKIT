@@ -1,0 +1,38 @@
+/* keeps the sizing of icons in the tiptap editor under control. */
+.fab-icon {
+	display: inline-block;
+	width: 0.9em;
+	height: 0.9em;
+	max-width: 0.88em;
+	max-height: 0.88em;
+	background-size: 88%;
+	background-repeat: no-repeat;
+	background-position: bottom;
+	vertical-align: -0.07em;
+	margin-left: 0.07em;
+	cursor: pointer;
+	user-select: all;
+	-webkit-user-select: all;
+	-moz-user-select: all;
+	-ms-user-select: all;
+	pointer-events: none;
+}
+
+/* Remove spacing between consecutive icons */
+.fab-icon + .fab-icon {
+	margin-left: 0;
+}
+
+/*
+ * Custom F&B card dash — horizontal bar matching the separator used on real
+ * Flesh and Blood cards (e.g. "Action — {cost}, ...").
+ * Tune width, height, and vertical-align to match the card font exactly.
+ */
+.fab-dash {
+	display: inline-block;
+	width: 0.72em;
+	height: 0.07em;
+	min-height: 1px;
+	background-color: currentColor;
+	vertical-align: 0.25em;
+}

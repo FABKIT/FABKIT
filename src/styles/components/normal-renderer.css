@@ -1,0 +1,95 @@
+.renderedContent {
+	max-width: 100%;
+	line-height: 1.18;
+	/* biome-ignore lint/complexity/noImportantStyles: force correct styling */
+	word-wrap: break-word !important;
+	/* biome-ignore lint/complexity/noImportantStyles: force correct styling */
+	overflow-wrap: break-word !important;
+}
+
+.renderedContent > * {
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	display: block;
+	text-align: left;
+}
+
+.renderedContent p {
+	margin: 0;
+	padding: 0;
+}
+
+.renderedContent li p {
+	display: inline;
+}
+
+.renderedContent p + p {
+	margin-top: var(--paragraph-spacing, 0.65em);
+}
+
+/*
+ * Force full width when content can't be treated as a single centered inline block.
+ * Without this the div shrinks to min-content, list items never wrap in the hidden
+ * measurement container, and useCardTextFontSize picks a font size that overflows.
+ */
+.renderedContent:has(p + p),
+.renderedContent:has(br),
+.renderedContent:has(ul),
+.renderedContent:has(ol) {
+	width: 100%;
+}
+
+.renderedContent br {
+	line-height: inherit;
+}
+
+.renderedContent strong {
+	font-family: "palatino_lt_stdbold", serif;
+	font-weight: normal;
+	font-size: var(--bold-font-size, 1em);
+	letter-spacing: var(--bold-letter-spacing, 0em);
+}
+
+.renderedContent em {
+	font-family: "palatino_lt_italic", serif;
+	font-style: normal;
+	font-size: var(--italic-font-size, 0.97em);
+	letter-spacing: var(--italic-letter-spacing, 0.0128em);
+}
+
+.renderedContent em strong,
+.renderedContent strong em {
+	font-family: "palatino_lt_stdbold_italic", serif;
+}
+
+.renderedContent ul {
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+}
+
+.renderedContent ul li {
+	position: relative;
+	margin-left: 1.2em;
+}
+
+.renderedContent ul li::before {
+	content: "•";
+	position: absolute;
+	left: -1.2em; /* Move bullet to the left of the text area */
+	top: 0;
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+.renderedContent p:empty {
+	display: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Remove margin from paragraphs that might appear empty */
+.renderedContent p:only-child:empty {
+	display: none;
+}
