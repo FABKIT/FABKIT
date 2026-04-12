@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import {type ChangeEvent, useState} from "react";
 import { useTranslation } from "react-i18next";
 import { CardThumbnail } from "../components/gallery/CardThumbnail";
 import { getAllCards, importCardFromJSON } from "../persistence/card-storage";
+import {FileUploadButton} from "../components/gallery/FileUploadButton.tsx";
 
 export const Route = createFileRoute("/gallery")({
 	component: GalleryPage,
@@ -63,6 +64,37 @@ function GalleryPage() {
 		}
 	};
 
+	const handleImport = async (e: ChangeEvent<HTMLInputElement>) => {
+		const files = Array.from(e.currentTarget.files ?? []);
+		const fabkitFiles = files.filter(
+			(file) =>
+				file.name.endsWith(".fabkit") ||
+				file.type === "application/fabkit+json",
+		);
+
+		if (fabkitFiles.length === 0) {
+			alert(t("gallery.import_error_invalid_file"));
+			return;
+		}
+		setIsImporting(true);
+
+
+		try {
+			for (const file of fabkitFiles) {
+				const text = await file.text();
+				await importCardFromJSON(text);
+			}
+
+			// Reload the gallery to show the imported cards
+			router.invalidate();
+		} catch (error) {
+			console.error("Failed to import card:", error);
+			alert(t("gallery.import_error"));
+		} finally {
+			setIsImporting(false);
+		}
+	}
+
 	return (
 		<section
 			aria-label={t("gallery.title")}
@@ -97,11 +129,14 @@ function GalleryPage() {
 			)}
 
 			{/* Header */}
-			<div className="border-b border-border-primary px-6 py-4">
-				<h1 className="text-2xl font-bold text-heading">
-					{t("gallery.title")}
-				</h1>
-				<p className="text-sm text-muted">{t("gallery.subtitle")}</p>
+			<div className="flex items-center justify-between border-b border-border-primary px-6 py-4">
+				<div>
+					<h1 className="text-2xl font-bold text-heading">
+						{t("gallery.title")}
+					</h1>
+					<p className="text-sm text-muted">{t("gallery.subtitle")}</p>
+				</div>
+				<FileUploadButton label={t("gallery.import_label")} onChange={handleImport} />
 			</div>
 
 			{/* Content */}
