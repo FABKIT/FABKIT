@@ -15,21 +15,30 @@ trim = true
 conventional_commits = true
 filter_unconventional = false
 split_commits = false
+merge_commits = false
 
 # Normalize non-conventional prefixes before parsing
 commit_preprocessors = [
+  # Strip everything after the first newline so multi-line bodies don't bleed into the changelog
+  { pattern = "(?s)^([^\n]+)\n.*$", replace = "$1" },
   # "Fix: ..." -> "fix: ..."
   { pattern = "^Fix: (.*)", replace = "fix: $1" },
   { pattern = "^Fix\\((.*)", replace = "fix($1" },
   # "bugfix: ..." / "Bugfix: ..." -> "fix: ..."
   { pattern = "^[Bb]ugfix: (.*)", replace = "fix: $1" },
   { pattern = "^[Bb]ugfix\\((.*)", replace = "fix($1" },
-  # "Feature: ..." -> "feat: ..."
+  # "Feature: ..." / "Feat: ..." -> "feat: ..."
   { pattern = "^[Ff]eature: (.*)", replace = "feat: $1" },
   { pattern = "^[Ff]eature\\((.*)", replace = "feat($1" },
+  { pattern = "^Feat: (.*)", replace = "feat: $1" },
+  { pattern = "^Feat\\((.*)", replace = "feat($1" },
 ]
 
 commit_parsers = [
+  # Skip noisy automated / housekeeping commits before the catch-all
+  { message = "^[Mm]erge", skip = true },
+  { message = "^[Rr]evert", skip = true },
+  { message = "^[Bb]ump ", skip = true },
   { message = "^feat", group = "Features" },
   { message = "^fix", group = "Bug Fixes" },
   { message = "^perf", group = "Performance" },
@@ -46,6 +55,6 @@ commit_parsers = [
 ]
 
 filter_commits = false
-tag_pattern = "beta.*"
+tag_pattern = "beta.*|v[0-9].*"
 topo_order = false
 sort_commits = "oldest"
