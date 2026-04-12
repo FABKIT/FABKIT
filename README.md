@@ -85,6 +85,9 @@ Use our symbol buttons in the text editor to add official FAB symbols:
 - Intellect symbols
 - Tap/Untap symbols
 
+## FABKIT Legacy
+Looking for the legacy version of FABKIT? You can find it on [legacy.fabkit.io](https://legacy.fabkit.io)
+
 ## Roadmap
 
 [View Full Roadmap](https://fabkit.io/#/roadmap)
