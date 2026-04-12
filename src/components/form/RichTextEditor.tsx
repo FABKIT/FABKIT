@@ -3,7 +3,12 @@ import Emoji from "@tiptap/extension-emoji";
 import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
-import { type Content, EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import {
+	type Content,
+	EditorContent,
+	useEditor,
+	useEditorState,
+} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
 	AlignCenter as AlignCenterIcon,
