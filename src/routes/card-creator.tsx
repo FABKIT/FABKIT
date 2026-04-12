@@ -50,7 +50,8 @@ function RouteComponent() {
 	const setCardType = useCardCreator((state) => state.setCardType);
 	const currentCardType = useCardCreator((state) => state.CardType);
 	const CardBack = useCardCreator((state) => state.CardBack);
-	const renderConfig = AllRenderConfigVariations[CardBack?.renderer || ""] ?? null;
+	const renderConfig =
+		AllRenderConfigVariations[CardBack?.renderer || ""] ?? null;
 
 	return (
 		<div className="flex flex-1 flex-col w-full px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8 gap-4 pt-6 sm:pt-8 lg:pt-10">

@@ -100,7 +100,9 @@ export function CardArtworkPositionContainer({
 			e.preventDefault();
 			if (!CardArtPosition) return;
 
-			const currentDistance = getTouchDistance(e.touches as unknown as React.TouchList);
+			const currentDistance = getTouchDistance(
+				e.touches as unknown as React.TouchList,
+			);
 			if (currentDistance === null) return;
 
 			const scaleFactor = currentDistance / lastTouchDistance.current;
@@ -190,7 +192,8 @@ export function CardArtworkPositionContainer({
 	const handleTouchStart = useCallback(
 		(e: React.TouchEvent) => {
 			if (e.touches.length === 1) {
-				if (!isInArtworkZone(e.touches[0].clientX, e.touches[0].clientY)) return;
+				if (!isInArtworkZone(e.touches[0].clientX, e.touches[0].clientY))
+					return;
 				isArtworkTouch.current = true;
 				isDragging.current = false;
 				touchStartPos.current = {

@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import {type ChangeEvent, useState} from "react";
+import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CardThumbnail } from "../components/gallery/CardThumbnail";
+import { FileUploadButton } from "../components/gallery/FileUploadButton.tsx";
 import { getAllCards, importCardFromJSON } from "../persistence/card-storage";
-import {FileUploadButton} from "../components/gallery/FileUploadButton.tsx";
 
 export const Route = createFileRoute("/gallery")({
 	component: GalleryPage,
@@ -78,7 +78,6 @@ function GalleryPage() {
 		}
 		setIsImporting(true);
 
-
 		try {
 			for (const file of fabkitFiles) {
 				const text = await file.text();
@@ -93,7 +92,7 @@ function GalleryPage() {
 		} finally {
 			setIsImporting(false);
 		}
-	}
+	};
 
 	return (
 		<section
@@ -136,7 +135,10 @@ function GalleryPage() {
 					</h1>
 					<p className="text-sm text-muted">{t("gallery.subtitle")}</p>
 				</div>
-				<FileUploadButton label={t("gallery.import_label")} onChange={handleImport} />
+				<FileUploadButton
+					label={t("gallery.import_label")}
+					onChange={handleImport}
+				/>
 			</div>
 
 			{/* Content */}
