@@ -138,3 +138,4 @@ FABKIT is in no way affiliated with Legend Story Studios. Legend Story Studios®
 
 - **@Thencros** - UI/UX Designer, Creative Director
 - **@Lambstream** - Lead Developer
+- **@dealloc** - Developer
