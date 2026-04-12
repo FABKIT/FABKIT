@@ -154,9 +154,10 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 		>
 			<title>{CardName}</title>
 			<defs>
-				<mask id="artwork-mask" mask-type="luminance">
-					{config.masks.CardArtWork}
-				</mask>
+				{/* TODO: re-add mask when rendering issues have been fixed. */}
+				{/*<mask id="artwork-mask" mask-type="luminance">*/}
+				{/*	{config.masks.CardArtWork}*/}
+				{/*</mask>*/}
 				<clipPath id="title-clip">{config.clips.Title}</clipPath>
 				<clipPath id="bottom-text-clip">{config.clips.BottomText}</clipPath>
 			</defs>
