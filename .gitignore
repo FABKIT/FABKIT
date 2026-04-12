@@ -29,6 +29,7 @@ src/i18n.d.ts
 analyse.html
 .tanstack/
 dev-dist/
+CHANGELOG.md
 
 # Local AI files
 .claude/settings.local.json

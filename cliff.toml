@@ -1,0 +1,51 @@
+[changelog]
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}\
+### {{ group | striptags | trim | upper_first }}
+
+{% for commit in commits %}\
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}{% if commit.breaking %} ⚠️ **BREAKING**{% endif %}
+{% endfor %}
+{% endfor %}\
+"""
+trim = true
+
+[git]
+# Parse conventional commits, but don't discard ones that don't match
+conventional_commits = true
+filter_unconventional = false
+split_commits = false
+
+# Normalize non-conventional prefixes before parsing
+commit_preprocessors = [
+  # "Fix: ..." -> "fix: ..."
+  { pattern = "^Fix: (.*)", replace = "fix: $1" },
+  { pattern = "^Fix\\((.*)", replace = "fix($1" },
+  # "bugfix: ..." / "Bugfix: ..." -> "fix: ..."
+  { pattern = "^[Bb]ugfix: (.*)", replace = "fix: $1" },
+  { pattern = "^[Bb]ugfix\\((.*)", replace = "fix($1" },
+  # "Feature: ..." -> "feat: ..."
+  { pattern = "^[Ff]eature: (.*)", replace = "feat: $1" },
+  { pattern = "^[Ff]eature\\((.*)", replace = "feat($1" },
+]
+
+commit_parsers = [
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Bug Fixes" },
+  { message = "^perf", group = "Performance" },
+  # Internal-only commit types — omit from release notes
+  { message = "^refactor", skip = true },
+  { message = "^docs", skip = true },
+  { message = "^chore", skip = true },
+  { message = "^style", skip = true },
+  { message = "^test", skip = true },
+  { message = "^ci", skip = true },
+  { message = "^build", skip = true },
+  # Catch-all for commits that don't follow conventional format
+  { message = ".*", group = "Other Changes" },
+]
+
+filter_commits = false
+tag_pattern = "beta.*"
+topo_order = false
+sort_commits = "oldest"
