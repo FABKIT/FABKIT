@@ -123,6 +123,8 @@
 		"get_in_touch_description": "Connect with us through these platforms",
 		"links_github_description": "Report issues, contribute code, or check our latest updates",
 		"links_discord_description": "Join our server for support, discussions and showing off your custom cards!",
+		"links_bluesky_description": "Follow us on Bluesky for more updates and announcements!",
+		"links_kofi_description": "Donate to FABKIT on ko-fi to support development of the site going forward!",
 		"about_title": "About FABKIT",
 		"team_title": "Our Team",
 		"team_description": "The people behind FABKIT",
