@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Discord } from "../components/icons/Discord.tsx";
 import { Github } from "../components/icons/Github.tsx";
+import { Bluesky } from "../components/icons/Bluesky.tsx";
+import { KoFi } from "../components/icons/KoFi.tsx";
 import Contact from "../config/contact.ts";
 
 export const Route = createFileRoute("/contact")({
@@ -21,6 +23,18 @@ const contactLinks = [
 		href: Contact.DiscordInvite,
 		icon: Discord,
 	},
+	{
+		name: "BlueSky",
+		description: "contact.links_bluesky_description",
+		href: Contact.Bluesky,
+		icon: Bluesky,
+	},
+	{
+		name: "Support us on Ko-Fi",
+		description: "contact.links_kofi_description",
+		href: Contact.KoFi,
+		icon: KoFi,
+	},
 ];
 
 const teamMembers = [
@@ -38,6 +52,13 @@ const teamMembers = [
 		avatar: "/img/Lambstream.svg",
 		avatarCredit: "Avatar by Diana Johanna Velasquez",
 	},
+	{
+		name: "@Dealloc",
+		role: "React Expert",
+		description: "Application architecture developer in React framework",
+		avatar: "/img/Dealloc.svg",
+		avatarCredit: "Avatar by Diana Johanna Velasquez",
+	},
 ];
 
 const specialMentions = [
@@ -48,6 +69,10 @@ const specialMentions = [
 	{
 		name: "SalisburyBavo",
 		description: "Beta tester in the early stages of FABKIT",
+	},
+	{
+		name: "DaLekXIV",
+		description: "Feature contributor in FABKIT V1",
 	},
 ];
 
@@ -127,7 +152,7 @@ function ContactPage() {
 									Our current flagship tool is the Custom Card Creator. We've
 									invested considerable effort into making sure our tool
 									generates cards that look as close to real Flesh and Blood
-									cards as possible – complete with official fonts, proper
+									cards as possible, complete with official fonts, proper
 									symbols, and meticulously crafted templates.
 								</p>
 								<p>
@@ -207,7 +232,7 @@ function ContactPage() {
 									{t("contact.special_mentions_title")}
 								</h2>
 							</div>
-							<div className="max-h-32 space-y-2 overflow-y-auto p-4">
+							<div className="max-h-50 space-y-2 overflow-y-auto p-4">
 								{specialMentions.map((mention) => (
 									<div
 										key={mention.name}
