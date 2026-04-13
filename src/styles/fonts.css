@@ -56,7 +56,7 @@
 		url("/fonts/palatino_lt_std_black_italic.svg#palatino_lt_std_black_italic")
 		format("svg");
 	font-weight: 900;
-	font-style: italic;
+	font-style: normal;
 	font-display: swap;
 }
 
@@ -81,7 +81,7 @@
 		url("/fonts/palatino_lt_std_bold_italic.svg#palatino_lt_std_bold_italic")
 		format("svg");
 	font-weight: 700;
-	font-style: italic;
+	font-style: normal;
 	font-display: swap;
 }
 
@@ -94,7 +94,7 @@
 		url("/fonts/palatino_lt_std_italic.svg#palatino_lt_std_italic")
 		format("svg");
 	font-weight: normal;
-	font-style: italic;
+	font-style: normal;
 	font-display: swap;
 }
 
@@ -132,7 +132,7 @@
 		url("/fonts/palatino_lt_std_light_italic.svg#palatino_lt_std_light_italic")
 		format("svg");
 	font-weight: 300;
-	font-style: italic;
+	font-style: normal;
 	font-display: swap;
 }
 
@@ -158,6 +158,6 @@
 		url("/fonts/palatino_lt_std_medium_italic.svg#palatino_lt_std_medium_italic")
 		format("svg");
 	font-weight: 500;
-	font-style: italic;
+	font-style: normal;
 	font-display: swap;
 }
