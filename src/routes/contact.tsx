@@ -232,7 +232,7 @@ function ContactPage() {
 									{t("contact.special_mentions_title")}
 								</h2>
 							</div>
-							<div className="max-h-50 space-y-2 overflow-y-auto p-4">
+							<div className="space-y-2 p-4">
 								{specialMentions.map((mention) => (
 									<div
 										key={mention.name}
@@ -257,7 +257,7 @@ function ContactPage() {
 									{t("contact.supporters_title")}
 								</h2>
 							</div>
-							<div className="max-h-32 overflow-y-auto p-4">
+							<div className="p-4">
 								{supporters.map((supporter) => (
 									<div
 										key={supporter}
