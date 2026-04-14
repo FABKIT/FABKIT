@@ -267,5 +267,12 @@
 		"logo_alt": "FABKIT",
 		"logo_with_text_alt": "FABKIT Logo",
 		"brand": "FaBKit"
+	},
+	"bug_report": {
+		"button": "Report a Bug",
+		"alert": "FABKIT Bug Report\n\nThis will:\n1. Take a screenshot of the current page\n2. Ask a few questions\n3. Download a .fabreport file\n\nThe report includes your current card state (including artwork), full gallery contents, and recent console errors. No data is sent anywhere — the file is saved locally.\n\nClick OK to continue.",
+		"prompt_what_broke": "What broke? (required)\n\nDescribe the problem you encountered:",
+		"prompt_last_actions": "What were you doing when it broke? (required)\n\nDescribe your last few actions:",
+		"prompt_comments": "Any additional comments? (optional)\n\nLeave blank or cancel to skip:"
 	}
 }

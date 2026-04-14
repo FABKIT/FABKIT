@@ -33,4 +33,5 @@ CHANGELOG.md
 
 # Local AI files
 .claude/settings.local.json
+.claude/worktrees/
 .playwright-mcp/

@@ -7,6 +7,7 @@ import {
 import type { FileRouteTypes } from "@tanstack/react-router";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
+	Bug,
 	Home,
 	Images,
 	Map as MapIcon,
@@ -21,6 +22,7 @@ import FabkitLogo from "../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../assets/Fabkitlogo_notext.svg";
 import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
+import { useBugReport } from "../../services/bug-report";
 
 type NavChild = {
 	nameKey: string;
@@ -227,6 +229,7 @@ export function Menu() {
 	const handleOpen = useCallback(() => setSidebarOpen(true), []);
 	const handleClose = useCallback(() => setSidebarOpen(false), []);
 	const handleDialogClose = useCallback(() => setSidebarOpen(false), []);
+	const { trigger } = useBugReport();
 
 	return (
 		<div>
@@ -296,6 +299,19 @@ export function Menu() {
 													<li>
 														<LanguageToggle />
 													</li>
+													<li>
+														<button
+															type="button"
+															onClick={trigger}
+															className="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-menu-inactive hover:bg-surface-active hover:text-heading"
+														>
+															<Bug
+																className="size-6 shrink-0 text-menu-icon-inactive group-hover:text-heading"
+																aria-hidden="true"
+															/>
+															{t("bug_report.button")}
+														</button>
+													</li>
 												</ul>
 											</li>
 										</ul>
@@ -334,6 +350,19 @@ export function Menu() {
 									</li>
 									<li>
 										<LanguageToggle />
+									</li>
+									<li>
+										<button
+											type="button"
+											onClick={trigger}
+											className="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-menu-inactive hover:bg-surface-active hover:text-heading"
+										>
+											<Bug
+												className="size-6 shrink-0 text-menu-icon-inactive group-hover:text-heading"
+												aria-hidden="true"
+											/>
+											{t("bug_report.button")}
+										</button>
 									</li>
 								</ul>
 							</li>
