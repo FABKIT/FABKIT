@@ -329,7 +329,7 @@ export async function deleteCard(version: string): Promise<void> {
  * @returns Promise resolving to base64 data URL string
  * @throws Error if FileReader fails
  */
-async function blobToBase64(blob: Blob): Promise<string> {
+export async function blobToBase64(blob: Blob): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onloadend = () => resolve(reader.result as string);
