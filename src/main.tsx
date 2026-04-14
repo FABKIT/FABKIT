@@ -10,6 +10,7 @@ import "./styles/index.css";
 import "./i18n.ts";
 
 import { NotFound } from "./components/not-found.tsx";
+import { startConsoleInterceptor } from "./services/bug-report";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -18,7 +19,7 @@ import { routeTree } from "./routeTree.gen";
 const hashHistory = createHashHistory();
 
 // Create a new router instance
-const router = createRouter({
+export const router = createRouter({
 	routeTree,
 	history: hashHistory,
 	defaultNotFoundComponent: () => <NotFound />,
@@ -30,6 +31,8 @@ declare module "@tanstack/react-router" {
 		router: typeof router;
 	}
 }
+
+startConsoleInterceptor();
 
 const root = document.getElementById("root");
 createRoot(root || document.body).render(
