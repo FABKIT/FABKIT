@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { Bluesky } from "../components/icons/Bluesky.tsx";
 import { Discord } from "../components/icons/Discord.tsx";
 import { Github } from "../components/icons/Github.tsx";
-import { Bluesky } from "../components/icons/Bluesky.tsx";
 import { KoFi } from "../components/icons/KoFi.tsx";
 import Contact from "../config/contact.ts";
 
