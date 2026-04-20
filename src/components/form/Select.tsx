@@ -75,6 +75,11 @@ interface SelectProps<T extends string> {
 
 	/** Placeholder text when no option selected */
 	placeholder?: string;
+
+	/** Class name for custom styling */
+	className?: string;
+	/** Class names for custom button styling */
+	buttonClassName?: string;
 }
 
 /**
@@ -89,11 +94,13 @@ export default function Select<T extends string>({
 	onChange,
 	options,
 	placeholder,
+	className,
+	buttonClassName,
 }: SelectProps<T>) {
 	const selectedOption = options.find((opt) => opt.value === value);
 
 	return (
-		<Field className="space-y-1.5" data-value={value}>
+		<Field className={className ?? "space-y-1.5"} data-value={value}>
 			{label && (
 				<Label className="block text-sm font-medium text-muted">
 					{label}
@@ -104,7 +111,12 @@ export default function Select<T extends string>({
 				<Description className="text-xs text-subtle">{description}</Description>
 			)}
 			<Listbox value={value || undefined} onChange={onChange}>
-				<ListboxButton className="relative w-full px-3 py-1.5 bg-surface border border-border rounded-md text-left text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed">
+				<ListboxButton
+					className={
+						buttonClassName ??
+						"relative w-full px-3 py-1.5 bg-surface border border-border rounded-md text-left text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
+					}
+				>
 					<span className={selectedOption ? "text-body" : "text-faint"}>
 						{selectedOption?.label || placeholder || "Select an option"}
 					</span>
