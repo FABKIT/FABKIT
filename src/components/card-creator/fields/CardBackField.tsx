@@ -1,7 +1,8 @@
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import { getCardBacksForTypeAndStyle } from "../../../config/cards/card_backs.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
+import Select from "../../form/Select.tsx";
 
 export function CardBackField() {
 	const CardType = useCardCreator((state) => state.CardType);
@@ -42,22 +43,21 @@ export function CardBackField() {
 			</button>
 
 			<div className="relative flex-1 grid grid-cols-1">
-				<select
-					value={CardBack?.id ?? ""}
-					onChange={(e) => {
-						const id = parseInt(e.target.value, 10);
+				<Select
+					value={String(CardBack?.id ?? "")}
+					onChange={(value) => {
+						const id = parseInt(value, 10);
 						const result = options.find((b) => b.id === id);
 						if (result) setCardBack(result);
 					}}
-					className="col-start-1 row-start-1 w-full appearance-none text-center font-bold bg-transparent py-1.5 pr-8 pl-3 text-sm text-body focus:outline-none"
-				>
-					{options.map((back) => (
-						<option key={back.id} value={back.id}>
-							{back.name}
-						</option>
-					))}
-				</select>
-				<ChevronDown className="pointer-events-none col-start-1 row-start-1 self-center justify-self-end mr-2 w-4 h-4 text-body" />
+					options={options.map((b) => ({
+						value: String(b.id),
+						label: b.name,
+					}))}
+					label={null}
+					className="col-start-1 row-start-1 w-full text-center font-bold bg-transparent text-sm focus:outline-none"
+					buttonClassName="relative w-full py-1.5 rounded-md  text-body focus:outline-none focus:ring-none focus:border-none transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
+				></Select>
 			</div>
 
 			<button
