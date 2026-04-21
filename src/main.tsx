@@ -10,10 +10,9 @@ import "./styles/index.css";
 import "./i18n.ts";
 
 import { NotFound } from "./components/not-found.tsx";
-import { startConsoleInterceptor } from "./services/bug-report";
-
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
+import { startConsoleInterceptor } from "./services/bug-report";
 
 // Github Pages doesn't support SPA routing, so we'll use hash routing.
 const hashHistory = createHashHistory();

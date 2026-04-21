@@ -20,9 +20,9 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FabkitLogo from "../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../assets/Fabkitlogo_notext.svg";
+import { useBugReport } from "../../services/bug-report";
 import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
-import { useBugReport } from "../../services/bug-report";
 
 type NavChild = {
 	nameKey: string;
