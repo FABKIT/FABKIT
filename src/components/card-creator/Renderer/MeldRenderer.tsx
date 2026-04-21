@@ -101,10 +101,10 @@ function computeHalfBottomText(
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function MeldRenderer({
-	config,
-	ref,
-	isExport = false,
-}: MeldRendererProps) {
+								 config,
+								 ref,
+								 isExport = false,
+							 }: MeldRendererProps) {
 	const { t } = useTranslation();
 
 	// ── Store reads ────────────────────────────────────────────────────────────
@@ -135,10 +135,12 @@ export function MeldRenderer({
 
 	// ── Card back ──────────────────────────────────────────────────────────────
 	// Meld card backs don't have pitch variants — always use images[0]
-	const cardBackImageUrl = CardBack?.images[0]
-		? `/cardbacks/${CardBack.images[0].fileName}`
-		: null;
-
+	const cardBackImage = useMemo(
+		() =>
+			CardBack?.images.find((image) => image.pitch === CardPitch) ||
+			CardBack?.images[0],
+		[CardBack?.images, CardPitch],
+	);
 	// ── Debounced rich text HTML ───────────────────────────────────────────────
 	const [debouncedHalfAHTML] = useDebounce(halfA.CardTextHTML, 150);
 	const [debouncedHalfBHTML] = useDebounce(halfB.CardTextHTML, 150);
@@ -376,9 +378,9 @@ export function MeldRenderer({
 			)}
 
 			{/* ── Card back (landscape, no rotation needed) ─────────────────── */}
-			{cardBackImageUrl && (
+			{cardBackImage && (
 				<image
-					href={cardBackImageUrl}
+					href={`/cardbacks/${cardBackImage?.fileName}`}
 					x="0"
 					y="0"
 					width={config.viewBox.width}
@@ -529,23 +531,6 @@ export function MeldRenderer({
 				<tspan fontFamily="palatino_lt_stdbold">{meldBandKeyword}</tspan>
 				<tspan fontFamily="palatino_lt_italic">{meldBandDescription}</tspan>
 			</text>
-
-			{/* Pitch indicator */}
-			{CardPitch && (
-				<text
-					x={config.shared.CardResource.x}
-					y={config.shared.CardResource.y - 14}
-					textAnchor="middle"
-					dominantBaseline="middle"
-					fill="white"
-					fontFamily={config.shared.CardResource.fontFamily}
-					fontSize={7}
-					fontWeight={400}
-					opacity={0.8}
-				>
-					{CardPitch === 1 ? "●" : CardPitch === 2 ? "●●" : "●●●"}
-				</text>
-			)}
 
 			{/* Resource cost — single instance, position set in shared.CardResource */}
 			{CardResource && (
