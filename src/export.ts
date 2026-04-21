@@ -34,6 +34,28 @@ import { type BlobType, snapdom } from "@zumer/snapdom";
  * @param rotatePortrait - Rotate the output 90° CW (for landscape meld cards → portrait PNG)
  * @returns Promise resolving to an image Blob of the type `type`.
  */
+/**
+ * Rotates an image Blob 90° using canvas. Used to lazily generate the
+ * landscape variant of a meld card from the stored portrait blob.
+ */
+export async function rotateBlob(blob: Blob, degrees: -90 | 90): Promise<Blob> {
+	const bitmap = await createImageBitmap(blob);
+	const canvas = document.createElement("canvas");
+	canvas.width = bitmap.height;
+	canvas.height = bitmap.width;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) return blob;
+	ctx.translate(canvas.width / 2, canvas.height / 2);
+	ctx.rotate((degrees * Math.PI) / 180);
+	ctx.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2);
+	return new Promise<Blob>((resolve, reject) =>
+		canvas.toBlob(
+			(b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+			"image/png",
+		),
+	);
+}
+
 export async function convertToImage(
 	svg: SVGSVGElement,
 	scale = 1.0,

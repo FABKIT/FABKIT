@@ -86,6 +86,7 @@ export function Combobox<T extends string>({
 }: ComboboxProps<T>) {
 	const { t } = useTranslation();
 	const [query, setQuery] = useState("");
+	const [isFocused, setIsFocused] = useState(false);
 
 	// Filter options based on search query
 	const filteredOptions =
@@ -114,17 +115,26 @@ export function Combobox<T extends string>({
 						onChange(value);
 					}
 				}}
-				onClose={() => setQuery("")}
+				onClose={() => {
+					setQuery("");
+					setIsFocused(false);
+				}}
 			>
 				<div className="relative">
 					<ComboboxInput
-						displayValue={(val: T | string | undefined) =>
-							val ? options.find((opt) => opt.value === val)?.label || val : ""
-						}
+						displayValue={(val: T | string | undefined) => {
+							if (isFocused && val === "none") return "";
+							return val
+								? options.find((opt) => opt.value === val)?.label || val
+								: "";
+						}}
 						onChange={(event) => setQuery(event.target.value)}
-						onFocus={() => setQuery("")}
+						onFocus={() => {
+							setQuery("");
+							setIsFocused(true);
+						}}
 						placeholder={placeholder || "Select an option"}
-						className="w-full px-3 py-1.5 pr-10 bg-surface border border-border rounded-md text-body placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
+						className={`w-full px-3 py-1.5 pr-10 bg-surface border border-border rounded-md ${value === "none" ? "text-subtle" : "text-body"} placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed`}
 					/>
 					<ComboboxButton className="absolute right-3 top-1/2 -translate-y-1/2 group">
 						<ChevronDown
@@ -140,7 +150,7 @@ export function Combobox<T extends string>({
 					{query.length > 0 && (
 						<ComboboxOption
 							value={query}
-							className="data-focus:bg-blue-100 mx-1"
+							className="relative px-3 py-2 cursor-pointer select-none text-body data-focus:bg-primary/20 rounded-md mx-1 transition-colors"
 						>
 							{t("components.combobox.custom_value", { value: query })}
 						</ComboboxOption>

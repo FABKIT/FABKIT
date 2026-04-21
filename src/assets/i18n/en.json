@@ -161,6 +161,10 @@
 		"rarity_label": "Rarity",
 		"defense_label": "Defense",
 		"hero_intellect_label": "Intellect",
+		"conflict_intellect": "Intellect has this covered",
+		"conflict_power": "Power has this covered",
+		"conflict_life": "Life has this covered",
+		"conflict_defense": "Defense has this covered",
 		"weapon_label": "1H or 2H?",
 		"macro_group_label": "Macro Type",
 		"artwork_label": "Artwork",
@@ -193,6 +197,8 @@
 		"create_first": "Create your first card",
 		"edit": "Edit",
 		"export": "Save to Disk",
+		"rotate_landscape": "Show horizontal",
+		"rotate_portrait": "Show vertical",
 		"delete": "Delete",
 		"edit_warning": "Loading this card will replace your current work. Continue?",
 		"delete_confirm": "Are you sure you want to delete this card? This cannot be undone.",
@@ -207,7 +213,9 @@
 		"exporting_label": "Exporting your card, this may take a few seconds...",
 		"exporting_error": "Whoops, something went wrong.",
 		"try_again": "Try again",
-		"download": "Download"
+		"download": "Download",
+		"rotate_landscape": "Show horizontal",
+		"rotate_portrait": "Show vertical"
 	},
 	"components": {
 		"featured_artist": {

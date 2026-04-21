@@ -36,6 +36,9 @@ export const MELD_EXCLUDED_TYPES: CardType[] = [
 	"demi_hero",
 	"weapon_equipment",
 	"meld",
+	"event",
+	"macro",
+	"mentor",
 ];
 
 /**

@@ -7,7 +7,10 @@ export function CardPowerField() {
 	const { t } = useTranslation();
 	const CardPower = useCardCreator((state) => state.CardPower);
 	const setCardPower = useCardCreator((state) => state.setCardPower);
+	const CardType = useCardCreator((state) => state.CardType);
+	const CardHeroIntellect = useCardCreator((state) => state.CardHeroIntellect);
 	const shouldShow = useIsFieldVisible("CardPower");
+	const isConflicted = CardType === "meld" && Boolean(CardHeroIntellect);
 
 	if (!shouldShow) return null;
 	return (
@@ -16,6 +19,7 @@ export function CardPowerField() {
 			value={CardPower || ""}
 			onChange={setCardPower}
 			maxLength={2}
+			warning={isConflicted ? t("card_creator.conflict_intellect") : undefined}
 		/>
 	);
 }
