@@ -152,6 +152,9 @@ export function serializeCardState(
 		CardMacroGroup: state.CardMacroGroup,
 		CardOverlay: state.CardOverlay,
 		CardOverlayOpacity: state.CardOverlayOpacity,
+		meldActiveHalf: state.meldActiveHalf,
+		meldHalfA: state.meldHalfA,
+		meldHalfB: state.meldHalfB,
 	};
 }
 

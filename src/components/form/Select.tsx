@@ -127,7 +127,7 @@ export default function Select<T extends string>({
 				</ListboxButton>
 				<ListboxOptions
 					anchor="bottom"
-					className="mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-10 max-h-60 overflow-auto"
+					className="mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-50 max-h-60 overflow-auto"
 				>
 					{options.map((option) => (
 						<ListboxOption

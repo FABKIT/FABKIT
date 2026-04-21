@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Renderer } from "../components/card-creator/Renderer.tsx";
 import { convertToImage } from "../export.ts";
+import { useCardCreator } from "../stores/card-creator.ts";
 
 export const Route = createFileRoute("/export")({
 	component: RouteComponent,
@@ -15,6 +16,7 @@ function RouteComponent() {
 	const shouldReRender = useRef(true);
 	const [exportedCard, setExportedCard] = useState<Blob | null>(null);
 	const [isExporting, setIsExporting] = useState(true);
+	const isMeldCard = useCardCreator((state) => state.CardType === "meld");
 
 	const imageUrl = useMemo(
 		() => (exportedCard ? URL.createObjectURL(exportedCard) : null),
@@ -33,7 +35,12 @@ function RouteComponent() {
 			try {
 				shouldReRender.current = false;
 				await document.fonts.ready;
-				const blob = await convertToImage(svgRef.current);
+				const blob = await convertToImage(
+					svgRef.current,
+					1.0,
+					"png",
+					isMeldCard,
+				);
 				setExportedCard(blob);
 			} catch (error) {
 				console.error("Failed to render card:", error);
@@ -44,7 +51,7 @@ function RouteComponent() {
 
 		// Give the Renderer time to mount and render
 		setTimeout(renderCard, 100);
-	}, []);
+	}, [isMeldCard]);
 
 	// Cleanup blob URL when component unmounts
 	useEffect(() => {
@@ -71,7 +78,7 @@ function RouteComponent() {
 			{isExporting && (
 				<div className="flex flex-1 flex-col justify-center items-center p-4 gap-4">
 					{/* Most browsers won't render the images if they aren't on-screen, so we *have* to show the preview */}
-					<Renderer ref={svgRef} />
+					<Renderer ref={svgRef} isExport />
 					<LoaderCircle className="animate-spin h-8 w-8 text-heading" />
 					<span className="text-body">{t("export.exporting_label")}</span>
 				</div>

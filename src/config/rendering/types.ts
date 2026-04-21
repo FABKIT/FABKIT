@@ -66,6 +66,22 @@ export interface CardTextConfig {
 	maxWidth?: number;
 
 	/**
+	 * Bounding box width in SVG units.
+	 * Used to generate clip paths and DEV overlay rects for meld card text elements.
+	 * The element is assumed to be center-anchored (textAnchor="middle"), so the
+	 * clip rect starts at x - width/2.
+	 */
+	width?: number;
+
+	/**
+	 * Bounding box height in SVG units.
+	 * Used to generate clip paths and DEV overlay rects for meld card text elements.
+	 * The clip rect is vertically centered on y (dominantBaseline="middle"),
+	 * so it spans y - height/2 to y + height/2.
+	 */
+	height?: number;
+
+	/**
 	 * Y position used when the font is fully scaled down (at minFontSize).
 	 * Interpolated against the base y to reproduce the slight baseline shift
 	 * observed on real cards as longer names shrink.
@@ -352,11 +368,83 @@ export interface NormalDentedRenderConfig extends NormalCardRenderConfig {
 }
 
 /**
- * Render configuration for meld cards (not yet implemented).
- * Meld cards have special dual-sided layouts and different rendering requirements.
+ * Element configuration for a single meld card half.
+ * Positions are relative to y=0 (top of the half) in a 450×306 area.
+ * The MeldRenderer offsets the bottom half by topHalfHeight + centerGap
+ * and wraps it in a rotate(180) transform.
+ *
+ * NOTE: All values are placeholder estimates and need pixel-tuning against
+ * the actual card back artwork.
+ */
+export interface MeldHalfElementConfig {
+	CardName: CardTextConfig;
+	CardText: CardObjectConfig;
+	CardBottomText: CardTextConfig;
+}
+
+/**
+ * Shared element configuration for meld cards.
+ * These elements appear once on the card (at the corners and in the Meld band)
+ * and apply to the whole card rather than either individual half.
+ */
+export interface MeldSharedElementConfig {
+	CardResource: CardTextConfig;
+	CardPowerImage: CardImageConfig;
+	CardPowerText: CardTextConfig;
+	CardDefenseImage: CardImageConfig;
+	CardDefenseText: CardTextConfig;
+	CardLifeText: CardTextConfig;
+	CardIntellectText: CardTextConfig;
+	/** The "Meld (…)" keyword text rendered across the horizontal Meld band */
+	MeldBandText: CardTextConfig;
+	CardRarity: CardImageConfig;
+	CardFooterTextLeft: CardTextConfig;
+	CardFooterTextRight: CardTextConfig;
+}
+
+/**
+ * Render configuration for meld cards.
+ *
+ * Meld cards are landscape SVGs (628×450) split into two half-cards:
+ * - Left half: x=0 to leftHalfWidth
+ * - Centre strip (shared stats): leftHalfWidth to leftHalfWidth + centerGap
+ * - Right half: leftHalfWidth + centerGap to 628 — elements are offset via bX()
+ *   in MeldRenderer so per-half relative coords work for both halves.
+ *
+ * Card backs are provided in landscape format and map directly to the SVG.
+ * No CSS rotation is applied in the preview.
  */
 export interface MeldCardRenderConfig extends BaseCardRenderConfig {
 	renderer: "meld";
+
+	/** Width of each half in SVG units (default 306) */
+	leftHalfWidth: number;
+
+	/** Gap between the two halves where shared stats live (default 16) */
+	centerGap: number;
+
+	/**
+	 * Element positions for a single half.
+	 * Coordinates are relative to the half's own origin (x=0 = left edge of that half).
+	 * The MeldRenderer applies the appropriate x-offset when rendering the right half.
+	 */
+	half: MeldHalfElementConfig;
+
+	/** Shared elements positioned in absolute SVG coordinates */
+	shared: MeldSharedElementConfig;
+
+	/**
+	 * Drag zone for the left half artwork (absolute SVG coords).
+	 * Touches/clicks inside this zone initiate artwork drag for Half A.
+	 */
+	leftArtworkDragZone: { x: number; y: number; width: number; height: number };
+
+	/**
+	 * Drag zone for the right half artwork (absolute SVG coords).
+	 * Touches/clicks inside this zone initiate artwork drag for Half B.
+	 * NOTE: The right half is rotated 180°, so drag direction is inverted internally.
+	 */
+	rightArtworkDragZone: { x: number; y: number; width: number; height: number };
 }
 
 /**

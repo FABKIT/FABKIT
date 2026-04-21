@@ -16,7 +16,8 @@
 			"weapon": "Weapon",
 			"weapon_equipment": "Weapon Equipment",
 			"ally": "Ally",
-			"event": "Event"
+			"event": "Event",
+			"meld": "Meld"
 		},
 		"talent": {
 			"none": "None",
@@ -178,7 +179,12 @@
 		"overlay_opacity_label": "Overlay opacity ({{value}})",
 		"background_label": "Select Card Background",
 		"generate_button_label": "Generate",
-		"title": "Start creating!"
+		"title": "Start creating!",
+		"meld_half_a_label": "Left Half",
+		"meld_half_b_label": "Right Half",
+		"meld_shared_fields_label": "Shared Fields",
+		"meld_band_keyword": "Meld ",
+		"meld_band_description": "(You may play 1 or both halves of this card. Each costs {{cost}}.)"
 	},
 	"gallery": {
 		"title": "Saved Cards",
