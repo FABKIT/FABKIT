@@ -101,10 +101,10 @@ function computeHalfBottomText(
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function MeldRenderer({
-								 config,
-								 ref,
-								 isExport = false,
-							 }: MeldRendererProps) {
+	config,
+	ref,
+	isExport = false,
+}: MeldRendererProps) {
 	const { t } = useTranslation();
 
 	// ── Store reads ────────────────────────────────────────────────────────────
