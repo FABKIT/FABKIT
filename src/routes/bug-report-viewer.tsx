@@ -17,12 +17,10 @@ import {
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	initCardDatabase,
-} from "../persistence/card-storage";
 import { CardBacks } from "../config/cards/card_backs";
-import { useCardCreator } from "../stores/card-creator";
+import { initCardDatabase } from "../persistence/card-storage";
 import type { CardCreatorState } from "../stores/card-creator";
+import { useCardCreator } from "../stores/card-creator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,7 +149,11 @@ async function restoreGallery(items: unknown[]): Promise<void> {
 			createdAt: item.createdAt,
 			updatedAt: item.updatedAt,
 			preview,
-			state: { ...item.state, CardArtwork: cardArtwork, CardOverlay: cardOverlay },
+			state: {
+				...item.state,
+				CardArtwork: cardArtwork,
+				CardOverlay: cardOverlay,
+			},
 		};
 
 		await new Promise<void>((resolve, reject) => {
@@ -251,6 +253,8 @@ function BugReportViewer() {
 						<p className="mt-2 text-muted">{t("bug_report_viewer.subtitle")}</p>
 					</div>
 
+					{/** biome-ignore lint/a11y/useKeyWithClickEvents: We don't need the key event for this div */}
+					{/** biome-ignore lint/a11y/noStaticElementInteractions: it's okay if this is static */}
 					<div
 						onDrop={handleDrop}
 						onDragOver={handleDragOver}
@@ -433,8 +437,8 @@ function BugReportViewer() {
 								</h3>
 								<div className="space-y-2">
 									{report.meta.router.matches.map((match, i) => (
-										// biome-ignore lint/suspicious/noArrayIndexKey: router matches have no stable key
 										<div
+											// biome-ignore lint/suspicious/noArrayIndexKey: router matches have no stable key
 											key={i}
 											className="rounded-md border border-border-primary bg-surface-muted px-4 py-3"
 										>
@@ -550,7 +554,11 @@ function MetaField({
 	label,
 	value,
 	mono = false,
-}: { label: string; value: string; mono?: boolean }) {
+}: {
+	label: string;
+	value: string;
+	mono?: boolean;
+}) {
 	return (
 		<div className="rounded-lg border border-border-primary bg-surface-muted p-4">
 			<p className="mb-1 text-xs font-semibold uppercase tracking-wider text-subtle">

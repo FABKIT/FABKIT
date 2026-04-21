@@ -36,7 +36,7 @@ export function startConsoleInterceptor(): void {
 	const originalError = console.error.bind(console);
 	const originalWarn = console.warn.bind(console);
 
-	console.info('Attaching bug report listener');
+	console.info("Attaching bug report listener");
 	console.error = (...args: unknown[]) => {
 		pushEntry({
 			level: "error",
@@ -192,7 +192,7 @@ export async function generateBugReport(): Promise<void> {
 	a.href = url;
 	a.download = formatFilename();
 	document.body.appendChild(a);
-	console.info('Bug report ready!');
+	console.info("Bug report ready!");
 	a.click();
 	document.body.removeChild(a);
 	URL.revokeObjectURL(url);
