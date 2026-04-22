@@ -25,19 +25,7 @@
 
 import { type BlobType, snapdom } from "@zumer/snapdom";
 
-/**
- * Converts an SVG card element to a raster image Blob.
- *
- * @param svg - SVG element containing the card preview
- * @param scale - Output scale multiplier (default 1.0, use 2.0+ for high-quality export)
- * @param type - The image format to use when converting to an image.
- * @param rotatePortrait - Rotate the output 90° CW (for landscape meld cards → portrait PNG)
- * @returns Promise resolving to an image Blob of the type `type`.
- */
-/**
- * Rotates an image Blob 90° using canvas. Used to lazily generate the
- * landscape variant of a meld card from the stored portrait blob.
- */
+/** Rotates an image Blob 90° CW or CCW via canvas. */
 export async function rotateBlob(blob: Blob, degrees: -90 | 90): Promise<Blob> {
 	const bitmap = await createImageBitmap(blob);
 	const canvas = document.createElement("canvas");
@@ -56,6 +44,14 @@ export async function rotateBlob(blob: Blob, degrees: -90 | 90): Promise<Blob> {
 	);
 }
 
+/**
+ * Converts an SVG card element to a raster image Blob.
+ *
+ * @param svg - SVG element containing the card preview
+ * @param scale - Output scale multiplier (default 1.0, use 2.0+ for high-quality export)
+ * @param type - Image format (default "png")
+ * @param rotatePortrait - Rotate 90° CW before export (landscape meld cards → portrait PNG)
+ */
 export async function convertToImage(
 	svg: SVGSVGElement,
 	scale = 1.0,
@@ -81,26 +77,6 @@ export async function convertToImage(
 		});
 	}
 
-	if (!rotatePortrait) {
-		return await capture.toBlob({ type });
-	}
-
-	// Rotate 90° CW: landscape (W×H) → portrait (H×W)
-	const landscapeBlob = await capture.toBlob({ type: "png" });
-	const bitmap = await createImageBitmap(landscapeBlob);
-	const canvas = document.createElement("canvas");
-	canvas.width = bitmap.height;
-	canvas.height = bitmap.width;
-	const ctx = canvas.getContext("2d");
-	if (!ctx) return landscapeBlob;
-	ctx.translate(canvas.width / 2, canvas.height / 2);
-	ctx.rotate(Math.PI / 2);
-	ctx.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2);
-	return new Promise<Blob>((resolve, reject) => {
-		canvas.toBlob(
-			(blob) =>
-				blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")),
-			`image/${type}`,
-		);
-	});
+	const blob = await capture.toBlob({ type });
+	return rotatePortrait ? rotateBlob(blob, 90) : blob;
 }

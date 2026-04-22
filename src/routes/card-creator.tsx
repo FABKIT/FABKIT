@@ -166,7 +166,6 @@ function RouteComponent() {
 					{/* Cardback arrow selector */}
 					<CardBackField />
 
-					{/* Card preview — landscape rotation for meld */}
 					{/* Card preview — meld SVG is natively landscape (628×450), no rotation needed */}
 					<div
 						className={

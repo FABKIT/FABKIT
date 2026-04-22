@@ -184,6 +184,7 @@
 		"background_label": "Select Card Background",
 		"generate_button_label": "Generate",
 		"title": "Start creating!",
+		"meld_halves_label": "Meld halves",
 		"meld_half_a_label": "Left Half",
 		"meld_half_b_label": "Right Half",
 		"meld_shared_fields_label": "Shared Fields",

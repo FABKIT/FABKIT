@@ -31,11 +31,14 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 	);
 
 	useEffect(() => {
+		return () => URL.revokeObjectURL(previewUrl);
+	}, [previewUrl]);
+
+	useEffect(() => {
 		return () => {
-			URL.revokeObjectURL(previewUrl);
 			if (landscapeUrl) URL.revokeObjectURL(landscapeUrl);
 		};
-	}, [previewUrl, landscapeUrl]);
+	}, [landscapeUrl]);
 
 	const toggleOrientation = async () => {
 		if (!isMeldCard) return;

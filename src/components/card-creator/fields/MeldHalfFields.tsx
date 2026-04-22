@@ -88,7 +88,7 @@ export function MeldHalfFields() {
 			{/* Segmented pill tab bar — clearly shows which half is active */}
 			<div
 				role="tablist"
-				aria-label={t("card_creator.meld_half_a_label")}
+				aria-label={t("card_creator.meld_halves_label")}
 				className="inline-flex rounded-lg bg-surface-muted p-1 border border-border-primary"
 			>
 				{(["A", "B"] as const).map((id) => (

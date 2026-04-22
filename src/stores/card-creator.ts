@@ -541,7 +541,8 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					img.onerror = () => reject(new Error("Failed to load image"));
 					img.src = url;
 				});
-				// Right half (B) starts at x=322 in the landscape SVG, so initialise x there
+				// Place the right half's artwork within its viewport (roughly centred);
+				// the user can drag to reposition.
 				const initialX = half === "B" ? 322 : 0;
 				set((state) => ({
 					[key]: {

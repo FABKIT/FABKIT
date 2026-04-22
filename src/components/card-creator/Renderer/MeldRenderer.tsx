@@ -6,11 +6,12 @@
  *   ┌─────────────────────┬──┬─────────────────────┐
  *   │   LEFT HALF (A)     │  │   RIGHT HALF (B)    │
  *   └─────────────────────┴──┴─────────────────────┘
- *   x=0                 306 322                   628
+ *   x=0           leftHalfWidth  leftHalfWidth+centerGap           628
  *
- * Both halves render in root SVG space; the right half uses bX(rx) = 322 + rx
- * to offset per-half element positions. Pitch/cost are shared and mirrored at
- * both top corners. The active half is highlighted with a dashed overlay.
+ * Right-half element positions are mirrored from left-half coords using
+ * mX(x) = viewBox.width - x (centre-anchored) and mXBox(x, w) = W - x - w
+ * (box top-left). Pitch/cost are shared and mirrored at both top corners.
+ * The active half is highlighted with a dashed overlay.
  */
 
 import { type Ref, useMemo } from "react";

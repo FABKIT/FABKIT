@@ -442,7 +442,6 @@ export interface MeldCardRenderConfig extends BaseCardRenderConfig {
 	/**
 	 * Drag zone for the right half artwork (absolute SVG coords).
 	 * Touches/clicks inside this zone initiate artwork drag for Half B.
-	 * NOTE: The right half is rotated 180°, so drag direction is inverted internally.
 	 */
 	rightArtworkDragZone: { x: number; y: number; width: number; height: number };
 }
