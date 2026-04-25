@@ -236,7 +236,10 @@ export async function updateCard(
 
 	const card: StoredCard = {
 		version,
-		cardName: state.CardName || "unnamed",
+		cardName:
+			state.CardType === "meld"
+				? [state.meldHalfA?.CardName, state.meldHalfB?.CardName].filter(Boolean).join(" // ") || "unnamed"
+				: state.CardName || "unnamed",
 		createdAt: existing.createdAt,
 		updatedAt: Date.now(),
 		preview,
