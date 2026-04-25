@@ -407,10 +407,19 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					CardBack: cardBack,
 					CardBackStyle: cardStyle,
 				};
+
 				for (const field of CardFormFields) {
 					if (!isFieldVisible(field, cardType)) {
 						Object.assign(result, { [field]: null });
 					}
+				}
+
+				if (cardType === 'meld' && state.CardType != cardType) {
+					// Meld halves are not in CardFormFields so must be cleared explicitly.
+					// Reset them on every type change so non-visible meld state doesn't persist.
+					result.meldActiveHalf = "A";
+					result.meldHalfA = { ...defaultMeldHalf };
+					result.meldHalfB = { ...defaultMeldHalf };
 				}
 
 				return result;
