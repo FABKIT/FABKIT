@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
 	ChevronDown,
 	ChevronUp,
+	CircleAlert,
+	CircleCheck,
 	Clock,
 	Database,
 	FileText,
@@ -11,6 +13,7 @@ import {
 	Monitor,
 	RefreshCw,
 	RotateCcw,
+	Sliders,
 	Terminal,
 	Upload,
 	User,
@@ -57,6 +60,10 @@ interface Fabreport {
 		whatBroke: string | null;
 		lastActions: string | null;
 		comments: string | null;
+	};
+	rendering?: {
+		cardBackRenderer: string | null;
+		resolvedConfig: unknown | null;
 	};
 	store: unknown;
 	gallery: unknown[];
@@ -458,6 +465,46 @@ function BugReportViewer() {
 						)}
 					</div>
 				</div>
+
+				{/* Rendering */}
+				{report.rendering !== undefined && (
+					<div className="rounded-lg border-2 border-border-primary bg-surface shadow-lg">
+						<div className="border-b border-border-primary bg-surface-muted px-6 py-4">
+							<div className="flex items-center gap-3">
+								<Sliders className="h-5 w-5 text-heading" />
+								<h2 className="text-xl font-semibold text-heading">
+									{t("bug_report_viewer.section_rendering")}
+								</h2>
+							</div>
+						</div>
+						<div className="p-6">
+							<div className="mb-4 flex flex-wrap items-center gap-3">
+								<span className="text-xs font-semibold uppercase tracking-wider text-subtle">
+									{t("bug_report_viewer.rendering_renderer_key")}
+								</span>
+								<code className="rounded border border-border-primary bg-surface-muted px-2 py-0.5 font-mono text-sm text-body">
+									{report.rendering.cardBackRenderer ?? t("bug_report_viewer.rendering_none")}
+								</code>
+								{report.rendering.resolvedConfig !== null ? (
+									<span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-0.5 text-xs font-medium text-green-500">
+										<CircleCheck className="h-3.5 w-3.5" />
+										{t("bug_report_viewer.rendering_resolved")}
+									</span>
+								) : (
+									<span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-0.5 text-xs font-medium text-red-500">
+										<CircleAlert className="h-3.5 w-3.5" />
+										{t("bug_report_viewer.rendering_unresolved")}
+									</span>
+								)}
+							</div>
+							{report.rendering.resolvedConfig !== null && (
+								<pre className="max-h-64 overflow-auto rounded-lg border border-border-primary bg-surface-muted p-4 font-mono text-xs text-body">
+									{JSON.stringify(report.rendering.resolvedConfig, null, 2)}
+								</pre>
+							)}
+						</div>
+					</div>
+				)}
 
 				{/* Screenshot */}
 				<div className="rounded-lg border-2 border-border-primary bg-surface shadow-lg">
