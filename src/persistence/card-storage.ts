@@ -33,7 +33,11 @@
  */
 
 import { CardBacks } from "../config/cards/card_backs.ts";
-import type { CardCreatorState, MeldHalf } from "../stores/card-creator";
+import {
+	type CardCreatorState,
+	defaultMeldHalf,
+	type MeldHalf,
+} from "../stores/card-creator";
 
 /** IndexedDB database name */
 const DB_NAME = "fabkit-cards";
@@ -358,10 +362,16 @@ export async function blobToBase64(blob: Blob): Promise<string> {
  * @param card - Stored card to export
  * @returns Promise resolving to formatted JSON string
  */
-async function serializeMeldHalf(half: MeldHalf): Promise<SerializedMeldHalf> {
+async function serializeMeldHalf(
+	half: MeldHalf | undefined,
+): Promise<SerializedMeldHalf> {
+	const resolvedHalf = half ?? defaultMeldHalf;
+
 	return {
-		...half,
-		CardArtwork: half.CardArtwork ? await blobToBase64(half.CardArtwork) : null,
+		...resolvedHalf,
+		CardArtwork: resolvedHalf.CardArtwork
+			? await blobToBase64(resolvedHalf.CardArtwork)
+			: null,
 	};
 }
 
