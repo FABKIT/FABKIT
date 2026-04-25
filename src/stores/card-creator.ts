@@ -24,6 +24,7 @@ import {
 	type CardFormFieldValue,
 } from "../config/cards/form_fields.ts";
 import type { CardType } from "../config/cards/types.ts";
+import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
 
 /**
  * Card types that are not allowed on a meld half.
@@ -552,7 +553,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				});
 				// Place the right half's artwork within its viewport (roughly centred);
 				// the user can drag to reposition.
-				const initialX = half === "B" ? 322 : 0;
+				const initialX = half === "B" ? MeldFlatRenderConfigPreset.rightArtworkDragZone.x : 0;
 				set((state) => ({
 					[key]: {
 						...(state[key] as MeldHalf),
