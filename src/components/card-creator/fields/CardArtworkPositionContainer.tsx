@@ -299,7 +299,13 @@ export function CardArtworkPositionContainer({
 				});
 			}
 		},
-		[isMeldMode, applyMeldDrag, CardArtPosition, setCardArtPosition, clientToSvg],
+		[
+			isMeldMode,
+			applyMeldDrag,
+			CardArtPosition,
+			setCardArtPosition,
+			clientToSvg,
+		],
 	);
 
 	const handleMouseUp = useCallback(() => {

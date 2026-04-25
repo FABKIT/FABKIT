@@ -483,7 +483,8 @@ function BugReportViewer() {
 									{t("bug_report_viewer.rendering_renderer_key")}
 								</span>
 								<code className="rounded border border-border-primary bg-surface-muted px-2 py-0.5 font-mono text-sm text-body">
-									{report.rendering.cardBackRenderer ?? t("bug_report_viewer.rendering_none")}
+									{report.rendering.cardBackRenderer ??
+										t("bug_report_viewer.rendering_none")}
 								</code>
 								{report.rendering.resolvedConfig !== null ? (
 									<span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-0.5 text-xs font-medium text-green-500">

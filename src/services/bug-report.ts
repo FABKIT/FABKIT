@@ -1,8 +1,8 @@
 import { snapdom } from "@zumer/snapdom";
+import { AllRenderConfigVariations } from "../config/rendering";
 import i18n from "../i18n";
 import { router } from "../main";
 import { blobToBase64, getAllCards } from "../persistence/card-storage";
-import { AllRenderConfigVariations } from "../config/rendering";
 import { useCardCreator } from "../stores/card-creator";
 
 // ─── Console Interceptor ──────────────────────────────────────────────────────

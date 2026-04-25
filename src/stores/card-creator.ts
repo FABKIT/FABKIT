@@ -414,7 +414,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					}
 				}
 
-				if (cardType === 'meld' && state.CardType != cardType) {
+				if (cardType === "meld" && state.CardType !== cardType) {
 					// Meld halves are not in CardFormFields so must be cleared explicitly.
 					// Reset them on every type change so non-visible meld state doesn't persist.
 					result.meldActiveHalf = "A";

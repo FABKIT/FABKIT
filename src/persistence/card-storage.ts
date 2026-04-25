@@ -243,7 +243,9 @@ export async function updateCard(
 		version,
 		cardName:
 			state.CardType === "meld"
-				? [state.meldHalfA?.CardName, state.meldHalfB?.CardName].filter(Boolean).join(" // ") || "unnamed"
+				? [state.meldHalfA?.CardName, state.meldHalfB?.CardName]
+						.filter(Boolean)
+						.join(" // ") || "unnamed"
 				: state.CardName || "unnamed",
 		createdAt: existing.createdAt,
 		updatedAt: Date.now(),
@@ -443,9 +445,15 @@ export async function importCardFromJSON(jsonString: string): Promise<void> {
 	const preview = await base64ToBlob(data.preview);
 
 	const [artwork, meldHalfAartwork, meldHalfBartwork] = await Promise.all([
-		data.state.CardArtwork ? base64ToBlob(data.state.CardArtwork) : Promise.resolve(null),
-		data.state.meldHalfA?.CardArtwork ? base64ToBlob(data.state.meldHalfA.CardArtwork) : Promise.resolve(null),
-		data.state.meldHalfB?.CardArtwork ? base64ToBlob(data.state.meldHalfB.CardArtwork) : Promise.resolve(null),
+		data.state.CardArtwork
+			? base64ToBlob(data.state.CardArtwork)
+			: Promise.resolve(null),
+		data.state.meldHalfA?.CardArtwork
+			? base64ToBlob(data.state.meldHalfA.CardArtwork)
+			: Promise.resolve(null),
+		data.state.meldHalfB?.CardArtwork
+			? base64ToBlob(data.state.meldHalfB.CardArtwork)
+			: Promise.resolve(null),
 	]);
 
 	const card: StoredCard = {
