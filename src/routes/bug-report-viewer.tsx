@@ -92,14 +92,23 @@ const IDB_STORE_NAME = "cards";
 async function restoreStore(raw: unknown): Promise<void> {
 	const s = raw as Record<string, unknown>;
 
-	const artwork =
-		typeof s.CardArtwork === "string"
-			? await base64ToBlob(s.CardArtwork)
-			: null;
-	const overlay =
-		typeof s.CardOverlay === "string"
-			? await base64ToBlob(s.CardOverlay)
-			: null;
+	const [artwork, overlay, meldHalfAArtwork, meldHalfBArtwork] =
+		await Promise.all([
+			typeof s.CardArtwork === "string"
+				? base64ToBlob(s.CardArtwork)
+				: Promise.resolve(null),
+			typeof s.CardOverlay === "string"
+				? base64ToBlob(s.CardOverlay)
+				: Promise.resolve(null),
+			typeof (s.meldHalfA as { CardArtwork?: unknown } | undefined)
+				?.CardArtwork === "string"
+				? base64ToBlob((s.meldHalfA as { CardArtwork: string }).CardArtwork)
+				: Promise.resolve(null),
+			typeof (s.meldHalfB as { CardArtwork?: unknown } | undefined)
+				?.CardArtwork === "string"
+				? base64ToBlob((s.meldHalfB as { CardArtwork: string }).CardArtwork)
+				: Promise.resolve(null),
+		]);
 
 	// serializeValue preserves the CardBack object; resolve to the real config object by id.
 	const cardBackRaw = s.CardBack as { id: number } | null;
@@ -112,6 +121,20 @@ async function restoreStore(raw: unknown): Promise<void> {
 		CardArtwork: artwork,
 		CardOverlay: overlay,
 		CardBack: cardBack,
+		meldHalfA:
+			s.meldHalfA && typeof s.meldHalfA === "object"
+				? {
+						...(s.meldHalfA as CardCreatorState["meldHalfA"]),
+						CardArtwork: meldHalfAArtwork,
+					}
+				: undefined,
+		meldHalfB:
+			s.meldHalfB && typeof s.meldHalfB === "object"
+				? {
+						...(s.meldHalfB as CardCreatorState["meldHalfB"]),
+						CardArtwork: meldHalfBArtwork,
+					}
+				: undefined,
 	});
 }
 
@@ -140,15 +163,33 @@ async function restoreGallery(items: unknown[]): Promise<void> {
 			state: Record<string, unknown>;
 		};
 
-		const preview = await base64ToBlob(item.preview);
-		const cardArtwork =
+		const [
+			preview,
+			cardArtwork,
+			cardOverlay,
+			meldHalfAArtwork,
+			meldHalfBArtwork,
+		] = await Promise.all([
+			base64ToBlob(item.preview),
 			typeof item.state.CardArtwork === "string"
-				? await base64ToBlob(item.state.CardArtwork)
-				: null;
-		const cardOverlay =
+				? base64ToBlob(item.state.CardArtwork)
+				: Promise.resolve(null),
 			typeof item.state.CardOverlay === "string"
-				? await base64ToBlob(item.state.CardOverlay)
-				: null;
+				? base64ToBlob(item.state.CardOverlay)
+				: Promise.resolve(null),
+			typeof (item.state.meldHalfA as { CardArtwork?: unknown } | undefined)
+				?.CardArtwork === "string"
+				? base64ToBlob(
+						(item.state.meldHalfA as { CardArtwork: string }).CardArtwork,
+					)
+				: Promise.resolve(null),
+			typeof (item.state.meldHalfB as { CardArtwork?: unknown } | undefined)
+				?.CardArtwork === "string"
+				? base64ToBlob(
+						(item.state.meldHalfB as { CardArtwork: string }).CardArtwork,
+					)
+				: Promise.resolve(null),
+		]);
 
 		const storedCard = {
 			version: item.version,
@@ -160,6 +201,20 @@ async function restoreGallery(items: unknown[]): Promise<void> {
 				...item.state,
 				CardArtwork: cardArtwork,
 				CardOverlay: cardOverlay,
+				meldHalfA:
+					item.state.meldHalfA && typeof item.state.meldHalfA === "object"
+						? {
+								...item.state.meldHalfA,
+								CardArtwork: meldHalfAArtwork,
+							}
+						: undefined,
+				meldHalfB:
+					item.state.meldHalfB && typeof item.state.meldHalfB === "object"
+						? {
+								...item.state.meldHalfB,
+								CardArtwork: meldHalfBArtwork,
+							}
+						: undefined,
 			},
 		};
 
