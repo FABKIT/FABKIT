@@ -74,6 +74,18 @@ export function CardArtworkPositionContainer({
 	const touchStartPos = useRef({ x: 0, y: 0 });
 	const lastTouchDistance = useRef<number | null>(null);
 
+	const clientToSvg = useCallback(
+		(clientX: number, clientY: number): { x: number; y: number } => {
+			if (!viewBox || !containerRef.current) return { x: clientX, y: clientY };
+			const rect = containerRef.current.getBoundingClientRect();
+			return {
+				x: (clientX - rect.left) / (rect.width / viewBox.width),
+				y: (clientY - rect.top) / (rect.height / viewBox.height),
+			};
+		},
+		[viewBox],
+	);
+
 	/**
 	 * Returns true when (clientX, clientY) falls inside the given zone.
 	 * Converts DOM viewport coordinates to SVG viewBox coordinates.
@@ -124,9 +136,10 @@ export function CardArtworkPositionContainer({
 			const pos =
 				half === "A" ? meldHalfA.CardArtPosition : meldHalfB.CardArtPosition;
 			if (!pos) return;
+			const svg = clientToSvg(clientX, clientY);
 			setMeldHalfArtPosition(half, {
-				x: clientX - dragStart.current.x,
-				y: clientY - dragStart.current.y,
+				x: svg.x - dragStart.current.x,
+				y: svg.y - dragStart.current.y,
 				width: pos.width,
 				height: pos.height,
 			});
@@ -135,6 +148,7 @@ export function CardArtworkPositionContainer({
 			meldHalfA.CardArtPosition,
 			meldHalfB.CardArtPosition,
 			setMeldHalfArtPosition,
+			clientToSvg,
 		],
 	);
 
@@ -164,9 +178,10 @@ export function CardArtworkPositionContainer({
 				);
 			} else {
 				if (!CardArtPosition) return;
+				const svg = clientToSvg(e.touches[0].clientX, e.touches[0].clientY);
 				setCardArtPosition({
-					x: e.touches[0].clientX - dragStart.current.x,
-					y: e.touches[0].clientY - dragStart.current.y,
+					x: svg.x - dragStart.current.x,
+					y: svg.y - dragStart.current.y,
 					width: CardArtPosition.width,
 					height: CardArtPosition.height,
 				});
@@ -240,15 +255,17 @@ export function CardArtworkPositionContainer({
 				isDragging.current = true;
 				const pos =
 					half === "A" ? meldHalfA.CardArtPosition : meldHalfB.CardArtPosition;
+				const svg = clientToSvg(e.clientX, e.clientY);
 				dragStart.current = {
-					x: e.clientX - (pos?.x ?? 0),
-					y: e.clientY - (pos?.y ?? 0),
+					x: svg.x - (pos?.x ?? 0),
+					y: svg.y - (pos?.y ?? 0),
 				};
 			} else {
 				if (!isInArtworkZone(e.clientX, e.clientY)) return;
+				const svg = clientToSvg(e.clientX, e.clientY);
 				dragStart.current = {
-					x: e.clientX - (CardArtPosition?.x ?? 0),
-					y: e.clientY - (CardArtPosition?.y ?? 0),
+					x: svg.x - (CardArtPosition?.x ?? 0),
+					y: svg.y - (CardArtPosition?.y ?? 0),
 				};
 				isDragging.current = true;
 			}
@@ -261,6 +278,7 @@ export function CardArtworkPositionContainer({
 			isInArtworkZone,
 			CardArtPosition?.x,
 			CardArtPosition?.y,
+			clientToSvg,
 		],
 	);
 
@@ -272,15 +290,16 @@ export function CardArtworkPositionContainer({
 				applyMeldDrag(meldDragHalf.current, e.clientX, e.clientY);
 			} else {
 				if (!CardArtPosition) return;
+				const svg = clientToSvg(e.clientX, e.clientY);
 				setCardArtPosition({
-					x: e.clientX - dragStart.current.x,
-					y: e.clientY - dragStart.current.y,
+					x: svg.x - dragStart.current.x,
+					y: svg.y - dragStart.current.y,
 					width: CardArtPosition.width,
 					height: CardArtPosition.height,
 				});
 			}
 		},
-		[isMeldMode, applyMeldDrag, CardArtPosition, setCardArtPosition],
+		[isMeldMode, applyMeldDrag, CardArtPosition, setCardArtPosition, clientToSvg],
 	);
 
 	const handleMouseUp = useCallback(() => {
@@ -370,9 +389,10 @@ export function CardArtworkPositionContainer({
 						half === "A"
 							? meldHalfA.CardArtPosition
 							: meldHalfB.CardArtPosition;
+					const svg = clientToSvg(e.touches[0].clientX, e.touches[0].clientY);
 					dragStart.current = {
-						x: e.touches[0].clientX - (pos?.x ?? 0),
-						y: e.touches[0].clientY - (pos?.y ?? 0),
+						x: svg.x - (pos?.x ?? 0),
+						y: svg.y - (pos?.y ?? 0),
 					};
 				} else {
 					if (!isInArtworkZone(e.touches[0].clientX, e.touches[0].clientY))
@@ -383,9 +403,10 @@ export function CardArtworkPositionContainer({
 						x: e.touches[0].clientX,
 						y: e.touches[0].clientY,
 					};
+					const svg = clientToSvg(e.touches[0].clientX, e.touches[0].clientY);
 					dragStart.current = {
-						x: e.touches[0].clientX - (CardArtPosition?.x ?? 0),
-						y: e.touches[0].clientY - (CardArtPosition?.y ?? 0),
+						x: svg.x - (CardArtPosition?.x ?? 0),
+						y: svg.y - (CardArtPosition?.y ?? 0),
 					};
 				}
 			} else if (e.touches.length === 2) {
@@ -409,6 +430,7 @@ export function CardArtworkPositionContainer({
 			isInArtworkZone,
 			CardArtPosition?.x,
 			CardArtPosition?.y,
+			clientToSvg,
 		],
 	);
 
