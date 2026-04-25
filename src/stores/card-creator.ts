@@ -553,7 +553,8 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				});
 				// Place the right half's artwork within its viewport (roughly centred);
 				// the user can drag to reposition.
-				const initialX = half === "B" ? MeldFlatRenderConfigPreset.rightArtworkDragZone.x : 0;
+				const initialX =
+					half === "B" ? MeldFlatRenderConfigPreset.rightArtworkDragZone.x : 0;
 				set((state) => ({
 					[key]: {
 						...(state[key] as MeldHalf),

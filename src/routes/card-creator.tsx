@@ -86,35 +86,29 @@ function RouteComponent() {
 					}
 				>
 					{currentCardType === "meld" ? (
-						<>
-							{/* Meld: shared stats — rendered first so they feel like
-								card-wide props, then the per-half editor below. */}
-							<div className="space-y-4">
-								<p className="text-sm font-semibold text-heading">
-									{t("card_creator.meld_shared_fields_label")}
-								</p>
-								<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-									<CardPitchField />
-									<CardResourceField />
-									<CardPowerField />
-									<CardDefenseField />
-									<CardLifeField />
-									<CardHeroIntellectField />
-									<CardRarityField />
-									<CardArtworkCreditsField />
-									<CardSetnumberField />
-									{import.meta.env.DEV && (
-										<>
-											<CardOverlayField />
-											<CardOverlayOpacityField />
-										</>
-									)}
-								</div>
+						/* Meld: shared stats only in this column */
+						<div className="space-y-4">
+							<p className="text-sm font-semibold text-heading">
+								{t("card_creator.meld_shared_fields_label")}
+							</p>
+							<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+								<CardPitchField />
+								<CardResourceField />
+								<CardPowerField />
+								<CardDefenseField />
+								<CardLifeField />
+								<CardHeroIntellectField />
+								<CardRarityField />
+								<CardArtworkCreditsField />
+								<CardSetnumberField />
+								{import.meta.env.DEV && (
+									<>
+										<CardOverlayField />
+										<CardOverlayOpacityField />
+									</>
+								)}
 							</div>
-
-							{/* Meld: per-half tabbed editor */}
-							<MeldHalfFields />
-						</>
+						</div>
 					) : (
 						/* Normal card: standard field grid */
 						<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -211,6 +205,9 @@ function RouteComponent() {
 					</div>
 				</section>
 			</div>
+
+			{/* Meld: per-half editor — full width below the shared-fields + preview row */}
+			{currentCardType === "meld" && <MeldHalfFields />}
 
 			{/* Reset confirmation dialog — rendered inline so the card creator stays visible behind the overlay */}
 			<Dialog

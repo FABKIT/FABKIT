@@ -41,8 +41,13 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 		setIsSaving(true);
 
 		try {
-			// Generate thumbnail preview (40% scale)
-			const thumbnail = await convertToImage(previewRef.current, 0.4);
+			// Generate thumbnail preview (40% scale), rotating landscape meld cards to portrait.
+			const thumbnail = await convertToImage(
+				previewRef.current,
+				0.4,
+				"png",
+				state.CardType === "meld",
+			);
 
 			// Check if card exists by __version
 			const existingCard = await getCard(state.__version);

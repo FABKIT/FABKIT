@@ -19,6 +19,20 @@ function RouteComponent() {
 	const [isLandscape, setIsLandscape] = useState(false);
 	const [isExporting, setIsExporting] = useState(true);
 	const isMeldCard = useCardCreator((state) => state.CardType === "meld");
+	const cardFilename = useCardCreator((state) => {
+		if (state.CardType === "meld") {
+			const parts = [
+				state.meldHalfA?.CardName,
+				state.meldHalfB?.CardName,
+			].filter(Boolean);
+			return parts.length > 0
+				? parts.join("_").replace(/[^a-z0-9_-]/gi, "_")
+				: "card";
+		}
+		return state.CardName
+			? state.CardName.replace(/[^a-z0-9_-]/gi, "_")
+			: "card";
+	});
 
 	const activeCard = isMeldCard && isLandscape ? landscapeCard : portraitCard;
 
@@ -71,7 +85,7 @@ function RouteComponent() {
 
 		const link = document.createElement("a");
 		link.href = imageUrl;
-		link.download = "card.png";
+		link.download = `${cardFilename}.png`;
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);

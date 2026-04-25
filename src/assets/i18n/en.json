@@ -189,7 +189,8 @@
 		"meld_half_b_label": "Right Half",
 		"meld_shared_fields_label": "Shared Fields",
 		"meld_band_keyword": "Meld ",
-		"meld_band_description": "(You may play 1 or both halves of this card. Each costs {{cost}}.)"
+		"meld_band_description": "(You may play 1 or both halves of this card. Each costs {{cost}}.)",
+		"meld_band_keyword_only": "(You may play 1 or both halves of this card.)"
 	},
 	"gallery": {
 		"title": "Saved Cards",

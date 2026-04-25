@@ -246,9 +246,9 @@ export function MeldRenderer({
 	// ── Meld band text ────────────────────────────────────────────────────────
 	// "Meld" renders in bold; the description in italic — split into two tspans.
 	const meldBandKeyword = t("card_creator.meld_band_keyword");
-	const meldBandDescription = t("card_creator.meld_band_description", {
-		cost: CardResource ?? "0",
-	});
+	const meldBandDescription = CardResource
+		? t("card_creator.meld_band_description", { cost: CardResource })
+		: t("card_creator.meld_band_keyword_only");
 
 	// ── Geometry helpers ──────────────────────────────────────────────────────
 	// rightHalfStart is only used for the active-half highlight rect.
