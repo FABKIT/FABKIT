@@ -1,4 +1,5 @@
 import { snapdom } from "@zumer/snapdom";
+import { AllRenderConfigVariations } from "../config/rendering";
 import i18n from "../i18n";
 import { router } from "../main";
 import { blobToBase64, getAllCards } from "../persistence/card-storage";
@@ -177,6 +178,12 @@ export async function generateBugReport(): Promise<void> {
 			whatBroke,
 			lastActions,
 			comments,
+		},
+		rendering: {
+			cardBackRenderer: storeState.CardBack?.renderer ?? null,
+			resolvedConfig: storeState.CardBack
+				? (AllRenderConfigVariations[storeState.CardBack.renderer] ?? null)
+				: null,
 		},
 		store: serializedStore,
 		gallery: serializedGallery,

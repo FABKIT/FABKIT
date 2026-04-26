@@ -192,5 +192,46 @@
 				"fileName": "./generated/683c9f08916d9.png"
 			}
 		]
+	},
+	{
+		"id": 12,
+		"name": "Earth",
+		"type": "meld",
+		"dented": false,
+		"images": [
+			{
+				"id": 20,
+				"pitch": 1,
+				"fileName": "\/generated\/Earth-Meld-Flat-1-69e7c460ddf35.png"
+			},
+			{
+				"id": 21,
+				"pitch": 2,
+				"fileName": "\/generated\/Earth-Meld-Flat-2-69e7c460e31a3.png"
+			},
+			{
+				"id": 22,
+				"pitch": 3,
+				"fileName": "\/generated\/Earth-Meld-Flat-3-69e7c460e81d2.png"
+			}
+		],
+		"watermarkedImages": [
+			{
+				"id": 23,
+				"pitch": 1,
+				"fileName": "\/generated\/Earth-Meld-Flat-1-69e7c460ddf35.png"
+			},
+			{
+				"id": 24,
+				"pitch": 2,
+				"fileName": "\/generated\/Earth-Meld-Flat-2-69e7c460e31a3.png"
+			},
+			{
+				"id": 25,
+				"pitch": 3,
+				"fileName": "\/generated\/Earth-Meld-Flat-3-69e7c460e81d2.png"
+			}
+		],
+		"renderer": "meld_flat"
 	}
 ]

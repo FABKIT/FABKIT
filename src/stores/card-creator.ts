@@ -24,6 +24,62 @@ import {
 	type CardFormFieldValue,
 } from "../config/cards/form_fields.ts";
 import type { CardType } from "../config/cards/types.ts";
+import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
+
+/**
+ * Card types that are not allowed on a meld half.
+ * Equipment, hero, weapon, demi-hero, and weapon-equipment cannot be meld halves.
+ */
+export const MELD_EXCLUDED_TYPES: CardType[] = [
+	"equipment",
+	"hero",
+	"weapon",
+	"demi_hero",
+	"weapon_equipment",
+	"meld",
+	"event",
+	"macro",
+	"mentor",
+];
+
+/**
+ * State for a single half of a meld card.
+ * Each half is independently configurable (type, name, artwork, text, etc.).
+ */
+export interface MeldHalf {
+	CardType: CardType | null;
+	CardName: string | null;
+	CardArtwork: Blob | null;
+	CardArtPosition: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	} | null;
+	CardClass: string | null;
+	CardSecondaryClass: string | null;
+	CardSubType: string | null;
+	CardTalent: string | null;
+	CardTextHTML: string | null;
+	CardTextNode: Content | null;
+	CardMacroGroup: string | null;
+	CardWeapon: "(1H)" | "(2H)" | null;
+}
+
+export const defaultMeldHalf: MeldHalf = {
+	CardType: "action",
+	CardName: null,
+	CardArtwork: null,
+	CardArtPosition: null,
+	CardClass: null,
+	CardSecondaryClass: null,
+	CardSubType: null,
+	CardTalent: null,
+	CardTextHTML: null,
+	CardTextNode: null,
+	CardMacroGroup: null,
+	CardWeapon: null,
+};
 
 /**
  * Utility type that maps all card form fields to their possible values.
@@ -45,6 +101,17 @@ export interface CardCreatorState extends FormFieldValues {
 
 	/** Selected card type (action, hero, weapon, etc.) - determines which fields are visible */
 	CardType: CardType | null;
+
+	// ─── Meld card state ────────────────────────────────────────────────────────
+
+	/** Which meld half is currently active in the tab editor ("A" = top half, "B" = bottom half) */
+	meldActiveHalf: "A" | "B";
+
+	/** Per-half state for the top half of a meld card */
+	meldHalfA: MeldHalf;
+
+	/** Per-half state for the bottom half of a meld card */
+	meldHalfB: MeldHalf;
 
 	/** Currently selected card back configuration object */
 	CardBack: CardBack | null;
@@ -98,6 +165,50 @@ export interface CardCreatorActions {
 	 * - Clears fields that aren't visible for the new type
 	 */
 	setCardType: (cardType: CardType) => void;
+
+	// ─── Meld actions ───────────────────────────────────────────────────────────
+
+	/** Switches the active meld tab between the top half (A) and bottom half (B) */
+	setMeldActiveHalf: (half: "A" | "B") => void;
+
+	/** Sets the card type for a meld half */
+	setMeldHalfType: (half: "A" | "B", cardType: CardType) => void;
+
+	/** Sets the card name for a meld half */
+	setMeldHalfName: (half: "A" | "B", name: string) => void;
+
+	/**
+	 * Sets artwork for a meld half and initialises the art position from
+	 * the image's natural dimensions (same approach as setCardArtwork).
+	 */
+	setMeldHalfArtwork: (half: "A" | "B", artwork: Blob | null) => Promise<void>;
+
+	/** Updates the artwork position for a meld half */
+	setMeldHalfArtPosition: (
+		half: "A" | "B",
+		position: { x: number; y: number; width: number; height: number } | null,
+	) => void;
+
+	/** Sets the primary class for a meld half */
+	setMeldHalfClass: (half: "A" | "B", cls: string) => void;
+
+	/** Sets the secondary class for a meld half */
+	setMeldHalfSecondaryClass: (half: "A" | "B", cls: string) => void;
+
+	/** Sets the subtype for a meld half */
+	setMeldHalfSubType: (half: "A" | "B", sub: string) => void;
+
+	/** Sets the talent for a meld half */
+	setMeldHalfTalent: (half: "A" | "B", talent: string) => void;
+
+	/** Sets the card text (HTML + Tiptap content) for a meld half */
+	setMeldHalfText: (half: "A" | "B", html: string, content: Content) => void;
+
+	/** Sets the macro group for a meld half */
+	setMeldHalfMacroGroup: (half: "A" | "B", group: string) => void;
+
+	/** Sets the weapon hand type for a meld half */
+	setMeldHalfWeapon: (half: "A" | "B", weapon: "(1H)" | "(2H)") => void;
 
 	/** Sets the currently selected card back */
 	setCardBack: (cardBack: CardBack) => void;
@@ -243,6 +354,10 @@ const initialState: CardCreatorState = {
 	CardMacroGroup: null,
 	CardOverlay: null,
 	CardOverlayOpacity: 0.5,
+	// Meld state
+	meldActiveHalf: "A",
+	meldHalfA: { ...defaultMeldHalf },
+	meldHalfB: { ...defaultMeldHalf },
 };
 
 /**
@@ -293,10 +408,19 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					CardBack: cardBack,
 					CardBackStyle: cardStyle,
 				};
+
 				for (const field of CardFormFields) {
 					if (!isFieldVisible(field, cardType)) {
 						Object.assign(result, { [field]: null });
 					}
+				}
+
+				if (cardType === "meld" && state.CardType !== cardType) {
+					// Meld halves are not in CardFormFields so must be cleared explicitly.
+					// Reset them on every type change so non-visible meld state doesn't persist.
+					result.meldActiveHalf = "A";
+					result.meldHalfA = { ...defaultMeldHalf };
+					result.meldHalfB = { ...defaultMeldHalf };
 				}
 
 				return result;
@@ -387,5 +511,130 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 		reset: () => set({ ...store.getInitialState(), __version: uuid() }),
 		loadCard: (state: Partial<CardCreatorState>) =>
 			set({ ...store.getInitialState(), ...state }),
+
+		// ─── Meld actions ──────────────────────────────────────────────────────
+		setMeldActiveHalf: (half) => set({ meldActiveHalf: half }),
+
+		setMeldHalfType: (half, cardType) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardType: cardType,
+				},
+			})),
+
+		setMeldHalfName: (half, name) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardName: name,
+				},
+			})),
+
+		setMeldHalfArtwork: async (half, artwork) => {
+			const key = half === "A" ? "meldHalfA" : "meldHalfB";
+			if (!artwork) {
+				set((state) => ({
+					[key]: {
+						...(state[key] as MeldHalf),
+						CardArtwork: null,
+						CardArtPosition: null,
+					},
+				}));
+				return;
+			}
+			const img = new Image();
+			const url = URL.createObjectURL(artwork);
+			try {
+				await new Promise<void>((resolve, reject) => {
+					img.onload = () => resolve();
+					img.onerror = () => reject(new Error("Failed to load image"));
+					img.src = url;
+				});
+				// Place the right half's artwork within its viewport (roughly centred);
+				// the user can drag to reposition.
+				const initialX =
+					half === "B" ? MeldFlatRenderConfigPreset.rightArtworkDragZone.x : 0;
+				set((state) => ({
+					[key]: {
+						...(state[key] as MeldHalf),
+						CardArtwork: artwork,
+						CardArtPosition: {
+							x: initialX,
+							y: 0,
+							width: img.naturalWidth,
+							height: img.naturalHeight,
+						},
+					},
+				}));
+			} finally {
+				URL.revokeObjectURL(url);
+			}
+		},
+
+		setMeldHalfArtPosition: (half, position) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardArtPosition: position,
+				},
+			})),
+
+		setMeldHalfClass: (half, cls) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardClass: cls,
+				},
+			})),
+
+		setMeldHalfSecondaryClass: (half, cls) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardSecondaryClass: cls,
+				},
+			})),
+
+		setMeldHalfSubType: (half, sub) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardSubType: sub,
+				},
+			})),
+
+		setMeldHalfTalent: (half, talent) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardTalent: talent,
+				},
+			})),
+
+		setMeldHalfText: (half, html, content) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardTextHTML: html,
+					CardTextNode: content,
+				},
+			})),
+
+		setMeldHalfMacroGroup: (half, group) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardMacroGroup: group,
+				},
+			})),
+
+		setMeldHalfWeapon: (half, weapon) =>
+			set((state) => ({
+				[half === "A" ? "meldHalfA" : "meldHalfB"]: {
+					...(half === "A" ? state.meldHalfA : state.meldHalfB),
+					CardWeapon: weapon,
+				},
+			})),
 	})),
 );

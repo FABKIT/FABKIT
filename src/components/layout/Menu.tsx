@@ -371,8 +371,9 @@ export function Menu() {
 				</div>
 			</div>
 
-			{/* Mobile top bar */}
-			<div className="sticky top-0 z-40 flex items-center gap-x-6 bg-surface px-4 py-4 shadow-xs sm:px-6 lg:hidden">
+			{/* Mobile top bar — fixed (not sticky) because its parent <div> isn't
+				tall enough to act as a sticky containing block. */}
+			<div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-x-6 bg-surface px-4 py-4 shadow-xs sm:px-6 lg:hidden">
 				<button
 					type="button"
 					className="-m-2.5 p-2.5 text-primary lg:hidden"

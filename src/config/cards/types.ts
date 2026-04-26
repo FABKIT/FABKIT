@@ -226,6 +226,21 @@ export const CardTypes: Record<
 			"CardSubType",
 		],
 	},
+	meld: {
+		label: "card.type.meld",
+		// Only the shared stats are shown in the main form.
+		// Per-half fields (name, text, class, subtype, talent, artwork) are
+		// handled separately by MeldHalfFields and stored in meldHalfA / meldHalfB.
+		fields: [
+			"CardPitch",
+			"CardResource",
+			"CardPower",
+			"CardDefense",
+			"CardLife",
+			"CardHeroIntellect",
+			"CardRarity",
+		],
+	},
 };
 
 // Utility type for string representation of each card type.

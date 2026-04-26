@@ -132,7 +132,7 @@ export default function ImageUpload({
 					`}
 				>
 					<Upload className="w-4 h-4 text-muted shrink-0" />
-					<span className={`text-sm ${error ? "text-red-600" : "text-muted"}`}>
+					<span className={`text-sm ${error ? "text-red-600" : "text-subtle"}`}>
 						{error || t("components.image_upload.drag_or_click")}
 					</span>
 				</label>

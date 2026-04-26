@@ -33,7 +33,11 @@
  */
 
 import { CardBacks } from "../config/cards/card_backs.ts";
-import type { CardCreatorState } from "../stores/card-creator";
+import {
+	type CardCreatorState,
+	defaultMeldHalf,
+	type MeldHalf,
+} from "../stores/card-creator";
 
 /** IndexedDB database name */
 const DB_NAME = "fabkit-cards";
@@ -67,6 +71,11 @@ export interface StoredCard {
 	/** Serialized card creator state */
 	state: SerializedCardState;
 }
+
+/** MeldHalf with CardArtwork serialized as a base64 data URL instead of a Blob. */
+export type SerializedMeldHalf = Omit<MeldHalf, "CardArtwork"> & {
+	CardArtwork: string | null;
+};
 
 /**
  * Serialized card state for storage.
@@ -152,6 +161,9 @@ export function serializeCardState(
 		CardMacroGroup: state.CardMacroGroup,
 		CardOverlay: state.CardOverlay,
 		CardOverlayOpacity: state.CardOverlayOpacity,
+		meldActiveHalf: state.meldActiveHalf,
+		meldHalfA: state.meldHalfA,
+		meldHalfB: state.meldHalfB,
 	};
 }
 
@@ -233,7 +245,12 @@ export async function updateCard(
 
 	const card: StoredCard = {
 		version,
-		cardName: state.CardName || "unnamed",
+		cardName:
+			state.CardType === "meld"
+				? [state.meldHalfA?.CardName, state.meldHalfB?.CardName]
+						.filter(Boolean)
+						.join(" // ") || "unnamed"
+				: state.CardName || "unnamed",
 		createdAt: existing.createdAt,
 		updatedAt: Date.now(),
 		preview,
@@ -345,16 +362,31 @@ export async function blobToBase64(blob: Blob): Promise<string> {
  * @param card - Stored card to export
  * @returns Promise resolving to formatted JSON string
  */
+async function serializeMeldHalf(
+	half: MeldHalf | undefined,
+): Promise<SerializedMeldHalf> {
+	const resolvedHalf = half ?? defaultMeldHalf;
+
+	return {
+		...resolvedHalf,
+		CardArtwork: resolvedHalf.CardArtwork
+			? await blobToBase64(resolvedHalf.CardArtwork)
+			: null,
+	};
+}
+
 export async function exportCardToJSON(card: StoredCard): Promise<string> {
-	// Convert preview Blob to base64
 	const previewBase64 = await blobToBase64(card.preview);
 
-	// Convert artwork Blob to base64 if it exists
 	const artworkBase64 = card.state.CardArtwork
 		? await blobToBase64(card.state.CardArtwork)
 		: null;
 
-	// Create exportable object with base64 images
+	const [meldHalfA, meldHalfB] = await Promise.all([
+		serializeMeldHalf(card.state.meldHalfA),
+		serializeMeldHalf(card.state.meldHalfB),
+	]);
+
 	const exportData = {
 		appVersion: __GIT_HASH__,
 		version: card.version,
@@ -365,6 +397,8 @@ export async function exportCardToJSON(card: StoredCard): Promise<string> {
 		state: {
 			...card.state,
 			CardArtwork: artworkBase64,
+			meldHalfA,
+			meldHalfB,
 		},
 	};
 
@@ -418,22 +452,31 @@ export async function importCardFromJSON(jsonString: string): Promise<void> {
 		throw new Error("Invalid card file format");
 	}
 
-	// Convert base64 images back to Blobs
 	const preview = await base64ToBlob(data.preview);
-	const artwork = data.state.CardArtwork
-		? await base64ToBlob(data.state.CardArtwork)
-		: null;
 
-	// Create the stored card object
+	const [artwork, meldHalfAartwork, meldHalfBartwork] = await Promise.all([
+		data.state.CardArtwork
+			? base64ToBlob(data.state.CardArtwork)
+			: Promise.resolve(null),
+		data.state.meldHalfA?.CardArtwork
+			? base64ToBlob(data.state.meldHalfA.CardArtwork)
+			: Promise.resolve(null),
+		data.state.meldHalfB?.CardArtwork
+			? base64ToBlob(data.state.meldHalfB.CardArtwork)
+			: Promise.resolve(null),
+	]);
+
 	const card: StoredCard = {
 		version: data.version,
 		cardName: data.cardName,
 		createdAt: data.createdAt || Date.now(),
-		updatedAt: Date.now(), // Update to current time on import
+		updatedAt: Date.now(),
 		preview,
 		state: {
 			...data.state,
 			CardArtwork: artwork,
+			meldHalfA: { ...data.state.meldHalfA, CardArtwork: meldHalfAartwork },
+			meldHalfB: { ...data.state.meldHalfB, CardArtwork: meldHalfBartwork },
 		},
 	};
 

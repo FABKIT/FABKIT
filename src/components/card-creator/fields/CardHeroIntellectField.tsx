@@ -9,7 +9,10 @@ export function CardHeroIntellectField() {
 	const setCardHeroIntellect = useCardCreator(
 		(state) => state.setCardHeroIntellect,
 	);
+	const CardType = useCardCreator((state) => state.CardType);
+	const CardPower = useCardCreator((state) => state.CardPower);
 	const shouldShow = useIsFieldVisible("CardHeroIntellect");
+	const isConflicted = CardType === "meld" && Boolean(CardPower);
 
 	if (!shouldShow) return null;
 	return (
@@ -18,6 +21,7 @@ export function CardHeroIntellectField() {
 			value={CardHeroIntellect || ""}
 			onChange={setCardHeroIntellect}
 			maxLength={2}
+			warning={isConflicted ? t("card_creator.conflict_power") : undefined}
 		/>
 	);
 }

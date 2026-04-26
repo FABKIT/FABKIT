@@ -1,3 +1,4 @@
+import { MeldFlatRenderConfigPreset } from "./rendering/meld_preset.tsx";
 import {
 	NormalDentedEquipmentRenderConfigPreset,
 	NormalDentedHeroRenderConfigPreset,
@@ -23,6 +24,7 @@ export const AllRenderConfigVariations: Record<string, CardRenderConfig> = {
 	normal_flat_weapon: NormalFlatWeaponRenderConfigPreset,
 	normal_flat_equipment: NormalFlatEquipmentRenderConfigPreset,
 	normal_flat_token: NormalFlatTokenRenderConfigPreset,
+	meld_flat: MeldFlatRenderConfigPreset,
 };
 
 export type RenderConfigVariation = keyof typeof AllRenderConfigVariations;

@@ -19,9 +19,15 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 	const [isSaving, setIsSaving] = useState(false);
 	const state = useCardCreator();
 
+	const effectiveName =
+		state.CardType === "meld"
+			? state.meldHalfA?.CardName && state.meldHalfB?.CardName
+				? `${state.meldHalfA.CardName} // ${state.meldHalfB.CardName}`
+				: ""
+			: (state.CardName ?? "");
+
 	const handleSave = async () => {
-		// Validate CardName exists
-		if (!state.CardName || state.CardName.trim() === "") {
+		if (!effectiveName || effectiveName.trim() === "") {
 			alert(t("card_creator.save_error_no_name"));
 			return;
 		}
@@ -35,8 +41,13 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 		setIsSaving(true);
 
 		try {
-			// Generate thumbnail preview (40% scale)
-			const thumbnail = await convertToImage(previewRef.current, 0.4);
+			// Generate thumbnail preview (40% scale), rotating landscape meld cards to portrait.
+			const thumbnail = await convertToImage(
+				previewRef.current,
+				0.4,
+				"png",
+				state.CardType === "meld",
+			);
 
 			// Check if card exists by __version
 			const existingCard = await getCard(state.__version);
@@ -46,7 +57,7 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 				await updateCard(state.__version, state, thumbnail);
 			} else {
 				// Save new card
-				await saveCard(state.CardName, state, thumbnail);
+				await saveCard(effectiveName, state, thumbnail);
 			}
 
 			alert(t("card_creator.save_success"));
@@ -62,7 +73,7 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 		<button
 			type="button"
 			onClick={handleSave}
-			disabled={isSaving || !state.CardName}
+			disabled={isSaving || !effectiveName}
 			className="inline-flex items-center justify-center gap-x-1.5 bg-primary text-sm font-semibold text-white rounded-md px-3.5 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
 		>
 			<Save className="h-4 w-4" />

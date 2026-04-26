@@ -1,7 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Download, Edit, Trash2 } from "lucide-react";
+import { Download, Edit, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { rotateBlob } from "../../export.ts";
 import {
 	deleteCard,
 	deserializeCardState,
@@ -19,6 +20,9 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [isExporting, setIsExporting] = useState(false);
+	const [isLandscape, setIsLandscape] = useState(false);
+	const [landscapeUrl, setLandscapeUrl] = useState<string | null>(null);
+	const isMeldCard = card.state.CardType === "meld";
 
 	// Create object URL for preview with cleanup
 	const previewUrl = useMemo(
@@ -29,6 +33,21 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 	useEffect(() => {
 		return () => URL.revokeObjectURL(previewUrl);
 	}, [previewUrl]);
+
+	useEffect(() => {
+		return () => {
+			if (landscapeUrl) URL.revokeObjectURL(landscapeUrl);
+		};
+	}, [landscapeUrl]);
+
+	const toggleOrientation = async () => {
+		if (!isMeldCard) return;
+		if (!isLandscape && !landscapeUrl) {
+			const lb = await rotateBlob(card.preview, -90);
+			setLandscapeUrl(URL.createObjectURL(lb));
+		}
+		setIsLandscape((prev) => !prev);
+	};
 
 	const handleEdit = async () => {
 		if (!confirm(t("gallery.edit_warning"))) return;
@@ -72,15 +91,33 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 		});
 	};
 
+	const displayUrl = isLandscape && landscapeUrl ? landscapeUrl : previewUrl;
+
 	return (
 		<div className="flex flex-col gap-3 rounded-lg border border-border-primary bg-surface p-4 transition-colors hover:bg-surface-muted">
 			{/* Preview Image */}
-			<div className="aspect-3/4 overflow-hidden rounded-md bg-surface-muted">
+			<div
+				className={`relative overflow-hidden rounded-md bg-surface-muted ${isLandscape ? "aspect-4/3" : "aspect-3/4"}`}
+			>
 				<img
-					src={previewUrl}
+					src={displayUrl}
 					alt={card.cardName}
 					className="h-full w-full object-contain"
 				/>
+				{isMeldCard && (
+					<button
+						type="button"
+						onClick={toggleOrientation}
+						title={t(
+							isLandscape
+								? "gallery.rotate_portrait"
+								: "gallery.rotate_landscape",
+						)}
+						className="absolute top-1.5 right-1.5 p-1 rounded bg-surface/80 text-muted hover:text-heading transition-colors"
+					>
+						<RotateCcw className="w-3.5 h-3.5" />
+					</button>
+				)}
 			</div>
 
 			{/* Card Info */}

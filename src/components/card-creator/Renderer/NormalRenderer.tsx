@@ -306,18 +306,30 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 			)}
 
 			{CardIntellect && (
-				<text
-					x={config.elements.CardIntellectText.x}
-					y={config.elements.CardIntellectText.y}
-					textAnchor={config.elements.CardIntellectText.textAnchor || "middle"}
-					dominantBaseline="middle"
-					fill={config.elements.CardIntellectText.fill}
-					fontFamily={config.elements.CardIntellectText.fontFamily}
-					fontSize={config.elements.CardIntellectText.fontSize}
-					fontWeight={config.elements.CardIntellectText.fontWeight}
-				>
-					{CardIntellect}
-				</text>
+				<>
+					<image
+						href="/img/symbols/cardsymbol_intellect.svg"
+						x={config.elements.CardPowerImage.x}
+						y={config.elements.CardPowerImage.y}
+						width={config.elements.CardPowerImage.width}
+						height={config.elements.CardPowerImage.height}
+						preserveAspectRatio="xMidYMid slice"
+					/>
+					<text
+						x={config.elements.CardIntellectText.x}
+						y={config.elements.CardIntellectText.y}
+						textAnchor={
+							config.elements.CardIntellectText.textAnchor || "middle"
+						}
+						dominantBaseline="middle"
+						fill={config.elements.CardIntellectText.fill}
+						fontFamily={config.elements.CardIntellectText.fontFamily}
+						fontSize={config.elements.CardIntellectText.fontSize}
+						fontWeight={config.elements.CardIntellectText.fontWeight}
+					>
+						{CardIntellect}
+					</text>
+				</>
 			)}
 
 			{CardDefense && (

@@ -28,6 +28,11 @@ export function getCardBacksForTypeAndStyle(
 		return [];
 	}
 
+	// Meld cards have their own dedicated card backs regardless of style
+	if (type === "meld") {
+		return CardBacks.filter((back) => back.type === "meld");
+	}
+
 	const isDented = style === "dented";
 	let types = ["general"];
 	if (type === "ally") {

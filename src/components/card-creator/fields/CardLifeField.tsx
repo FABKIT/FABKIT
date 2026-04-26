@@ -7,7 +7,10 @@ export function CardLifeField() {
 	const { t } = useTranslation();
 	const CardLife = useCardCreator((state) => state.CardLife);
 	const setCardLife = useCardCreator((state) => state.setCardLife);
+	const CardType = useCardCreator((state) => state.CardType);
+	const CardDefense = useCardCreator((state) => state.CardDefense);
 	const shouldShow = useIsFieldVisible("CardLife");
+	const isConflicted = CardType === "meld" && Boolean(CardDefense);
 
 	if (!shouldShow) return null;
 	return (
@@ -16,6 +19,7 @@ export function CardLifeField() {
 			value={CardLife || ""}
 			onChange={setCardLife}
 			maxLength={2}
+			warning={isConflicted ? t("card_creator.conflict_defense") : undefined}
 		/>
 	);
 }
