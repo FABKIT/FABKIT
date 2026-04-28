@@ -4,6 +4,7 @@ import i18n from "../i18n";
 import { router } from "../main";
 import { blobToBase64, getAllCards } from "../persistence/card-storage";
 import { useCardCreator } from "../stores/card-creator";
+import { getLastBoundaryError } from "./error-context";
 
 // ─── Console Interceptor ──────────────────────────────────────────────────────
 
@@ -189,6 +190,15 @@ export async function generateBugReport(): Promise<void> {
 		gallery: serializedGallery,
 		console: [...consoleBuffer],
 		screenshot,
+		boundaryError: (() => {
+			const { error, componentStack } = getLastBoundaryError();
+			if (!error) return null;
+			return {
+				message: error.message,
+				stack: error.stack ?? "",
+				componentStack,
+			};
+		})(),
 	};
 
 	const fileBlob = new Blob([JSON.stringify(report)], {
