@@ -115,7 +115,7 @@
 	"footer": {
 		"disclaimer": "FABKIT is in no way affiliated with Legend Story Studios. Legend Story Studios®, Flesh and Blood™, and set names are trademarks of Legend Story Studios. Flesh and Blood characters, cards, logos, and art are property of Legend Story Studios. Card Images © Legend Story Studios",
 		"credits": "Developed by Thencros & Lambstream",
-		"version": "version {{hash}}"
+		"version": "v{{version}}"
 	},
 	"contact": {
 		"title": "Contact Us",

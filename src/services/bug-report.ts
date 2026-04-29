@@ -157,7 +157,7 @@ export async function generateBugReport(): Promise<void> {
 
 	const report = {
 		meta: {
-			appVersion: __GIT_HASH__,
+			appVersion: __APP_VERSION__,
 			timestamp: new Date().toISOString(),
 			url: window.location.href,
 			userAgent: navigator.userAgent,

@@ -388,7 +388,7 @@ export async function exportCardToJSON(card: StoredCard): Promise<string> {
 	]);
 
 	const exportData = {
-		appVersion: __GIT_HASH__,
+		appVersion: __APP_VERSION__,
 		version: card.version,
 		cardName: card.cardName,
 		createdAt: card.createdAt,

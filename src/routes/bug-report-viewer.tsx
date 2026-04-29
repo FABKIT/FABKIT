@@ -441,9 +441,14 @@ function BugReportViewer() {
 						<h1 className="text-2xl font-bold text-heading">
 							{t("bug_report_viewer.title")}
 						</h1>
-						<span className="rounded-full border border-border-primary bg-surface-muted px-3 py-0.5 font-mono text-xs text-muted">
+						<a
+							href={`https://github.com/FABKIT/FABKIT/tree/v${report.meta.appVersion}`}
+							target="_blank"
+							rel="noreferrer"
+							className="rounded-full border border-border-primary bg-surface-muted px-3 py-0.5 font-mono text-xs text-muted hover:text-heading transition-colors"
+						>
 							v{report.meta.appVersion}
-						</span>
+						</a>
 						{errorCount > 0 && (
 							<span className="rounded-full bg-red-500/10 px-3 py-0.5 text-xs font-medium text-red-500">
 								{errorCount} {t("bug_report_viewer.errors")}

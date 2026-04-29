@@ -333,7 +333,7 @@ export function Menu() {
 							alt={t("nav.logo_with_text_alt")}
 						/>
 						<p className="text-xs text-muted">
-							{t("footer.version", { hash: __GIT_SHORT_HASH__ })}
+							{t("footer.version", { version: __APP_VERSION__ })}
 						</p>
 					</div>
 					<hr className="h-px border-0 bg-border" />
