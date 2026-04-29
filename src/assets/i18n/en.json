@@ -284,6 +284,16 @@
 		"logo_with_text_alt": "FABKIT Logo",
 		"brand": "FaBKit"
 	},
+	"error_boundary": {
+		"title": "Something went wrong",
+		"description": "An unexpected error occurred. Please generate a bug report and open a GitHub issue so we can fix it.",
+		"details_toggle": "Error details",
+		"generate_report": "Generate Bug Report",
+		"generating_report": "Generating…",
+		"go_home": "Go to Homepage",
+		"github_prompt": "Please open a GitHub issue and attach the downloaded .fabreport file.",
+		"github_link_text": "Open a GitHub issue"
+	},
 	"bug_report": {
 		"button": "Report a Bug",
 		"alert": "FABKIT Bug Report\n\nThis will:\n1. Take a screenshot of the current page\n2. Ask a few questions\n3. Download a .fabreport file\n\nThe report includes your current card state (including artwork), full gallery contents, and recent console errors. No data is sent anywhere — the file is saved locally.\n\nClick OK to continue.",
