@@ -2,7 +2,12 @@ import { snapdom } from "@zumer/snapdom";
 import { AllRenderConfigVariations } from "../config/rendering";
 import i18n from "../i18n";
 import { router } from "../main";
-import { blobToBase64, getAllCards } from "../persistence/card-storage";
+import {
+	blobToBase64,
+	exportCardToObject,
+	type FabgalleryFile,
+	getAllCards,
+} from "../persistence/card-storage";
 import { useCardCreator } from "../stores/card-creator";
 import { getLastBoundaryError } from "./error-context";
 
@@ -150,12 +155,22 @@ export async function generateBugReport(): Promise<void> {
 	const storeState = useCardCreator.getState();
 	const gallery = await getAllCards().catch(() => []);
 
-	const [serializedStore, serializedGallery] = await Promise.all([
+	const [serializedStore, serializedCards] = await Promise.all([
 		serializeValue(storeState),
-		serializeValue(gallery),
+		Promise.all(gallery.map(exportCardToObject)),
 	]);
 
+	const serializedGallery: FabgalleryFile = {
+		format: "fabgallery",
+		formatVersion: __APP_VERSION__,
+		exportedAt: new Date().toISOString(),
+		cardCount: serializedCards.length,
+		cards: serializedCards,
+	};
+
 	const report = {
+		format: "fabreport",
+		formatVersion: __APP_VERSION__,
 		meta: {
 			appVersion: __APP_VERSION__,
 			timestamp: new Date().toISOString(),

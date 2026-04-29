@@ -1,9 +1,16 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CardThumbnail } from "../components/gallery/CardThumbnail";
 import { FileUploadButton } from "../components/gallery/FileUploadButton.tsx";
-import { getAllCards, importCardFromJSON } from "../persistence/card-storage";
+import {
+	exportGalleryToFile,
+	type GalleryImportMode,
+	getAllCards,
+	importCardFromJSON,
+	importGalleryFromJSON,
+} from "../persistence/card-storage";
 
 export const Route = createFileRoute("/gallery")({
 	component: GalleryPage,
@@ -16,6 +23,10 @@ function GalleryPage() {
 	const router = useRouter();
 	const [isDragging, setIsDragging] = useState(false);
 	const [isImporting, setIsImporting] = useState(false);
+	const [isExporting, setIsExporting] = useState(false);
+	const [pendingGalleryFile, setPendingGalleryFile] = useState<File | null>(
+		null,
+	);
 
 	const handleDragOver = (e: React.DragEvent) => {
 		e.preventDefault();
@@ -24,73 +35,78 @@ function GalleryPage() {
 
 	const handleDragLeave = (e: React.DragEvent) => {
 		e.preventDefault();
-		// Only set to false if leaving the container entirely
 		if (e.currentTarget === e.target) {
 			setIsDragging(false);
+		}
+	};
+
+	const processFiles = async (files: File[]) => {
+		const galleryFile = files.find((f) => f.name.endsWith(".fabgallery"));
+		if (galleryFile) {
+			setPendingGalleryFile(galleryFile);
+			return;
+		}
+
+		const fabkitFiles = files.filter(
+			(f) => f.name.endsWith(".fabkit") || f.type === "application/fabkit+json",
+		);
+
+		if (fabkitFiles.length === 0) {
+			alert(t("gallery.import_error_invalid_file"));
+			return;
+		}
+
+		setIsImporting(true);
+		try {
+			for (const file of fabkitFiles) {
+				const text = await file.text();
+				await importCardFromJSON(text);
+			}
+			router.invalidate();
+		} catch (error) {
+			console.error("Failed to import card:", error);
+			alert(t("gallery.import_error"));
+		} finally {
+			setIsImporting(false);
 		}
 	};
 
 	const handleDrop = async (e: React.DragEvent) => {
 		e.preventDefault();
 		setIsDragging(false);
+		await processFiles(Array.from(e.dataTransfer.files));
+	};
 
-		const files = Array.from(e.dataTransfer.files);
-		const fabkitFiles = files.filter(
-			(file) =>
-				file.name.endsWith(".fabkit") ||
-				file.type === "application/fabkit+json",
-		);
+	const handleImport = async (e: ChangeEvent<HTMLInputElement>) => {
+		await processFiles(Array.from(e.currentTarget.files ?? []));
+	};
 
-		if (fabkitFiles.length === 0) {
-			alert(t("gallery.import_error_invalid_file"));
-			return;
-		}
-
+	const handleGalleryImport = async (mode: GalleryImportMode) => {
+		if (!pendingGalleryFile) return;
+		const file = pendingGalleryFile;
+		setPendingGalleryFile(null);
 		setIsImporting(true);
-
 		try {
-			for (const file of fabkitFiles) {
-				const text = await file.text();
-				await importCardFromJSON(text);
-			}
-
-			// Reload the gallery to show the imported cards
+			const text = await file.text();
+			await importGalleryFromJSON(text, mode);
 			router.invalidate();
 		} catch (error) {
-			console.error("Failed to import card:", error);
+			console.error("Failed to import gallery:", error);
 			alert(t("gallery.import_error"));
 		} finally {
 			setIsImporting(false);
 		}
 	};
 
-	const handleImport = async (e: ChangeEvent<HTMLInputElement>) => {
-		const files = Array.from(e.currentTarget.files ?? []);
-		const fabkitFiles = files.filter(
-			(file) =>
-				file.name.endsWith(".fabkit") ||
-				file.type === "application/fabkit+json",
-		);
-
-		if (fabkitFiles.length === 0) {
-			alert(t("gallery.import_error_invalid_file"));
-			return;
-		}
-		setIsImporting(true);
-
+	const handleExportGallery = async () => {
+		setIsExporting(true);
 		try {
-			for (const file of fabkitFiles) {
-				const text = await file.text();
-				await importCardFromJSON(text);
-			}
-
-			// Reload the gallery to show the imported cards
-			router.invalidate();
+			await exportGalleryToFile(cards);
 		} catch (error) {
-			console.error("Failed to import card:", error);
-			alert(t("gallery.import_error"));
+			console.error("Failed to export gallery:", error);
+			alert(t("gallery.export_gallery_error"));
 		} finally {
-			setIsImporting(false);
+			setIsExporting(false);
 		}
 	};
 
@@ -127,6 +143,59 @@ function GalleryPage() {
 				</div>
 			)}
 
+			{/* Gallery import dialog */}
+			{pendingGalleryFile && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm">
+					<div className="mx-4 w-full max-w-md rounded-lg border-2 border-border-primary bg-surface p-6 shadow-xl">
+						<h2 className="text-lg font-semibold text-heading mb-2">
+							{t("gallery.import_gallery_title")}
+						</h2>
+						<p className="text-sm text-muted mb-6">
+							{t("gallery.import_gallery_description")}
+						</p>
+						<div className="flex flex-col gap-3">
+							<button
+								type="button"
+								onClick={() => handleGalleryImport("merge")}
+								className="flex items-center gap-3 rounded-lg border border-border-primary bg-surface-muted px-4 py-3 text-sm text-body hover:bg-surface-active transition-colors text-left"
+							>
+								<FolderSync className="h-5 w-5 text-heading flex-shrink-0" />
+								<div>
+									<p className="font-medium text-heading">
+										{t("gallery.import_merge")}
+									</p>
+									<p className="text-xs text-subtle">
+										{t("gallery.import_merge_description")}
+									</p>
+								</div>
+							</button>
+							<button
+								type="button"
+								onClick={() => handleGalleryImport("replace")}
+								className="flex items-center gap-3 rounded-lg border border-border-primary bg-surface-muted px-4 py-3 text-sm text-body hover:bg-surface-active transition-colors text-left"
+							>
+								<RotateCcw className="h-5 w-5 text-heading flex-shrink-0" />
+								<div>
+									<p className="font-medium text-heading">
+										{t("gallery.import_replace")}
+									</p>
+									<p className="text-xs text-subtle">
+										{t("gallery.import_replace_description")}
+									</p>
+								</div>
+							</button>
+							<button
+								type="button"
+								onClick={() => setPendingGalleryFile(null)}
+								className="mt-1 text-sm text-subtle hover:text-muted transition-colors"
+							>
+								{t("gallery.import_cancel")}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
 			{/* Header */}
 			<div className="flex items-center justify-between border-b border-border-primary px-6 py-4">
 				<div>
@@ -135,10 +204,26 @@ function GalleryPage() {
 					</h1>
 					<p className="text-sm text-muted">{t("gallery.subtitle")}</p>
 				</div>
-				<FileUploadButton
-					label={t("gallery.import_label")}
-					onChange={handleImport}
-				/>
+				<div className="flex items-center gap-2">
+					<button
+						type="button"
+						onClick={handleExportGallery}
+						disabled={isExporting || cards.length === 0}
+						className="flex items-center gap-2 rounded-md border border-border-primary bg-surface px-3.5 py-2.5 text-sm font-semibold text-heading transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						{isExporting ? (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						) : (
+							<Download className="h-4 w-4" />
+						)}
+						{t("gallery.export_gallery")}
+					</button>
+					<FileUploadButton
+						label={t("gallery.import_label")}
+						accept=".fabkit,.fabgallery"
+						onChange={handleImport}
+					/>
+				</div>
 			</div>
 
 			{/* Content */}
