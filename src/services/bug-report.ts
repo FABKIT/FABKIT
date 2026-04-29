@@ -194,8 +194,8 @@ export async function generateBugReport(): Promise<void> {
 			const { error, componentStack } = getLastBoundaryError();
 			if (!error) return null;
 			return {
-				message: error.message,
-				stack: error.stack ?? "",
+				message: error instanceof Error ? error.message : `${error} `,
+				stack: error instanceof Error ? error.stack : "",
 				componentStack,
 			};
 		})(),

@@ -1,5 +1,5 @@
 interface BoundaryErrorContext {
-	error: Error | null;
+	error: unknown | null;
 	componentStack: string;
 }
 

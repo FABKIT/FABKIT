@@ -1,17 +1,33 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Bug, Home } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { generateBugReport } from "../services/bug-report";
 
 interface AppErrorFallbackProps {
-	error: Error;
+	error: unknown;
 	resetErrorBoundary: () => void;
 }
 
 export function AppErrorFallback({ error }: AppErrorFallbackProps) {
 	const { t } = useTranslation();
 	const [generating, setGenerating] = useState(false);
+
+	const message = useMemo(() => {
+		if (error instanceof Error) {
+			return error.message;
+		} else if (error) {
+			return `${error}`;
+		}
+	}, [error]);
+
+	const stackTrace = useMemo(() => {
+		if (error instanceof Error) {
+			return error.stack;
+		}
+
+		return undefined;
+	}, [error]);
 
 	async function handleGenerateReport() {
 		setGenerating(true);
@@ -38,9 +54,9 @@ export function AppErrorFallback({ error }: AppErrorFallbackProps) {
 					<summary className="text-muted cursor-pointer select-none text-sm font-medium">
 						{t("error_boundary.details_toggle")}
 					</summary>
-					<pre className="mt-3 overflow-x-auto whitespace-pre-wrap break-words text-xs text-muted font-mono leading-relaxed">
-						{error.message}
-						{error.stack ? `\n\n${error.stack}` : ""}
+					<pre className="mt-3 overflow-x-auto whitespace-pre-wrap wrap-break-word text-xs text-muted font-mono leading-relaxed">
+						{message}
+						{stackTrace ? `\n\n${stackTrace}` : ""}
 					</pre>
 				</details>
 

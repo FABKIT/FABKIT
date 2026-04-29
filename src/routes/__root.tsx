@@ -18,7 +18,7 @@ export const Route = createRootRoute({
 function RootComponent() {
 	const { pathname } = useLocation();
 
-	function handleError(error: Error, errorInfo: ErrorInfo) {
+	function handleError(error: unknown, errorInfo: ErrorInfo) {
 		console.error("[ErrorBoundary]", error, errorInfo.componentStack);
 		setLastBoundaryError({
 			error,
