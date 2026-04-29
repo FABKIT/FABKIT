@@ -4,6 +4,7 @@ import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CardThumbnail } from "../components/gallery/CardThumbnail";
 import { FileUploadButton } from "../components/gallery/FileUploadButton.tsx";
+import { decompressFile } from "../lib/compression";
 import {
 	exportGalleryToFile,
 	type GalleryImportMode,
@@ -59,7 +60,7 @@ function GalleryPage() {
 		setIsImporting(true);
 		try {
 			for (const file of fabkitFiles) {
-				const text = await file.text();
+				const text = await decompressFile(file);
 				await importCardFromJSON(text);
 			}
 			router.invalidate();
@@ -87,7 +88,7 @@ function GalleryPage() {
 		setPendingGalleryFile(null);
 		setIsImporting(true);
 		try {
-			const text = await file.text();
+			const text = await decompressFile(file);
 			await importGalleryFromJSON(text, mode);
 			router.invalidate();
 		} catch (error) {

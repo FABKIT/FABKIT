@@ -24,6 +24,7 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { major, valid } from "semver";
 import { CardBacks } from "../config/cards/card_backs";
+import { decompressFile } from "../lib/compression";
 import {
 	base64ToBlob,
 	clearGallery,
@@ -258,21 +259,18 @@ function BugReportViewer() {
 	const [restoringGallery, setRestoringGallery] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const loadFile = useCallback((file: File) => {
-		const reader = new FileReader();
-		reader.onload = async (e) => {
-			try {
-				const parsed = JSON.parse(e.target?.result as string) as Fabreport;
-				setReport(parsed);
-				console.debug("loading stack remapping");
-				const { remapStacks } = await import("../services/stack-remap");
-				const remapped = await remapStacks(parsed);
-				setReport(remapped);
-			} catch {
-				// Silently ignore invalid files — user will see no report loaded.
-			}
-		};
-		reader.readAsText(file);
+	const loadFile = useCallback(async (file: File) => {
+		try {
+			const text = await decompressFile(file);
+			const parsed = JSON.parse(text) as Fabreport;
+			setReport(parsed);
+			console.debug("loading stack remapping");
+			const { remapStacks } = await import("../services/stack-remap");
+			const remapped = await remapStacks(parsed);
+			setReport(remapped);
+		} catch {
+			// Silently ignore invalid files — user will see no report loaded.
+		}
 	}, []);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

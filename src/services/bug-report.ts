@@ -1,6 +1,7 @@
 import { snapdom } from "@zumer/snapdom";
 import { AllRenderConfigVariations } from "../config/rendering";
 import i18n from "../i18n";
+import { compressJSON } from "../lib/compression";
 import { router } from "../main";
 import {
 	blobToBase64,
@@ -216,9 +217,7 @@ export async function generateBugReport(): Promise<void> {
 		})(),
 	};
 
-	const fileBlob = new Blob([JSON.stringify(report)], {
-		type: "application/json",
-	});
+	const fileBlob = await compressJSON(JSON.stringify(report));
 	const url = URL.createObjectURL(fileBlob);
 	const a = document.createElement("a");
 	a.href = url;

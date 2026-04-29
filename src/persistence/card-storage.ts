@@ -1,4 +1,5 @@
 import { CardBacks } from "../config/cards/card_backs.ts";
+import { compressJSON } from "../lib/compression";
 import {
 	type CardCreatorState,
 	defaultMeldHalf,
@@ -396,8 +397,11 @@ export async function importCardFromJSON(jsonString: string): Promise<void> {
 	return importCardFromObject(data as FabkitFile);
 }
 
-export function downloadCardJSON(jsonString: string, cardName: string): void {
-	const blob = new Blob([jsonString], { type: "application/fabkit+json" });
+export async function downloadCardJSON(
+	jsonString: string,
+	cardName: string,
+): Promise<void> {
+	const blob = await compressJSON(jsonString);
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement("a");
 	a.href = url;
@@ -421,9 +425,7 @@ export async function exportGalleryToFile(cards: StoredCard[]): Promise<void> {
 		cards: serialized,
 	};
 
-	const blob = new Blob([JSON.stringify(gallery)], {
-		type: "application/fabgallery+json",
-	});
+	const blob = await compressJSON(JSON.stringify(gallery));
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement("a");
 	a.href = url;
