@@ -18,6 +18,7 @@ export default defineConfig({
 		__GIT_SHORT_HASH__: JSON.stringify(gitShortHash),
 	},
 	build: {
+		sourcemap: true,
 		rolldownOptions: {
 			output: {
 				advancedChunks: {

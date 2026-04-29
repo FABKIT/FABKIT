@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
+	AlertTriangle,
 	ChevronDown,
 	ChevronUp,
 	CircleAlert,
@@ -10,6 +11,7 @@ import {
 	Globe,
 	Images,
 	Layers,
+	MessageCircle,
 	Monitor,
 	RefreshCw,
 	RotateCcw,
@@ -69,6 +71,11 @@ interface Fabreport {
 	gallery: unknown[];
 	console: FabreportConsoleEntry[];
 	screenshot: string | null;
+	boundaryError?: {
+		message: string;
+		stack?: string;
+		componentStack?: string;
+	} | null;
 }
 
 // ─── Route ────────────────────────────────────────────────────────────────────
@@ -227,6 +234,76 @@ async function restoreGallery(items: unknown[]): Promise<void> {
 	}
 }
 
+function buildClaudePrompt(report: Fabreport): string {
+	const lines: string[] = [
+		`I'm debugging a bug report from FABKIT, app version (https://github.com/FABKIT/FABKIT/commit/${report.meta.appVersion}).`,
+		"",
+	];
+
+	const { whatBroke, lastActions, comments } = report.user;
+	if (whatBroke) lines.push(`What broke: ${whatBroke ?? "unspecified"}`);
+	if (lastActions)
+		lines.push(`Last actions before the bug: ${lastActions ?? "unspecified"}`);
+	if (comments) lines.push(`Additional comments: ${comments ?? "unspecified"}`);
+	lines.push("");
+
+	if (report.boundaryError) {
+		lines.push("## Crash Error");
+		lines.push(`Message: ${report.boundaryError.message}`);
+		if (report.boundaryError.stack) {
+			const stack = report.boundaryError.stack.slice(0, 1500);
+			lines.push("");
+			lines.push(`<stack_trace>`);
+			lines.push(`${stack}`);
+			lines.push("</stack_trace>");
+		}
+		lines.push("");
+	}
+
+	const errors = report.console.filter((e) => e.level === "error").slice(0, 5);
+	const warns = report.console.filter((e) => e.level === "warn").slice(0, 3);
+	const unhandled = report.console
+		.filter((e) => e.level === "unhandled")
+		.slice(0, 3);
+
+	if (errors.length > 0) {
+		lines.push("## Console Errors");
+		for (const e of errors) {
+			lines.push(`- ${e.message}`);
+			if (e.stack) lines.push(`  ${e.stack.split("\n")[1]?.trim() ?? ""}`);
+		}
+		lines.push("");
+	}
+
+	if (unhandled.length > 0) {
+		lines.push("## Unhandled Rejections");
+		for (const e of unhandled) lines.push(`- ${e.message}`);
+		lines.push("");
+	}
+
+	if (warns.length > 0) {
+		lines.push("## Console Warnings");
+		for (const e of warns) lines.push(`- ${e.message}`);
+		lines.push("");
+	}
+
+	const activeRoute =
+		report.meta.router.matches.at(-1)?.pathname ?? report.meta.url;
+	lines.push("## Environment");
+	lines.push(`- App URL: ${report.meta.url}`);
+	lines.push(`- Active route: ${activeRoute}`);
+	lines.push(`- User agent: ${report.meta.userAgent}`);
+	lines.push(`- Viewport: ${report.meta.viewport}`);
+	lines.push(`- Language: ${report.meta.language}`);
+	lines.push("");
+
+	lines.push(
+		"Please help diagnose what caused this issue and suggest possible fixes.",
+	);
+
+	return lines.join("\n");
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function BugReportViewer() {
@@ -241,10 +318,14 @@ function BugReportViewer() {
 
 	const loadFile = useCallback((file: File) => {
 		const reader = new FileReader();
-		reader.onload = (e) => {
+		reader.onload = async (e) => {
 			try {
 				const parsed = JSON.parse(e.target?.result as string) as Fabreport;
 				setReport(parsed);
+				console.debug("loading stack remapping");
+				const { remapStacks } = await import("../services/stack-remap");
+				const remapped = await remapStacks(parsed);
+				setReport(remapped);
 			} catch {
 				// Silently ignore invalid files — user will see no report loaded.
 			}
@@ -387,14 +468,25 @@ function BugReportViewer() {
 						</span>
 					</div>
 				</div>
-				<button
-					type="button"
-					onClick={reset}
-					className="flex items-center gap-2 rounded-lg border border-border-primary bg-surface px-4 py-2 text-sm text-muted transition-colors hover:bg-surface-muted hover:text-body"
-				>
-					<RefreshCw className="h-4 w-4" />
-					{t("bug_report_viewer.load_another")}
-				</button>
+				<div className="flex items-center gap-2">
+					<a
+						href={`https://claude.ai/new?q=${encodeURIComponent(buildClaudePrompt(report))}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="flex items-center gap-2 rounded-lg border border-border-primary bg-orange-300 px-4 py-2 text-sm text-white transition-colors hover:bg-orange-400"
+					>
+						<MessageCircle className="h-4 w-4" />
+						{t("bug_report_viewer.ask_claude")}
+					</a>
+					<button
+						type="button"
+						onClick={reset}
+						className="flex items-center gap-2 rounded-lg border border-border-primary bg-surface px-4 py-2 text-sm text-muted transition-colors hover:bg-surface-muted hover:text-body"
+					>
+						<RefreshCw className="h-4 w-4" />
+						{t("bug_report_viewer.load_another")}
+					</button>
+				</div>
 			</div>
 
 			<div className="space-y-6">
@@ -457,6 +549,50 @@ function BugReportViewer() {
 						)}
 					</div>
 				</div>
+
+				{/* Boundary Error */}
+				{report.boundaryError && (
+					<div className="rounded-lg border-2 border-red-500/40 bg-surface shadow-lg">
+						<div className="border-b border-red-500/20 bg-red-500/5 px-6 py-4">
+							<div className="flex items-center gap-3">
+								<AlertTriangle className="h-5 w-5 text-red-500" />
+								<h2 className="text-xl font-semibold text-heading">
+									{t("bug_report_viewer.section_boundary_error")}
+								</h2>
+							</div>
+						</div>
+						<div className="flex flex-col gap-4 p-6">
+							<div>
+								<p className="mb-1 text-xs font-semibold uppercase tracking-wider text-subtle">
+									{t("bug_report_viewer.boundary_error_message")}
+								</p>
+								<p className="font-mono text-sm text-body break-all">
+									{report.boundaryError.message}
+								</p>
+							</div>
+							{report.boundaryError.stack && (
+								<div>
+									<p className="mb-2 text-xs font-semibold uppercase tracking-wider text-subtle">
+										{t("bug_report_viewer.stack_trace")}
+									</p>
+									<pre className="overflow-x-auto rounded-lg border border-border-primary bg-surface-muted p-4 font-mono text-xs text-body whitespace-pre-wrap">
+										{report.boundaryError.stack}
+									</pre>
+								</div>
+							)}
+							{report.boundaryError.componentStack && (
+								<details>
+									<summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-subtle hover:text-muted">
+										{t("bug_report_viewer.component_stack")}
+									</summary>
+									<pre className="mt-2 overflow-x-auto rounded-lg border border-border-primary bg-surface-muted p-4 font-mono text-xs text-subtle whitespace-pre-wrap">
+										{report.boundaryError.componentStack}
+									</pre>
+								</details>
+							)}
+						</div>
+					</div>
+				)}
 
 				{/* Environment */}
 				<div className="rounded-lg border-2 border-border-primary bg-surface shadow-lg">
