@@ -36,6 +36,7 @@
 		"react-dom": "^19.2.5",
 		"react-error-boundary": "^6.1.1",
 		"react-i18next": "^17.0.3",
+		"source-map-js": "^1.2.1",
 		"tailwindcss": "^4.2.2",
 		"use-debounce": "^10.1.1",
 		"use-object-url": "^1.0.0",
