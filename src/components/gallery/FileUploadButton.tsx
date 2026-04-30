@@ -4,9 +4,14 @@ import type { ChangeEvent } from "react";
 interface FileUploadButton {
 	onChange?: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
 	label: string;
+	accept?: string;
 }
 
-export function FileUploadButton({ onChange, label }: FileUploadButton) {
+export function FileUploadButton({
+	onChange,
+	label,
+	accept = ".fabkit",
+}: FileUploadButton) {
 	return (
 		<>
 			<input
@@ -15,7 +20,7 @@ export function FileUploadButton({ onChange, label }: FileUploadButton) {
 				name="import_file"
 				className="hidden"
 				multiple
-				accept=".fabkit"
+				accept={accept}
 				onChange={onChange}
 			/>
 			<label htmlFor="import_file">

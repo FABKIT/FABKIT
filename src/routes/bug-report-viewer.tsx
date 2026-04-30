@@ -22,8 +22,16 @@ import {
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { major, valid } from "semver";
 import { CardBacks } from "../config/cards/card_backs";
-import { initCardDatabase } from "../persistence/card-storage";
+import { decompressFile } from "../lib/compression";
+import {
+	base64ToBlob,
+	clearGallery,
+	type FabgalleryFile,
+	type FabkitFile,
+	importCardFromObject,
+} from "../persistence/card-storage";
 import type { CardCreatorState } from "../stores/card-creator";
 import { useCardCreator } from "../stores/card-creator";
 
@@ -44,6 +52,8 @@ interface FabreportRouterMatch {
 }
 
 interface Fabreport {
+	format?: "fabreport";
+	formatVersion?: string;
 	meta: {
 		appVersion: string;
 		timestamp: string;
@@ -68,7 +78,8 @@ interface Fabreport {
 		resolvedConfig: unknown | null;
 	};
 	store: unknown;
-	gallery: unknown[];
+	/** FabgalleryFile for reports generated after format versioning; raw array for older reports. */
+	gallery: FabgalleryFile | unknown[];
 	console: FabreportConsoleEntry[];
 	screenshot: string | null;
 	boundaryError?: {
@@ -86,14 +97,25 @@ export const Route = createFileRoute("/bug-report-viewer")({
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Converts a base64 data URL back to a Blob. */
-async function base64ToBlob(dataUrl: string): Promise<Blob> {
-	const res = await fetch(dataUrl);
-	return res.blob();
+type VersionCompatibility = "compatible" | "major-mismatch" | "unknown";
+
+function checkVersionCompatibility(
+	formatVersion: string | undefined,
+): VersionCompatibility {
+	if (!formatVersion || !valid(formatVersion)) return "unknown";
+	if (!valid(__APP_VERSION__)) return "compatible";
+	return major(formatVersion) !== major(__APP_VERSION__)
+		? "major-mismatch"
+		: "compatible";
 }
 
-/** IndexedDB store name — must match card-storage.ts */
-const IDB_STORE_NAME = "cards";
+/** Handles both old reports (gallery is a raw array) and new reports (gallery is FabgalleryFile). */
+function getGalleryCards(
+	gallery: FabgalleryFile | unknown[],
+): FabkitFile[] | unknown[] {
+	if (Array.isArray(gallery)) return gallery;
+	return gallery.cards;
+}
 
 /** Restores serialized store state into the card creator. */
 async function restoreStore(raw: unknown): Promise<void> {
@@ -145,92 +167,13 @@ async function restoreStore(raw: unknown): Promise<void> {
 	});
 }
 
-/**
- * Replaces the entire gallery in IndexedDB with the items from the report.
- * Each gallery item has Blobs serialized as base64 data URLs.
- */
-async function restoreGallery(items: unknown[]): Promise<void> {
-	const db = await initCardDatabase();
-
-	// Wipe existing gallery.
-	await new Promise<void>((resolve, reject) => {
-		const tx = db.transaction([IDB_STORE_NAME], "readwrite");
-		tx.objectStore(IDB_STORE_NAME).clear();
-		tx.oncomplete = () => resolve();
-		tx.onerror = () => reject(tx.error);
-	});
-
-	for (const raw of items) {
-		const item = raw as {
-			version: string;
-			cardName: string;
-			createdAt: number;
-			updatedAt: number;
-			preview: string;
-			state: Record<string, unknown>;
-		};
-
-		const [
-			preview,
-			cardArtwork,
-			cardOverlay,
-			meldHalfAArtwork,
-			meldHalfBArtwork,
-		] = await Promise.all([
-			base64ToBlob(item.preview),
-			typeof item.state.CardArtwork === "string"
-				? base64ToBlob(item.state.CardArtwork)
-				: Promise.resolve(null),
-			typeof item.state.CardOverlay === "string"
-				? base64ToBlob(item.state.CardOverlay)
-				: Promise.resolve(null),
-			typeof (item.state.meldHalfA as { CardArtwork?: unknown } | undefined)
-				?.CardArtwork === "string"
-				? base64ToBlob(
-						(item.state.meldHalfA as { CardArtwork: string }).CardArtwork,
-					)
-				: Promise.resolve(null),
-			typeof (item.state.meldHalfB as { CardArtwork?: unknown } | undefined)
-				?.CardArtwork === "string"
-				? base64ToBlob(
-						(item.state.meldHalfB as { CardArtwork: string }).CardArtwork,
-					)
-				: Promise.resolve(null),
-		]);
-
-		const storedCard = {
-			version: item.version,
-			cardName: item.cardName,
-			createdAt: item.createdAt,
-			updatedAt: item.updatedAt,
-			preview,
-			state: {
-				...item.state,
-				CardArtwork: cardArtwork,
-				CardOverlay: cardOverlay,
-				meldHalfA:
-					item.state.meldHalfA && typeof item.state.meldHalfA === "object"
-						? {
-								...item.state.meldHalfA,
-								CardArtwork: meldHalfAArtwork,
-							}
-						: undefined,
-				meldHalfB:
-					item.state.meldHalfB && typeof item.state.meldHalfB === "object"
-						? {
-								...item.state.meldHalfB,
-								CardArtwork: meldHalfBArtwork,
-							}
-						: undefined,
-			},
-		};
-
-		await new Promise<void>((resolve, reject) => {
-			const tx = db.transaction([IDB_STORE_NAME], "readwrite");
-			tx.objectStore(IDB_STORE_NAME).put(storedCard);
-			tx.oncomplete = () => resolve();
-			tx.onerror = () => reject(tx.error);
-		});
+async function restoreGallery(
+	gallery: FabgalleryFile | unknown[],
+): Promise<void> {
+	await clearGallery();
+	const cards = getGalleryCards(gallery);
+	for (const card of cards) {
+		await importCardFromObject(card as FabkitFile);
 	}
 }
 
@@ -316,21 +259,18 @@ function BugReportViewer() {
 	const [restoringGallery, setRestoringGallery] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const loadFile = useCallback((file: File) => {
-		const reader = new FileReader();
-		reader.onload = async (e) => {
-			try {
-				const parsed = JSON.parse(e.target?.result as string) as Fabreport;
-				setReport(parsed);
-				console.debug("loading stack remapping");
-				const { remapStacks } = await import("../services/stack-remap");
-				const remapped = await remapStacks(parsed);
-				setReport(remapped);
-			} catch {
-				// Silently ignore invalid files — user will see no report loaded.
-			}
-		};
-		reader.readAsText(file);
+	const loadFile = useCallback(async (file: File) => {
+		try {
+			const text = await decompressFile(file);
+			const parsed = JSON.parse(text) as Fabreport;
+			setReport(parsed);
+			console.debug("loading stack remapping");
+			const { remapStacks } = await import("../services/stack-remap");
+			const remapped = await remapStacks(parsed);
+			setReport(remapped);
+		} catch {
+			// Silently ignore invalid files — user will see no report loaded.
+		}
 	}, []);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -431,6 +371,10 @@ function BugReportViewer() {
 
 	const errorCount = report.console.filter((e) => e.level === "error").length;
 	const warnCount = report.console.filter((e) => e.level === "warn").length;
+	const galleryCards = getGalleryCards(report.gallery);
+	const versionCompat = checkVersionCompatibility(
+		report.formatVersion ?? report.meta.appVersion,
+	);
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -441,9 +385,14 @@ function BugReportViewer() {
 						<h1 className="text-2xl font-bold text-heading">
 							{t("bug_report_viewer.title")}
 						</h1>
-						<span className="rounded-full border border-border-primary bg-surface-muted px-3 py-0.5 font-mono text-xs text-muted">
+						<a
+							href={`https://github.com/FABKIT/FABKIT/tree/v${report.meta.appVersion}`}
+							target="_blank"
+							rel="noreferrer"
+							className="rounded-full border border-border-primary bg-surface-muted px-3 py-0.5 font-mono text-xs text-muted hover:text-heading transition-colors"
+						>
 							v{report.meta.appVersion}
-						</span>
+						</a>
 						{errorCount > 0 && (
 							<span className="rounded-full bg-red-500/10 px-3 py-0.5 text-xs font-medium text-red-500">
 								{errorCount} {t("bug_report_viewer.errors")}
@@ -488,6 +437,15 @@ function BugReportViewer() {
 					</button>
 				</div>
 			</div>
+
+			{versionCompat !== "compatible" && (
+				<div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+					<AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+					<p className="text-sm text-amber-500">
+						{t("bug_report_viewer.version_mismatch")}
+					</p>
+				</div>
+			)}
 
 			<div className="space-y-6">
 				{/* User Description */}
@@ -749,7 +707,7 @@ function BugReportViewer() {
 					data={report.gallery}
 					expanded={galleryExpanded}
 					onToggle={() => setGalleryExpanded((v) => !v)}
-					count={report.gallery.length}
+					count={galleryCards.length}
 					itemsLabel={t("bug_report_viewer.items")}
 					action={
 						<RestoreButton

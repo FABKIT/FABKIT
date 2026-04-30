@@ -115,7 +115,7 @@
 	"footer": {
 		"disclaimer": "FABKIT is in no way affiliated with Legend Story Studios. Legend Story Studios®, Flesh and Blood™, and set names are trademarks of Legend Story Studios. Flesh and Blood characters, cards, logos, and art are property of Legend Story Studios. Card Images © Legend Story Studios",
 		"credits": "Developed by Thencros & Lambstream",
-		"version": "version {{hash}}"
+		"version": "v{{version}}"
 	},
 	"contact": {
 		"title": "Contact Us",
@@ -205,11 +205,20 @@
 		"edit_warning": "Loading this card will replace your current work. Continue?",
 		"delete_confirm": "Are you sure you want to delete this card? This cannot be undone.",
 		"drop_to_import": "Drop to import cards",
-		"drop_to_import_subtitle": "Release to add .fabkit files to your gallery",
+		"drop_to_import_subtitle": "Release to add .fabkit or .fabgallery files to your gallery",
 		"import_label": "Import",
 		"importing": "Importing cards...",
 		"import_error": "Failed to import card. Please check the file format.",
-		"import_error_invalid_file": "Please drop only .fabkit files"
+		"import_error_invalid_file": "Please drop only .fabkit or .fabgallery files",
+		"export_gallery": "Export Gallery",
+		"export_gallery_error": "Failed to export gallery. Please try again.",
+		"import_gallery_title": "Import Gallery",
+		"import_gallery_description": "How should imported cards be handled?",
+		"import_merge": "Merge",
+		"import_merge_description": "Add new cards, skip cards you already have.",
+		"import_replace": "Replace All",
+		"import_replace_description": "Delete your current gallery and replace it with the imported cards. This cannot be undone.",
+		"import_cancel": "Cancel"
 	},
 	"export": {
 		"exporting_label": "Exporting your card, this may take a few seconds...",
@@ -341,6 +350,7 @@
 		"section_store": "Store State",
 		"restore_store": "Restore store",
 		"section_gallery": "Gallery",
-		"restore_gallery": "Restore gallery"
+		"restore_gallery": "Restore gallery",
+		"version_mismatch": "This report was created with a different major version of FABKIT. Some data may not be compatible with the current version."
 	}
 }

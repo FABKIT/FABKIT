@@ -1,74 +1,23 @@
-/**
- * Card Storage Persistence Layer
- *
- * Manages IndexedDB storage for saved cards, including serialization,
- * import/export functionality, and CRUD operations.
- *
- * ## IndexedDB Schema
- * - **Database**: "fabkit-cards" (version 1)
- * - **Object Store**: "cards"
- * - **Primary Key**: "version" (UUID from CardCreatorState.__version)
- * - **Indexes**:
- *   - cardName (non-unique)
- *   - createdAt (non-unique)
- *   - updatedAt (non-unique, used for default sorting)
- *
- * ## Serialization Format
- * - CardBack objects are converted to numeric IDs for storage
- * - Blob objects (artwork, preview) are stored directly in IndexedDB
- * - For export, Blobs are converted to base64 data URLs
- *
- * ## .fabkit File Format
- * JSON structure with base64-encoded images:
- * ```json
- * {
- *   "version": "uuid",
- *   "cardName": "string",
- *   "createdAt": timestamp,
- *   "updatedAt": timestamp,
- *   "preview": "data:image/png;base64,...",
- *   "state": { ...SerializedCardState with base64 artwork }
- * }
- * ```
- */
-
 import { CardBacks } from "../config/cards/card_backs.ts";
+import { compressJSON } from "../lib/compression";
 import {
 	type CardCreatorState,
 	defaultMeldHalf,
 	type MeldHalf,
 } from "../stores/card-creator";
 
-/** IndexedDB database name */
 const DB_NAME = "fabkit-cards";
-
-/** IndexedDB database version (increment to trigger schema migrations) */
 const DB_VERSION = 1;
-
-/** IndexedDB object store name */
 const STORE_NAME = "cards";
 
-/**
- * Stored card record in IndexedDB.
- * Contains all metadata and card state needed to restore a saved card.
- */
+// ─── Stored types (IndexedDB) ─────────────────────────────────────────────────
+
 export interface StoredCard {
-	/** Primary key: UUID from CardCreatorState.__version */
 	version: string;
-
-	/** User-provided card name (or "unnamed") */
 	cardName: string;
-
-	/** Unix timestamp when card was first created */
 	createdAt: number;
-
-	/** Unix timestamp of last update */
 	updatedAt: number;
-
-	/** Preview image Blob (PNG rendered from SVG) */
 	preview: Blob;
-
-	/** Serialized card creator state */
 	state: SerializedCardState;
 }
 
@@ -77,27 +26,53 @@ export type SerializedMeldHalf = Omit<MeldHalf, "CardArtwork"> & {
 	CardArtwork: string | null;
 };
 
-/**
- * Serialized card state for storage.
- * CardBack object is replaced with numeric ID for simpler serialization.
- */
 export interface SerializedCardState
 	extends Omit<CardCreatorState, "CardBack"> {
 	/** CardBack ID instead of full object */
 	CardBack: number | null;
 }
 
-/** Cached database instance to avoid multiple open requests */
+// ─── File format types ────────────────────────────────────────────────────────
+
+/** Card state as serialized in a .fabkit file: artwork fields are base64 strings. */
+export type FabkitFileState = Omit<
+	SerializedCardState,
+	"CardArtwork" | "CardOverlay" | "meldHalfA" | "meldHalfB"
+> & {
+	CardArtwork: string | null;
+	CardOverlay: string | null;
+	meldHalfA: SerializedMeldHalf;
+	meldHalfB: SerializedMeldHalf;
+};
+
+/** Single-card portable format. */
+export interface FabkitFile {
+	format: "fabkit";
+	formatVersion: string;
+	version: string;
+	cardName: string;
+	createdAt: number;
+	updatedAt: number;
+	preview: string;
+	state: FabkitFileState;
+}
+
+/** Gallery export format — array of FabkitFile cards. */
+export interface FabgalleryFile {
+	format: "fabgallery";
+	formatVersion: string;
+	exportedAt: string;
+	cardCount: number;
+	cards: FabkitFile[];
+}
+
+export type GalleryImportMode = "replace" | "merge";
+export type GalleryImportResult = { imported: number; skipped: number };
+
+// ─── Database ─────────────────────────────────────────────────────────────────
+
 let dbInstance: IDBDatabase | null = null;
 
-/**
- * Initializes and returns the IndexedDB database instance.
- * Creates the database and schema on first run.
- * Subsequent calls return the cached instance.
- *
- * @returns Promise resolving to the IDBDatabase instance
- * @throws Error if database initialization fails
- */
 export async function initCardDatabase(): Promise<IDBDatabase> {
 	if (dbInstance) return dbInstance;
 
@@ -123,13 +98,8 @@ export async function initCardDatabase(): Promise<IDBDatabase> {
 	});
 }
 
-/**
- * Converts CardCreatorState to a serializable format.
- * Replaces the CardBack object with its numeric ID.
- *
- * @param state - Full card creator state
- * @returns Serialized state safe for IndexedDB storage
- */
+// ─── Serialization ────────────────────────────────────────────────────────────
+
 export function serializeCardState(
 	state: CardCreatorState,
 ): SerializedCardState {
@@ -167,14 +137,6 @@ export function serializeCardState(
 	};
 }
 
-/**
- * Converts stored card state back to CardCreatorState format.
- * Restores the CardBack object from its ID.
- * Falls back to first card back if ID lookup fails.
- *
- * @param stored - Serialized card state from IndexedDB
- * @returns Partial CardCreatorState ready to load into the store
- */
 export function deserializeCardState(
 	stored: SerializedCardState,
 ): Partial<CardCreatorState> {
@@ -185,16 +147,36 @@ export function deserializeCardState(
 	};
 }
 
-/**
- * Saves a new card to IndexedDB.
- * Sets createdAt and updatedAt to current timestamp.
- *
- * @param name - User-provided card name
- * @param state - Current card creator state
- * @param preview - Preview image Blob (PNG)
- * @returns Promise resolving to the card's version UUID
- * @throws Error if save operation fails (e.g., duplicate version)
- */
+// ─── Image conversion ─────────────────────────────────────────────────────────
+
+export async function blobToBase64(blob: Blob): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onloadend = () => resolve(reader.result as string);
+		reader.onerror = reject;
+		reader.readAsDataURL(blob);
+	});
+}
+
+export async function base64ToBlob(base64: string): Promise<Blob> {
+	const response = await fetch(base64);
+	return response.blob();
+}
+
+async function serializeMeldHalf(
+	half: MeldHalf | undefined,
+): Promise<SerializedMeldHalf> {
+	const resolvedHalf = half ?? defaultMeldHalf;
+	return {
+		...resolvedHalf,
+		CardArtwork: resolvedHalf.CardArtwork
+			? await blobToBase64(resolvedHalf.CardArtwork)
+			: null,
+	};
+}
+
+// ─── CRUD ─────────────────────────────────────────────────────────────────────
+
 export async function saveCard(
 	name: string,
 	state: CardCreatorState,
@@ -222,15 +204,6 @@ export async function saveCard(
 	});
 }
 
-/**
- * Updates an existing card in IndexedDB.
- * Preserves createdAt timestamp and updates updatedAt to current time.
- *
- * @param version - Card version UUID (primary key)
- * @param state - Updated card creator state
- * @param preview - Updated preview image Blob (PNG)
- * @throws Error if card doesn't exist or update operation fails
- */
 export async function updateCard(
 	version: string,
 	state: CardCreatorState,
@@ -267,13 +240,6 @@ export async function updateCard(
 	});
 }
 
-/**
- * Retrieves a single card by its version UUID.
- *
- * @param version - Card version UUID (primary key)
- * @returns Promise resolving to StoredCard or null if not found
- * @throws Error if database query fails
- */
 export async function getCard(version: string): Promise<StoredCard | null> {
 	const db = await initCardDatabase();
 
@@ -287,13 +253,6 @@ export async function getCard(version: string): Promise<StoredCard | null> {
 	});
 }
 
-/**
- * Retrieves all saved cards, sorted by most recently updated first.
- * Uses the "updatedAt" index for efficient sorting.
- *
- * @returns Promise resolving to array of StoredCard objects
- * @throws Error if database query fails
- */
 export async function getAllCards(): Promise<StoredCard[]> {
 	const db = await initCardDatabase();
 
@@ -301,7 +260,7 @@ export async function getAllCards(): Promise<StoredCard[]> {
 		const transaction = db.transaction([STORE_NAME], "readonly");
 		const store = transaction.objectStore(STORE_NAME);
 		const index = store.index("updatedAt");
-		const request = index.openCursor(null, "prev"); // Sort by updatedAt descending
+		const request = index.openCursor(null, "prev");
 
 		const cards: StoredCard[] = [];
 
@@ -319,12 +278,6 @@ export async function getAllCards(): Promise<StoredCard[]> {
 	});
 }
 
-/**
- * Deletes a card from IndexedDB.
- *
- * @param version - Card version UUID (primary key)
- * @throws Error if delete operation fails
- */
 export async function deleteCard(version: string): Promise<void> {
 	const db = await initCardDatabase();
 
@@ -338,82 +291,117 @@ export async function deleteCard(version: string): Promise<void> {
 	});
 }
 
-/**
- * Converts a Blob to a base64 data URL.
- * Used for embedding images in JSON export format.
- *
- * @param blob - Image Blob to convert
- * @returns Promise resolving to base64 data URL string
- * @throws Error if FileReader fails
- */
-export async function blobToBase64(blob: Blob): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onloadend = () => resolve(reader.result as string);
-		reader.onerror = reject;
-		reader.readAsDataURL(blob);
+export async function clearGallery(): Promise<void> {
+	const db = await initCardDatabase();
+	return new Promise<void>((resolve, reject) => {
+		const tx = db.transaction([STORE_NAME], "readwrite");
+		tx.objectStore(STORE_NAME).clear();
+		tx.oncomplete = () => resolve();
+		tx.onerror = () => reject(tx.error);
 	});
 }
 
-/**
- * Exports a card to .fabkit JSON format.
- * Converts all Blob images (preview, artwork) to base64 for portability.
- *
- * @param card - Stored card to export
- * @returns Promise resolving to formatted JSON string
- */
-async function serializeMeldHalf(
-	half: MeldHalf | undefined,
-): Promise<SerializedMeldHalf> {
-	const resolvedHalf = half ?? defaultMeldHalf;
+// ─── Single-card export / import ─────────────────────────────────────────────
 
-	return {
-		...resolvedHalf,
-		CardArtwork: resolvedHalf.CardArtwork
-			? await blobToBase64(resolvedHalf.CardArtwork)
-			: null,
-	};
-}
-
-export async function exportCardToJSON(card: StoredCard): Promise<string> {
-	const previewBase64 = await blobToBase64(card.preview);
-
-	const artworkBase64 = card.state.CardArtwork
-		? await blobToBase64(card.state.CardArtwork)
-		: null;
-
-	const [meldHalfA, meldHalfB] = await Promise.all([
+export async function exportCardToObject(
+	card: StoredCard,
+): Promise<FabkitFile> {
+	const [preview, artwork, overlay, meldHalfA, meldHalfB] = await Promise.all([
+		blobToBase64(card.preview),
+		card.state.CardArtwork
+			? blobToBase64(card.state.CardArtwork)
+			: Promise.resolve(null),
+		card.state.CardOverlay
+			? blobToBase64(card.state.CardOverlay)
+			: Promise.resolve(null),
 		serializeMeldHalf(card.state.meldHalfA),
 		serializeMeldHalf(card.state.meldHalfB),
 	]);
 
-	const exportData = {
-		appVersion: __GIT_HASH__,
+	return {
+		format: "fabkit",
+		formatVersion: __APP_VERSION__,
 		version: card.version,
 		cardName: card.cardName,
 		createdAt: card.createdAt,
 		updatedAt: card.updatedAt,
-		preview: previewBase64,
+		preview,
 		state: {
-			...card.state,
-			CardArtwork: artworkBase64,
+			...(card.state as unknown as FabkitFileState),
+			CardArtwork: artwork,
+			CardOverlay: overlay,
 			meldHalfA,
 			meldHalfB,
 		},
 	};
-
-	return JSON.stringify(exportData, null, 2);
 }
 
-/**
- * Triggers browser download of card JSON as a .fabkit file.
- * Creates a temporary download link and auto-clicks it.
- *
- * @param jsonString - Card JSON from exportCardToJSON()
- * @param cardName - Card name (sanitized for filename)
- */
-export function downloadCardJSON(jsonString: string, cardName: string): void {
-	const blob = new Blob([jsonString], { type: "application/fabkit+json" });
+export async function exportCardToJSON(card: StoredCard): Promise<string> {
+	return JSON.stringify(await exportCardToObject(card), null, 2);
+}
+
+export async function importCardFromObject(data: FabkitFile): Promise<void> {
+	const [preview, artwork, overlay, meldHalfAArtwork, meldHalfBArtwork] =
+		await Promise.all([
+			base64ToBlob(data.preview),
+			data.state.CardArtwork
+				? base64ToBlob(data.state.CardArtwork)
+				: Promise.resolve(null),
+			data.state.CardOverlay
+				? base64ToBlob(data.state.CardOverlay)
+				: Promise.resolve(null),
+			data.state.meldHalfA?.CardArtwork
+				? base64ToBlob(data.state.meldHalfA.CardArtwork)
+				: Promise.resolve(null),
+			data.state.meldHalfB?.CardArtwork
+				? base64ToBlob(data.state.meldHalfB.CardArtwork)
+				: Promise.resolve(null),
+		]);
+
+	const card: StoredCard = {
+		version: data.version,
+		cardName: data.cardName,
+		createdAt: data.createdAt || Date.now(),
+		updatedAt: Date.now(),
+		preview,
+		state: {
+			...(data.state as unknown as SerializedCardState),
+			CardArtwork: artwork,
+			CardOverlay: overlay,
+			meldHalfA: {
+				...data.state.meldHalfA,
+				CardArtwork: meldHalfAArtwork,
+			} as MeldHalf,
+			meldHalfB: {
+				...data.state.meldHalfB,
+				CardArtwork: meldHalfBArtwork,
+			} as MeldHalf,
+		},
+	};
+
+	const db = await initCardDatabase();
+	return new Promise((resolve, reject) => {
+		const transaction = db.transaction([STORE_NAME], "readwrite");
+		const store = transaction.objectStore(STORE_NAME);
+		const request = store.put(card);
+		request.onsuccess = () => resolve();
+		request.onerror = () => reject(request.error);
+	});
+}
+
+export async function importCardFromJSON(jsonString: string): Promise<void> {
+	const data = JSON.parse(jsonString);
+	if (!data.version || !data.cardName || !data.state) {
+		throw new Error("Invalid card file format");
+	}
+	return importCardFromObject(data as FabkitFile);
+}
+
+export async function downloadCardJSON(
+	jsonString: string,
+	cardName: string,
+): Promise<void> {
+	const blob = await compressJSON(jsonString);
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement("a");
 	a.href = url;
@@ -424,70 +412,60 @@ export function downloadCardJSON(jsonString: string, cardName: string): void {
 	URL.revokeObjectURL(url);
 }
 
-/**
- * Converts a base64 data URL back to a Blob.
- * Used when importing .fabkit files.
- *
- * @param base64 - Base64 data URL string
- * @returns Promise resolving to Blob
- */
-async function base64ToBlob(base64: string): Promise<Blob> {
-	const response = await fetch(base64);
-	return response.blob();
-}
+// ─── Gallery export / import ──────────────────────────────────────────────────
 
-/**
- * Imports a card from .fabkit JSON format into IndexedDB.
- * Converts base64 images back to Blobs and saves the card.
- * Uses put() operation, so it will overwrite existing cards with same version UUID.
- *
- * @param jsonString - .fabkit file contents
- * @throws Error if JSON is invalid or missing required fields
- */
-export async function importCardFromJSON(jsonString: string): Promise<void> {
-	const data = JSON.parse(jsonString);
+export async function exportGalleryToFile(cards: StoredCard[]): Promise<void> {
+	const serialized = await Promise.all(cards.map(exportCardToObject));
 
-	// Validate basic structure
-	if (!data.version || !data.cardName || !data.state) {
-		throw new Error("Invalid card file format");
-	}
-
-	const preview = await base64ToBlob(data.preview);
-
-	const [artwork, meldHalfAartwork, meldHalfBartwork] = await Promise.all([
-		data.state.CardArtwork
-			? base64ToBlob(data.state.CardArtwork)
-			: Promise.resolve(null),
-		data.state.meldHalfA?.CardArtwork
-			? base64ToBlob(data.state.meldHalfA.CardArtwork)
-			: Promise.resolve(null),
-		data.state.meldHalfB?.CardArtwork
-			? base64ToBlob(data.state.meldHalfB.CardArtwork)
-			: Promise.resolve(null),
-	]);
-
-	const card: StoredCard = {
-		version: data.version,
-		cardName: data.cardName,
-		createdAt: data.createdAt || Date.now(),
-		updatedAt: Date.now(),
-		preview,
-		state: {
-			...data.state,
-			CardArtwork: artwork,
-			meldHalfA: { ...data.state.meldHalfA, CardArtwork: meldHalfAartwork },
-			meldHalfB: { ...data.state.meldHalfB, CardArtwork: meldHalfBartwork },
-		},
+	const gallery: FabgalleryFile = {
+		format: "fabgallery",
+		formatVersion: __APP_VERSION__,
+		exportedAt: new Date().toISOString(),
+		cardCount: serialized.length,
+		cards: serialized,
 	};
 
-	// Save to IndexedDB (will overwrite if version already exists)
-	const db = await initCardDatabase();
-	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([STORE_NAME], "readwrite");
-		const store = transaction.objectStore(STORE_NAME);
-		const request = store.put(card); // Use put instead of add to allow overwriting
+	const blob = await compressJSON(JSON.stringify(gallery));
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = `fabkit-gallery-${new Date().toISOString().slice(0, 10)}.fabgallery`;
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+}
 
-		request.onsuccess = () => resolve();
-		request.onerror = () => reject(request.error);
-	});
+export async function importGalleryFromJSON(
+	jsonString: string,
+	mode: GalleryImportMode,
+): Promise<GalleryImportResult> {
+	const data = JSON.parse(jsonString);
+
+	if (!data || data.format !== "fabgallery" || !Array.isArray(data.cards)) {
+		throw new Error("Invalid gallery file format");
+	}
+
+	const gallery = data as FabgalleryFile;
+
+	if (mode === "replace") {
+		await clearGallery();
+		for (const card of gallery.cards) {
+			await importCardFromObject(card);
+		}
+		return { imported: gallery.cards.length, skipped: 0 };
+	}
+
+	let imported = 0;
+	let skipped = 0;
+	for (const card of gallery.cards) {
+		const existing = await getCard(card.version);
+		if (existing) {
+			skipped++;
+		} else {
+			await importCardFromObject(card);
+			imported++;
+		}
+	}
+	return { imported, skipped };
 }

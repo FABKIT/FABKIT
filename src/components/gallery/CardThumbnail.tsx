@@ -74,7 +74,7 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 		setIsExporting(true);
 		try {
 			const jsonString = await exportCardToJSON(card);
-			downloadCardJSON(jsonString, card.cardName);
+			await downloadCardJSON(jsonString, card.cardName);
 		} catch (error) {
 			console.error("Failed to export card:", error);
 			alert("Failed to export card. Please try again.");

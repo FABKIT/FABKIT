@@ -9,5 +9,10 @@
 /public/**/*          @LouisVanKey
 
 # Code / Functionality related ownership
-*.js                  @lambstream
-*.vue                 @lambstream
+*.ts                  @lambstream @dealloc
+*.tsx                 @lambstream @dealloc
+
+# Clanker files
+.claude/              @dealloc
+AGENTS.md             @dealloc
+CLAUDE.md             @dealloc

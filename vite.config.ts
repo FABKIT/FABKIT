@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -8,14 +7,12 @@ import { defineConfig } from "vite";
 import openGraphPlugin from "vite-plugin-open-graph";
 import { VitePWA } from "vite-plugin-pwa";
 
-const gitHash = execSync("git rev-parse HEAD").toString().trim();
-const gitShortHash = execSync("git rev-parse --short HEAD").toString().trim();
+const appVersion = process.env.APP_VERSION ?? "0.0.0-dev";
 
 // https://vite.dev/config/
 export default defineConfig({
 	define: {
-		__GIT_HASH__: JSON.stringify(gitHash),
-		__GIT_SHORT_HASH__: JSON.stringify(gitShortHash),
+		__APP_VERSION__: JSON.stringify(appVersion),
 	},
 	build: {
 		sourcemap: true,

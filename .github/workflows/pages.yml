@@ -6,8 +6,12 @@ on:
   release:
     types: [published]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Allows you to run this workflow manually from the Actions tab (dev builds)
   workflow_dispatch:
+    inputs:
+      version:
+        description: "App version (e.g. 2.1.0-dev)"
+        required: true
 
 # Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
 permissions:
@@ -51,15 +55,28 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "value=$(echo '${{ github.ref_name }}' | sed 's/^v//')" >> $GITHUB_OUTPUT
+          else
+            echo "value=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Update PWA assets
         run: bun run scripts/update-pwa-assets
 
       - name: Build (Production)
         if: ${{ github.repository == 'FABKIT/FABKIT' }}
+        env:
+          APP_VERSION: ${{ steps.version.outputs.value }}
         run: bun run build
 
-      - name: Build (Production)
+      - name: Build (Staging)
         if: ${{ github.repository != 'FABKIT/FABKIT' }}
+        env:
+          APP_VERSION: ${{ steps.version.outputs.value }}
         run: bun run build -- --mode staging
 
       - name: Setup Pages
