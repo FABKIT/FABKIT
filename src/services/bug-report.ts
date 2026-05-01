@@ -15,7 +15,7 @@ import { getLastBoundaryError } from "./error-context";
 // ─── Console Interceptor ──────────────────────────────────────────────────────
 
 interface ConsoleEntry {
-	level: "error" | "warn" | "unhandled";
+	level: "error" | "warn" | "info" | "debug" | "unhandled";
 	message: string;
 	timestamp: number;
 	stack?: string;
@@ -41,10 +41,12 @@ export function startConsoleInterceptor(): void {
 	if (interceptorStarted) return;
 	interceptorStarted = true;
 
+	const originalDebug = console.debug.bind(console);
+	const originalInfo = console.info.bind(console);
 	const originalError = console.error.bind(console);
 	const originalWarn = console.warn.bind(console);
 
-	console.info("Attaching bug report listener");
+	originalInfo("Attaching bug report listener");
 	console.error = (...args: unknown[]) => {
 		pushEntry({
 			level: "error",
@@ -62,6 +64,24 @@ export function startConsoleInterceptor(): void {
 		});
 		originalWarn(...args);
 	};
+
+	console.info = (...args: unknown[]) => {
+		pushEntry({
+			level: "info",
+			message: args.map(String).join(" "),
+			timestamp: Date.now(),
+		});
+		originalInfo(...args);
+	}
+
+	console.debug = (...args: unknown[]) => {
+		pushEntry({
+			level: "debug",
+			message: args.map(String).join(" "),
+			timestamp: Date.now(),
+		});
+		originalDebug(...args);
+	}
 
 	window.addEventListener("error", (event) => {
 		pushEntry({
