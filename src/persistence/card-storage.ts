@@ -1,3 +1,5 @@
+import Dexie, { type Table } from "dexie";
+import semver from "semver";
 import { CardBacks } from "../config/cards/card_backs.ts";
 import { compressJSON } from "../lib/compression";
 import {
@@ -5,10 +7,43 @@ import {
 	defaultMeldHalf,
 	type MeldHalf,
 } from "../stores/card-creator";
+import type {Migration} from "./migrations.ts";
+import {meld_cards_migration} from "./migrations/3-0-0-meld-cards.ts";
 
-const DB_NAME = "fabkit-cards";
-const DB_VERSION = 1;
-const STORE_NAME = "cards";
+// ─── Schema versioning ────────────────────────────────────────────────────────
+
+/** Version assigned to records created before the migration system existed. */
+const LEGACY_SCHEMA_VERSION = "0.0.0";
+
+/**
+ * Data-level migrations for SerializedCardState, in ascending version order.
+ * A migration runs when the stored record's schemaVersion is older than migration.version.
+ *
+ * Example:
+ *   { version: "1.1.0", migrate: (state) => { ... } }
+ */
+const MIGRATIONS: Migration[] = [
+	meld_cards_migration,
+];
+
+function toSemver(version: string): string {
+	return semver.valid(version) ?? semver.coerce(version)?.version ?? LEGACY_SCHEMA_VERSION;
+}
+
+function applyStateMigrations(
+	state: unknown,
+	fromVersion: string,
+): SerializedCardState {
+	const from = toSemver(fromVersion);
+	let current = state;
+	for (const { version, migrate } of MIGRATIONS) {
+		if (semver.gt(version, from)) {
+			console.info(`Applying migration ${version} to card state`);
+			current = migrate(current);
+		}
+	}
+	return current as SerializedCardState;
+}
 
 // ─── Stored types (IndexedDB) ─────────────────────────────────────────────────
 
@@ -19,6 +54,8 @@ export interface StoredCard {
 	updatedAt: number;
 	preview: Blob;
 	state: SerializedCardState;
+	/** App version that wrote this record. Absent on legacy records; treated as "0.0.0". */
+	schemaVersion?: string;
 }
 
 /** MeldHalf with CardArtwork serialized as a base64 data URL instead of a Blob. */
@@ -71,31 +108,38 @@ export type GalleryImportResult = { imported: number; skipped: number };
 
 // ─── Database ─────────────────────────────────────────────────────────────────
 
-let dbInstance: IDBDatabase | null = null;
+class FabkitDatabase extends Dexie {
+	cards!: Table<StoredCard, string>;
 
-export async function initCardDatabase(): Promise<IDBDatabase> {
-	if (dbInstance) return dbInstance;
+	constructor() {
+		super("fabkit-cards");
 
-	return new Promise((resolve, reject) => {
-		const request = indexedDB.open(DB_NAME, DB_VERSION);
+		// Version 1: initial schema — matches the live IndexedDB exactly.
+		// IMPORTANT: Never modify this block. Add new version() calls below it.
+		this.version(1).stores({
+			cards: "version, cardName, createdAt, updatedAt",
+		});
 
-		request.onerror = () => reject(request.error);
-		request.onsuccess = () => {
-			dbInstance = request.result;
-			resolve(request.result);
-		};
+		// Add new schema versions here, e.g.:
+		// this.version(2).stores({ ... }).upgrade(tx => { ... });
+	}
+}
 
-		request.onupgradeneeded = (event) => {
-			const db = (event.target as IDBOpenDBRequest).result;
+const db = new FabkitDatabase();
 
-			if (!db.objectStoreNames.contains(STORE_NAME)) {
-				const store = db.createObjectStore(STORE_NAME, { keyPath: "version" });
-				store.createIndex("cardName", "cardName", { unique: false });
-				store.createIndex("createdAt", "createdAt", { unique: false });
-				store.createIndex("updatedAt", "updatedAt", { unique: false });
-			}
-		};
-	});
+// ─── Migration helpers ────────────────────────────────────────────────────────
+
+function migrateCard(card: StoredCard): StoredCard {
+	const from = card.schemaVersion ?? LEGACY_SCHEMA_VERSION;
+	const needsMigration = MIGRATIONS.some(({ version }) =>
+		semver.gt(version, toSemver(from)),
+	);
+	if (!needsMigration) return card;
+	return {
+		...card,
+		state: applyStateMigrations(card.state, from),
+		schemaVersion: __APP_VERSION__,
+	};
 }
 
 // ─── Serialization ────────────────────────────────────────────────────────────
@@ -182,9 +226,7 @@ export async function saveCard(
 	state: CardCreatorState,
 	preview: Blob,
 ): Promise<string> {
-	const db = await initCardDatabase();
 	const now = Date.now();
-
 	const card: StoredCard = {
 		version: state.__version,
 		cardName: name,
@@ -192,16 +234,10 @@ export async function saveCard(
 		updatedAt: now,
 		preview,
 		state: serializeCardState(state),
+		schemaVersion: __APP_VERSION__,
 	};
-
-	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([STORE_NAME], "readwrite");
-		const store = transaction.objectStore(STORE_NAME);
-		const request = store.add(card);
-
-		request.onsuccess = () => resolve(state.__version);
-		request.onerror = () => reject(request.error);
-	});
+	await db.cards.add(card);
+	return state.__version;
 }
 
 export async function updateCard(
@@ -209,12 +245,8 @@ export async function updateCard(
 	state: CardCreatorState,
 	preview: Blob,
 ): Promise<void> {
-	const db = await initCardDatabase();
 	const existing = await getCard(version);
-
-	if (!existing) {
-		throw new Error("Card not found");
-	}
+	if (!existing) throw new Error("Card not found");
 
 	const card: StoredCard = {
 		version,
@@ -228,77 +260,28 @@ export async function updateCard(
 		updatedAt: Date.now(),
 		preview,
 		state: serializeCardState(state),
+		schemaVersion: __APP_VERSION__,
 	};
 
-	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([STORE_NAME], "readwrite");
-		const store = transaction.objectStore(STORE_NAME);
-		const request = store.put(card);
-
-		request.onsuccess = () => resolve();
-		request.onerror = () => reject(request.error);
-	});
+	await db.cards.put(card);
 }
 
 export async function getCard(version: string): Promise<StoredCard | null> {
-	const db = await initCardDatabase();
-
-	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([STORE_NAME], "readonly");
-		const store = transaction.objectStore(STORE_NAME);
-		const request = store.get(version);
-
-		request.onsuccess = () => resolve(request.result || null);
-		request.onerror = () => reject(request.error);
-	});
+	const card = await db.cards.get(version);
+	return card ? migrateCard(card) : null;
 }
 
 export async function getAllCards(): Promise<StoredCard[]> {
-	const db = await initCardDatabase();
-
-	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([STORE_NAME], "readonly");
-		const store = transaction.objectStore(STORE_NAME);
-		const index = store.index("updatedAt");
-		const request = index.openCursor(null, "prev");
-
-		const cards: StoredCard[] = [];
-
-		request.onsuccess = (event) => {
-			const cursor = (event.target as IDBRequest).result;
-			if (cursor) {
-				cards.push(cursor.value);
-				cursor.continue();
-			} else {
-				resolve(cards);
-			}
-		};
-
-		request.onerror = () => reject(request.error);
-	});
+	const cards = await db.cards.orderBy("updatedAt").reverse().toArray();
+	return cards.map(migrateCard);
 }
 
 export async function deleteCard(version: string): Promise<void> {
-	const db = await initCardDatabase();
-
-	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([STORE_NAME], "readwrite");
-		const store = transaction.objectStore(STORE_NAME);
-		const request = store.delete(version);
-
-		request.onsuccess = () => resolve();
-		request.onerror = () => reject(request.error);
-	});
+	await db.cards.delete(version);
 }
 
 export async function clearGallery(): Promise<void> {
-	const db = await initCardDatabase();
-	return new Promise<void>((resolve, reject) => {
-		const tx = db.transaction([STORE_NAME], "readwrite");
-		tx.objectStore(STORE_NAME).clear();
-		tx.oncomplete = () => resolve();
-		tx.onerror = () => reject(tx.error);
-	});
+	await db.cards.clear();
 }
 
 // ─── Single-card export / import ─────────────────────────────────────────────
@@ -377,16 +360,10 @@ export async function importCardFromObject(data: FabkitFile): Promise<void> {
 				CardArtwork: meldHalfBArtwork,
 			} as MeldHalf,
 		},
+		schemaVersion: __APP_VERSION__,
 	};
 
-	const db = await initCardDatabase();
-	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([STORE_NAME], "readwrite");
-		const store = transaction.objectStore(STORE_NAME);
-		const request = store.put(card);
-		request.onsuccess = () => resolve();
-		request.onerror = () => reject(request.error);
-	});
+	await db.cards.put(card);
 }
 
 export async function importCardFromJSON(jsonString: string): Promise<void> {
