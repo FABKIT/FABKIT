@@ -72,7 +72,7 @@ export function startConsoleInterceptor(): void {
 			timestamp: Date.now(),
 		});
 		originalInfo(...args);
-	}
+	};
 
 	console.debug = (...args: unknown[]) => {
 		pushEntry({
@@ -81,7 +81,7 @@ export function startConsoleInterceptor(): void {
 			timestamp: Date.now(),
 		});
 		originalDebug(...args);
-	}
+	};
 
 	window.addEventListener("error", (event) => {
 		pushEntry({

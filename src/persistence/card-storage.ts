@@ -7,8 +7,8 @@ import {
 	defaultMeldHalf,
 	type MeldHalf,
 } from "../stores/card-creator";
-import type {Migration} from "./migrations.ts";
-import {meld_cards_migration} from "./migrations/3-0-0-meld-cards.ts";
+import { meld_cards_migration } from "./migrations/3-0-0-meld-cards.ts";
+import type { Migration } from "./migrations.ts";
 
 // ─── Schema versioning ────────────────────────────────────────────────────────
 
@@ -22,12 +22,14 @@ const LEGACY_SCHEMA_VERSION = "0.0.0";
  * Example:
  *   { version: "1.1.0", migrate: (state) => { ... } }
  */
-const MIGRATIONS: Migration[] = [
-	meld_cards_migration,
-];
+const MIGRATIONS: Migration[] = [meld_cards_migration];
 
 function toSemver(version: string): string {
-	return semver.valid(version) ?? semver.coerce(version)?.version ?? LEGACY_SCHEMA_VERSION;
+	return (
+		semver.valid(version) ??
+		semver.coerce(version)?.version ??
+		LEGACY_SCHEMA_VERSION
+	);
 }
 
 function applyStateMigrations(
