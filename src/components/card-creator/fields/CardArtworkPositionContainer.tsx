@@ -339,7 +339,12 @@ export function CardArtworkPositionContainer({
 			if (!pos) return;
 			const newWidth = pos.width * scaleFactor;
 			const newHeight = pos.height * scaleFactor;
-			if (newWidth < 50 || newWidth > 5000 || newHeight < 50 || newHeight > 5000)
+			if (
+				newWidth < 50 ||
+				newWidth > 5000 ||
+				newHeight < 50 ||
+				newHeight > 5000
+			)
 				return;
 			setMeldHalfArtPosition(half, {
 				x: pos.x,
@@ -353,7 +358,12 @@ export function CardArtworkPositionContainer({
 			if (!CardArtPosition) return;
 			const newWidth = CardArtPosition.width * scaleFactor;
 			const newHeight = CardArtPosition.height * scaleFactor;
-			if (newWidth < 50 || newWidth > 5000 || newHeight < 50 || newHeight > 5000)
+			if (
+				newWidth < 50 ||
+				newWidth > 5000 ||
+				newHeight < 50 ||
+				newHeight > 5000
+			)
 				return;
 			setCardArtPosition({
 				x: CardArtPosition.x,
