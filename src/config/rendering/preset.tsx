@@ -34,6 +34,10 @@ export const NormalDentedRenderConfigPreset: NormalDentedRenderConfig = {
 	},
 	// Stops just before CardText.y (400) — the lowest text-box top across all dented variants
 	artworkDragZone: { x: 10, y: 10, width: 430, height: 385 },
+	// Clip the artwork so it stays inside the card frame.
+	// x/y = top-left corner of the visible area, width/height = size of the visible area.
+	// Increase x or decrease width to pull in the right/left edges; adjust y/height for top/bottom.
+	artworkClip: { x: 10, y: 10, width: 430, height: 608 },
 	masks: {
 		CardArtWork: <rect x="10" y="10" width="430" height="608" fill="white" />,
 	},
@@ -282,6 +286,10 @@ export const NormalFlatRenderConfigPreset: NormalFlatRenderConfig = {
 	},
 	// Stops just before CardText.y (~392) — the lowest text-box top across all flat variants
 	artworkDragZone: { x: 10, y: 10, width: 430, height: 380 },
+	// Clip the artwork so it stays inside the card frame.
+	// x/y = top-left corner of the visible area, width/height = size of the visible area.
+	// Increase x or decrease width to pull in the right/left edges; adjust y/height for top/bottom.
+	artworkClip: { x: 10, y: 10, width: 430, height: 608 },
 	masks: {
 		CardArtWork: <rect x="10" y="10" width="430" height="608" fill="white" />,
 	},

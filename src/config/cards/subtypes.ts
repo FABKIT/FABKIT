@@ -13,6 +13,7 @@ export const CardSubtypes: Record<CardType, Record<string, string>> = {
 		invocation: "card.subtype.invocation",
 		item: "card.subtype.item",
 		shuriken_item: "card.subtype.shuriken_item",
+		cog_item: "card.subtype.cog_item",
 		landmark: "card.subtype.landmark",
 		song: "card.subtype.song",
 	},

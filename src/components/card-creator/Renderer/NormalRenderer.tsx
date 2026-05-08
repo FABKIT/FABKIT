@@ -154,10 +154,16 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 		>
 			<title>{CardName}</title>
 			<defs>
-				{/* TODO: re-add mask when rendering issues have been fixed. */}
-				{/*<mask id="artwork-mask" mask-type="luminance">*/}
-				{/*	{config.masks.CardArtWork}*/}
-				{/*</mask>*/}
+				{config.artworkClip && (
+					<clipPath id="artwork-clip">
+						<rect
+							x={config.artworkClip.x}
+							y={config.artworkClip.y}
+							width={config.artworkClip.width}
+							height={config.artworkClip.height}
+						/>
+					</clipPath>
+				)}
 				<clipPath id="title-clip">{config.clips.Title}</clipPath>
 				<clipPath id="bottom-text-clip">{config.clips.BottomText}</clipPath>
 			</defs>
@@ -170,7 +176,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 					width={CardArtPosition?.width || 0}
 					height={CardArtPosition?.height || 0}
 					preserveAspectRatio="xMidYMid slice"
-					mask="url(#artwork-mask)"
+					clipPath={config.artworkClip ? "url(#artwork-clip)" : undefined}
 				/>
 			)}
 
