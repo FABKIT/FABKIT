@@ -237,13 +237,19 @@ export function CardArtworkPositionContainer({
 		}
 	};
 
-	// Register the non-passive native touchmove listener once.
+	// Register non-passive native listeners once.
+	// React registers touch/wheel listeners as passive, making e.preventDefault() a no-op there.
 	useEffect(() => {
 		const el = containerRef.current;
 		if (!el) return;
-		const handler = (e: TouchEvent) => touchMoveHandlerRef.current?.(e);
-		el.addEventListener("touchmove", handler, { passive: false });
-		return () => el.removeEventListener("touchmove", handler);
+		const touchHandler = (e: TouchEvent) => touchMoveHandlerRef.current?.(e);
+		const wheelHandler = (e: WheelEvent) => wheelHandlerRef.current?.(e);
+		el.addEventListener("touchmove", touchHandler, { passive: false });
+		el.addEventListener("wheel", wheelHandler, { passive: false });
+		return () => {
+			el.removeEventListener("touchmove", touchHandler);
+			el.removeEventListener("wheel", wheelHandler);
+		};
 	}, []);
 
 	const handleMouseDown = useCallback(
@@ -318,62 +324,45 @@ export function CardArtworkPositionContainer({
 		meldDragHalf.current = null;
 	}, []);
 
-	const handleWheel = useCallback(
-		(e: React.WheelEvent) => {
-			e.preventDefault();
-			const scaleFactor = 1 + -e.deltaY * 0.001;
+	// Keep a stable ref to the latest wheel logic so the native non-passive
+	// listener (registered once in useEffect) always sees fresh store values.
+	const wheelHandlerRef = useRef<((e: WheelEvent) => void) | null>(null);
+	wheelHandlerRef.current = (e: WheelEvent) => {
+		const scaleFactor = 1 + -e.deltaY * 0.001;
 
-			if (isMeldMode) {
-				// Scale artwork for whichever half the cursor is over
-				const half = getMeldDragHalf(e.clientX, e.clientY);
-				if (!half) return;
-				const pos =
-					half === "A" ? meldHalfA.CardArtPosition : meldHalfB.CardArtPosition;
-				if (!pos) return;
-				const newWidth = pos.width * scaleFactor;
-				const newHeight = pos.height * scaleFactor;
-				if (
-					newWidth < 50 ||
-					newWidth > 5000 ||
-					newHeight < 50 ||
-					newHeight > 5000
-				)
-					return;
-				setMeldHalfArtPosition(half, {
-					x: pos.x,
-					y: pos.y,
-					width: newWidth,
-					height: newHeight,
-				});
-			} else {
-				if (!CardArtPosition) return;
-				const newWidth = CardArtPosition.width * scaleFactor;
-				const newHeight = CardArtPosition.height * scaleFactor;
-				if (
-					newWidth < 50 ||
-					newWidth > 5000 ||
-					newHeight < 50 ||
-					newHeight > 5000
-				)
-					return;
-				setCardArtPosition({
-					x: CardArtPosition.x,
-					y: CardArtPosition.y,
-					width: newWidth,
-					height: newHeight,
-				});
-			}
-		},
-		[
-			isMeldMode,
-			getMeldDragHalf,
-			meldHalfA.CardArtPosition,
-			meldHalfB.CardArtPosition,
-			setMeldHalfArtPosition,
-			CardArtPosition,
-			setCardArtPosition,
-		],
-	);
+		if (isMeldMode) {
+			const half = getMeldDragHalf(e.clientX, e.clientY);
+			if (!half) return; // outside artwork zone — let page scroll
+			e.preventDefault();
+			const pos =
+				half === "A" ? meldHalfA.CardArtPosition : meldHalfB.CardArtPosition;
+			if (!pos) return;
+			const newWidth = pos.width * scaleFactor;
+			const newHeight = pos.height * scaleFactor;
+			if (newWidth < 50 || newWidth > 5000 || newHeight < 50 || newHeight > 5000)
+				return;
+			setMeldHalfArtPosition(half, {
+				x: pos.x,
+				y: pos.y,
+				width: newWidth,
+				height: newHeight,
+			});
+		} else {
+			if (!isInArtworkZone(e.clientX, e.clientY)) return; // outside artwork zone — let page scroll
+			e.preventDefault();
+			if (!CardArtPosition) return;
+			const newWidth = CardArtPosition.width * scaleFactor;
+			const newHeight = CardArtPosition.height * scaleFactor;
+			if (newWidth < 50 || newWidth > 5000 || newHeight < 50 || newHeight > 5000)
+				return;
+			setCardArtPosition({
+				x: CardArtPosition.x,
+				y: CardArtPosition.y,
+				width: newWidth,
+				height: newHeight,
+			});
+		}
+	};
 
 	const handleTouchStart = useCallback(
 		(e: React.TouchEvent) => {
@@ -455,7 +444,6 @@ export function CardArtworkPositionContainer({
 			onMouseMove={handleMouseMove}
 			onMouseUp={handleMouseUp}
 			onMouseLeave={handleMouseLeave}
-			onWheel={handleWheel}
 			onTouchStart={handleTouchStart}
 			onTouchEnd={handleTouchEnd}
 		>
