@@ -9,6 +9,8 @@ export const CardTalents = {
 	lightning: "card.talent.lightning",
 	mystic: "card.talent.mystic",
 	pirate: "card.talent.pirate",
+	revered: "card.talent.revered",
+	reviled: "card.talent.reviled",
 	royal: "card.talent.royal",
 	shadow: "card.talent.shadow",
 } as const;

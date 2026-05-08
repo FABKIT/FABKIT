@@ -15,6 +15,7 @@ import {
 	AlignLeft as AlignLeftIcon,
 	Bold as BoldIcon,
 	Italic as ItalicIcon,
+	CornerDownLeft as LineBreakIcon,
 	List as ListBulletIcon,
 	ListOrdered as NumberedListIcon,
 	Underline as UnderlineIcon,
@@ -194,6 +195,19 @@ export default function RichTextEditor({
 					>
 						<span className="sr-only">Center</span>
 						<AlignCenterIcon aria-hidden="true" className="size-4" />
+					</button>
+				</div>
+
+				{/* Line Break */}
+				<div className="inline-flex rounded-lg bg-surface-muted p-1">
+					<button
+						type="button"
+						onClick={() => editor.chain().focus().setHardBreak().run()}
+						className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
+						title="Insert line break (move to next line)"
+					>
+						<span className="sr-only">Insert line break</span>
+						<LineBreakIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
 

@@ -30,6 +30,8 @@
 			"lightning": "Lightning",
 			"mystic": "Mystic",
 			"pirate": "Pirate",
+			"revered": "Revered",
+			"reviled": "Reviled",
 			"royal": "Royal",
 			"shadow": "Shadow"
 		},
@@ -64,6 +66,7 @@
 			"invocation": "Invocation",
 			"item": "Item",
 			"shuriken_item": "Shuriken Item",
+			"cog_item": "Cog Item",
 			"landmark": "Landmark",
 			"song": "Song",
 			"trap": "Trap",

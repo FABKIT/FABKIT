@@ -207,6 +207,21 @@ export interface BaseCardRenderConfig {
 	masks: Record<string, ReactElement>;
 
 	/**
+	 * Rectangular clip region for the card artwork.
+	 * Anything drawn outside this box will be hidden — use it to stop the
+	 * artwork from bleeding past the card frame.
+	 *
+	 * Tweak these four numbers in preset.tsx per card style:
+	 * - x      → left edge of the visible area (higher = narrower on the left)
+	 * - y      → top edge of the visible area  (higher = narrower on the top)
+	 * - width  → how wide the visible area is  (lower = narrows the right edge)
+	 * - height → how tall the visible area is  (lower = narrows the bottom edge)
+	 *
+	 * All values are in the SVG coordinate system (card viewBox is 450×628).
+	 */
+	artworkClip?: { x: number; y: number; width: number; height: number };
+
+	/**
 	 * SVG clipPath definitions for constraining text overflow.
 	 * Used to ensure text doesn't exceed designated areas.
 	 * Applied via clipPath="url(#clip-id)" attribute.
