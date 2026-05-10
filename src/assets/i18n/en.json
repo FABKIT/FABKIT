@@ -290,11 +290,16 @@
 		"gallery": "Gallery",
 		"roadmap": "Roadmap",
 		"contact": "Contact",
+		"fabble": "Fabble",
 		"open_sidebar": "Open sidebar",
 		"close_sidebar": "Close sidebar",
 		"logo_alt": "FABKIT",
 		"logo_with_text_alt": "FABKIT Logo",
 		"brand": "FaBKit"
+	},
+	"fabble": {
+		"coming_soon_title": "Fabble",
+		"coming_soon_body": "A Wordle-inspired Flesh and Blood guessing game — coming soon."
 	},
 	"error_boundary": {
 		"title": "Something went wrong",

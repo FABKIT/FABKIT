@@ -2,16 +2,16 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CardThumbnail } from "../components/gallery/CardThumbnail";
-import { FileUploadButton } from "../components/gallery/FileUploadButton.tsx";
-import { decompressFile } from "../lib/compression";
+import { CardThumbnail } from "@apps/card-creator/components/gallery/CardThumbnail";
+import { FileUploadButton } from "@apps/card-creator/components/gallery/FileUploadButton";
+import { decompressFile } from "@shared/lib/compression";
 import {
 	exportGalleryToFile,
 	type GalleryImportMode,
 	getAllCards,
 	importCardFromJSON,
 	importGalleryFromJSON,
-} from "../persistence/card-storage";
+} from "@apps/card-creator/persistence/card-storage";
 
 export const Route = createFileRoute("/gallery")({
 	component: GalleryPage,

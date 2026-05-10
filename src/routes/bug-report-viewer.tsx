@@ -23,17 +23,17 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { major, valid } from "semver";
-import { CardBacks } from "../config/cards/card_backs";
-import { decompressFile } from "../lib/compression";
+import { CardBacks } from "@shared/config/cards/card_backs";
+import { decompressFile } from "@shared/lib/compression";
 import {
 	base64ToBlob,
 	clearGallery,
 	type FabgalleryFile,
 	type FabkitFile,
 	importCardFromObject,
-} from "../persistence/card-storage";
-import type { CardCreatorState } from "../stores/card-creator";
-import { useCardCreator } from "../stores/card-creator";
+} from "@apps/card-creator/persistence/card-storage";
+import type { CardCreatorState } from "@apps/card-creator/stores/card-creator";
+import { useCardCreator } from "@apps/card-creator/stores/card-creator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -265,7 +265,7 @@ function BugReportViewer() {
 			const parsed = JSON.parse(text) as Fabreport;
 			setReport(parsed);
 			console.debug("loading stack remapping");
-			const { remapStacks } = await import("../services/stack-remap");
+			const { remapStacks } = await import("../platform/stack-remap");
 			const remapped = await remapStacks(parsed);
 			setReport(remapped);
 		} catch {

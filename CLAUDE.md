@@ -24,12 +24,47 @@ Flesh and Blood TCG toolkit built with React, TanStack Router, and Tailwind CSS 
 | `text-faint` | Very subtle text |
 | `border-border-primary` | Primary-tinted borders |
 
-## File Structure
+## Platform Architecture
 
-- Routes: `src/routes/` (file-based routing via TanStack Router)
-- Components: `src/components/`
-- Styles: `src/styles/index.css`
-- Translations: `src/assets/i18n/*.json`
+FABKIT is a multi-app platform. New tools/apps live under `src/apps/<app-name>/`.
+
+### Directory Map
+
+| Path | Purpose |
+|------|---------|
+| `src/routes/` | TanStack Router routes — thin orchestrators only, must stay here |
+| `src/platform/` | Shell infrastructure: router, bug-report service, error context |
+| `src/shared/` | Cross-app FAB game data (`config/cards/`) and utilities (`lib/`) |
+| `src/apps/card-creator/` | Card creator tool — self-contained app |
+| `src/apps/fabble/` | Fabble guessing game — self-contained app |
+| `src/components/` | Platform shell UI: layout, icons, home, form primitives |
+| `src/config/` | Platform config: contact, roadmap, featured artist |
+| `src/styles/` | Global design tokens |
+| `src/assets/i18n/` | Translations (single `en.json`, feature-namespaced keys) |
+
+### Path Aliases
+
+| Alias | Resolves to |
+|-------|------------|
+| `@platform/*` | `src/platform/*` |
+| `@apps/card-creator/*` | `src/apps/card-creator/*` |
+| `@apps/fabble/*` | `src/apps/fabble/*` |
+| `@shared/*` | `src/shared/*` |
+
+### App Isolation Rules
+
+- Apps must NOT import from each other (`@apps/card-creator/*` inside `@apps/fabble/*` is forbidden)
+- Apps register bug report data via `registerReportDataProvider()` in their `index.ts`
+- Each app's `index.ts` is imported in `src/main.tsx` at startup
+
+### Adding a New App
+
+1. Create `src/apps/<name>/` with `components/`, `stores/`, `index.ts`
+2. Create `src/routes/<name>.tsx` (thin orchestrator importing from the app)
+3. Add alias to `tsconfig.app.json` paths and `vite.config.ts` resolve.alias
+4. Import `./apps/<name>/index` in `src/main.tsx`
+5. Add nav link in `src/components/layout/Menu.tsx`
+6. Add i18n namespace in `src/assets/i18n/en.json`
 
 ## Commands
 

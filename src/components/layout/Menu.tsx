@@ -8,6 +8,7 @@ import type { FileRouteTypes } from "@tanstack/react-router";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
 	Bug,
+	Gamepad2,
 	Home,
 	Images,
 	Map as MapIcon,
@@ -20,7 +21,7 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FabkitLogo from "../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../assets/Fabkitlogo_notext.svg";
-import { useBugReport } from "../../services/bug-report";
+import { useBugReport } from "../../platform/bug-report";
 import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
@@ -54,6 +55,7 @@ const navigation: NavItem[] = [
 			{ nameKey: "nav.gallery", route: "/gallery", icon: Images },
 		],
 	},
+	{ nameKey: "nav.fabble", route: "/fabble", icon: Gamepad2 },
 	{ nameKey: "nav.roadmap", route: "/roadmap", icon: MapIcon },
 	{ nameKey: "nav.contact", route: "/contact", icon: MessageCircle },
 ];

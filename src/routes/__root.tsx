@@ -9,7 +9,7 @@ import { ServiceWorker } from "../components/ServiceWorker.tsx";
 import {
 	clearLastBoundaryError,
 	setLastBoundaryError,
-} from "../services/error-context.ts";
+} from "../platform/error-context.ts";
 
 export const Route = createRootRoute({
 	component: RootComponent,

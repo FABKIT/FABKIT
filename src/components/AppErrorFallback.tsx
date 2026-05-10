@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Bug, Home } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { generateBugReport } from "../services/bug-report";
+import { generateBugReport } from "../platform/bug-report";
 
 interface AppErrorFallbackProps {
 	error: unknown;

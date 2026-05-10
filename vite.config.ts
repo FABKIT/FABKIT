@@ -11,6 +11,14 @@ const appVersion = process.env.APP_VERSION ?? "0.0.0-dev";
 
 // https://vite.dev/config/
 export default defineConfig({
+	resolve: {
+		alias: {
+			"@platform": "/src/platform",
+			"@apps/card-creator": "/src/apps/card-creator",
+			"@apps/fabble": "/src/apps/fabble",
+			"@shared": "/src/shared",
+		},
+	},
 	define: {
 		__APP_VERSION__: JSON.stringify(appVersion),
 	},

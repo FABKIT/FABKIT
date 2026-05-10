@@ -20,7 +20,7 @@ import {
 	ListOrdered as NumberedListIcon,
 	Underline as UnderlineIcon,
 } from "lucide-react";
-import { EditorCustomEmojiRows } from "../../config/editor.ts";
+import { EditorCustomEmojiRows } from "@apps/card-creator/config/editor";
 import { FabDash } from "./extensions/FabDash.ts";
 import "../../styles/components/rich-text-editor.css";
 
