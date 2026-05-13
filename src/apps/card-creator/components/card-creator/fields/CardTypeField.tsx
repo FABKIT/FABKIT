@@ -1,12 +1,9 @@
 import Select from "@fabkit/platform/components/form/Select";
-import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
+import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 
-/**
- * Renders the card type field.
- */
 export function CardTypeField() {
 	const { t } = useTranslation("card-creator");
 	const { CardType, setCardType } = useCardCreator();
@@ -14,7 +11,7 @@ export function CardTypeField() {
 	// TODO: invalidate memo when `t`'s language changes?
 	const options = useMemo(
 		() =>
-			Object.keys(CardTypes)
+			(Object.keys(CardTypes) as CardType[])
 				.sort()
 				.map((key) => ({
 					value: key,
@@ -26,7 +23,7 @@ export function CardTypeField() {
 	return (
 		<Select
 			label={t("card_creator.type_label")}
-			value={CardType || ""}
+			value={CardType}
 			onChange={setCardType}
 			options={options}
 		/>

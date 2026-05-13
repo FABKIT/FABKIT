@@ -31,9 +31,9 @@ export type CardFormFieldValue = {
 	CardResource: string;
 	CardText: string;
 	CardPower: string;
-	CardTalent: CardTalent | string;
-	CardClass: CardClass | string;
-	CardSecondaryClass: CardClass | string;
+	CardTalent: CardTalent;
+	CardClass: CardClass;
+	CardSecondaryClass: CardClass;
 	CardSubType: string;
 	CardRarity: CardRarity;
 	CardDefense: string;

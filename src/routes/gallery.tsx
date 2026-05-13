@@ -7,7 +7,7 @@ import {
 	importCardFromJSON,
 	importGalleryFromJSON,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
-import { decompressFile } from "@fabkit/shared/lib/compression";
+import { decompressFile } from "@fabkit/shared/compression";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
 import { type ChangeEvent, useState } from "react";

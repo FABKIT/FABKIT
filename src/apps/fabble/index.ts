@@ -1,3 +1,3 @@
 import { registerReportDataProvider } from "@fabkit/platform/bug-report";
 
-registerReportDataProvider("fabble", () => ({}));
+registerReportDataProvider("fabble", () => ({ state: {} }));

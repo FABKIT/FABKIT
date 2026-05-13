@@ -1,10 +1,7 @@
 import type { CardFormField } from "./form_fields";
 
 // Contains all card types and which form fields should be shown for each type.
-export const CardTypes: Record<
-	string,
-	{ label: string; fields: readonly CardFormField[] }
-> = {
+export const CardTypes = {
 	action: {
 		label: "card.type.action",
 		fields: [
@@ -241,7 +238,7 @@ export const CardTypes: Record<
 			"CardRarity",
 		],
 	},
-};
+} satisfies Record<string, { label: string; fields: readonly CardFormField[] }>;
 
 // Utility type for string representation of each card type.
 export type CardType = keyof typeof CardTypes;

@@ -17,7 +17,7 @@ FABKIT uses a three-layer architecture:
 
 | Layer | Path | Rule |
 |-------|------|------|
-| Platform | `src/platform/` | Shell infrastructure. Must not import from `src/apps/` or `src/shared/`. |
+| Platform | `src/platform/` | Shell infrastructure. May import from `src/shared/`. Must not import from `src/apps/`. |
 | Shared | `src/shared/` | FAB domain data. Must not import from `src/apps/` or `src/platform/`. |
 | App | `src/apps/<name>/` | Self-contained. May import from platform and shared. Must not import from other apps. |
 
@@ -67,9 +67,9 @@ import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
 ```
 
 Also flag direction violations:
-- Platform importing from `@fabkit/apps/*` — blocking (except existing `TODO(phase-6)` markers)
+- Platform importing from `@fabkit/apps/*` — blocking
 - Shared importing from `@fabkit/platform/*` or `@fabkit/apps/*` — blocking
-- One app importing from another app — blocking
+- One app importing from another app (`@fabkit/apps/<x>/*` inside `src/apps/<y>/`) — blocking
 
 **4. Raw color or style classes**
 No raw Tailwind color utilities or `dark:` variants. Only semantic tokens from `src/styles/index.css`:

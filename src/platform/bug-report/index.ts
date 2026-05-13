@@ -1,13 +1,5 @@
-// TODO(phase-6): boundary violation — platform importing from app. Will be resolved when bug-report is fully decoupled.
-import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering";
-// TODO(phase-6): boundary violation — platform importing from app. Will be resolved when bug-report is fully decoupled.
-import {
-	blobToBase64,
-	exportCardToObject,
-	type FabgalleryFile,
-	getAllCards,
-} from "@fabkit/apps/card-creator/persistence/card-storage";
-import { compressJSON } from "@fabkit/shared/lib/compression";
+import { blobToBase64 } from "@fabkit/shared/blob";
+import { compressJSON } from "@fabkit/shared/compression";
 import { snapdom } from "@zumer/snapdom";
 import i18n from "../../i18n";
 import { getLastBoundaryError } from "../error-context";
@@ -17,6 +9,7 @@ import { collectAppData } from "./provider-registry";
 
 export { startConsoleInterceptor } from "./console-interceptor";
 export {
+	type AppProviderData,
 	type ReportDataProvider,
 	registerReportDataProvider,
 } from "./provider-registry";
@@ -69,27 +62,13 @@ export async function generateBugReport(): Promise<void> {
 	const lastActions = prompt(t("bug_report.prompt_last_actions"));
 	const comments = prompt(t("bug_report.prompt_comments"));
 
-	const appData = collectAppData();
+	const appData = await collectAppData();
+	const ccData = appData["card-creator"];
 
-	// Best-effort: read card-creator renderer info if that provider is registered.
-	const ccState = appData["card-creator"] as
-		| { CardBack?: { renderer?: string } }
-		| undefined;
-
-	const gallery = await getAllCards().catch(() => []);
-
-	const [serializedApps, serializedCards] = await Promise.all([
-		serializeValue(appData),
-		Promise.all(gallery.map(exportCardToObject)),
-	]);
-
-	const serializedGallery: FabgalleryFile = {
-		format: "fabgallery",
-		formatVersion: __APP_VERSION__,
-		exportedAt: new Date().toISOString(),
-		cardCount: serializedCards.length,
-		cards: serializedCards,
-	};
+	const serializedApps = await serializeValue(
+		Object.fromEntries(Object.entries(appData).map(([k, v]) => [k, v.state])),
+	);
+	const store = (serializedApps as Record<string, unknown>)["card-creator"] ?? null;
 
 	const report = {
 		format: "fabreport",
@@ -118,14 +97,10 @@ export async function generateBugReport(): Promise<void> {
 			lastActions,
 			comments,
 		},
-		rendering: {
-			cardBackRenderer: ccState?.CardBack?.renderer ?? null,
-			resolvedConfig: ccState?.CardBack?.renderer
-				? (AllRenderConfigVariations[ccState.CardBack.renderer] ?? null)
-				: null,
-		},
+		rendering: ccData?.rendering ?? null,
+		store,
 		apps: serializedApps,
-		gallery: serializedGallery,
+		gallery: ccData?.gallery ?? null,
 		console: getConsoleBuffer(),
 		screenshot,
 		boundaryError: (() => {

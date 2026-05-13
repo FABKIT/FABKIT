@@ -1,5 +1,5 @@
 import ButtonDropdown from "@fabkit/platform/components/form/ButtonDropdown";
-import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
+import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useNavigate } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -19,7 +19,7 @@ export function CardTypeField() {
 	// TODO: invalidate memo when `t`'s language changes?
 	const options = useMemo(
 		() =>
-			Object.keys(CardTypes)
+			(Object.keys(CardTypes) as CardType[])
 				.sort()
 				.map((key) => ({
 					value: key,

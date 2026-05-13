@@ -1,5 +1,3 @@
-// TODO(phase-6): boundary violation — platform importing from app. Will be resolved when RichTextEditor is decoupled from app config.
-import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
 import Bold from "@tiptap/extension-bold";
 import Emoji from "@tiptap/extension-emoji";
 import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
@@ -25,18 +23,27 @@ import {
 import { FabDash } from "./extensions/FabDash.ts";
 import "../../../styles/components/rich-text-editor.css";
 
-const customEmojisRow1 = EditorCustomEmojiRows[0];
-const customEmojisRow2 = EditorCustomEmojiRows[1];
+export interface EmojiItem {
+	name: string;
+	shortcodes: string[];
+	tags: string[];
+	group: string;
+	fallbackImage?: string;
+}
 
 export interface RichTextEditorProps {
 	content: Content | null;
 	onChange?: (html: string, content: Content) => void;
+	customEmojis?: EmojiItem[][];
 }
 
 export default function RichTextEditor({
 	content,
 	onChange,
+	customEmojis = [],
 }: RichTextEditorProps) {
+	const customEmojisRow1 = customEmojis[0] ?? [];
+	const customEmojisRow2 = customEmojis[1] ?? [];
 	const editor = useEditor({
 		extensions: [
 			StarterKit.configure({
@@ -65,7 +72,7 @@ export default function RichTextEditor({
 				HTMLAttributes: {
 					class: "fab-icon",
 				},
-				emojis: [...customEmojisRow1, ...customEmojisRow2],
+				emojis: customEmojis.flat(),
 			}),
 			FabDash,
 		],

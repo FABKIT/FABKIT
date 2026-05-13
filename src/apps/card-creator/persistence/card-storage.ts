@@ -1,5 +1,6 @@
+import { blobToBase64 } from "@fabkit/shared/blob";
 import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
-import { compressJSON } from "@fabkit/shared/lib/compression";
+import { compressJSON } from "@fabkit/shared/compression";
 import Dexie, { type Table } from "dexie";
 import semver from "semver";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
@@ -196,14 +197,7 @@ export function deserializeCardState(
 
 // ─── Image conversion ─────────────────────────────────────────────────────────
 
-export async function blobToBase64(blob: Blob): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onloadend = () => resolve(reader.result as string);
-		reader.onerror = reject;
-		reader.readAsDataURL(blob);
-	});
-}
+export { blobToBase64 } from "@fabkit/shared/blob";
 
 export async function base64ToBlob(base64: string): Promise<Blob> {
 	const response = await fetch(base64);

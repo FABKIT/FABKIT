@@ -1,6 +1,7 @@
 import { Combobox } from "@fabkit/platform/components/form/Combobox";
 import ImageUpload from "@fabkit/platform/components/form/ImageUpload";
 import RichTextEditor from "@fabkit/platform/components/form/RichTextEditor";
+import { EditorCustomEmojiRows } from "../../../config/editor.ts";
 import type { SelectOption } from "@fabkit/platform/components/form/Select";
 import Select from "@fabkit/platform/components/form/Select";
 import TextInput from "@fabkit/platform/components/form/TextInput";
@@ -28,7 +29,7 @@ type MeldHalfPanelProps = {
 	halfId: MeldHalfId;
 	half: MeldHalf;
 	isActive: boolean;
-	typeOptions: SelectOption<string>[];
+	typeOptions: SelectOption<CardType>[];
 	classOptions: SelectOption<CardClass>[];
 	talentOptions: SelectOption<CardTalent>[];
 };
@@ -79,8 +80,8 @@ function MeldHalfPanel({
 			<div className="border border-border-primary rounded-lg bg-surface-muted p-6 space-y-6">
 				<Select
 					label={t("card_creator.type_label")}
-					value={half.CardType || ""}
-					onChange={(value) => setMeldHalfType(halfId, value as CardType)}
+					value={half.CardType}
+					onChange={(value) => setMeldHalfType(halfId, value)}
 					options={typeOptions}
 				/>
 
@@ -137,6 +138,7 @@ function MeldHalfPanel({
 					<RichTextEditor
 						content={half.CardTextNode}
 						onChange={(html, node) => setMeldHalfText(halfId, html, node)}
+						customEmojis={EditorCustomEmojiRows}
 					/>
 				</div>
 			</div>
@@ -151,10 +153,10 @@ export function MeldHalfFields() {
 	const meldHalfA = useCardCreator((state) => state.meldHalfA);
 	const meldHalfB = useCardCreator((state) => state.meldHalfB);
 
-	const typeOptions: SelectOption<string>[] = useMemo(
+	const typeOptions: SelectOption<CardType>[] = useMemo(
 		() =>
-			Object.keys(CardTypes)
-				.filter((key) => !MELD_EXCLUDED_TYPES.includes(key as CardType))
+			(Object.keys(CardTypes) as CardType[])
+				.filter((key) => !MELD_EXCLUDED_TYPES.includes(key))
 				.sort()
 				.map((key) => ({
 					value: key,

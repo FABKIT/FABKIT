@@ -59,10 +59,10 @@ interface ComboboxProps<T extends string> {
 	required?: boolean;
 
 	/** Currently selected value (controlled component) */
-	value: T | string | null;
+	value: T | null;
 
 	/** Callback when selection changes, receives new value */
-	onChange: (value: T | string) => void;
+	onChange: (value: T) => void;
 
 	/** Available options to choose from */
 	options: SelectOption<T>[];
@@ -112,7 +112,7 @@ export function Combobox<T extends string>({
 				value={value || undefined}
 				onChange={(value) => {
 					if (onChange && value) {
-						onChange(value);
+						onChange(value as T);
 					}
 				}}
 				onClose={() => {
@@ -122,7 +122,7 @@ export function Combobox<T extends string>({
 			>
 				<div className="relative">
 					<ComboboxInput
-						displayValue={(val: T | string | undefined) => {
+						displayValue={(val: T | undefined) => {
 							if (isFocused && val === "none") return "";
 							return val
 								? options.find((opt) => opt.value === val)?.label || val

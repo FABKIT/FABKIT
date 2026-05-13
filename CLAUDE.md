@@ -2,13 +2,36 @@
 
 Flesh and Blood TCG toolkit built with React, TanStack Router, and Tailwind CSS v4.
 
+## Architecture
+
+Three-layer model — each layer may only import downward:
+
+| Layer | Path | Purpose |
+|-------|------|---------|
+| **Apps** | `src/apps/<name>/` | Self-contained feature apps (card-creator, fabble) |
+| **Platform** | `src/platform/` | Shell infrastructure: router, error boundary, bug report, shared UI primitives |
+| **Shared** | `src/shared/` | FAB domain data and generic utilities (no UI, no platform deps) |
+
+Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-creator/*`, `@fabkit/apps/fabble/*`
+
+**Boundary rule:** platform must not import from apps; apps must not import from each other. Apps import from platform and shared; platform imports from shared only.
+
+## File Structure
+
+- Routes: `src/routes/` (file-based, flat — TanStack Router requires this)
+- Platform components: `src/platform/components/`
+- Platform i18n: `src/platform/i18n/`
+- Styles: `src/styles/index.css`
+- Each app has its own `CLAUDE.md` with app-specific structure and rules
+
 ## Code Style
 
 - Use the `/frontend-design` skill when generating UI markup
-- All user-facing text must use `t()` from `react-i18next` - no hardcoded strings
-- Use semantic color tokens from `src/styles/index.css` (e.g., `bg-surface`, `text-heading`, `text-body`) - avoid `dark:` variants
-- Icons come from `lucide-react`; brand icons (Discord, GitHub) are in `src/components/icons/`
+- All user-facing text must use `t()` from `react-i18next` — no hardcoded strings
+- i18n namespaces: `"platform"`, `"card-creator"`, `"fabble"` — use the namespace that owns the text
+- Icons come from `lucide-react`; brand icons (Discord, GitHub) are in `src/platform/components/icons/`
 - Prefer TanStack Router's `Link` over `<a>` for internal navigation
+- Use semantic color tokens from `src/styles/index.css` — avoid `dark:` variants
 
 ## Semantic Colors
 
@@ -24,14 +47,9 @@ Flesh and Blood TCG toolkit built with React, TanStack Router, and Tailwind CSS 
 | `text-faint` | Very subtle text |
 | `border-border-primary` | Primary-tinted borders |
 
-## File Structure
-
-- Routes: `src/routes/` (file-based routing via TanStack Router)
-- Components: `src/components/`
-- Styles: `src/styles/index.css`
-- Translations: `src/assets/i18n/*.json`
-
 ## Commands
 
 - `bun dev` - Start dev server
 - `bun format` - Lint and format with Biome
+- `bun run build` - Production build + type check
+- `bun test` - Run tests

@@ -119,4 +119,7 @@ export const CardSubtypes: Record<CardType, Record<string, string>> = {
 	event: {
 		none: "card.subtype.none",
 	},
+	meld: {
+		none: "card.subtype.none",
+	},
 };

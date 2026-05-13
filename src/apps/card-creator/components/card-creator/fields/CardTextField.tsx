@@ -1,4 +1,5 @@
 import RichTextEditor from "@fabkit/platform/components/form/RichTextEditor";
+import { EditorCustomEmojiRows } from "../../../config/editor.ts";
 import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { useCardCreator } from "../../../stores/card-creator.ts";
@@ -15,7 +16,7 @@ export function CardTextField(props: HTMLAttributes<HTMLDivElement>) {
 			<div className="block text-sm font-medium text-muted mb-2">
 				{t("card_creator.text_label")}
 			</div>
-			<RichTextEditor content={CardTextNode} onChange={setCardText} />
+			<RichTextEditor content={CardTextNode} onChange={setCardText} customEmojis={EditorCustomEmojiRows} />
 		</div>
 	);
 }

@@ -9,7 +9,7 @@ import {
 import type { CardCreatorState } from "@fabkit/apps/card-creator/stores/card-creator";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
 import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
-import { decompressFile } from "@fabkit/shared/lib/compression";
+import { decompressFile } from "@fabkit/shared/compression";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertTriangle,
@@ -39,7 +39,7 @@ import { major, valid } from "semver";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FabreportConsoleEntry {
-	level: "error" | "warn" | "unhandled";
+	level: "error" | "warn" | "info" | "debug" | "unhandled";
 	message: string;
 	timestamp: number;
 	stack?: string;
@@ -785,6 +785,14 @@ const consoleLevelStyles: Record<
 	unhandled: {
 		card: "border-purple-500/30 bg-purple-500/5",
 		badge: "bg-purple-500/10 text-purple-400",
+	},
+	info: {
+		card: "border-border-primary bg-surface-muted/50",
+		badge: "bg-surface-active text-muted",
+	},
+	debug: {
+		card: "border-border-primary bg-surface-muted/30",
+		badge: "bg-surface-active text-faint",
 	},
 };
 
