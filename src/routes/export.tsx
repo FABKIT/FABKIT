@@ -114,7 +114,7 @@ function RouteComponent() {
 				<div className="flex flex-1 flex-col justify-center items-center p-4 gap-6">
 					<img
 						src={imageUrl}
-						alt="Rendered card"
+						alt={t("export.card_alt")}
 						className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
 					/>
 					<div className="flex items-center gap-3">

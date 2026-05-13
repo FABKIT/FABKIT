@@ -20,6 +20,7 @@ import {
 	ListOrdered as NumberedListIcon,
 	Underline as UnderlineIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { FabDash } from "./extensions/FabDash.ts";
 import "../../../styles/components/rich-text-editor.css";
 
@@ -42,6 +43,7 @@ export default function RichTextEditor({
 	onChange,
 	customEmojis = [],
 }: RichTextEditorProps) {
+	const { t } = useTranslation("platform");
 	const customEmojisRow1 = customEmojis[0] ?? [];
 	const customEmojisRow2 = customEmojis[1] ?? [];
 	const editor = useEditor({
@@ -104,7 +106,7 @@ export default function RichTextEditor({
 	});
 
 	if (!editor) {
-		return <p>Editor failed to load...</p>;
+		return <p>{t("components.rich_text_editor.loading_error")}</p>;
 	}
 
 	return (
@@ -121,7 +123,7 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">Toggle Bold</span>
+						<span className="sr-only">{t("components.rich_text_editor.toggle_bold")}</span>
 						<BoldIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -133,7 +135,7 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">Toggle Italic</span>
+						<span className="sr-only">{t("components.rich_text_editor.toggle_italic")}</span>
 						<ItalicIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -145,7 +147,7 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">Toggle Underline</span>
+						<span className="sr-only">{t("components.rich_text_editor.toggle_underline")}</span>
 						<UnderlineIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -161,7 +163,7 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">Toggle bullet list</span>
+						<span className="sr-only">{t("components.rich_text_editor.toggle_bullet_list")}</span>
 						<ListBulletIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -173,7 +175,7 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">Toggle ordered list</span>
+						<span className="sr-only">{t("components.rich_text_editor.toggle_ordered_list")}</span>
 						<NumberedListIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -189,7 +191,7 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">Left</span>
+						<span className="sr-only">{t("components.rich_text_editor.align_left")}</span>
 						<AlignLeftIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -201,7 +203,7 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">Center</span>
+						<span className="sr-only">{t("components.rich_text_editor.align_center")}</span>
 						<AlignCenterIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -212,9 +214,9 @@ export default function RichTextEditor({
 						type="button"
 						onClick={() => editor.chain().focus().setHardBreak().run()}
 						className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
-						title="Insert line break (move to next line)"
+						title={t("components.rich_text_editor.insert_line_break")}
 					>
-						<span className="sr-only">Insert line break</span>
+						<span className="sr-only">{t("components.rich_text_editor.insert_line_break")}</span>
 						<LineBreakIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -227,9 +229,9 @@ export default function RichTextEditor({
 							editor.chain().focus().insertContent({ type: "fabDash" }).run()
 						}
 						className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
-						title="Insert F&B dash"
+						title={t("components.rich_text_editor.insert_fab_dash")}
 					>
-						<span className="sr-only">Insert F&B dash</span>
+						<span className="sr-only">{t("components.rich_text_editor.insert_fab_dash")}</span>
 						{/* Visual preview of the dash bar */}
 						<span
 							aria-hidden="true"
@@ -248,7 +250,7 @@ export default function RichTextEditor({
 							onClick={() => editor.chain().focus().setEmoji(emoji.name).run()}
 							className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
 						>
-							<span className="sr-only">Add {emoji.name} icon</span>
+							<span className="sr-only">{t("components.rich_text_editor.add_icon", { name: emoji.name })}</span>
 							{emoji.fallbackImage && (
 								<img
 									src={emoji.fallbackImage}
@@ -270,7 +272,7 @@ export default function RichTextEditor({
 							onClick={() => editor.chain().focus().setEmoji(emoji.name).run()}
 							className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
 						>
-							<span className="sr-only">Add {emoji.name} icon</span>
+							<span className="sr-only">{t("components.rich_text_editor.add_icon", { name: emoji.name })}</span>
 							{emoji.fallbackImage && (
 								<img
 									src={emoji.fallbackImage}

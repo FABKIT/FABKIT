@@ -77,6 +77,15 @@
 		"restore_gallery": "Restore gallery",
 		"version_mismatch": "This report was created with a different major version of FABKIT. Some data may not be compatible with the current version."
 	},
+	"not_found": {
+		"title": "404 Not Found",
+		"description": "The requested page could not be found.",
+		"go_back": "You can go back",
+		"home": "Home"
+	},
+	"dev_banner": {
+		"text": "DEVELOPMENT BUILD - REPORT BUGS ON DISCORD OR GITHUB"
+	},
 	"pwa": {
 		"offline_ready": "App is ready to work offline",
 		"update_available": "New version available! Click reload to update.",
@@ -107,6 +116,19 @@
 		},
 		"combobox": {
 			"custom_value": "Custom: {{value}}"
+		},
+		"rich_text_editor": {
+			"loading_error": "Editor failed to load...",
+			"toggle_bold": "Toggle Bold",
+			"toggle_italic": "Toggle Italic",
+			"toggle_underline": "Toggle Underline",
+			"toggle_bullet_list": "Toggle bullet list",
+			"toggle_ordered_list": "Toggle ordered list",
+			"align_left": "Left",
+			"align_center": "Center",
+			"insert_line_break": "Insert line break",
+			"insert_fab_dash": "Insert F&B dash",
+			"add_icon": "Add {{name}} icon"
 		}
 	}
 }
