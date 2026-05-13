@@ -8,7 +8,7 @@ import "./i18n.ts";
 import "./apps/card-creator/index";
 import "./apps/fabble/index";
 import { startConsoleInterceptor } from "@fabkit/platform/bug-report";
-import { router } from "./platform/router";
+import { router } from "@fabkit/platform/router";
 
 startConsoleInterceptor();
 

@@ -1,3 +1,4 @@
+// public/ has no alias — Vite serves it at the root URL and relative import is the only static option.
 import _CardBacks from "../../../../public/cardbacks/cardbacks.json";
 import type { CardStyle } from "./card_styles.ts";
 import type { CardType } from "./types.ts";
