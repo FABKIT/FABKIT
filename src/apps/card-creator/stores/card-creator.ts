@@ -6,25 +6,28 @@
  * for the TCG card creator application.
  */
 
-import type { Content } from "@tiptap/react";
-import { v4 as uuid } from "uuid";
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
-import { isFieldVisible } from "../components/utils.ts";
 import {
-	type CardBack,
 	CardBacks,
 	getCardBacksForTypeAndStyle,
 	getSuggestedCardBack,
 } from "@fabkit/shared/config/cards/card_backs.ts";
-import { type CardStyle, CardStyles } from "@fabkit/shared/config/cards/card_styles.ts";
+import {
+	type CardStyle,
+	CardStyles,
+} from "@fabkit/shared/config/cards/card_styles.ts";
 import {
 	type CardFormField,
 	CardFormFields,
 	type CardFormFieldValue,
 } from "@fabkit/shared/config/cards/form_fields.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { Content } from "@tiptap/react";
+import { v4 as uuid } from "uuid";
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+import { isFieldVisible } from "../components/utils.ts";
 import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
+import type { CardCreatorCardBack } from "../config/rendering.ts";
 
 /**
  * Card types that are not allowed on a meld half.
@@ -114,7 +117,7 @@ export interface CardCreatorState extends FormFieldValues {
 	meldHalfB: MeldHalf;
 
 	/** Currently selected card back configuration object */
-	CardBack: CardBack | null;
+	CardBack: CardCreatorCardBack | null;
 
 	/** Card back visual style variant - affects available card backs */
 	CardBackStyle: CardStyle;
@@ -211,7 +214,7 @@ export interface CardCreatorActions {
 	setMeldHalfWeapon: (half: "A" | "B", weapon: "(1H)" | "(2H)") => void;
 
 	/** Sets the currently selected card back */
-	setCardBack: (cardBack: CardBack) => void;
+	setCardBack: (cardBack: CardCreatorCardBack) => void;
 
 	/**
 	 * Changes the card back style (flat/dented) and automatically
@@ -321,10 +324,9 @@ export interface CardCreatorActions {
  */
 const defaultCardType: CardType = "action";
 const defaultCardStyle: CardStyle = "dented";
-const defaultCardBack =
-	getSuggestedCardBack(
-		getCardBacksForTypeAndStyle(defaultCardType, defaultCardStyle),
-	) ?? CardBacks[0];
+const defaultCardBack = (getSuggestedCardBack(
+	getCardBacksForTypeAndStyle(defaultCardType, defaultCardStyle),
+) ?? CardBacks[0]) as CardCreatorCardBack;
 
 const initialState: CardCreatorState = {
 	__version: uuid(),
@@ -383,16 +385,20 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					state.CardBackStyle,
 				);
 				let cardStyle = state.CardBackStyle;
-				let cardBack: CardBack | null = state.CardBack;
+				let cardBack: CardCreatorCardBack | null = state.CardBack;
 				if (state.CardBack === null || !available.includes(state.CardBack))
-					cardBack = getSuggestedCardBack(available);
+					cardBack = getSuggestedCardBack(
+						available,
+					) as CardCreatorCardBack | null;
 
 				if (null === cardBack) {
 					for (const style of CardStyles) {
 						available = getCardBacksForTypeAndStyle(cardType, style);
 
 						if (available.length > 0)
-							cardBack = getSuggestedCardBack(available);
+							cardBack = getSuggestedCardBack(
+								available,
+							) as CardCreatorCardBack | null;
 
 						if (null !== cardBack) {
 							cardStyle = style;
@@ -425,12 +431,15 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 
 				return result;
 			}),
-		setCardBack: (cardBack: CardBack) => set({ CardBack: cardBack }),
+		setCardBack: (cardBack: CardCreatorCardBack) => set({ CardBack: cardBack }),
 		setCardBackStyle: (backType: CardStyle) =>
 			set((state) => {
 				// When changing card back style, we select the first available card back for that style.
 				const available = getCardBacksForTypeAndStyle(state.CardType, backType);
-				const cardBack = getSuggestedCardBack(available, state.CardBack);
+				const cardBack = getSuggestedCardBack(
+					available,
+					state.CardBack,
+				) as CardCreatorCardBack | null;
 
 				return { CardBackStyle: backType, CardBack: cardBack };
 			}),

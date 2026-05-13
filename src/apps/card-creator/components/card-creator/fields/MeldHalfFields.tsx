@@ -4,12 +4,18 @@ import RichTextEditor from "@fabkit/platform/components/form/RichTextEditor";
 import type { SelectOption } from "@fabkit/platform/components/form/Select";
 import Select from "@fabkit/platform/components/form/Select";
 import TextInput from "@fabkit/platform/components/form/TextInput";
+import {
+	type CardClass,
+	CardClasses,
+} from "@fabkit/shared/config/cards/classes.ts";
+import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
+import {
+	type CardTalent,
+	CardTalents,
+} from "@fabkit/shared/config/cards/talents.ts";
+import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { type CardClass, CardClasses } from "@fabkit/shared/config/cards/classes.ts";
-import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
-import { type CardTalent, CardTalents } from "@fabkit/shared/config/cards/talents.ts";
-import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import {
 	MELD_EXCLUDED_TYPES,
 	type MeldHalf,

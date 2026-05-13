@@ -18,8 +18,8 @@
  * - **elements**: Positioned configurations for each card element
  */
 
-import type { ReactElement } from "react";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
+import type { ReactElement } from "react";
 
 /**
  * Configuration for rendering SVG text elements.

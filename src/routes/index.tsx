@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
 import { CardTypeField } from "@fabkit/apps/card-creator/components/home/CardTypeField.tsx";
 import { FeaturedArtist } from "@fabkit/apps/card-creator/components/home/FeaturedArtist.tsx";
+import { createFileRoute } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,

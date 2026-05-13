@@ -90,16 +90,20 @@ Optional body — only if the change is non-obvious or has important context.
 **Scopes for this project:**
 | Scope | Use for changes in |
 |-------|--------------------|
-| `card-creator` | `src/components/card-creator/`, `src/routes/card-creator.tsx` |
-| `renderer` | `src/components/card-creator/Renderer/` |
-| `fields` | `src/components/card-creator/fields/` |
-| `gallery` | `src/components/gallery/`, `src/routes/gallery.tsx` |
-| `store` | `src/stores/` |
-| `config` | `src/config/` |
-| `i18n` | `src/assets/i18n/` |
+| `card-creator` | `src/apps/card-creator/`, `src/routes/card-creator.tsx` |
+| `renderer` | `src/apps/card-creator/components/card-creator/Renderer/` |
+| `fields` | `src/apps/card-creator/components/card-creator/fields/` |
+| `gallery` | `src/apps/card-creator/components/gallery/`, `src/routes/gallery.tsx` |
+| `store` | `src/apps/card-creator/stores/` |
+| `config` | `src/apps/card-creator/config/` |
+| `persistence` | `src/apps/card-creator/persistence/` |
+| `platform` | `src/platform/` |
+| `shared` | `src/shared/` |
+| `fabble` | `src/apps/fabble/` |
+| `i18n` | `src/platform/i18n/`, `src/apps/*/i18n/` |
 | `routing` | `src/routes/` (general routing changes) |
-| `ui` | `src/components/form/`, `src/components/layout/`, shared components |
-| `export` | `src/routes/export.tsx`, `src/export.ts` |
+| `ui` | `src/platform/components/form/`, `src/platform/components/layout/` |
+| `export` | `src/routes/export.tsx`, `src/shared/export.ts` |
 | `docs` | `README.md`, `CONTRIBUTING.md`, or any other documentation files |
 
 Rules for the description:

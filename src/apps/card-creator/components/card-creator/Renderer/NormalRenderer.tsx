@@ -30,10 +30,10 @@
  * - **Dented**: Footer uses single or stacked centered text
  */
 
+import { CardRarities } from "@fabkit/shared/config/cards/rarities.ts";
 import { type ReactNode, type Ref, useMemo } from "react";
 import { useDebounce } from "use-debounce";
 import useObjectURL from "use-object-url";
-import { CardRarities } from "@fabkit/shared/config/cards/rarities.ts";
 import type {
 	NormalDentedRenderConfig,
 	NormalFlatRenderConfig,

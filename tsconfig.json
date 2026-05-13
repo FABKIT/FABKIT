@@ -3,5 +3,13 @@
 	"references": [
 		{ "path": "./tsconfig.app.json" },
 		{ "path": "./tsconfig.node.json" }
-	]
+	],
+	"compilerOptions": {
+		"paths": {
+			"@fabkit/platform/*": ["./src/platform/*"],
+			"@fabkit/shared/*": ["./src/shared/*"],
+			"@fabkit/apps/card-creator/*": ["./src/apps/card-creator/*"],
+			"@fabkit/apps/fabble/*": ["./src/apps/fabble/*"]
+		}
+	}
 }

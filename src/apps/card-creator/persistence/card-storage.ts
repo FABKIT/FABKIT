@@ -1,7 +1,8 @@
-import Dexie, { type Table } from "dexie";
-import semver from "semver";
 import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
 import { compressJSON } from "@fabkit/shared/lib/compression";
+import Dexie, { type Table } from "dexie";
+import semver from "semver";
+import type { CardCreatorCardBack } from "../config/rendering.ts";
 import {
 	type CardCreatorState,
 	defaultMeldHalf,
@@ -188,8 +189,8 @@ export function deserializeCardState(
 ): Partial<CardCreatorState> {
 	return {
 		...stored,
-		CardBack:
-			CardBacks.find((back) => back.id === stored.CardBack) || CardBacks[0],
+		CardBack: (CardBacks.find((back) => back.id === stored.CardBack) ||
+			CardBacks[0]) as CardCreatorCardBack,
 	};
 }
 

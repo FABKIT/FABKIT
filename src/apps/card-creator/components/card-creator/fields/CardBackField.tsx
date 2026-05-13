@@ -1,7 +1,8 @@
 import Select from "@fabkit/platform/components/form/Select";
+import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_backs.ts";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
-import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_backs.ts";
+import type { CardCreatorCardBack } from "../../../config/rendering.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 
 export function CardBackField() {
@@ -11,7 +12,11 @@ export function CardBackField() {
 	const setCardBack = useCardCreator((state) => state.setCardBack);
 
 	const options = useMemo(
-		() => getCardBacksForTypeAndStyle(CardType, CardBackStyle),
+		() =>
+			getCardBacksForTypeAndStyle(
+				CardType,
+				CardBackStyle,
+			) as CardCreatorCardBack[],
 		[CardBackStyle, CardType],
 	);
 

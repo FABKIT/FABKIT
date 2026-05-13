@@ -1,9 +1,9 @@
 import ButtonDropdown from "@fabkit/platform/components/form/ButtonDropdown";
+import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useNavigate } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useCardCreator } from "../../stores/card-creator.ts";
 
 /**

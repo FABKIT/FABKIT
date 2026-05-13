@@ -1,8 +1,8 @@
 import { Combobox } from "@fabkit/platform/components/form/Combobox";
 import type { SelectOption } from "@fabkit/platform/components/form/Select";
+import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 import { useIsFieldVisible } from "../../utils.ts";
 

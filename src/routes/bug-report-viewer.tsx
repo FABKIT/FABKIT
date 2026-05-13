@@ -1,3 +1,15 @@
+import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rendering";
+import {
+	base64ToBlob,
+	clearGallery,
+	type FabgalleryFile,
+	type FabkitFile,
+	importCardFromObject,
+} from "@fabkit/apps/card-creator/persistence/card-storage";
+import type { CardCreatorState } from "@fabkit/apps/card-creator/stores/card-creator";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
+import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
+import { decompressFile } from "@fabkit/shared/lib/compression";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertTriangle,
@@ -23,17 +35,6 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { major, valid } from "semver";
-import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
-import { decompressFile } from "@fabkit/shared/lib/compression";
-import {
-	base64ToBlob,
-	clearGallery,
-	type FabgalleryFile,
-	type FabkitFile,
-	importCardFromObject,
-} from "@fabkit/apps/card-creator/persistence/card-storage";
-import type { CardCreatorState } from "@fabkit/apps/card-creator/stores/card-creator";
-import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -142,7 +143,8 @@ async function restoreStore(raw: unknown): Promise<void> {
 	// serializeValue preserves the CardBack object; resolve to the real config object by id.
 	const cardBackRaw = s.CardBack as { id: number } | null;
 	const cardBack = cardBackRaw
-		? (CardBacks.find((b) => b.id === cardBackRaw.id) ?? CardBacks[0])
+		? ((CardBacks.find((b) => b.id === cardBackRaw.id) ??
+				CardBacks[0]) as CardCreatorCardBack)
 		: null;
 
 	useCardCreator.getState().loadCard({

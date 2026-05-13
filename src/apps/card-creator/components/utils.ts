@@ -6,9 +6,9 @@
  * visible fields based on their configuration.
  */
 
-import { useMemo } from "react";
 import type { CardFormField } from "@fabkit/shared/config/cards/form_fields.ts";
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
+import { useMemo } from "react";
 import { useCardCreator } from "../stores/card-creator.ts";
 
 /**

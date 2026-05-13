@@ -1,7 +1,10 @@
+import {
+	currentWorkItems,
+	futurePlans,
+} from "@fabkit/apps/card-creator/config/roadmap";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Lightbulb } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { currentWorkItems, futurePlans } from "@fabkit/apps/card-creator/config/roadmap";
 import "../styles/roadmap.css";
 import type * as React from "react";
 

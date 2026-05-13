@@ -1,8 +1,5 @@
-import { snapdom } from "@zumer/snapdom";
 // TODO(phase-6): boundary violation — platform importing from app. Will be resolved when bug-report is fully decoupled.
 import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering";
-import i18n from "../../i18n";
-import { compressJSON } from "@fabkit/shared/lib/compression";
 // TODO(phase-6): boundary violation — platform importing from app. Will be resolved when bug-report is fully decoupled.
 import {
 	blobToBase64,
@@ -10,6 +7,9 @@ import {
 	type FabgalleryFile,
 	getAllCards,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
+import { compressJSON } from "@fabkit/shared/lib/compression";
+import { snapdom } from "@zumer/snapdom";
+import i18n from "../../i18n";
 import { getLastBoundaryError } from "../error-context";
 import { router } from "../router";
 import { getConsoleBuffer } from "./console-interceptor";

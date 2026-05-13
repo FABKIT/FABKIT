@@ -1,10 +1,5 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
-import { type ChangeEvent, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { CardThumbnail } from "@fabkit/apps/card-creator/components/gallery/CardThumbnail";
 import { FileUploadButton } from "@fabkit/apps/card-creator/components/gallery/FileUploadButton.tsx";
-import { decompressFile } from "@fabkit/shared/lib/compression";
 import {
 	exportGalleryToFile,
 	type GalleryImportMode,
@@ -12,6 +7,11 @@ import {
 	importCardFromJSON,
 	importGalleryFromJSON,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
+import { decompressFile } from "@fabkit/shared/lib/compression";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
+import { type ChangeEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/gallery")({
 	component: GalleryPage,

@@ -1,3 +1,4 @@
+import type { CardBack } from "@fabkit/shared/config/cards/card_backs";
 import { MeldFlatRenderConfigPreset } from "./rendering/meld_preset.tsx";
 import {
 	NormalDentedEquipmentRenderConfigPreset,
@@ -28,3 +29,9 @@ export const AllRenderConfigVariations: Record<string, CardRenderConfig> = {
 };
 
 export type RenderConfigVariation = keyof typeof AllRenderConfigVariations;
+
+// Extends the shared CardBack domain type with the card-creator's renderer key.
+// The shared type intentionally omits renderer — it's a card-creator concern.
+export interface CardCreatorCardBack extends CardBack {
+	renderer: RenderConfigVariation;
+}

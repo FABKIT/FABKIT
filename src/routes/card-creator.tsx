@@ -1,13 +1,3 @@
-import {
-	Dialog,
-	DialogBackdrop,
-	DialogPanel,
-	DialogTitle,
-} from "@headlessui/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Settings } from "lucide-react";
-import { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { CardArtworkCreditsField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardArtworkCreditsField.tsx";
 import { CardArtworkField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardArtworkField.tsx";
 import { CardArtworkPositionContainer } from "@fabkit/apps/card-creator/components/card-creator/fields/CardArtworkPositionContainer.tsx";
@@ -38,6 +28,16 @@ import { SaveButton } from "@fabkit/apps/card-creator/components/card-creator/fi
 import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
 import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import {
+	Dialog,
+	DialogBackdrop,
+	DialogPanel,
+	DialogTitle,
+} from "@headlessui/react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/card-creator")({
 	component: RouteComponent,

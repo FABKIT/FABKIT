@@ -1,3 +1,5 @@
+// TODO(phase-6): boundary violation — platform importing from app. Will be resolved when RichTextEditor is decoupled from app config.
+import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
 import Bold from "@tiptap/extension-bold";
 import Emoji from "@tiptap/extension-emoji";
 import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
@@ -20,8 +22,6 @@ import {
 	ListOrdered as NumberedListIcon,
 	Underline as UnderlineIcon,
 } from "lucide-react";
-// TODO(phase-6): boundary violation — platform importing from app. Will be resolved when RichTextEditor is decoupled from app config.
-import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
 import { FabDash } from "./extensions/FabDash.ts";
 import "../../../styles/components/rich-text-editor.css";
 
