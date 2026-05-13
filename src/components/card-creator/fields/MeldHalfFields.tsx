@@ -1,3 +1,9 @@
+import { Combobox } from "@fabkit/platform/components/form/Combobox";
+import ImageUpload from "@fabkit/platform/components/form/ImageUpload";
+import RichTextEditor from "@fabkit/platform/components/form/RichTextEditor";
+import type { SelectOption } from "@fabkit/platform/components/form/Select";
+import Select from "@fabkit/platform/components/form/Select";
+import TextInput from "@fabkit/platform/components/form/TextInput";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,12 +20,6 @@ import {
 	type MeldHalf,
 	useCardCreator,
 } from "../../../stores/card-creator.ts";
-import { Combobox } from "../../form/Combobox.tsx";
-import ImageUpload from "../../form/ImageUpload.tsx";
-import RichTextEditor from "../../form/RichTextEditor.tsx";
-import type { SelectOption } from "../../form/Select.tsx";
-import Select from "../../form/Select.tsx";
-import TextInput from "../../form/TextInput.tsx";
 
 type MeldHalfId = "A" | "B";
 
@@ -40,7 +40,7 @@ function MeldHalfPanel({
 	classOptions,
 	talentOptions,
 }: MeldHalfPanelProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const setMeldHalfType = useCardCreator((state) => state.setMeldHalfType);
 	const setMeldHalfName = useCardCreator((state) => state.setMeldHalfName);
 	const setMeldHalfArtwork = useCardCreator(
@@ -144,7 +144,7 @@ function MeldHalfPanel({
 }
 
 export function MeldHalfFields() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const meldActiveHalf = useCardCreator((state) => state.meldActiveHalf);
 	const setMeldActiveHalf = useCardCreator((state) => state.setMeldActiveHalf);
 	const meldHalfA = useCardCreator((state) => state.meldHalfA);

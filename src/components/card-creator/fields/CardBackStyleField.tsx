@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 
 export function CardBackStyleField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardBackType = useCardCreator((state) => state.CardBackStyle);
 	const setCardBackType = useCardCreator((state) => state.setCardBackStyle);
 

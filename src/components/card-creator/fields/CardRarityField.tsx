@@ -8,7 +8,7 @@ import { useCardCreator } from "../../../stores/card-creator.ts";
 import { useIsFieldVisible } from "../../utils.ts";
 
 export function CardRarityField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardRarity = useCardCreator((state) => state.CardRarity);
 	const setCardRarity = useCardCreator((state) => state.setCardRarity);
 	const shouldShow = useIsFieldVisible("CardRarity");

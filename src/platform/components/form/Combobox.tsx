@@ -84,7 +84,7 @@ export function Combobox<T extends string>({
 	options,
 	placeholder,
 }: ComboboxProps<T>) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const [query, setQuery] = useState("");
 	const [isFocused, setIsFocused] = useState(false);
 

@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 
 	return (
 		<div className="relative isolate overflow-hidden min-h-screen w-full">

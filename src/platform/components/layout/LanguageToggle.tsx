@@ -1,10 +1,10 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Check, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import i18n from "../../i18n.ts";
+import i18n from "../../../i18n.ts";
 
 export function LanguageToggle() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 
 	// Use defined resource keys, not i18n.languages (which is the fallback chain, not configured languages)
 	const availableLanguages = Object.keys(i18n.options.resources ?? {});

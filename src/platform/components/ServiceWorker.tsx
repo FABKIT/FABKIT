@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
  * Shows update status at top-center on desktop, full-width on mobile
  */
 export function ServiceWorker() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const {
 		offlineReady: [offlineReady, setOfflineReady],
 		needRefresh: [needRefresh, setNeedRefresh],

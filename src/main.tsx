@@ -5,8 +5,9 @@ import { createRoot } from "react-dom/client";
 import "./styles/index.css";
 import "./i18n.ts";
 
+import "./apps/card-creator/index";
+import { startConsoleInterceptor } from "@fabkit/platform/bug-report";
 import { router } from "./platform/router";
-import { startConsoleInterceptor } from "./services/bug-report";
 
 startConsoleInterceptor();
 

@@ -1,15 +1,15 @@
-import { createRootRoute, Outlet, useLocation } from "@tanstack/react-router";
-import type { ErrorInfo } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { AppErrorFallback } from "../components/AppErrorFallback.tsx";
-import { DevBanner } from "../components/DevBanner.tsx";
-import { Footer } from "../components/layout/Footer.tsx";
-import { Menu } from "../components/layout/Menu.tsx";
-import { ServiceWorker } from "../components/ServiceWorker.tsx";
+import { AppErrorFallback } from "@fabkit/platform/components/AppErrorFallback";
+import { DevBanner } from "@fabkit/platform/components/DevBanner";
+import { Footer } from "@fabkit/platform/components/layout/Footer";
+import { Menu } from "@fabkit/platform/components/layout/Menu";
+import { ServiceWorker } from "@fabkit/platform/components/ServiceWorker";
 import {
 	clearLastBoundaryError,
 	setLastBoundaryError,
-} from "../services/error-context.ts";
+} from "@fabkit/platform/error-context";
+import { createRootRoute, Outlet, useLocation } from "@tanstack/react-router";
+import type { ErrorInfo } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export const Route = createRootRoute({
 	component: RootComponent,

@@ -1,9 +1,9 @@
+import Slider from "@fabkit/platform/components/form/Slider";
 import { useTranslation } from "react-i18next";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import Slider from "../../form/Slider.tsx";
 
 export function CardOverlayOpacityField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardOverlay = useCardCreator((state) => state.CardOverlay);
 	const CardOverlayOpacity = useCardCreator(
 		(state) => state.CardOverlayOpacity,

@@ -250,7 +250,7 @@ function buildClaudePrompt(report: Fabreport): string {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function BugReportViewer() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const [report, setReport] = useState<Fabreport | null>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const [storeExpanded, setStoreExpanded] = useState(false);
@@ -265,7 +265,7 @@ function BugReportViewer() {
 			const parsed = JSON.parse(text) as Fabreport;
 			setReport(parsed);
 			console.debug("loading stack remapping");
-			const { remapStacks } = await import("../services/stack-remap");
+			const { remapStacks } = await import("@fabkit/platform/stack-remap");
 			const remapped = await remapStacks(parsed);
 			setReport(remapped);
 		} catch {
@@ -787,7 +787,7 @@ const consoleLevelStyles: Record<
 };
 
 function ConsoleLogEntry({ entry }: { entry: FabreportConsoleEntry }) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const styles = consoleLevelStyles[entry.level];
 
 	return (

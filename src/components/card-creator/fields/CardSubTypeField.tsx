@@ -1,13 +1,13 @@
+import { Combobox } from "@fabkit/platform/components/form/Combobox";
+import type { SelectOption } from "@fabkit/platform/components/form/Select";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { CardSubtypes } from "../../../config/cards/subtypes.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import { Combobox } from "../../form/Combobox.tsx";
-import type { SelectOption } from "../../form/Select.tsx";
 import { useIsFieldVisible } from "../../utils.ts";
 
 export function CardSubTypeField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardType = useCardCreator((state) => state.CardType);
 	const CardSubType = useCardCreator((state) => state.CardSubType);
 	const setCardSubType = useCardCreator((state) => state.setCardSubType);

@@ -1,10 +1,10 @@
+import TextInput from "@fabkit/platform/components/form/TextInput";
 import { useTranslation } from "react-i18next";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import TextInput from "../../form/TextInput.tsx";
 import { useIsFieldVisible } from "../../utils.ts";
 
 export function CardDefenseField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardDefense = useCardCreator((state) => state.CardDefense);
 	const setCardDefense = useCardCreator((state) => state.setCardDefense);
 	const CardType = useCardCreator((state) => state.CardType);

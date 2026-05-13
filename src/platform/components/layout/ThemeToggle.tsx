@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function ThemeToggle() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
 

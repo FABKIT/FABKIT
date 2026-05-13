@@ -19,7 +19,7 @@ export const Route = createFileRoute("/gallery")({
 });
 
 function GalleryPage() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const { cards } = Route.useLoaderData();
 	const router = useRouter();
 	const [isDragging, setIsDragging] = useState(false);

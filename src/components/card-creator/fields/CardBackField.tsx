@@ -1,8 +1,8 @@
+import Select from "@fabkit/platform/components/form/Select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import { getCardBacksForTypeAndStyle } from "../../../config/cards/card_backs.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import Select from "../../form/Select.tsx";
 
 export function CardBackField() {
 	const CardType = useCardCreator((state) => state.CardType);

@@ -13,7 +13,7 @@ export type RendererProps = {
 };
 
 export function Renderer({ ref, isExport = false }: RendererProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardBack = useCardCreator((state) => state.CardBack);
 	const renderConfig =
 		AllRenderConfigVariations[CardBack?.renderer || ""] || null;

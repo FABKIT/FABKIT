@@ -1,6 +1,6 @@
+import Select from "@fabkit/platform/components/form/Select";
 import { useTranslation } from "react-i18next";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import Select from "../../form/Select.tsx";
 import { useIsFieldVisible } from "../../utils.ts";
 
 const pitchOptions = [
@@ -13,7 +13,7 @@ const pitchOptions = [
  * Renders the pitch field.
  */
 export function CardPitchField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardPitch = useCardCreator((state) => state.CardPitch);
 	const setPitch = useCardCreator((state) => state.setPitch);
 	const shouldShow = useIsFieldVisible("CardPitch");

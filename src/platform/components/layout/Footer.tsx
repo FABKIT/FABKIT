@@ -29,7 +29,7 @@ const navigation: NavItem[] = [
 ];
 
 export function Footer() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 
 	return (
 		<footer className="sticky top-[100vh] z-10 border-t border-t-primary bg-surface pt-3 lg:pl-72">

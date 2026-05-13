@@ -6,7 +6,7 @@ interface ResetButtonProps {
 }
 
 export function ResetButton({ onClick }: ResetButtonProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 
 	return (
 		<button

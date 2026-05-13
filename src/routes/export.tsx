@@ -11,7 +11,7 @@ export const Route = createFileRoute("/export")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const svgRef = useRef<SVGSVGElement>(null);
 	const shouldReRender = useRef(true);
 	const [portraitCard, setPortraitCard] = useState<Blob | null>(null);

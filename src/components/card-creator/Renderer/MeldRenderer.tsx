@@ -106,7 +106,7 @@ export function MeldRenderer({
 	ref,
 	isExport = false,
 }: MeldRendererProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 
 	// ── Store reads ────────────────────────────────────────────────────────────
 	const halfA = useCardCreator((state) => state.meldHalfA);

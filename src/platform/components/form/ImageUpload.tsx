@@ -18,7 +18,7 @@ export default function ImageUpload({
 	acceptedFormats = ["image/png", "image/jpeg", "image/gif"],
 	className = "",
 }: ImageUploadProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const id = useRef(uuid());
 	const [isDragging, setIsDragging] = useState(false);
 	const [fileName, setFileName] = useState<string | null>(null);

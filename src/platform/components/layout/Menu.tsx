@@ -1,3 +1,4 @@
+import { useBugReport } from "@fabkit/platform/bug-report";
 import {
 	Dialog,
 	DialogPanel,
@@ -18,9 +19,8 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import FabkitLogo from "../../assets/Fabkitlogo.svg";
-import FabkitLogoNotext from "../../assets/Fabkitlogo_notext.svg";
-import { useBugReport } from "../../services/bug-report";
+import FabkitLogo from "../../../assets/Fabkitlogo.svg";
+import FabkitLogoNotext from "../../../assets/Fabkitlogo_notext.svg";
 import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
@@ -73,7 +73,7 @@ function NavLink({
 	currentPath: string;
 	onClick?: () => void;
 }) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 
 	const activeRoutes =
 		item.activeRoutes ?? item.visualChildren?.map((c) => c.route);
@@ -116,7 +116,7 @@ function SubNavLink({
 	currentPath: string;
 	onClick?: () => void;
 }) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const isActive = item.route === currentPath;
 
 	return (
@@ -218,7 +218,7 @@ function NavList({
 }
 
 export function Menu() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const location = useLocation();
 

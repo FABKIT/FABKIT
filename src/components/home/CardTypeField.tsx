@@ -1,16 +1,16 @@
+import ButtonDropdown from "@fabkit/platform/components/form/ButtonDropdown";
 import { useNavigate } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CardTypes } from "../../config/cards.ts";
 import { useCardCreator } from "../../stores/card-creator.ts";
-import ButtonDropdown from "../form/ButtonDropdown.tsx";
 
 /**
  * Renders the card type field.
  */
 export function CardTypeField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const [isLoading, setIsLoading] = useState(false);
 	const setCardType = useCardCreator((state) => state.setCardType);
 	const reset = useCardCreator((state) => state.reset);

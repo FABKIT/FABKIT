@@ -1,9 +1,9 @@
+import { Bluesky } from "@fabkit/platform/components/icons/Bluesky";
+import { Discord } from "@fabkit/platform/components/icons/Discord";
+import { Github } from "@fabkit/platform/components/icons/Github";
+import { KoFi } from "@fabkit/platform/components/icons/KoFi";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Bluesky } from "../components/icons/Bluesky.tsx";
-import { Discord } from "../components/icons/Discord.tsx";
-import { Github } from "../components/icons/Github.tsx";
-import { KoFi } from "../components/icons/KoFi.tsx";
 import Contact from "../config/contact.ts";
 
 export const Route = createFileRoute("/contact")({
@@ -79,7 +79,7 @@ const specialMentions = [
 const supporters = ["SalisburyBavo"];
 
 function ContactPage() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 
 	return (
 		<>

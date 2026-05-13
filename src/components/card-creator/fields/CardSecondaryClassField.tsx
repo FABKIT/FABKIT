@@ -1,13 +1,13 @@
+import { Combobox } from "@fabkit/platform/components/form/Combobox";
+import type { SelectOption } from "@fabkit/platform/components/form/Select";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { type CardClass, CardClasses } from "../../../config/cards/classes.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import { Combobox } from "../../form/Combobox.tsx";
-import type { SelectOption } from "../../form/Select.tsx";
 import { useIsFieldVisible } from "../../utils.ts";
 
 export function CardSecondaryClassField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const CardSecondaryClass = useCardCreator(
 		(state) => state.CardSecondaryClass,
 	);

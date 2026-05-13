@@ -1,6 +1,6 @@
 import { createHashHistory, createRouter } from "@tanstack/react-router";
-import { NotFound } from "../components/not-found.tsx";
 import { routeTree } from "../routeTree.gen";
+import { NotFound } from "./components/not-found.tsx";
 
 // Github Pages doesn't support SPA routing, so we'll use hash routing.
 const hashHistory = createHashHistory();

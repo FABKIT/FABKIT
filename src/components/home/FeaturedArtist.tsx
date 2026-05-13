@@ -5,7 +5,7 @@ import Contact from "../../config/contact.ts";
 import { featuredArtists } from "../../config/featured_artist.tsx";
 
 export function FeaturedArtist() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const [currentSlide, setCurrentSlide] = useState(0);
 	const featuredArtist =
 		featuredArtists[Math.floor(Math.random() * featuredArtists.length)];

@@ -1,8 +1,8 @@
+import { generateBugReport } from "@fabkit/platform/bug-report";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Bug, Home } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { generateBugReport } from "../services/bug-report";
 
 interface AppErrorFallbackProps {
 	error: unknown;
@@ -10,7 +10,7 @@ interface AppErrorFallbackProps {
 }
 
 export function AppErrorFallback({ error }: AppErrorFallbackProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 	const [generating, setGenerating] = useState(false);
 
 	const message = useMemo(() => {

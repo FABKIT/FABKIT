@@ -68,7 +68,7 @@ const sortedCurrentWorkItems = sortByPriorityAndTitle(
 const sortedFuturePlans = sortByPriorityAndTitle(futurePlans as RoadmapItem[]);
 
 function RoadmapPage() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 
 	return (
 		<>

@@ -17,7 +17,7 @@ interface CardThumbnailProps {
 }
 
 export function CardThumbnail({ card }: CardThumbnailProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const navigate = useNavigate();
 	const [isExporting, setIsExporting] = useState(false);
 	const [isLandscape, setIsLandscape] = useState(false);

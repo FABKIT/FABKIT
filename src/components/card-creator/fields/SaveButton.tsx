@@ -15,7 +15,7 @@ interface SaveButtonProps {
 }
 
 export function SaveButton({ previewRef }: SaveButtonProps) {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const [isSaving, setIsSaving] = useState(false);
 	const state = useCardCreator();
 

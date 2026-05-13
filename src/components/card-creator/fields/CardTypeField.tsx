@@ -1,14 +1,14 @@
+import Select from "@fabkit/platform/components/form/Select";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { CardTypes } from "../../../config/cards.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import Select from "../../form/Select.tsx";
 
 /**
  * Renders the card type field.
  */
 export function CardTypeField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const { CardType, setCardType } = useCardCreator();
 
 	// TODO: invalidate memo when `t`'s language changes?

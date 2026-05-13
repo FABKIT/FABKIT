@@ -45,7 +45,7 @@ export const Route = createFileRoute("/card-creator")({
 
 function RouteComponent() {
 	const previewRef = useRef<SVGSVGElement>(null);
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const [showResetDialog, setShowResetDialog] = useState(false);
 	const reset = useCardCreator((state) => state.reset);
 	const setCardType = useCardCreator((state) => state.setCardType);

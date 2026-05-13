@@ -1,9 +1,9 @@
+import ImageUpload from "@fabkit/platform/components/form/ImageUpload";
 import { useTranslation } from "react-i18next";
 import { useCardCreator } from "../../../stores/card-creator.ts";
-import ImageUpload from "../../form/ImageUpload.tsx";
 
 export function CardOverlayField() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const setOverlay = useCardCreator((state) => state.setOverlay);
 
 	return (

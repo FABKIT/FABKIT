@@ -38,7 +38,7 @@ import { useCardCreator } from "../../../stores/card-creator.ts";
  * @returns Formatted bottom text string (e.g., "Light Warrior Action - Attack")
  */
 export function useCardBottomText() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const {
 		CardTalent,
 		CardType,
