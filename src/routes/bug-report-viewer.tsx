@@ -52,6 +52,12 @@ interface FabreportRouterMatch {
 	search: string;
 }
 
+interface FabreportAppData {
+	state?: unknown;
+	rendering?: { cardBackRenderer: string | null; resolvedConfig: unknown | null };
+	gallery?: FabgalleryFile | unknown[];
+}
+
 interface Fabreport {
 	format?: "fabreport";
 	formatVersion?: string;
@@ -74,13 +80,14 @@ interface Fabreport {
 		lastActions: string | null;
 		comments: string | null;
 	};
-	rendering?: {
-		cardBackRenderer: string | null;
-		resolvedConfig: unknown | null;
-	};
-	store: unknown;
-	/** FabgalleryFile for reports generated after format versioning; raw array for older reports. */
-	gallery: FabgalleryFile | unknown[];
+	/** Per-app data keyed by namespace. Present in reports generated after the multi-app migration. */
+	apps?: Record<string, FabreportAppData>;
+	/** @deprecated Use apps["card-creator"].rendering. Kept for reading older reports. */
+	rendering?: { cardBackRenderer: string | null; resolvedConfig: unknown | null };
+	/** @deprecated Use apps["card-creator"].state. Kept for reading older reports. */
+	store?: unknown;
+	/** @deprecated Use apps["card-creator"].gallery. Kept for reading older reports. */
+	gallery?: FabgalleryFile | unknown[];
 	console: FabreportConsoleEntry[];
 	screenshot: string | null;
 	boundaryError?: {
@@ -88,6 +95,16 @@ interface Fabreport {
 		stack?: string;
 		componentStack?: string;
 	} | null;
+}
+
+/** Extracts card-creator-specific data from a report, with fallback for pre-multi-app reports. */
+function getCcData(report: Fabreport) {
+	const cc = report.apps?.["card-creator"];
+	return {
+		rendering: cc?.rendering ?? report.rendering,
+		store: cc?.state ?? report.store ?? null,
+		gallery: (cc?.gallery ?? report.gallery ?? []) as FabgalleryFile | unknown[],
+	};
 }
 
 // ─── Route ────────────────────────────────────────────────────────────────────
@@ -306,7 +323,7 @@ function BugReportViewer() {
 		if (!report) return;
 		setRestoringStore(true);
 		try {
-			await restoreStore(report.store);
+			await restoreStore(ccData.store);
 		} finally {
 			setRestoringStore(false);
 		}
@@ -316,7 +333,7 @@ function BugReportViewer() {
 		if (!report) return;
 		setRestoringGallery(true);
 		try {
-			await restoreGallery(report.gallery);
+			await restoreGallery(ccData.gallery);
 		} finally {
 			setRestoringGallery(false);
 		}
@@ -373,7 +390,8 @@ function BugReportViewer() {
 
 	const errorCount = report.console.filter((e) => e.level === "error").length;
 	const warnCount = report.console.filter((e) => e.level === "warn").length;
-	const galleryCards = getGalleryCards(report.gallery);
+	const ccData = getCcData(report);
+	const galleryCards = getGalleryCards(ccData.gallery);
 	const versionCompat = checkVersionCompatibility(
 		report.formatVersion ?? report.meta.appVersion,
 	);
@@ -618,7 +636,7 @@ function BugReportViewer() {
 				</div>
 
 				{/* Rendering */}
-				{report.rendering !== undefined && (
+				{ccData.rendering !== undefined && (
 					<div className="rounded-lg border-2 border-border-primary bg-surface shadow-lg">
 						<div className="border-b border-border-primary bg-surface-muted px-6 py-4">
 							<div className="flex items-center gap-3">
@@ -634,10 +652,10 @@ function BugReportViewer() {
 									{t("bug_report_viewer.rendering_renderer_key")}
 								</span>
 								<code className="rounded border border-border-primary bg-surface-muted px-2 py-0.5 font-mono text-sm text-body">
-									{report.rendering.cardBackRenderer ??
+									{ccData.rendering?.cardBackRenderer ??
 										t("bug_report_viewer.rendering_none")}
 								</code>
-								{report.rendering.resolvedConfig !== null ? (
+								{ccData.rendering?.resolvedConfig !== null ? (
 									<span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-0.5 text-xs font-medium text-green-500">
 										<CircleCheck className="h-3.5 w-3.5" />
 										{t("bug_report_viewer.rendering_resolved")}
@@ -649,9 +667,9 @@ function BugReportViewer() {
 									</span>
 								)}
 							</div>
-							{report.rendering.resolvedConfig !== null && (
+							{ccData.rendering?.resolvedConfig !== null && (
 								<pre className="max-h-64 overflow-auto rounded-lg border border-border-primary bg-surface-muted p-4 font-mono text-xs text-body">
-									{JSON.stringify(report.rendering.resolvedConfig, null, 2)}
+									{JSON.stringify(ccData.rendering?.resolvedConfig, null, 2)}
 								</pre>
 							)}
 						</div>
@@ -689,7 +707,7 @@ function BugReportViewer() {
 				<CollapsibleJsonSection
 					title={t("bug_report_viewer.section_store")}
 					icon={<Database className="h-5 w-5 text-heading" />}
-					data={report.store}
+					data={ccData.store}
 					expanded={storeExpanded}
 					onToggle={() => setStoreExpanded((v) => !v)}
 					itemsLabel={t("bug_report_viewer.items")}

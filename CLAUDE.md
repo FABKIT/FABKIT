@@ -23,6 +23,7 @@ Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-cre
 - Platform i18n: `src/platform/i18n/`
 - Styles: `src/styles/index.css`
 - Each app has its own `CLAUDE.md` with app-specific structure and rules
+- To add a new app, run `/new-app` — it walks through the full scaffold checklist
 
 ## Code Style
 

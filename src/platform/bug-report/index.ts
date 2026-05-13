@@ -63,12 +63,10 @@ export async function generateBugReport(): Promise<void> {
 	const comments = prompt(t("bug_report.prompt_comments"));
 
 	const appData = await collectAppData();
-	const ccData = appData["card-creator"];
 
 	const serializedApps = await serializeValue(
-		Object.fromEntries(Object.entries(appData).map(([k, v]) => [k, v.state])),
+		Object.fromEntries(Object.entries(appData).map(([k, v]) => [k, v])),
 	);
-	const store = (serializedApps as Record<string, unknown>)["card-creator"] ?? null;
 
 	const report = {
 		format: "fabreport",
@@ -97,10 +95,7 @@ export async function generateBugReport(): Promise<void> {
 			lastActions,
 			comments,
 		},
-		rendering: ccData?.rendering ?? null,
-		store,
 		apps: serializedApps,
-		gallery: ccData?.gallery ?? null,
 		console: getConsoleBuffer(),
 		screenshot,
 		boundaryError: (() => {
