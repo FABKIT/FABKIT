@@ -22,7 +22,13 @@
 		"noUnusedParameters": true,
 		"erasableSyntaxOnly": true,
 		"noFallthroughCasesInSwitch": true,
-		"noUncheckedSideEffectImports": true
+		"noUncheckedSideEffectImports": true,
+		"paths": {
+			"@fabkit/platform/*": ["./src/platform/*"],
+			"@fabkit/shared/*": ["./src/shared/*"],
+			"@fabkit/apps/card-creator/*": ["./src/apps/card-creator/*"],
+			"@fabkit/apps/fabble/*": ["./src/apps/fabble/*"]
+		}
 	},
 	"include": ["src"]
 }

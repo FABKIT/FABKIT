@@ -6,6 +6,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 import openGraphPlugin from "vite-plugin-open-graph";
 import { VitePWA } from "vite-plugin-pwa";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 const appVersion = process.env.APP_VERSION ?? "0.0.0-dev";
 
@@ -25,6 +26,7 @@ export default defineConfig({
 		},
 	},
 	plugins: [
+		tsconfigPaths(),
 		tailwindcss(),
 		tanstackRouter({
 			target: "react",

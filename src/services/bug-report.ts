@@ -2,13 +2,13 @@ import { snapdom } from "@zumer/snapdom";
 import { AllRenderConfigVariations } from "../config/rendering";
 import i18n from "../i18n";
 import { compressJSON } from "../lib/compression";
-import { router } from "../main";
 import {
 	blobToBase64,
 	exportCardToObject,
 	type FabgalleryFile,
 	getAllCards,
 } from "../persistence/card-storage";
+import { router } from "../platform/router";
 import { useCardCreator } from "../stores/card-creator";
 import { getLastBoundaryError } from "./error-context";
 
