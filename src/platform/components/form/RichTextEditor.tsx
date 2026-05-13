@@ -20,7 +20,8 @@ import {
 	ListOrdered as NumberedListIcon,
 	Underline as UnderlineIcon,
 } from "lucide-react";
-import { EditorCustomEmojiRows } from "../../../config/editor.ts";
+// TODO(phase-6): boundary violation — platform importing from app. Will be resolved when RichTextEditor is decoupled from app config.
+import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
 import { FabDash } from "./extensions/FabDash.ts";
 import "../../../styles/components/rich-text-editor.css";
 

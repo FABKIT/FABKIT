@@ -31,9 +31,9 @@ import {
 	type FabgalleryFile,
 	type FabkitFile,
 	importCardFromObject,
-} from "../persistence/card-storage";
-import type { CardCreatorState } from "../stores/card-creator";
-import { useCardCreator } from "../stores/card-creator";
+} from "@fabkit/apps/card-creator/persistence/card-storage";
+import type { CardCreatorState } from "@fabkit/apps/card-creator/stores/card-creator";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

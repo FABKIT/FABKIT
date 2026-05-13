@@ -30,7 +30,7 @@ import {
 	useCardNameFontSize,
 	useCardTextFontSize,
 } from "../hooks/useScaledFontSize.ts";
-import "../../../styles/components/normal-renderer.css";
+import "../../../../../styles/components/normal-renderer.css";
 
 export type MeldRendererProps = {
 	config: MeldCardRenderConfig;

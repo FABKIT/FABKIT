@@ -4,7 +4,7 @@ import { Github } from "@fabkit/platform/components/icons/Github";
 import { KoFi } from "@fabkit/platform/components/icons/KoFi";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import Contact from "../config/contact.ts";
+import Contact from "@fabkit/apps/card-creator/config/contact.ts";
 
 export const Route = createFileRoute("/contact")({
 	component: ContactPage,

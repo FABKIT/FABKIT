@@ -2,15 +2,15 @@ import { useNavigate } from "@tanstack/react-router";
 import { Download, Edit, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { rotateBlob } from "../../export.ts";
+import { rotateBlob } from "../../../../export.ts";
 import {
 	deleteCard,
 	deserializeCardState,
 	downloadCardJSON,
 	exportCardToJSON,
 	type StoredCard,
-} from "../../persistence/card-storage";
-import { useCardCreator } from "../../stores/card-creator";
+} from "@fabkit/apps/card-creator/persistence/card-storage";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
 
 interface CardThumbnailProps {
 	card: StoredCard;

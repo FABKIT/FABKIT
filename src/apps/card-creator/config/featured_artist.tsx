@@ -1,10 +1,10 @@
-import Artist1 from "../assets/featuredartist/Featured_Artist_1.png";
-import Artist2 from "../assets/featuredartist/Featured_Artist_2.png";
-import Artist3 from "../assets/featuredartist/Featured_Artist_3.png";
-import Artist4 from "../assets/featuredartist/Featured_Artist_4.png";
-import Artist5 from "../assets/featuredartist/Featured_Artist_5.png";
-import Artist6 from "../assets/featuredartist/Featured_Artist_6.png";
-import Artist7 from "../assets/featuredartist/Featured_Artist_7.png";
+import Artist1 from "../../../assets/featuredartist/Featured_Artist_1.png";
+import Artist2 from "../../../assets/featuredartist/Featured_Artist_2.png";
+import Artist3 from "../../../assets/featuredartist/Featured_Artist_3.png";
+import Artist4 from "../../../assets/featuredartist/Featured_Artist_4.png";
+import Artist5 from "../../../assets/featuredartist/Featured_Artist_5.png";
+import Artist6 from "../../../assets/featuredartist/Featured_Artist_6.png";
+import Artist7 from "../../../assets/featuredartist/Featured_Artist_7.png";
 
 export const featuredArtists = [
 	{

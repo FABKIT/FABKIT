@@ -2,13 +2,13 @@ import { Save } from "lucide-react";
 import type { RefObject } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { convertToImage } from "../../../export";
+import { convertToImage } from "../../../../../export";
 import {
 	getCard,
 	saveCard,
 	updateCard,
-} from "../../../persistence/card-storage";
-import { useCardCreator } from "../../../stores/card-creator";
+} from "@fabkit/apps/card-creator/persistence/card-storage";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
 
 interface SaveButtonProps {
 	previewRef: RefObject<SVGSVGElement | null>;
