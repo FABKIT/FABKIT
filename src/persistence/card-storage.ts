@@ -1,7 +1,7 @@
 import Dexie, { type Table } from "dexie";
 import semver from "semver";
-import { CardBacks } from "../config/cards/card_backs.ts";
-import { compressJSON } from "../lib/compression";
+import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
+import { compressJSON } from "@fabkit/shared/lib/compression";
 import {
 	type CardCreatorState,
 	defaultMeldHalf,

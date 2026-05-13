@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CardTypes } from "../../config/cards.ts";
+import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useCardCreator } from "../../stores/card-creator.ts";
 
 /**

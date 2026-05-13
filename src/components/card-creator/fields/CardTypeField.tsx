@@ -1,7 +1,7 @@
 import Select from "@fabkit/platform/components/form/Select";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { CardTypes } from "../../../config/cards.ts";
+import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 
 /**

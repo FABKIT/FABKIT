@@ -1,7 +1,7 @@
 import { snapdom } from "@zumer/snapdom";
 import { AllRenderConfigVariations } from "../../config/rendering";
 import i18n from "../../i18n";
-import { compressJSON } from "../../lib/compression";
+import { compressJSON } from "@fabkit/shared/lib/compression";
 import {
 	blobToBase64,
 	exportCardToObject,

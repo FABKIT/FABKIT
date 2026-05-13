@@ -1,5 +1,4 @@
-import _CardBacks from "../../../public/cardbacks/cardbacks.json";
-import type { RenderConfigVariation } from "../rendering.ts";
+import _CardBacks from "../../../../public/cardbacks/cardbacks.json";
 import type { CardStyle } from "./card_styles.ts";
 import type { CardType } from "./types.ts";
 
@@ -9,7 +8,7 @@ export type CardBack = {
 	name: string;
 	type: string;
 	dented: boolean;
-	renderer: RenderConfigVariation;
+	renderer: string;
 	images: {
 		id: number;
 		pitch: number;

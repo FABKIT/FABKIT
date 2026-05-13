@@ -7,8 +7,8 @@
  */
 
 import { useMemo } from "react";
-import type { CardFormField } from "../config/cards/form_fields.ts";
-import { type CardType, CardTypes } from "../config/cards/types.ts";
+import type { CardFormField } from "@fabkit/shared/config/cards/form_fields.ts";
+import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useCardCreator } from "../stores/card-creator.ts";
 
 /**

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
 	CardRarities,
 	type CardRarity,
-} from "../../../config/cards/rarities.ts";
+} from "@fabkit/shared/config/cards/rarities.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 import { useIsFieldVisible } from "../../utils.ts";
 

@@ -18,15 +18,11 @@ import { type Ref, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 import useObjectURL from "use-object-url";
-import { CardRarities } from "../../../config/cards/rarities.ts";
-import {
-	type CardClass,
-	CardClasses,
-	CardSubtypes,
-	type CardTalent,
-	CardTalents,
-	CardTypes,
-} from "../../../config/cards.ts";
+import { CardRarities } from "@fabkit/shared/config/cards/rarities.ts";
+import { type CardClass, CardClasses } from "@fabkit/shared/config/cards/classes.ts";
+import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
+import { type CardTalent, CardTalents } from "@fabkit/shared/config/cards/talents.ts";
+import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import type { MeldCardRenderConfig } from "../../../config/rendering/types.ts";
 import type { MeldHalf } from "../../../stores/card-creator.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";

@@ -1,7 +1,7 @@
 import Select from "@fabkit/platform/components/form/Select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
-import { getCardBacksForTypeAndStyle } from "../../../config/cards/card_backs.ts";
+import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_backs.ts";
 import { useCardCreator } from "../../../stores/card-creator.ts";
 
 export function CardBackField() {

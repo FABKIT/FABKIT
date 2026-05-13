@@ -4,7 +4,7 @@ import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CardThumbnail } from "../components/gallery/CardThumbnail";
 import { FileUploadButton } from "../components/gallery/FileUploadButton.tsx";
-import { decompressFile } from "../lib/compression";
+import { decompressFile } from "@fabkit/shared/lib/compression";
 import {
 	exportGalleryToFile,
 	type GalleryImportMode,

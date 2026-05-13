@@ -23,8 +23,8 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { major, valid } from "semver";
-import { CardBacks } from "../config/cards/card_backs";
-import { decompressFile } from "../lib/compression";
+import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
+import { decompressFile } from "@fabkit/shared/lib/compression";
 import {
 	base64ToBlob,
 	clearGallery,

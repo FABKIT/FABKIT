@@ -19,7 +19,7 @@
  */
 
 import type { ReactElement } from "react";
-import type { CardStyle } from "../cards/card_styles.ts";
+import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
 
 /**
  * Configuration for rendering SVG text elements.

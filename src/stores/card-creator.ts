@@ -16,14 +16,14 @@ import {
 	CardBacks,
 	getCardBacksForTypeAndStyle,
 	getSuggestedCardBack,
-} from "../config/cards/card_backs.ts";
-import { type CardStyle, CardStyles } from "../config/cards/card_styles.ts";
+} from "@fabkit/shared/config/cards/card_backs.ts";
+import { type CardStyle, CardStyles } from "@fabkit/shared/config/cards/card_styles.ts";
 import {
 	type CardFormField,
 	CardFormFields,
 	type CardFormFieldValue,
-} from "../config/cards/form_fields.ts";
-import type { CardType } from "../config/cards/types.ts";
+} from "@fabkit/shared/config/cards/form_fields.ts";
+import type { CardType } from "@fabkit/shared/config/cards/types.ts";
 import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
 
 /**
