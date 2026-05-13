@@ -1,7 +1,6 @@
 import { Combobox } from "@fabkit/platform/components/form/Combobox";
 import ImageUpload from "@fabkit/platform/components/form/ImageUpload";
 import RichTextEditor from "@fabkit/platform/components/form/RichTextEditor";
-import { EditorCustomEmojiRows } from "../../../config/editor.ts";
 import type { SelectOption } from "@fabkit/platform/components/form/Select";
 import Select from "@fabkit/platform/components/form/Select";
 import TextInput from "@fabkit/platform/components/form/TextInput";
@@ -17,6 +16,7 @@ import {
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { EditorCustomEmojiRows } from "../../../config/editor.ts";
 import {
 	MELD_EXCLUDED_TYPES,
 	type MeldHalf,

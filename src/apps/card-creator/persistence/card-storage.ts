@@ -1,6 +1,6 @@
 import { blobToBase64 } from "@fabkit/shared/blob";
-import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
 import { compressJSON } from "@fabkit/shared/compression";
+import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
 import Dexie, { type Table } from "dexie";
 import semver from "semver";
 import type { CardCreatorCardBack } from "../config/rendering.ts";

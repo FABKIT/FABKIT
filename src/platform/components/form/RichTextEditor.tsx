@@ -123,7 +123,9 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.toggle_bold")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.toggle_bold")}
+						</span>
 						<BoldIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -135,7 +137,9 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.toggle_italic")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.toggle_italic")}
+						</span>
 						<ItalicIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -147,7 +151,9 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.toggle_underline")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.toggle_underline")}
+						</span>
 						<UnderlineIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -163,7 +169,9 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.toggle_bullet_list")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.toggle_bullet_list")}
+						</span>
 						<ListBulletIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -175,7 +183,9 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.toggle_ordered_list")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.toggle_ordered_list")}
+						</span>
 						<NumberedListIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -191,7 +201,9 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.align_left")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.align_left")}
+						</span>
 						<AlignLeftIcon aria-hidden="true" className="size-4" />
 					</button>
 					<button
@@ -203,7 +215,9 @@ export default function RichTextEditor({
 								: "text-body hover:bg-primary/10"
 						}`}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.align_center")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.align_center")}
+						</span>
 						<AlignCenterIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -216,7 +230,9 @@ export default function RichTextEditor({
 						className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
 						title={t("components.rich_text_editor.insert_line_break")}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.insert_line_break")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.insert_line_break")}
+						</span>
 						<LineBreakIcon aria-hidden="true" className="size-4" />
 					</button>
 				</div>
@@ -231,7 +247,9 @@ export default function RichTextEditor({
 						className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
 						title={t("components.rich_text_editor.insert_fab_dash")}
 					>
-						<span className="sr-only">{t("components.rich_text_editor.insert_fab_dash")}</span>
+						<span className="sr-only">
+							{t("components.rich_text_editor.insert_fab_dash")}
+						</span>
 						{/* Visual preview of the dash bar */}
 						<span
 							aria-hidden="true"
@@ -250,7 +268,11 @@ export default function RichTextEditor({
 							onClick={() => editor.chain().focus().setEmoji(emoji.name).run()}
 							className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
 						>
-							<span className="sr-only">{t("components.rich_text_editor.add_icon", { name: emoji.name })}</span>
+							<span className="sr-only">
+								{t("components.rich_text_editor.add_icon", {
+									name: emoji.name,
+								})}
+							</span>
 							{emoji.fallbackImage && (
 								<img
 									src={emoji.fallbackImage}
@@ -272,7 +294,11 @@ export default function RichTextEditor({
 							onClick={() => editor.chain().focus().setEmoji(emoji.name).run()}
 							className="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 text-body hover:bg-primary/10"
 						>
-							<span className="sr-only">{t("components.rich_text_editor.add_icon", { name: emoji.name })}</span>
+							<span className="sr-only">
+								{t("components.rich_text_editor.add_icon", {
+									name: emoji.name,
+								})}
+							</span>
 							{emoji.fallbackImage && (
 								<img
 									src={emoji.fallbackImage}

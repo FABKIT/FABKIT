@@ -8,8 +8,8 @@ import {
 } from "@fabkit/apps/card-creator/persistence/card-storage";
 import type { CardCreatorState } from "@fabkit/apps/card-creator/stores/card-creator";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
-import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
 import { decompressFile } from "@fabkit/shared/compression";
+import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertTriangle,
@@ -54,7 +54,10 @@ interface FabreportRouterMatch {
 
 interface FabreportAppData {
 	state?: unknown;
-	rendering?: { cardBackRenderer: string | null; resolvedConfig: unknown | null };
+	rendering?: {
+		cardBackRenderer: string | null;
+		resolvedConfig: unknown | null;
+	};
 	gallery?: FabgalleryFile | unknown[];
 }
 
@@ -83,7 +86,10 @@ interface Fabreport {
 	/** Per-app data keyed by namespace. Present in reports generated after the multi-app migration. */
 	apps?: Record<string, FabreportAppData>;
 	/** @deprecated Use apps["card-creator"].rendering. Kept for reading older reports. */
-	rendering?: { cardBackRenderer: string | null; resolvedConfig: unknown | null };
+	rendering?: {
+		cardBackRenderer: string | null;
+		resolvedConfig: unknown | null;
+	};
 	/** @deprecated Use apps["card-creator"].state. Kept for reading older reports. */
 	store?: unknown;
 	/** @deprecated Use apps["card-creator"].gallery. Kept for reading older reports. */
@@ -103,7 +109,9 @@ function getCcData(report: Fabreport) {
 	return {
 		rendering: cc?.rendering ?? report.rendering,
 		store: cc?.state ?? report.store ?? null,
-		gallery: (cc?.gallery ?? report.gallery ?? []) as FabgalleryFile | unknown[],
+		gallery: (cc?.gallery ?? report.gallery ?? []) as
+			| FabgalleryFile
+			| unknown[],
 	};
 }
 

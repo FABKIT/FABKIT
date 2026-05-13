@@ -11,12 +11,10 @@ export function CardTypeField() {
 	// TODO: invalidate memo when `t`'s language changes?
 	const options = useMemo(
 		() =>
-			(Object.keys(CardTypes) as CardType[])
-				.sort()
-				.map((key) => ({
-					value: key,
-					label: t(CardTypes[key].label),
-				})),
+			(Object.keys(CardTypes) as CardType[]).sort().map((key) => ({
+				value: key,
+				label: t(CardTypes[key].label),
+			})),
 		[t],
 	);
 

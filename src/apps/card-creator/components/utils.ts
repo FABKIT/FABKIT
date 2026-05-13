@@ -28,7 +28,9 @@ export function useIsFieldVisible(field: CardFormField): boolean {
 	return useMemo(() => {
 		if (!cardType) return false;
 
-		return (CardTypes[cardType].fields as readonly CardFormField[]).includes(field);
+		return (CardTypes[cardType].fields as readonly CardFormField[]).includes(
+			field,
+		);
 	}, [cardType, field]);
 }
 
@@ -51,5 +53,7 @@ export function isFieldVisible(
 ): boolean {
 	if (!cardType) return false;
 
-	return (CardTypes[cardType].fields as readonly CardFormField[]).includes(field);
+	return (CardTypes[cardType].fields as readonly CardFormField[]).includes(
+		field,
+	);
 }

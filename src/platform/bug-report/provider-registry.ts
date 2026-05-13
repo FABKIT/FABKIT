@@ -26,9 +26,14 @@ export async function collectAppData(): Promise<
 	Record<string, AppProviderData>
 > {
 	const entries = await Promise.all(
-		providers.map(async ({ namespace, fn }) => [namespace, await fn()] as const),
+		providers.map(
+			async ({ namespace, fn }) => [namespace, await fn()] as const,
+		),
 	);
 
-	console.debug(`Collected app data from ${providers.length} providers`, entries);
+	console.debug(
+		`Collected app data from ${providers.length} providers`,
+		entries,
+	);
 	return Object.fromEntries(entries);
 }
