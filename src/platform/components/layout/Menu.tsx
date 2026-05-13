@@ -11,6 +11,7 @@ import {
 	Bug,
 	Home,
 	Images,
+	LayoutGrid,
 	Map as MapIcon,
 	Menu as MenuIcon,
 	MessageCircle,
@@ -54,6 +55,7 @@ const navigation: NavItem[] = [
 			{ nameKey: "nav.gallery", route: "/gallery", icon: Images },
 		],
 	},
+	{ nameKey: "nav.fabble", route: "/fabble", icon: LayoutGrid },
 	{ nameKey: "nav.roadmap", route: "/roadmap", icon: MapIcon },
 	{ nameKey: "nav.contact", route: "/contact", icon: MessageCircle },
 ];
