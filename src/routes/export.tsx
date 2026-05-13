@@ -1,6 +1,6 @@
 import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
-import { convertToImage, rotateBlob } from "@fabkit/shared/export.ts";
+import { convertToImage, rotateBlob } from "@fabkit/apps/card-creator/utils/export.ts";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";

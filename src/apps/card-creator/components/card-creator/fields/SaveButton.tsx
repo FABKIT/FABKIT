@@ -8,7 +8,7 @@ import { Save } from "lucide-react";
 import type { RefObject } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { convertToImage } from "../../../../../shared/export";
+import { convertToImage } from "@fabkit/apps/card-creator/utils/export.ts";
 
 interface SaveButtonProps {
 	previewRef: RefObject<SVGSVGElement | null>;
