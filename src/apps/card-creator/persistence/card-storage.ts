@@ -1,6 +1,10 @@
 import { blobToBase64 } from "@fabkit/shared/blob";
 import { compressJSON } from "@fabkit/shared/compression";
 import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
+import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
+import type { CardFormFieldValue } from "@fabkit/shared/config/cards/form_fields.ts";
+import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { Content } from "@tiptap/react";
 import Dexie, { type Table } from "dexie";
 import semver from "semver";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
@@ -9,7 +13,7 @@ import {
 	defaultMeldHalf,
 	type MeldHalf,
 } from "../stores/card-creator";
-import { meld_cards_migration } from "./migrations/3-0-0-meld-cards.ts";
+import { meld_cards_migration } from "./migrations/0-1-0-meld-cards.ts";
 import type { Migration } from "./migrations.ts";
 
 // ─── Schema versioning ────────────────────────────────────────────────────────
@@ -67,10 +71,48 @@ export type SerializedMeldHalf = Omit<MeldHalf, "CardArtwork"> & {
 	CardArtwork: string | null;
 };
 
-export interface SerializedCardState
-	extends Omit<CardCreatorState, "CardBack"> {
-	/** CardBack ID instead of full object */
+/**
+ * Card state as stored in IndexedDB.
+ * Differs from CardCreatorState in two ways:
+ *   - CardBack is stored as a numeric ID (reconstructed on load via CardBacks.find)
+ *   - CardArtwork, CardOverlay, and meld half artwork remain as Blob — IndexedDB stores these natively
+ */
+export interface SerializedCardState {
+	__version: string;
+	CardType: CardType | null;
 	CardBack: number | null;
+	CardBackStyle: CardStyle;
+	CardArtwork: Blob | null;
+	CardArtPosition: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	} | null;
+	CardArtworkCredits: string | null;
+	CardSetNumber: string | null;
+	CardTextHTML: string | null;
+	CardTextNode: Content | null;
+	CardPitch: CardFormFieldValue["CardPitch"] | null;
+	CardName: CardFormFieldValue["CardName"] | null;
+	CardResource: CardFormFieldValue["CardResource"] | null;
+	CardText: CardFormFieldValue["CardText"] | null;
+	CardPower: CardFormFieldValue["CardPower"] | null;
+	CardTalent: CardFormFieldValue["CardTalent"] | null;
+	CardClass: CardFormFieldValue["CardClass"] | null;
+	CardSecondaryClass: CardFormFieldValue["CardSecondaryClass"] | null;
+	CardSubType: CardFormFieldValue["CardSubType"] | null;
+	CardRarity: CardFormFieldValue["CardRarity"] | null;
+	CardDefense: CardFormFieldValue["CardDefense"] | null;
+	CardLife: CardFormFieldValue["CardLife"] | null;
+	CardHeroIntellect: CardFormFieldValue["CardHeroIntellect"] | null;
+	CardWeapon: CardFormFieldValue["CardWeapon"] | null;
+	CardMacroGroup: CardFormFieldValue["CardMacroGroup"] | null;
+	CardOverlay: Blob | null;
+	CardOverlayOpacity: number;
+	meldActiveHalf: "A" | "B";
+	meldHalfA: MeldHalf;
+	meldHalfB: MeldHalf;
 }
 
 // ─── File format types ────────────────────────────────────────────────────────
@@ -338,6 +380,13 @@ export async function importCardFromObject(data: FabkitFile): Promise<void> {
 				: Promise.resolve(null),
 		]);
 
+	// Apply data migrations so imported files are upgraded to the current schema,
+	// regardless of which app version exported them.
+	const migratedState = applyStateMigrations(
+		data.state,
+		data.formatVersion ?? LEGACY_SCHEMA_VERSION,
+	);
+
 	const card: StoredCard = {
 		version: data.version,
 		cardName: data.cardName,
@@ -345,15 +394,15 @@ export async function importCardFromObject(data: FabkitFile): Promise<void> {
 		updatedAt: Date.now(),
 		preview,
 		state: {
-			...(data.state as unknown as SerializedCardState),
+			...(migratedState as unknown as SerializedCardState),
 			CardArtwork: artwork,
 			CardOverlay: overlay,
 			meldHalfA: {
-				...data.state.meldHalfA,
+				...migratedState.meldHalfA,
 				CardArtwork: meldHalfAArtwork,
 			} as MeldHalf,
 			meldHalfB: {
-				...data.state.meldHalfB,
+				...migratedState.meldHalfB,
 				CardArtwork: meldHalfBArtwork,
 			} as MeldHalf,
 		},
@@ -367,6 +416,10 @@ export async function importCardFromJSON(jsonString: string): Promise<void> {
 	const data = JSON.parse(jsonString);
 	if (!data.version || !data.cardName || !data.state) {
 		throw new Error("Invalid card file format");
+	}
+	// Guard against truncated or empty state objects — a valid card always has a CardType.
+	if (typeof data.state !== "object" || !("CardType" in data.state)) {
+		throw new Error("Invalid card file: state is missing required fields");
 	}
 	return importCardFromObject(data as FabkitFile);
 }

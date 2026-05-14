@@ -9,6 +9,8 @@ Platform is the shell infrastructure layer of FABKIT. It owns:
 - Shared form primitives used across the app (`components/form/`)
 - Brand icons (`components/icons/`)
 - Platform-wide i18n strings (`i18n/en.json`, namespace `"platform"`)
+- Site-wide config data (`config/contact.ts`, `config/roadmap.ts`) — contact links and roadmap items that are consumed by routes, not app-specific features
+- Roadmap animation styles (`components/roadmap.css`) — timeline SVG CSS; lives here because the roadmap route is platform-level
 
 ## Boundary Rule
 

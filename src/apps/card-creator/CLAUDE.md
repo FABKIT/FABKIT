@@ -16,8 +16,6 @@ src/apps/card-creator/
   config/
     rendering/         # SVG render config presets and types (preset.tsx, meld_preset.tsx, types.ts)
     rendering.ts       # AllRenderConfigVariations record + RenderConfigVariation type
-    contact.ts         # Social/contact links
-    roadmap.ts         # Roadmap items (currentWorkItems, futurePlans)
     featured_artist.tsx# Featured artist showcase data
     editor.ts          # Tiptap editor configuration
   persistence/

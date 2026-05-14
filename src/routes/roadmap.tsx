@@ -1,11 +1,11 @@
 import {
 	currentWorkItems,
 	futurePlans,
-} from "@fabkit/apps/card-creator/config/roadmap";
+} from "@fabkit/platform/config/roadmap";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Lightbulb } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import "@fabkit/apps/card-creator/components/roadmap.css";
+import "@fabkit/platform/components/roadmap.css";
 import type * as React from "react";
 
 export const Route = createFileRoute("/roadmap")({
@@ -71,7 +71,7 @@ const sortedCurrentWorkItems = sortByPriorityAndTitle(
 const sortedFuturePlans = sortByPriorityAndTitle(futurePlans as RoadmapItem[]);
 
 function RoadmapPage() {
-	const { t } = useTranslation("card-creator");
+	const { t } = useTranslation("platform");
 
 	return (
 		<>

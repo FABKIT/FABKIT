@@ -1,4 +1,4 @@
-import Contact from "@fabkit/apps/card-creator/config/contact.ts";
+import Contact from "@fabkit/platform/config/contact.ts";
 import { Bluesky } from "@fabkit/platform/components/icons/Bluesky";
 import { Discord } from "@fabkit/platform/components/icons/Discord";
 import { Github } from "@fabkit/platform/components/icons/Github";
@@ -76,7 +76,7 @@ const specialMentions = [
 const supporters = ["SalisburyBavo"];
 
 function ContactPage() {
-	const { t } = useTranslation("card-creator");
+	const { t } = useTranslation("platform");
 
 	return (
 		<>

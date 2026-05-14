@@ -64,9 +64,7 @@ export async function generateBugReport(): Promise<void> {
 
 	const appData = await collectAppData();
 
-	const serializedApps = await serializeValue(
-		Object.fromEntries(Object.entries(appData).map(([k, v]) => [k, v])),
-	);
+	const serializedApps = await serializeValue(appData);
 
 	const report = {
 		format: "fabreport",

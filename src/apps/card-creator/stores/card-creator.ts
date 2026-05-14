@@ -59,10 +59,10 @@ export interface MeldHalf {
 		width: number;
 		height: number;
 	} | null;
-	CardClass: string | null;
-	CardSecondaryClass: string | null;
-	CardSubType: string | null;
-	CardTalent: string | null;
+	CardClass: CardFormFieldValue["CardClass"] | null;
+	CardSecondaryClass: CardFormFieldValue["CardSecondaryClass"] | null;
+	CardSubType: CardFormFieldValue["CardSubType"] | null;
+	CardTalent: CardFormFieldValue["CardTalent"] | null;
 	CardTextHTML: string | null;
 	CardTextNode: Content | null;
 	CardMacroGroup: string | null;
@@ -193,16 +193,28 @@ export interface CardCreatorActions {
 	) => void;
 
 	/** Sets the primary class for a meld half */
-	setMeldHalfClass: (half: "A" | "B", cls: string) => void;
+	setMeldHalfClass: (
+		half: "A" | "B",
+		cls: CardFormFieldValue["CardClass"],
+	) => void;
 
 	/** Sets the secondary class for a meld half */
-	setMeldHalfSecondaryClass: (half: "A" | "B", cls: string) => void;
+	setMeldHalfSecondaryClass: (
+		half: "A" | "B",
+		cls: CardFormFieldValue["CardSecondaryClass"],
+	) => void;
 
 	/** Sets the subtype for a meld half */
-	setMeldHalfSubType: (half: "A" | "B", sub: string) => void;
+	setMeldHalfSubType: (
+		half: "A" | "B",
+		sub: CardFormFieldValue["CardSubType"],
+	) => void;
 
 	/** Sets the talent for a meld half */
-	setMeldHalfTalent: (half: "A" | "B", talent: string) => void;
+	setMeldHalfTalent: (
+		half: "A" | "B",
+		talent: CardFormFieldValue["CardTalent"],
+	) => void;
 
 	/** Sets the card text (HTML + Tiptap content) for a meld half */
 	setMeldHalfText: (half: "A" | "B", html: string, content: Content) => void;
@@ -476,9 +488,14 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				URL.revokeObjectURL(url);
 			}
 		},
-		setCardArtPosition: (position: { x: number; y: number } | null) =>
-			// biome-ignore lint/suspicious/noExplicitAny: Zustand uses merging, not overwriting.
-			set({ CardArtPosition: position as any }),
+		setCardArtPosition: (
+			position: {
+				x: number;
+				y: number;
+				width: number;
+				height: number;
+			} | null,
+		) => set({ CardArtPosition: position }),
 		setCardArtworkCredits: (credits: string | null) =>
 			set({ CardArtworkCredits: credits }),
 		setCardSetNumber: (setNumber: string | null) =>

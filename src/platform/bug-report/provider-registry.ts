@@ -1,7 +1,7 @@
 export interface AppProviderData {
 	state: Record<string, unknown>;
-	gallery?: unknown;
-	rendering?: unknown;
+	gallery?: Record<string, unknown>;
+	rendering?: Record<string, unknown>;
 }
 
 export type ReportDataProvider =
