@@ -1,8 +1,4 @@
-import {
-	ChevronDown,
-	ChevronUp,
-	RotateCcw,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import type * as React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -137,9 +133,7 @@ export function RestoreButton({
 			disabled={loading}
 			className="flex items-center gap-1.5 rounded-md border border-border-primary bg-surface px-3 py-1.5 text-xs text-muted transition-colors hover:bg-surface-muted hover:text-body disabled:cursor-not-allowed disabled:opacity-50"
 		>
-			<RotateCcw
-				className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
-			/>
+			<RotateCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
 			{label}
 		</button>
 	);

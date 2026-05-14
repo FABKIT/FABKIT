@@ -747,4 +747,3 @@ function BugReportViewer() {
 		</div>
 	);
 }
-

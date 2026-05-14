@@ -1,7 +1,4 @@
-import {
-	currentWorkItems,
-	futurePlans,
-} from "@fabkit/platform/config/roadmap";
+import { currentWorkItems, futurePlans } from "@fabkit/platform/config/roadmap";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Lightbulb } from "lucide-react";
 import { useTranslation } from "react-i18next";

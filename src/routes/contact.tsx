@@ -1,8 +1,8 @@
-import Contact from "@fabkit/platform/config/contact.ts";
 import { Bluesky } from "@fabkit/platform/components/icons/Bluesky";
 import { Discord } from "@fabkit/platform/components/icons/Discord";
 import { Github } from "@fabkit/platform/components/icons/Github";
 import { KoFi } from "@fabkit/platform/components/icons/KoFi";
+import Contact from "@fabkit/platform/config/contact.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
