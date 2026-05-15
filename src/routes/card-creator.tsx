@@ -1,3 +1,33 @@
+import { CardArtworkCreditsField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardArtworkCreditsField.tsx";
+import { CardArtworkField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardArtworkField.tsx";
+import { CardArtworkPositionContainer } from "@fabkit/apps/card-creator/components/card-creator/fields/CardArtworkPositionContainer.tsx";
+import { CardBackField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardBackField.tsx";
+import { CardBackStyleField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardBackStyleField.tsx";
+import { CardClassField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardClassField.tsx";
+import { CardDefenseField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardDefenseField.tsx";
+import { CardHeroIntellectField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardHeroIntellectField.tsx";
+import { CardLifeField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardLifeField.tsx";
+import { CardMacroGroupField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardMacroGroupField.tsx";
+import { CardNameField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardNameField.tsx";
+import { CardOverlayField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardOverlayField.tsx";
+import { CardOverlayOpacityField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardOverlayOpacityField.tsx";
+import { CardPitchField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardPitchField.tsx";
+import { CardPowerField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardPowerField.tsx";
+import { CardRarityField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardRarityField.tsx";
+import { CardResourceField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardResourceField.tsx";
+import { CardSecondaryClassField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardSecondaryClassField.tsx";
+import { CardSetnumberField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardSetnumberField.tsx";
+import { CardSubTypeField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardSubTypeField.tsx";
+import { CardTalentField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardTalentField.tsx";
+import { CardTextField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardTextField.tsx";
+import { CardTypeField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardTypeField.tsx";
+import { CardWeaponField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardWeaponField.tsx";
+import { MeldHalfFields } from "@fabkit/apps/card-creator/components/card-creator/fields/MeldHalfFields.tsx";
+import { ResetButton } from "@fabkit/apps/card-creator/components/card-creator/fields/ResetButton.tsx";
+import { SaveButton } from "@fabkit/apps/card-creator/components/card-creator/fields/SaveButton.tsx";
+import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
+import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -8,36 +38,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CardArtworkCreditsField } from "../components/card-creator/fields/CardArtworkCreditsField.tsx";
-import { CardArtworkField } from "../components/card-creator/fields/CardArtworkField.tsx";
-import { CardArtworkPositionContainer } from "../components/card-creator/fields/CardArtworkPositionContainer.tsx";
-import { CardBackField } from "../components/card-creator/fields/CardBackField.tsx";
-import { CardBackStyleField } from "../components/card-creator/fields/CardBackStyleField.tsx";
-import { CardClassField } from "../components/card-creator/fields/CardClassField.tsx";
-import { CardDefenseField } from "../components/card-creator/fields/CardDefenseField.tsx";
-import { CardHeroIntellectField } from "../components/card-creator/fields/CardHeroIntellectField.tsx";
-import { CardLifeField } from "../components/card-creator/fields/CardLifeField.tsx";
-import { CardMacroGroupField } from "../components/card-creator/fields/CardMacroGroupField.tsx";
-import { CardNameField } from "../components/card-creator/fields/CardNameField.tsx";
-import { CardOverlayField } from "../components/card-creator/fields/CardOverlayField.tsx";
-import { CardOverlayOpacityField } from "../components/card-creator/fields/CardOverlayOpacityField.tsx";
-import { CardPitchField } from "../components/card-creator/fields/CardPitchField.tsx";
-import { CardPowerField } from "../components/card-creator/fields/CardPowerField.tsx";
-import { CardRarityField } from "../components/card-creator/fields/CardRarityField.tsx";
-import { CardResourceField } from "../components/card-creator/fields/CardResourceField.tsx";
-import { CardSecondaryClassField } from "../components/card-creator/fields/CardSecondaryClassField.tsx";
-import { CardSetnumberField } from "../components/card-creator/fields/CardSetnumberField.tsx";
-import { CardSubTypeField } from "../components/card-creator/fields/CardSubTypeField.tsx";
-import { CardTalentField } from "../components/card-creator/fields/CardTalentField.tsx";
-import { CardTextField } from "../components/card-creator/fields/CardTextField.tsx";
-import { CardTypeField } from "../components/card-creator/fields/CardTypeField.tsx";
-import { CardWeaponField } from "../components/card-creator/fields/CardWeaponField.tsx";
-import { MeldHalfFields } from "../components/card-creator/fields/MeldHalfFields.tsx";
-import { ResetButton } from "../components/card-creator/fields/ResetButton.tsx";
-import { SaveButton } from "../components/card-creator/fields/SaveButton.tsx";
-import { Renderer } from "../components/card-creator/Renderer.tsx";
-import { AllRenderConfigVariations } from "../config/rendering.ts";
-import { useCardCreator } from "../stores/card-creator.ts";
 
 export const Route = createFileRoute("/card-creator")({
 	component: RouteComponent,
@@ -45,7 +45,7 @@ export const Route = createFileRoute("/card-creator")({
 
 function RouteComponent() {
 	const previewRef = useRef<SVGSVGElement>(null);
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const [showResetDialog, setShowResetDialog] = useState(false);
 	const reset = useCardCreator((state) => state.reset);
 	const setCardType = useCardCreator((state) => state.setCardType);

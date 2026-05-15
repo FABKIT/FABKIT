@@ -6,7 +6,7 @@ import {
 	type FabgalleryFile,
 	type FabkitFile,
 	type SerializedCardState,
-} from "../src/persistence/card-storage.ts";
+} from "../src/apps/card-creator/persistence/card-storage.ts";
 
 const FIXTURES = join(import.meta.dir, "fixtures");
 

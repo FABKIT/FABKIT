@@ -6,11 +6,11 @@
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2019-61DAFB.svg)](https://react.dev/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-fabkit.github.io-brightgreen.svg)](https://fabkit.io/)
 
-FABKIT is a community-driven toolkit for Flesh and Blood TCG players. Our current flagship feature is a custom card creator that generates high-quality, authentic-looking cards complete with official fonts, symbols, and templates.
+FABKIT is a community-driven toolkit for Flesh and Blood TCG players. It is a multi-app platform — each tool lives in `src/apps/` and shares a common shell. Our current flagship app is a custom card creator that generates high-quality, authentic-looking cards complete with official fonts, symbols, and templates.
 
 ![FABKIT Custom Card Creator](https://github.com/FABKIT/FABKIT/raw/main/public/img/preview.png)
 
-## Features
+## Apps
 
 ### Custom Card Creator
 - **Authentic Design**: Official fonts, symbols, and card layouts
@@ -19,12 +19,15 @@ FABKIT is a community-driven toolkit for Flesh and Blood TCG players. Our curren
 - **Smart Text Scaling**: Automatic font sizing to fit card templates perfectly
 - **High-Quality Export**: Download PNG images ready for printing
 - **Print Optimization**: Built-in print scaling for standard card sizes
-- **Current supported card types**: Action, Attack Reaction, Defense Reaction, Block, Hero/Demi-Hero, Equipment, Instant, Resource, Token, Weapon, Macro, Mentor, Weapon Equipment, Ally, Event
+- **Current supported card types**: Action, Attack Reaction, Defense Reaction, Block, Hero/Demi-Hero, Equipment, Instant, Resource, Token, Weapon, Macro, Mentor, Weapon Equipment, Ally, Event, Meld
 
 ### Card Gallery
 - **Local Storage**: Cards are saved in your browser and persist between sessions
 - **Gallery View**: Browse all your saved cards with thumbnail previews
 - **Import/Export**: Export cards as `.fabkit` files (JSON with embedded artwork) and re-import them via drag-and-drop or file picker
+
+### Fabble *(coming soon)*
+- A new tool for the FAB community — currently scaffolded and in early development.
 
 ### Key Highlights
 - **Browser-Based**: No downloads required, works entirely in your browser
@@ -51,7 +54,7 @@ bun install
 bun dev
 
 # Build for production
-bun build
+bun run build
 ```
 
 ## Tech Stack

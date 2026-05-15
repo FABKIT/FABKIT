@@ -1,0 +1,37 @@
+import { Combobox } from "@fabkit/platform/components/form/Combobox";
+import type { SelectOption } from "@fabkit/platform/components/form/Select";
+import {
+	type CardClass,
+	CardClasses,
+} from "@fabkit/shared/config/cards/classes.ts";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useCardCreator } from "../../../stores/card-creator.ts";
+import { useIsFieldVisible } from "../../utils.ts";
+
+export function CardClassField() {
+	const { t } = useTranslation("card-creator");
+	const CardClass = useCardCreator((state) => state.CardClass);
+	const setCardClass = useCardCreator((state) => state.setCardClass);
+	const shouldShow = useIsFieldVisible("CardClass");
+
+	// TODO: invalidate memo when `t`'s language changes?
+	const options: SelectOption<CardClass>[] = useMemo(
+		() =>
+			Object.keys(CardClasses).map((key) => ({
+				value: key as CardClass,
+				label: t(CardClasses[key as CardClass]),
+			})),
+		[t],
+	);
+
+	if (!shouldShow) return null;
+	return (
+		<Combobox
+			label={t("card_creator.class_label")}
+			value={CardClass || "none"}
+			onChange={setCardClass}
+			options={options}
+		/>
+	);
+}

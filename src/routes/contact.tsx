@@ -1,10 +1,10 @@
+import { Bluesky } from "@fabkit/platform/components/icons/Bluesky";
+import { Discord } from "@fabkit/platform/components/icons/Discord";
+import { Github } from "@fabkit/platform/components/icons/Github";
+import { KoFi } from "@fabkit/platform/components/icons/KoFi";
+import Contact from "@fabkit/platform/config/contact.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Bluesky } from "../components/icons/Bluesky.tsx";
-import { Discord } from "../components/icons/Discord.tsx";
-import { Github } from "../components/icons/Github.tsx";
-import { KoFi } from "../components/icons/KoFi.tsx";
-import Contact from "../config/contact.ts";
 
 export const Route = createFileRoute("/contact")({
 	component: ContactPage,
@@ -12,25 +12,25 @@ export const Route = createFileRoute("/contact")({
 
 const contactLinks = [
 	{
-		name: "GitHub Repository",
+		name: "contact.links_github_name",
 		description: "contact.links_github_description",
 		href: Contact.Repository,
 		icon: Github,
 	},
 	{
-		name: "Discord Community",
+		name: "contact.links_discord_name",
 		description: "contact.links_discord_description",
 		href: Contact.DiscordInvite,
 		icon: Discord,
 	},
 	{
-		name: "BlueSky",
+		name: "contact.links_bluesky_name",
 		description: "contact.links_bluesky_description",
 		href: Contact.Bluesky,
 		icon: Bluesky,
 	},
 	{
-		name: "Support us on Ko-Fi",
+		name: "contact.links_kofi_name",
 		description: "contact.links_kofi_description",
 		href: Contact.KoFi,
 		icon: KoFi,
@@ -40,24 +40,21 @@ const contactLinks = [
 const teamMembers = [
 	{
 		name: "@Thencros",
-		role: "UI/UX Designer, Creative Director",
-		description: "Product concept, graphic design & UI development",
+		role: "contact.team_thencros_role",
+		description: "contact.team_thencros_description",
 		avatar: "/img/Thencros.svg",
-		avatarCredit: "Avatar by Diana Johanna Velasquez",
 	},
 	{
 		name: "@Lambstream",
-		role: "Lead Developer",
-		description: "Frontend development & application architecture",
+		role: "contact.team_lambstream_role",
+		description: "contact.team_lambstream_description",
 		avatar: "/img/Lambstream.svg",
-		avatarCredit: "Avatar by Diana Johanna Velasquez",
 	},
 	{
 		name: "@Dealloc",
-		role: "React Expert",
-		description: "Application architecture developer in React framework",
+		role: "contact.team_dealloc_role",
+		description: "contact.team_dealloc_description",
 		avatar: "/img/Dealloc.svg",
-		avatarCredit: "Avatar by Diana Johanna Velasquez",
 	},
 ];
 
@@ -79,7 +76,7 @@ const specialMentions = [
 const supporters = ["SalisburyBavo"];
 
 function ContactPage() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("platform");
 
 	return (
 		<>
@@ -142,40 +139,18 @@ function ContactPage() {
 								</h2>
 							</div>
 							<div className="space-y-4 p-6 text-body leading-relaxed">
+								<p>{t("contact.about_paragraph_1")}</p>
+								<p>{t("contact.about_paragraph_2")}</p>
+								<p>{t("contact.about_paragraph_3")}</p>
 								<p>
-									Our goal is simple: creating high-quality tools for the Flesh
-									and Blood TCG community. As passionate FaB players ourselves,
-									we saw opportunities to build meaningful tools for fellow
-									enthusiasts.
-								</p>
-								<p>
-									Our current flagship tool is the Custom Card Creator. We've
-									invested considerable effort into making sure our tool
-									generates cards that look as close to real Flesh and Blood
-									cards as possible, complete with official fonts, proper
-									symbols, and meticulously crafted templates.
-								</p>
-								<p>
-									We believe these great tools should be accessible to everyone,
-									which is why FABKIT runs entirely in your browser without
-									requiring downloads. Our commitment to the community extends
-									to making the platform open source, allowing players to
-									contribute and help shape our future.
-								</p>
-								<p>
-									This project is a labor of love that we actively develop in
-									our spare time, driven purely by our passion for the game.
-									We're not sponsored or backed by anyone, we're just some
-									friends who wanted to build something awesome for fellow
-									players. However, any{" "}
+									{t("contact.about_paragraph_4_intro")}{" "}
 									<a
 										href="https://ko-fi.com/fabkit"
 										className="text-primary underline"
 									>
-										support
+										{t("contact.about_paragraph_4_support")}
 									</a>{" "}
-									will help us dedicate more time to bringing new features to
-									life and keeping everything free for the community.
+									{t("contact.about_paragraph_4_outro")}
 								</p>
 							</div>
 						</div>
@@ -205,7 +180,7 @@ function ContactPage() {
 											</div>
 											<div>
 												<h3 className="text-lg font-semibold text-heading">
-													{t(member.name)}
+													{member.name}
 												</h3>
 												<p className="text-muted">{t(member.role)}</p>
 												<p className="mt-1 text-sm text-subtle">
@@ -213,13 +188,11 @@ function ContactPage() {
 												</p>
 											</div>
 										</div>
-										{member.avatarCredit && (
-											<div className="mt-3 text-right">
-												<p className="text-xs text-faint">
-													{t(member.avatarCredit)}
-												</p>
-											</div>
-										)}
+										<div className="mt-3 text-right">
+											<p className="text-xs text-faint">
+												{t("contact.team_avatar_credit")}
+											</p>
+										</div>
 									</div>
 								))}
 							</div>

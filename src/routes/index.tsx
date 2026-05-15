@@ -1,14 +1,14 @@
+import { CardTypeField } from "@fabkit/apps/card-creator/components/home/CardTypeField.tsx";
+import { FeaturedArtist } from "@fabkit/apps/card-creator/components/home/FeaturedArtist.tsx";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { CardTypeField } from "../components/home/CardTypeField.tsx";
-import { FeaturedArtist } from "../components/home/FeaturedArtist.tsx";
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 
 	return (
 		<div className="relative isolate overflow-hidden min-h-screen w-full">

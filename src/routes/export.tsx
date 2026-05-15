@@ -1,17 +1,20 @@
+import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import {
+	convertToImage,
+	rotateBlob,
+} from "@fabkit/apps/card-creator/utils/export.ts";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Renderer } from "../components/card-creator/Renderer.tsx";
-import { convertToImage, rotateBlob } from "../export.ts";
-import { useCardCreator } from "../stores/card-creator.ts";
 
 export const Route = createFileRoute("/export")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const svgRef = useRef<SVGSVGElement>(null);
 	const shouldReRender = useRef(true);
 	const [portraitCard, setPortraitCard] = useState<Blob | null>(null);
@@ -114,7 +117,7 @@ function RouteComponent() {
 				<div className="flex flex-1 flex-col justify-center items-center p-4 gap-6">
 					<img
 						src={imageUrl}
-						alt="Rendered card"
+						alt={t("export.card_alt")}
 						className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
 					/>
 					<div className="flex items-center gap-3">

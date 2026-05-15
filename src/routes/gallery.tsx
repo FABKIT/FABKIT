@@ -1,17 +1,17 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
-import { type ChangeEvent, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { CardThumbnail } from "../components/gallery/CardThumbnail";
-import { FileUploadButton } from "../components/gallery/FileUploadButton.tsx";
-import { decompressFile } from "../lib/compression";
+import { CardThumbnail } from "@fabkit/apps/card-creator/components/gallery/CardThumbnail";
+import { FileUploadButton } from "@fabkit/apps/card-creator/components/gallery/FileUploadButton.tsx";
 import {
 	exportGalleryToFile,
 	type GalleryImportMode,
 	getAllCards,
 	importCardFromJSON,
 	importGalleryFromJSON,
-} from "../persistence/card-storage";
+} from "@fabkit/apps/card-creator/persistence/card-storage";
+import { decompressFile } from "@fabkit/shared/compression";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
+import { type ChangeEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/gallery")({
 	component: GalleryPage,
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/gallery")({
 });
 
 function GalleryPage() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("card-creator");
 	const { cards } = Route.useLoaderData();
 	const router = useRouter();
 	const [isDragging, setIsDragging] = useState(false);
