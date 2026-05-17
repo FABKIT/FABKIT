@@ -1,3 +1,212 @@
 {
-	"coming_soon": "Fabble — Coming Soon"
+	"nav": {
+		"back_to_fabble": "Back to Fabble"
+	},
+	"action": {
+		"play": "Play",
+		"view_rules": "How to Play",
+		"switch_mode": "Switch to {{mode}}",
+		"reset_session": "Reset",
+		"back_to_menu": "Menu"
+	},
+	"landing": {
+		"title": "Fabble",
+		"description": "Daily Flesh and Blood card deduction puzzle"
+	},
+	"mode": {
+		"standard": "Standard",
+		"chaos": "Chaos",
+		"standard_description": "A curated selection of popular cards from the current meta",
+		"chaos_description": "Every printed card, including banned ones",
+		"guess_limit": "{{count}} guesses",
+		"hints_available": "{{count}} hints",
+		"no_hints": "No hints",
+		"eligible_types_label": "Possible card types",
+		"type": {
+			"hero": "Hero",
+			"weapon": "Weapon",
+			"equipment": "Equipment",
+			"action": "Action",
+			"attack_action": "Attack Action",
+			"attack_reaction": "Attack Reaction",
+			"defense_reaction": "Defense Reaction",
+			"instant": "Instant",
+			"ally": "Ally",
+			"standard_rarity_note": ""
+		}
+	},
+	"rules": {
+		"title": "How to Play Fabble",
+		"section": {
+			"what_is_fabble": "What is Fabble?",
+			"how_to_guess": "Making a Guess",
+			"feedback_states": "Reading Your Feedback",
+			"columns": "The 11 Columns",
+			"modes": "Game Modes",
+			"edge_cases": "Things Worth Knowing"
+		},
+		"what_is_body": "A new Flesh and Blood card is chosen each day. Use your FAB knowledge to figure out which one it is. Every guess shows how your card compares to the answer across eleven attributes.",
+		"how_to_guess_body": "Start typing a card name and pick one from the dropdown. The attribute tiles flip to show how close you are.",
+		"tile_state_label": {
+			"match": "Match",
+			"partial": "Partial",
+			"no_match": "No Match",
+			"higher": "Higher ↑",
+			"lower": "Lower ↓",
+			"na": "Not applicable"
+		},
+		"feedback_state_label": {
+			"green": "Green:",
+			"yellow": "Yellow:",
+			"red": "Red (with arrow):",
+			"na": "Red (with ban icon):"
+		},
+		"action": {
+			"got_it": "Got it, let's play!",
+			"close": "Close"
+		},
+		"edge_case": {
+			"rainbow_pitch": "Guessing a rainbow-suite card automatically matches any pitch value the answer has, since rainbow cards are printed in all three pitch values.",
+			"reprints": "A card matches on Set if any printing of your guessed card shares a set with the answer.",
+			"generic": "Generic is its own class and will never give a partial match against a class-locked card.",
+			"directional": "On numeric columns (Power, Defense, Cost, Life/INT) and Set, the arrow tells you whether the answer is higher or lower than your guess.",
+			"pitch_rainbow": "A green Pitch tile showing \"All colors\" means the answer is a rainbow-suite card, printed in all three pitch values.",
+			"set_all_printings": "The Set column shows every set your guessed card has been printed in, newest to oldest. Each entry has an arrow showing whether the answer's first printing came out newer or older."
+		},
+		"feedback_state": {
+			"green": "Exact match.",
+			"yellow": "Partial match. At least one value overlaps, like a shared class or keyword.",
+			"red": "No match. An arrow tells you whether the answer is higher or lower. A ban icon means the answer card has no such stat at all. Look for a card that also lacks it.",
+			"na": ""
+		},
+		"column_description": {
+			"type": "The card's type (Action, Equipment, Hero, etc.)",
+			"class": "The class of the card (Warrior, Ninja, etc.)",
+			"talent": "Talent of the card (Draconic, Light, Shadow, etc.)",
+			"pitch": "Pitch value: red (1), yellow (2), blue (3), or no pitch",
+			"cost": "Resource cost to play the card",
+			"power": "Attack power",
+			"defense": "Defense value",
+			"life_intellect": "Intellect or Ally life total",
+			"keywords": "Keywords on the card (Go again, Dominate, Temper, etc.)",
+			"subtype": "Card subtypes (Attack, Arrow, Trap, etc.)",
+			"keyword": "Keywords on the card (Go again, Dominate, Temper, etc.)",
+			"set": "Which sets the card has been printed in, newest to oldest, with a direction arrow per entry to point you in the right direction"
+		}
+	},
+	"puzzle": {
+		"guess_counter": "Guess {{current}} of {{limit}}",
+		"mode_label_standard": "Standard mode",
+		"mode_label_chaos": "Chaos"
+	},
+	"input": {
+		"placeholder": "Type a card name…",
+		"submit": "Submit Guess",
+		"guesses_remaining_one": "{{count}} guess remaining",
+		"guesses_remaining_other": "{{count}} guesses remaining"
+	},
+	"error": {
+		"unknown_card": "Card not found in this mode's pool.",
+		"already_guessed": "You've already guessed that card.",
+		"network_error": "Network error — please try again."
+	},
+	"column": {
+		"type": "Type",
+		"class": "Class",
+		"talent": "Talent",
+		"pitch": "Pitch",
+		"cost": "Cost",
+		"power": "Power",
+		"defense": "Defense",
+		"life_intellect": "Life / INT",
+		"subtype_keyword": "Keywords/subtypes",
+		"subtype": "Subtypes",
+		"keyword": "Keywords",
+		"set": "Set"
+	},
+	"tile": {
+		"rainbow_all_colors": "All colors",
+		"na_suffix": "None",
+		"tooltip": {
+			"match": "{{column}}: {{value}} — exact match.",
+			"match_numeric": "{{column}}: {{value}} — exact match.",
+			"partial": "{{column}}: partial match — shares {{overlapping}}.",
+			"no_match": "{{column}}: no match.",
+			"no_match_higher": "{{column}}: {{value}} — the answer is higher.",
+			"no_match_lower": "{{column}}: {{value}} — the answer is lower.",
+			"pitch_no_match": "Pitch: the answer's pitch is {{revealedValue}}.",
+			"na": "This stat does not apply to the comparison.",
+			"na_cross_type": "This attribute does not apply when comparing these card types.",
+			"pitch_match_no_pitch": "Neither this card nor the answer has a pitch value.",
+			"pitch_rainbow": "The answer exists in all pitch colors (rainbow-suite card)."
+		}
+	},
+	"aria": {
+		"guess_grid": "Fabble guess grid",
+		"submit_guess": "Submit guess",
+		"open_rules": "How to play",
+		"share_result": "Share result",
+		"match": "{{column}}: {{value}}, exact match",
+		"partial": "{{column}}: {{guessValue}}, partial match, shares {{overlapping}}",
+		"no_match": "{{column}}: {{value}}, no match",
+		"no_match_higher": "{{column}}: {{value}}, the answer is higher",
+		"no_match_lower": "{{column}}: {{value}}, the answer is lower",
+		"pitch_no_match": "Pitch: {{value}}, the answer's pitch is {{revealedValue}}",
+		"na": "{{column}}: not applicable for this card type",
+		"na_cross_type": "{{column}}: does not apply when comparing these card types",
+		"pitch_match_no_pitch": "Pitch: no pitch value, matches the answer",
+		"pitch_rainbow": "Pitch: the answer exists in all pitch colors",
+		"back_to_mode_select": "Back to mode selection",
+		"guess_result": "Guess {{guessNumber}}: {{guessName}} — {{matchCount}} matches, {{partialCount}} partials. {{remaining}} guesses remaining."
+	},
+	"result": {
+		"won_one": "You got it in 1 guess!",
+		"won_other": "You got it in {{count}} guesses!",
+		"lost": "The card was…",
+		"card_was": "The answer was {{name}}.",
+		"art_by": "Art by {{artist}}",
+		"streak_current": "Current streak: {{count}}",
+		"streak_max": "Best streak: {{count}}",
+		"next_puzzle_in": "Next puzzle in {{time}}",
+		"new_puzzle_available": "New puzzle available!",
+		"reload": "Play now",
+		"share": "Share"
+	},
+	"share": {
+		"copied": "Copied!",
+		"label": "Fabble {{mode}} {{date}}",
+		"mode_standard": "Standard",
+		"mode_chaos": "Chaos"
+	},
+	"already_solved": {
+		"title": "Already solved today",
+		"description": "Come back tomorrow for a new puzzle."
+	},
+	"hint": {
+		"section_label": "Hints",
+		"locked": "After guess {{count}}",
+		"reveal": "Reveal {{label}}",
+		"aria": {
+			"reveal": "Reveal hint: {{label}}",
+			"revealed": "{{label}}: {{value}}",
+			"locked": "Hint locked, unlocks after guess {{count}}"
+		},
+		"label": {
+			"rarity": "Rarity",
+			"set": "First printed in"
+		}
+	},
+	"rotation": {
+		"equipment": "Equipment",
+		"class_warrior": "Warrior",
+		"class_guardian": "Guardian",
+		"class_ninja": "Ninja",
+		"class_assassin": "Assassin",
+		"class_wizard": "Wizard",
+		"class_runeblade": "Runeblade",
+		"class_ranger": "Ranger",
+		"class_brute": "Brute",
+		"class_mechanologist": "Mechanologist",
+		"class_illusionist": "Illusionist"
+	}
 }

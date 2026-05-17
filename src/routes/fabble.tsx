@@ -1,6 +1,9 @@
-import { FabblePage } from "@fabkit/apps/fabble/components/FabblePage";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/fabble")({
-	component: FabblePage,
+	component: FabbleLayout,
 });
+
+function FabbleLayout() {
+	return <Outlet />;
+}
