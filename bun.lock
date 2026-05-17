@@ -41,6 +41,7 @@
       },
       "devDependencies": {
         "@biomejs/biome": "2.4.13",
+        "@flesh-and-blood/cards": "^3.7.16",
         "@rolldown/plugin-babel": "^0.2.3",
         "@tailwindcss/vite": "^4.2.4",
         "@tanstack/router-plugin": "^1.167.31",
@@ -326,6 +327,10 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.27.2", "", { "os": "win32", "cpu": "ia32" }, "sha512-Iuws0kxo4yusk7sw70Xa2E2imZU5HoixzxfGCdxwBdhiDgt9vX9VUCBhqcwY7/uh//78A1hMkkROMJq9l27oLQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.27.2", "", { "os": "win32", "cpu": "x64" }, "sha512-sRdU18mcKf7F+YgheI/zGf5alZatMUTKj/jNS6l744f9u3WFu4v7twcUI9vu4mknF4Y9aDlblIie0IM+5xxaqQ=="],
+
+    "@flesh-and-blood/cards": ["@flesh-and-blood/cards@3.8.6", "", { "dependencies": { "@flesh-and-blood/types": "^3.8.0" } }, "sha512-njBfhJkQQL/452WabDhbg+ZtL3LsoLVoNOVtaqf0L8VssmFdjOceEV116x5Mxznw9a7JtkJgB6HZeqjbkstMJQ=="],
+
+    "@flesh-and-blood/types": ["@flesh-and-blood/types@3.8.0", "", {}, "sha512-jG5AWIdeaFJfX1szEVQRL4UCLTawhlVPlLJ9KLbLhT8zTz7fztY3VNRKsq/fMu9eQ+zFNpIf1e0rI1cEhWcbJQ=="],
 
     "@floating-ui/core": ["@floating-ui/core@1.7.3", "", { "dependencies": { "@floating-ui/utils": "^0.2.10" } }, "sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w=="],
 

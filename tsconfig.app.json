@@ -30,5 +30,6 @@
 			"@fabkit/apps/fabble/*": ["./src/apps/fabble/*"]
 		}
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"exclude": ["src/apps/fabble/scripts"]
 }

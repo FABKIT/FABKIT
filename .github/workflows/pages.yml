@@ -71,6 +71,7 @@ jobs:
         if: ${{ github.repository == 'FABKIT/FABKIT' }}
         env:
           APP_VERSION: ${{ steps.version.outputs.value }}
+          VITE_GUESS_URL: ${{ vars.VITE_GUESS_URL }}
         run: bun run build
 
       - name: Build (Staging)
