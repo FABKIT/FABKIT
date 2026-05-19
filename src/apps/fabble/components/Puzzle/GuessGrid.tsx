@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TILE_FLIP_DURATION_MS } from "../../lib/constants";
-import type { CanonicalCard, GuessEntry } from "../../lib/types";
+import { TILE_FLIP_DURATION_MS } from "@fabkit/apps/fabble/lib/constants";
+import type { CanonicalCard, GuessEntry } from "@fabkit/apps/fabble/lib/types";
 import { GuessCard } from "./GuessCard";
 
 interface GuessGridProps {
@@ -53,7 +53,7 @@ export function GuessGrid({
 	}, [rows, guessLimit, suppressGridAnimation, t]);
 
 	// Reverse so newest guess shows at top; never mutate the original array
-	const reversedRows = [...rows].reverse();
+	const reversedRows = useMemo(() => [...rows].reverse(), [rows]);
 
 	return (
 		<section

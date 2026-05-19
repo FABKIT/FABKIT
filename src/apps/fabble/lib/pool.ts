@@ -6,10 +6,10 @@ import type { CanonicalCard, NumericStat, RawCard } from "./types";
 // algorithm normalizes them. A real implementation would supply weights derived
 // from tournament frequency data (e.g. FaBlazing card frequency across CC decks).
 // Contact blazingdatafab@gmail.com before building a scraper or integration.
-export interface PopularityProvider {
+export type PopularityProvider = {
 	/** Returns the relative weight for a card name. Returns 1.0 if unknown. */
 	getWeight(cardName: string): number;
-}
+};
 
 /** Stub: uniform weights for all cards. Do NOT swap for a real implementation
  * without explicit review. */
@@ -62,7 +62,7 @@ export function computeEarliestSetIndex(setIdentifiers: string[]): number {
 		// Build-time warning only
 		const unique = [...new Set(unknownCodes)];
 		console.warn(
-			`[build-pool] Unknown set codes (Infinity index): ${unique.join(", ")}`,
+			`[computeEarliestSetIndex] Unknown set codes (Infinity index): ${unique.join(", ")}`,
 		);
 	}
 	return min; // Infinity if all codes are unknown

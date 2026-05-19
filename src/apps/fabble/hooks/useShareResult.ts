@@ -1,9 +1,6 @@
 import { useState } from "react";
-import type {
-	FabbleMode,
-	FeedbackRow,
-	GuessEntry,
-} from "../lib/types";
+import { useTranslation } from "react-i18next";
+import { FabbleModes, type FabbleMode, type FeedbackRow, type GuessEntry } from "@fabkit/apps/fabble/lib/types";
 
 // ─── Share payload ────────────────────────────────────────────────────────────
 
@@ -20,6 +17,7 @@ export interface SharePayload {
 export interface UseShareResultResult {
 	share: (payload: SharePayload) => void;
 	copied: boolean;
+	copyError: boolean;
 }
 
 // ─── Emoji mapping ────────────────────────────────────────────────────────────
@@ -58,9 +56,8 @@ function rowToEmoji(row: FeedbackRow): string {
 
 // ─── Build share text ─────────────────────────────────────────────────────────
 
-function buildShareText(payload: SharePayload): string {
-	const { guesses, mode, date, guessLimit, won } = payload;
-	const modeName = mode === "standard" ? "Standard" : "Chaos";
+function buildShareText(payload: SharePayload, modeName: string): string {
+	const { guesses, date, guessLimit, won } = payload;
 	const emojiGrid = guesses.map((g) => rowToEmoji(g.feedbackRow)).join("\n");
 	const scoreLine = won ? `${guesses.length}/${guessLimit}` : `X/${guessLimit}`;
 
@@ -70,14 +67,16 @@ function buildShareText(payload: SharePayload): string {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useShareResult(): UseShareResultResult {
+	const { t } = useTranslation("fabble");
 	const [copied, setCopied] = useState(false);
+	const [copyError, setCopyError] = useState(false);
 
 	function share(payload: SharePayload): void {
-		const text = buildShareText(payload);
+		const modeName = t(FabbleModes[payload.mode]);
+		const text = buildShareText(payload, modeName);
 
 		if (navigator.share) {
 			navigator.share({ text }).catch((e: unknown) => {
-				// User cancelled the share dialog — don't silently copy to clipboard
 				if (e instanceof DOMException && e.name === "AbortError") return;
 				copyToClipboard(text);
 			});
@@ -86,18 +85,17 @@ export function useShareResult(): UseShareResultResult {
 		}
 	}
 
-	function copyToClipboard(text: string): void {
-		navigator.clipboard
-			.writeText(text)
-			.then(() => {
-				setCopied(true);
-				setTimeout(() => setCopied(false), 2000);
-			})
-			.catch(() => {
-				// Clipboard API not available — silently fail
-			});
+	async function copyToClipboard(text: string): Promise<void> {
+		try {
+			await navigator.clipboard.writeText(text);
+			setCopied(true);
+			setCopyError(false);
+			setTimeout(() => setCopied(false), 2000);
+		} catch {
+			setCopyError(true);
+			setTimeout(() => setCopyError(false), 3000);
+		}
 	}
 
-	return { share, copied };
+	return { share, copied, copyError };
 }
-

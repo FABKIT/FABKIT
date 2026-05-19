@@ -1,5 +1,5 @@
-import { FAB_CDN_BASE } from "../../lib/constants";
-import type { DailyCard } from "../../lib/types";
+import { FAB_CDN_BASE } from "@fabkit/apps/fabble/lib/constants";
+import type { DailyCard } from "@fabkit/apps/fabble/lib/types";
 
 interface CardRevealProps {
 	daily: DailyCard;
@@ -15,7 +15,7 @@ export function CardReveal({ daily, won }: CardRevealProps) {
 				src={imageUrl}
 				alt={daily.name}
 				className={[
-					"rounded-xl shadow-lg max-h-[440px] w-auto object-contain",
+					"rounded-xl shadow-lg max-h-110 w-auto object-contain",
 					won ? "fabble-card-sparkle" : "grayscale opacity-75",
 				]
 					.filter(Boolean)

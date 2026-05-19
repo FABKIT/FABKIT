@@ -1,14 +1,14 @@
 import { useTranslation } from "react-i18next";
-import type { FeedbackCell } from "../../lib/types";
+import type { FeedbackCell } from "@fabkit/apps/fabble/lib/types";
 import { FeedbackTile } from "../Puzzle/FeedbackTile";
 
-const EXAMPLE_CELLS: Array<{
+const EXAMPLE_CELLS: {
 	id: string;
 	cell: FeedbackCell;
 	label: string;
 	stateLabelKey: string;
 	guessValue?: string;
-}> = [
+}[] = [
 	{
 		id: "match",
 		cell: { state: "match", value: "Ninja" },

@@ -9,7 +9,8 @@
 			"@fabkit/platform/*": ["./src/platform/*"],
 			"@fabkit/shared/*": ["./src/shared/*"],
 			"@fabkit/apps/card-creator/*": ["./src/apps/card-creator/*"],
-			"@fabkit/apps/fabble/*": ["./src/apps/fabble/*"]
+			"@fabkit/apps/fabble/*": ["./src/apps/fabble/*"],
+		"@fabkit/assets/*": ["./src/assets/*"]
 		}
 	}
 }

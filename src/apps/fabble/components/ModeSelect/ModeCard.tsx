@@ -1,25 +1,27 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { HINT_UNLOCK_THRESHOLDS } from "../../lib/constants";
+import { HINT_UNLOCK_THRESHOLDS } from "@fabkit/apps/fabble/lib/constants";
+import { FabbleModes, type FabbleMode } from "@fabkit/apps/fabble/lib/types";
 
 interface ModeCardProps {
-	mode: "standard" | "chaos";
+	mode: FabbleMode;
 	guessLimit: number;
+}
+
+function getModeKeys(mode: FabbleMode): { desc: string; label: string } {
+	switch (mode) {
+		case "standard":
+			return { desc: "mode.standard_description", label: "puzzle.mode_label_standard" };
+		case "chaos":
+			return { desc: "mode.chaos_description", label: "puzzle.mode_label_chaos" };
+	}
 }
 
 export function ModeCard({ mode, guessLimit }: ModeCardProps) {
 	const { t } = useTranslation("fabble");
 
-	const titleKey =
-		mode === "standard" ? "mode.standard" : "mode.chaos";
-	const descKey =
-		mode === "standard"
-			? "mode.standard_description"
-			: "mode.chaos_description";
-	const modeLabelKey =
-		mode === "standard"
-			? "puzzle.mode_label_standard"
-			: "puzzle.mode_label_chaos";
+	const titleKey = FabbleModes[mode];
+	const { desc: descKey, label: modeLabelKey } = getModeKeys(mode);
 
 	return (
 		<div className="flex flex-col gap-4 p-6 rounded-xl border border-border-primary bg-surface shadow-sm hover:shadow-md transition-shadow">
@@ -41,7 +43,7 @@ export function ModeCard({ mode, guessLimit }: ModeCardProps) {
 				<Link
 					to="/fabble/$mode"
 					params={{ mode }}
-					className="inline-flex items-center justify-center min-h-[44px] px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
+					className="inline-flex items-center justify-center min-h-11 px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
 					aria-label={`${t("action.play")} ${t(modeLabelKey)}`}
 				>
 					{t("action.play")}

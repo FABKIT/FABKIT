@@ -1,16 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { GUESS_LIMITS } from "../lib/constants";
-import type { Hint } from "../lib/hints";
-import { generateHints, getAvailableHintCount } from "../lib/hints";
-import type { Rotation } from "../lib/rotations";
+import { GUESS_LIMITS } from "@fabkit/apps/fabble/lib/constants";
+import type { Hint } from "@fabkit/apps/fabble/lib/hints";
+import { generateHints, getAvailableHintCount } from "@fabkit/apps/fabble/lib/hints";
+import type { Rotation } from "@fabkit/apps/fabble/lib/rotations";
 import type {
 	DailyCard,
 	FabbleMode,
 	GuessEntry,
 	StreakData,
-} from "../lib/types";
-import { useFabbleStore } from "../stores/fabbleStore";
+} from "@fabkit/apps/fabble/lib/types";
+import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabbleStore";
 
 // ─── Hook output shape ────────────────────────────────────────────────────────
 
@@ -77,32 +77,34 @@ export function useFabbleGame(mode: FabbleMode): UseFabbleGameResult {
 	);
 
 	const submitGuess = useCallback(
-		(name: string): void => {
+		async (name: string): Promise<void> => {
 			if (isSubmitting) return;
 			setIsSubmitting(true);
-			storeSubmitGuess(name)
-				.then((result) => {
-					if (result.ok) {
-						setSubmitError(null);
-					} else {
-						switch (result.error) {
-							case "unknown_card":
-								setSubmitError(t("error.unknown_card"));
-								break;
-							case "already_guessed":
-								setSubmitError(t("error.already_guessed"));
-								break;
-							case "network_error":
-								setSubmitError(t("error.network_error"));
-								break;
-							case "game_over":
-								setSubmitError(null);
-								break;
-						}
+			try {
+				const result = await storeSubmitGuess(name);
+				if (result.ok) {
+					setSubmitError(null);
+				} else {
+					switch (result.error) {
+						case "unknown_card":
+							setSubmitError(t("error.unknown_card"));
+							break;
+						case "already_guessed":
+							setSubmitError(t("error.already_guessed"));
+							break;
+						case "network_error":
+							setSubmitError(t("error.network_error"));
+							break;
+						case "game_over":
+							setSubmitError(null);
+							break;
 					}
-				})
-				.catch(() => setSubmitError(t("error.network_error")))
-				.finally(() => setIsSubmitting(false));
+				}
+			} catch {
+				setSubmitError(t("error.network_error"));
+			} finally {
+				setIsSubmitting(false);
+			}
 		},
 		[isSubmitting, storeSubmitGuess, t],
 	);

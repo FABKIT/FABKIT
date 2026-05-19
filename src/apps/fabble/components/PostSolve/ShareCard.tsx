@@ -1,16 +1,32 @@
-import { forwardRef } from "react";
-import FabkitIconSrc from "../../../../assets/Fabkitlogo_notext.svg?url";
-import type { FabbleMode, FeedbackRow, GuessEntry } from "../../lib/types";
+import { forwardRef, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import FabkitIconSrc from "@fabkit/assets/Fabkitlogo_notext.svg?url";
+import { FabbleModes, type FabbleMode, type FeedbackRow, type GuessEntry } from "@fabkit/apps/fabble/lib/types";
 
-// ─── Design constants ─────────────────────────────────────────────────────────
-// Matches the app's dark theme. Using hex literals so the share card looks
-// identical regardless of the user's current light/dark preference.
+// ─── Share card theme ─────────────────────────────────────────────────────────
+// Colors are read from CSS custom properties at runtime so the share card
+// stays in sync with the design system. The fallback values match the dark theme.
 
-const C = {
+interface ShareCardColors {
+	bg: string;
+	surface: string;
+	accent: string;
+	heading: string;
+	muted: string;
+	subtle: string;
+	separator: string;
+	tileEmpty: string;
+	tileEmptyBorder: string;
+	match: string;
+	partial: string;
+	noMatch: string;
+	na: string;
+}
+
+const FALLBACK_COLORS: ShareCardColors = {
 	bg: "#2a2a2a",
 	surface: "#222222",
 	accent: "#a6864a",
-	accentLight: "#c2aa81",
 	heading: "#ffffff",
 	muted: "#999999",
 	subtle: "#666666",
@@ -21,7 +37,31 @@ const C = {
 	partial: "#e4ff1a",
 	noMatch: "#d64045",
 	na: "#7c809b",
-} as const;
+};
+
+function readCssVar(el: Element, name: string): string {
+	return getComputedStyle(el).getPropertyValue(name).trim();
+}
+
+function readThemeColors(el: Element): ShareCardColors {
+	return {
+		bg: readCssVar(el, "--color-surface") || FALLBACK_COLORS.bg,
+		surface: readCssVar(el, "--color-surface-muted") || FALLBACK_COLORS.surface,
+		accent: readCssVar(el, "--color-primary") || FALLBACK_COLORS.accent,
+		heading: readCssVar(el, "--color-heading") || FALLBACK_COLORS.heading,
+		muted: readCssVar(el, "--color-muted") || FALLBACK_COLORS.muted,
+		subtle: readCssVar(el, "--color-subtle") || FALLBACK_COLORS.subtle,
+		separator: readCssVar(el, "--color-border-primary") || FALLBACK_COLORS.separator,
+		tileEmpty: readCssVar(el, "--color-fabble-empty") || FALLBACK_COLORS.tileEmpty,
+		tileEmptyBorder: readCssVar(el, "--color-fabble-border") || FALLBACK_COLORS.tileEmptyBorder,
+		match: readCssVar(el, "--color-fabble-match") || FALLBACK_COLORS.match,
+		partial: readCssVar(el, "--color-fabble-partial") || FALLBACK_COLORS.partial,
+		noMatch: readCssVar(el, "--color-fabble-no-match") || FALLBACK_COLORS.noMatch,
+		na: readCssVar(el, "--color-fabble-na") || FALLBACK_COLORS.na,
+	};
+}
+
+// ─── Layout constants ─────────────────────────────────────────────────────────
 
 const CARD_SIZE = 540;
 const PAD = 22;
@@ -33,9 +73,7 @@ const TILE_W = Math.floor((INNER_W - NUM_W - TILE_GAP - (COLS - 1) * TILE_GAP) /
 const TILE_H = 22;
 const ROW_GAP = 3;
 
-const COL_LABELS = ["Type", "Class", "Talent", "Pitch", "Cost", "Pwr", "Def", "L/INT", "Sub", "KW", "Set"];
-
-function tileColor(state: string, isWinningRow = false): string {
+function tileColor(C: ShareCardColors, state: string, isWinningRow = false): string {
 	if (isWinningRow) return C.match;
 	switch (state) {
 		case "match":    return C.match;
@@ -73,56 +111,82 @@ interface ShareCardProps {
 }
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
-	function ShareCard({ guesses, mode, date, guessLimit, won, username, hintsUsed }, ref) {
-		const modeLabel = mode === "standard" ? "Standard" : "Chaos";
+	({ guesses, mode, date, guessLimit, won, username, hintsUsed }, ref) => {
+		const { t } = useTranslation("fabble");
+		const rootRef = useRef<HTMLDivElement>(null);
+		const [C, setC] = useState<ShareCardColors>(FALLBACK_COLORS);
+
+		// Read CSS custom properties once the element is mounted under data-theme="dark"
+		useLayoutEffect(() => {
+			if (rootRef.current) {
+				setC(readThemeColors(rootRef.current));
+			}
+		}, []);
+
+		const modeLabel = t(FabbleModes[mode]);
 		const scoreText = won ? `${guesses.length}/${guessLimit}` : `X/${guessLimit}`;
-		const emptyRows = 0; // show only played rows, not remaining empty slots
-		const bannerH = 155;
+
+		const colLabels = useMemo(() => [
+			t("column_abbr.type"),
+			t("column_abbr.class"),
+			t("column_abbr.talent"),
+			t("column_abbr.pitch"),
+			t("column_abbr.cost"),
+			t("column_abbr.power"),
+			t("column_abbr.defense"),
+			t("column_abbr.life_intellect"),
+			t("column_abbr.subtype"),
+			t("column_abbr.keyword"),
+			t("column_abbr.set"),
+		], [t]);
+
+		// Merge the forwarded ref with our internal rootRef
+		function setRefs(el: HTMLDivElement | null) {
+			rootRef.current = el;
+			if (typeof ref === "function") ref(el);
+			else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+		}
 
 		return (
 			<div
-				ref={ref}
+				ref={setRefs}
+				data-theme="dark"
+				className="flex flex-col overflow-hidden"
 				style={{
 					width: CARD_SIZE,
 					height: CARD_SIZE,
 					backgroundColor: C.bg,
-					fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
 					boxSizing: "border-box",
-					display: "flex",
-					flexDirection: "column",
-					overflow: "hidden",
 					WebkitFontSmoothing: "antialiased",
 					position: "relative",
 				}}
 			>
-				{/* ── Meeps art banner ── */}
-				<div style={{ position: "relative", height: bannerH, flexShrink: 0, overflow: "hidden" }}>
+				{/* ── Header banner ── */}
+				<div
+					className="flex items-center justify-center shrink-0 relative overflow-hidden"
+					style={{ height: 80, backgroundColor: C.surface }}
+				>
 					<img
 						src="/img/Mischievous-Meeps.png"
 						alt=""
-						style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }}
+						aria-hidden="true"
+						className="absolute inset-0 w-full h-full object-cover object-top opacity-40"
 					/>
-					{/* Gradient: transparent top → dark bottom */}
-					<div style={{
-						position: "absolute", inset: 0,
-						background: `linear-gradient(to bottom, rgba(42,42,42,0.15) 0%, rgba(42,42,42,0.6) 65%, ${C.bg} 100%)`,
-					}} />
-					{/* Mode + date badge, top-right */}
-					<div style={{
-						position: "absolute", top: 10, right: 14,
-						backgroundColor: "rgba(0,0,0,0.55)",
-						borderRadius: 20,
-						padding: "3px 10px",
-						fontSize: 11,
-						color: C.muted,
-						backdropFilter: "blur(4px)",
-					}}>
+					<div
+						className="absolute top-2.5 right-3.5 rounded-full"
+						style={{
+							backgroundColor: "rgba(0,0,0,0.55)",
+							padding: "3px 10px",
+							fontSize: 11,
+							color: C.muted,
+						}}
+					>
 						{modeLabel} · {date}
 					</div>
 				</div>
 
 				{/* ── Fabble logo ── */}
-				<div style={{ display: "flex", justifyContent: "center", padding: "6px 0 10px", flexShrink: 0 }}>
+				<div className="flex justify-center shrink-0 py-1.5">
 					<img
 						src="/FabbleLogo.svg"
 						alt="Fabble"
@@ -131,10 +195,13 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				</div>
 
 				{/* ── Separator ── */}
-				<div style={{ height: 1, backgroundColor: C.separator, margin: "0 PAD 12px".replace("PAD", String(PAD)), flexShrink: 0 }} />
+				<div
+					className="shrink-0"
+					style={{ height: 1, backgroundColor: C.separator, margin: `0 ${PAD}px 12px` }}
+				/>
 
 				{/* ── Score zone ── */}
-				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, marginBottom: 14, flexShrink: 0, padding: "0 8px" }}>
+				<div className="flex flex-col items-center shrink-0 gap-1 mb-3.5 px-2">
 					{username && (
 						<span style={{ color: C.accent, fontWeight: 700, fontSize: 17, lineHeight: 1.2 }}>
 							{username}
@@ -142,90 +209,83 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 					)}
 					<span style={{ color: C.heading, fontSize: 13, lineHeight: 1.4 }}>
 						{won
-							? <>{`solved today's Fabble in `}<strong style={{ color: C.accent }}>{scoreText}</strong></>
-							: <>{`played today's Fabble — `}<strong style={{ color: C.subtle }}>{scoreText}</strong></>
+							? <>{t("share.solved_in") + " "}<strong style={{ color: C.accent }}>{scoreText}</strong></>
+							: <>{t("share.played_today") + " "}<strong style={{ color: C.subtle }}>{scoreText}</strong></>
 						}
 					</span>
 					{hintsUsed !== undefined && (
 						<span style={{ color: C.muted, fontSize: 11 }}>
-							{`Hints used: ${hintsUsed}/2`}
+							{t("share.hints_used", { count: hintsUsed })}
 						</span>
 					)}
 				</div>
 
 				{/* ── Column labels ── */}
-				<div style={{ display: "flex", gap: TILE_GAP, padding: `0 ${PAD}px`, marginBottom: 4, flexShrink: 0 }}>
-					{/* Spacer for the number column */}
+				<div className="flex shrink-0 mb-1" style={{ gap: TILE_GAP, padding: `0 ${PAD}px` }}>
 					<div style={{ width: NUM_W, minWidth: NUM_W }} />
-					{COL_LABELS.map((label) => (
-						<div key={label} style={{
-							width: TILE_W, minWidth: TILE_W,
-							fontSize: 7, color: C.subtle,
-							textAlign: "center", textTransform: "uppercase",
-							letterSpacing: "0.04em", fontWeight: 600,
-						}}>
+					{colLabels.map((label) => (
+						<div
+							key={label}
+							className="text-center uppercase font-semibold"
+							style={{
+								width: TILE_W,
+								minWidth: TILE_W,
+								fontSize: 7,
+								color: C.subtle,
+								letterSpacing: "0.04em",
+							}}
+						>
 							{label}
 						</div>
 					))}
 				</div>
 
 				{/* ── Guess rows ── */}
-				<div style={{ display: "flex", flexDirection: "column", gap: ROW_GAP, padding: `0 ${PAD}px`, flexShrink: 0 }}>
+				<div className="flex flex-col shrink-0" style={{ gap: ROW_GAP, padding: `0 ${PAD}px` }}>
 					{guesses.map((g, ri) => {
 						const isWinningRow = won && ri === guesses.length - 1;
 						return (
-							<div key={ri} style={{ display: "flex", gap: TILE_GAP, alignItems: "center" }}>
-								{/* Row number */}
-								<div style={{
-									width: NUM_W, minWidth: NUM_W,
-									fontSize: 8, color: C.subtle,
-									textAlign: "center", fontWeight: 700,
-									flexShrink: 0,
-								}}>
+							<div key={ri} className="flex items-center" style={{ gap: TILE_GAP }}>
+								<div
+									className="text-center font-bold shrink-0"
+									style={{ width: NUM_W, minWidth: NUM_W, fontSize: 8, color: C.subtle }}
+								>
 									{ri + 1}
 								</div>
 								{rowStates(g.feedbackRow).map((state, ci) => (
-									<div key={ci} style={{
-										width: TILE_W, minWidth: TILE_W, height: TILE_H,
-										borderRadius: 3, backgroundColor: tileColor(state, isWinningRow),
-									}} />
+									<div
+										key={ci}
+										style={{
+											width: TILE_W,
+											minWidth: TILE_W,
+											height: TILE_H,
+											borderRadius: 3,
+											backgroundColor: tileColor(C, state, isWinningRow),
+										}}
+									/>
 								))}
 							</div>
 						);
 					})}
-					{Array.from({ length: emptyRows }).map((_, ri) => (
-						<div key={`e${ri}`} style={{ display: "flex", gap: TILE_GAP }}>
-							{Array.from({ length: COLS }).map((_, ci) => (
-								<div key={ci} style={{
-									width: TILE_W, minWidth: TILE_W, height: TILE_H,
-									borderRadius: 3, backgroundColor: C.tileEmpty,
-									border: `1px solid ${C.tileEmptyBorder}`,
-									boxSizing: "border-box", opacity: 0.5,
-								}} />
-							))}
-						</div>
-					))}
 				</div>
 
 				{/* ── Spacer ── */}
-				<div style={{ flex: 1 }} />
+				<div className="flex-1" />
 
 				{/* ── Footer ── */}
-				<div style={{
-					display: "flex", alignItems: "center", justifyContent: "center",
-					gap: 7, padding: `10px ${PAD}px 14px`, flexShrink: 0,
-				}}>
+				<div
+					className="flex items-center justify-center shrink-0 gap-1.5"
+					style={{ padding: `10px ${PAD}px 14px` }}
+				>
 					<img src={FabkitIconSrc} alt="" style={{ height: 18, width: 18 }} />
 					<span style={{ color: C.accent, fontWeight: 700, fontSize: 13 }}>
 						fabkit.io/fabble
 					</span>
 					<span style={{ color: C.subtle, fontSize: 11, marginLeft: 2 }}>
-						· A daily Flesh and Blood deduction puzzle
+						· {t("share.tagline")}
 					</span>
 				</div>
 			</div>
 		);
 	},
 );
-
-

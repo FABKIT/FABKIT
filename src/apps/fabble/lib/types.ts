@@ -1,13 +1,17 @@
 // ─── Mode type ────────────────────────────────────────────────────────────────
 
-export type FabbleMode = "standard" | "chaos";
+export const FabbleModes = {
+	standard: "mode.standard",
+	chaos: "mode.chaos",
+} as const;
+
+export type FabbleMode = keyof typeof FabbleModes;
 
 // RawCard is the Card type from @flesh-and-blood/types.
-// It is defined here to allow pool.ts to reference it without importing the
-// devDependency package directly. The runtime app never uses this type — it is
-// only consumed by the build-time pool.ts and build-pool.ts scripts.
-// The minimal interface below matches the fields pool.ts actually uses.
-// biome-ignore lint/suspicious/noExplicitAny: intentional — raw card data from devDep at build time
+// Defined here so pool.ts (build-time only) can import it without the devDep.
+// Runtime code never references RawCard. The `any` is intentional — importing
+// @flesh-and-blood/cards at runtime would bloat the bundle.
+// biome-ignore lint/suspicious/noExplicitAny: intentional — build-time only, see comment
 export type RawCard = any;
 
 // ─── Numeric stat discriminated union ────────────────────────────────────────
@@ -39,11 +43,11 @@ export interface CanonicalCard {
 	rarities: string[];
 	artists: string[];
 	weight: number; // from PopularityProvider; default 1.0
-	pitchVariants: Array<{
+	pitchVariants: {
 		pitch: number | undefined;
 		cardIdentifier: string;
 		defaultImage: string; // CDN image key, e.g. "MST131"
-	}>;
+	}[];
 }
 
 // ─── Daily card (scalar card for a given day's puzzle) ───────────────────────

@@ -1,7 +1,7 @@
-import { useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useAutocomplete } from "../../hooks/useAutocomplete";
-import type { CanonicalCard } from "../../lib/types";
+import { useAutocomplete } from "@fabkit/apps/fabble/hooks/useAutocomplete";
+import type { CanonicalCard } from "@fabkit/apps/fabble/lib/types";
 import { AutocompleteDropdown } from "./AutocompleteDropdown";
 
 interface GuessInputProps {
@@ -39,7 +39,7 @@ export function GuessInput({
 		setTimeout(() => inputRef.current?.focus(), 0);
 	});
 
-	function handleSubmit() {
+	const handleSubmit = useCallback(() => {
 		if (inputValue.trim().length === 0) return;
 		if (activeIndex >= 0 && activeIndex < results.length) {
 			const item = results[activeIndex];
@@ -61,12 +61,15 @@ export function GuessInput({
 				selectItem(topEnabled.name);
 			}
 		}
-	}
+	}, [inputValue, activeIndex, results, pool, onSubmit, selectItem, clearInput]);
 
-	const canSubmit =
-		!disabled &&
-		inputValue.trim().length > 0 &&
-		(activeIndex >= 0 || results.some((r) => !r.alreadyGuessed));
+	const canSubmit = useMemo(
+		() =>
+			!disabled &&
+			inputValue.trim().length > 0 &&
+			(activeIndex >= 0 || results.some((r) => !r.alreadyGuessed)),
+		[disabled, inputValue, activeIndex, results],
+	);
 
 	return (
 		<div className="w-full max-w-md mx-auto">
@@ -87,7 +90,7 @@ export function GuessInput({
 						onKeyDown={handleKeyDown}
 						placeholder={t("input.placeholder")}
 						disabled={disabled}
-						className="w-full px-3 py-2.5 min-h-[44px] border border-border rounded-md text-sm text-body bg-surface focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+						className="w-full px-3 py-2.5 min-h-11 border border-border rounded-md text-sm text-body bg-surface focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
 						autoComplete="off"
 					/>
 					{isOpen && results.length > 0 && (
@@ -106,7 +109,7 @@ export function GuessInput({
 					onClick={handleSubmit}
 					disabled={!canSubmit}
 					aria-label={t("aria.submit_guess")}
-					className="w-full min-h-[44px] px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+					className="w-full min-h-11 px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					{t("input.submit")}
 				</button>

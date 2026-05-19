@@ -1,4 +1,4 @@
-import type { AutocompleteItem as AutocompleteItemType } from "../../lib/autocomplete";
+import type { AutocompleteItem as AutocompleteItemType } from "@fabkit/apps/fabble/lib/autocomplete";
 import { AutocompleteItem } from "./AutocompleteItem";
 
 interface AutocompleteDropdownProps {

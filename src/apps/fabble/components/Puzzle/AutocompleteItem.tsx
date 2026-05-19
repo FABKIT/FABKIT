@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
-import type { AutocompleteItem as AutocompleteItemType } from "../../lib/autocomplete";
-import { FAB_CDN_BASE } from "../../lib/constants";
+import { useCallback } from "react";
+import type { AutocompleteItem as AutocompleteItemType } from "@fabkit/apps/fabble/lib/autocomplete";
+import { FAB_CDN_BASE } from "@fabkit/apps/fabble/lib/constants";
 
 interface AutocompleteItemProps {
 	item: AutocompleteItemType;
@@ -15,11 +16,11 @@ export function AutocompleteItem({
 	isDisabled,
 	onSelect,
 }: AutocompleteItemProps) {
-	function handleClick() {
+	const handleClick = useCallback(() => {
 		if (!isDisabled) {
 			onSelect(item.name);
 		}
-	}
+	}, [isDisabled, onSelect, item.name]);
 
 	// tabIndex={-1}: programmatically focusable (satisfies Biome) but NOT a tab stop.
 	// Keyboard focus stays on the input; active item communicated via aria-activedescendant.
@@ -34,7 +35,7 @@ export function AutocompleteItem({
 				if (e.key === "Enter") handleClick();
 			}}
 			className={[
-				"flex items-center gap-2 px-2 py-1.5 cursor-pointer min-h-[44px]",
+				"flex items-center gap-2 px-2 py-1.5 cursor-pointer min-h-11",
 				isActive ? "bg-surface-active" : "hover:bg-surface-muted",
 				isDisabled ? "opacity-50 cursor-not-allowed" : "",
 			]
@@ -49,7 +50,6 @@ export function AutocompleteItem({
 					width={30}
 					height={42}
 					className="rounded shrink-0 object-cover bg-surface-muted"
-					style={{ width: 30, height: 42 }}
 				/>
 			) : (
 				<div

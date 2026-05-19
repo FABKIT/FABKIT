@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { StreakData } from "../../lib/types";
+import type { StreakData } from "@fabkit/apps/fabble/lib/types";
 
 interface StreakStatsProps {
 	streak: StreakData;

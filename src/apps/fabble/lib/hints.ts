@@ -1,37 +1,44 @@
 import { HINT_UNLOCK_THRESHOLDS, SET_NAME_TO_INDEX } from "./constants";
-import type { DailyCard } from "./types";
+import type { DailyCard, FabbleMode } from "./types";
+import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import { DISPLAY_TO_RARITY } from "./rarityUtils";
 
 export interface Hint {
 	id: "rarity" | "set";
 	labelKey: string;
+	// For "rarity" hints, value is a CardRarity slug (translatable via t(`rarity.${value}`)).
+	// For "set" hints, value is the raw set display name.
 	value: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const RARITY_RANK: Record<string, number> = {
-	Legendary: 0,
-	Majestic: 1,
-	"Super Rare": 2,
-	Rare: 3,
-	Common: 4,
-	Promo: 5,
-	Marvel: 6,
-	Fabled: 7,
-	Basic: 8,
+// Ranked by how desirable/distinctive they are as a hint — lower index = more premium.
+const RARITY_RANK: Record<CardRarity, number> = {
+	fabled: 0,
+	legendary: 1,
+	majestic: 2,
+	superrare: 3,
+	rare: 4,
+	marvel: 5,
+	common: 6,
+	promo: 7,
+	token: 8,
+	basic: 9,
 };
 
-// Pick the most "premium" rarity so "Rare, Promo" shows "Rare" not "Promo"
-function bestRarity(rarities: string[]): string {
-	if (rarities.length === 0) return "—";
-	return rarities.reduce((best, r) =>
-		(RARITY_RANK[r] ?? 99) < (RARITY_RANK[best] ?? 99) ? r : best,
-		rarities[0],
+// Returns the slug of the most premium rarity present in the list.
+function bestRaritySlug(rarities: string[]): CardRarity | null {
+	if (rarities.length === 0) return null;
+	const slugs = rarities.map((r) => DISPLAY_TO_RARITY[r]).filter(Boolean) as CardRarity[];
+	if (slugs.length === 0) return null;
+	return slugs.reduce(
+		(best, slug) => ((RARITY_RANK[slug] ?? 99) < (RARITY_RANK[best] ?? 99) ? slug : best),
+		slugs[0],
 	);
 }
 
 // Return the first set that's a recognised mainline booster set.
-// Falls back to sets[0] if no mainline set found (shouldn't normally happen).
 function mainlineSet(sets: string[]): string {
 	const mainline = sets.find((s) => SET_NAME_TO_INDEX[s] !== undefined);
 	return mainline ?? sets[0] ?? "—";
@@ -41,16 +48,17 @@ function mainlineSet(sets: string[]): string {
 
 /**
  * Generates the fixed 2-hint sequence for a given daily card.
- * Hint 0 = best (most premium) rarity.
- * Hint 1 = first mainline booster set (not armory/promo).
+ * Hint 0 = most premium rarity slug (translate in UI via t(`rarity.${hint.value}`)).
+ * Hint 1 = first mainline booster set display name.
  * Pure function — same DailyCard always produces the same hints.
  */
 export function generateHints(daily: DailyCard): Hint[] {
+	const raritySlug = bestRaritySlug(daily.rarities);
 	return [
 		{
 			id: "rarity",
 			labelKey: "hint.label.rarity",
-			value: bestRarity(daily.rarities),
+			value: raritySlug ?? "common",
 		},
 		{
 			id: "set",
@@ -64,10 +72,7 @@ export function generateHints(daily: DailyCard): Hint[] {
  * Returns how many hints are currently unlocked based on guess count.
  * Standard mode only — Chaos always returns 0.
  */
-export function getAvailableHintCount(
-	guessCount: number,
-	mode: string,
-): number {
+export function getAvailableHintCount(guessCount: number, mode: FabbleMode): number {
 	if (mode !== "standard") return 0;
 	return HINT_UNLOCK_THRESHOLDS.filter((t) => guessCount >= t).length;
 }

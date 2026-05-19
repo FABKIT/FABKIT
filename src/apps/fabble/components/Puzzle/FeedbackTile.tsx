@@ -1,13 +1,15 @@
 import { ArrowDown, ArrowUp, Ban, Check, X } from "lucide-react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { formatPitchValue } from "../../lib/displayValues";
+import { formatPitchValue } from "@fabkit/apps/fabble/lib/displayValues";
+import { NOTCLASSED_LABEL_KEY } from "@fabkit/apps/fabble/lib/feedback";
 import type {
 	ColumnId,
 	FeedbackCell,
 	MatchCell,
 	NoMatchCell,
 	SetComparison,
-} from "../../lib/types";
+} from "@fabkit/apps/fabble/lib/types";
 
 interface FeedbackTileProps {
 	cell: FeedbackCell;
@@ -32,6 +34,8 @@ function getTileClasses(cell: FeedbackCell, isWinningRow?: boolean): string {
 			return "fabble-tile-no-match text-fabble-no-match-text border-2 border-fabble-no-match";
 		case "na":
 			return "fabble-tile-match text-fabble-match-text border-2 border-dashed border-fabble-match";
+		default:
+			return "";
 	}
 }
 
@@ -41,7 +45,7 @@ function SetComparisonList({ comparisons }: { comparisons: SetComparison[] }) {
 			{comparisons.map((c) => (
 				<span
 					key={c.name}
-					className="text-[9px] font-semibold leading-tight w-full text-left flex items-center gap-0.5"
+					className="text-xs font-semibold leading-tight w-full text-left flex items-center gap-0.5"
 				>
 					<span className="break-words flex-1">{c.name}</span>
 					{c.state === "match" ? (
@@ -121,8 +125,12 @@ export function FeedbackTile({
 		ariaLabel = t("aria.na", { column: columnLabel });
 	}
 
-	function renderValue() {
-		// Set column: always show full list of sets with direction indicators
+	// Translate i18n sentinel values that come through the pure-function pipeline
+	const resolvedGuessValue = guessValue === NOTCLASSED_LABEL_KEY
+		? t(NOTCLASSED_LABEL_KEY)
+		: guessValue;
+
+	const renderValue = useCallback(() => {
 		if (_column === "set" && setComparisons && setComparisons.length > 0) {
 			return <SetComparisonList comparisons={setComparisons} />;
 		}
@@ -136,7 +144,7 @@ export function FeedbackTile({
 				);
 			}
 			const displayVal =
-				_column === "pitch" ? formatPitchValue(cell.value) : String(cell.value);
+				_column === "pitch" ? formatPitchValue(cell.value) : `${cell.value}`;
 			return (
 				<span className="text-xs font-bold leading-tight w-full text-left break-words">
 					{displayVal}
@@ -154,26 +162,21 @@ export function FeedbackTile({
 		}
 
 		if (cell.state === "no-match") {
-			// Daily has no such stat — show guessed value + ban icon so player knows
-			// to look for a card that also lacks this attribute entirely.
 			if (cell.naDaily) {
 				return (
 					<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
-						<span className="break-words">{guessValue}</span>
+						<span className="break-words">{resolvedGuessValue}</span>
 						<Ban className="size-3 shrink-0" aria-hidden="true" />
 					</span>
 				);
 			}
 
-			// Show the guessed card's value alongside the direction arrow.
-			// The arrow already tells the player whether the answer is higher or lower.
-			// For non-directional categoricals, fall through to show nothing (X icon).
 			const displayVal =
 				_column === "pitch" || cell.direction !== undefined
-					? guessValue
+					? resolvedGuessValue
 					: cell.revealedDailyValue !== undefined
-						? String(cell.revealedDailyValue)
-						: guessValue;
+						? `${cell.revealedDailyValue}`
+						: resolvedGuessValue;
 
 			if (displayVal && cell.direction) {
 				return (
@@ -198,10 +201,10 @@ export function FeedbackTile({
 		}
 
 		if (cell.state === "na") {
-			if (guessValue && guessValue !== "—") {
+			if (resolvedGuessValue && resolvedGuessValue !== "—") {
 				return (
 					<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
-						<span className="break-words">{guessValue}</span>
+						<span className="break-words">{resolvedGuessValue}</span>
 						<Ban className="size-3 shrink-0" aria-hidden="true" />
 					</span>
 				);
@@ -210,7 +213,7 @@ export function FeedbackTile({
 		}
 
 		return null;
-	}
+	}, [cell, _column, resolvedGuessValue, t, setComparisons, isRainbowMatch]);
 
 	return (
 		<div
@@ -218,7 +221,7 @@ export function FeedbackTile({
 			className={[
 				tileClasses,
 				animClass,
-				"min-h-[80px] w-full p-2 rounded-md font-semibold flex flex-col items-start justify-between gap-1",
+				"min-h-20 w-full p-2 rounded-md font-semibold flex flex-col items-start justify-between gap-1",
 			]
 				.filter(Boolean)
 				.join(" ")}
@@ -229,7 +232,7 @@ export function FeedbackTile({
 					: undefined
 			}
 		>
-			<span className="text-[9px] font-semibold uppercase tracking-wide opacity-75 leading-none w-full text-left">
+			<span className="text-xs font-semibold uppercase tracking-wide opacity-75 leading-none w-full text-left">
 				{columnLabel}
 			</span>
 			<div className="flex flex-col items-start justify-center flex-1 w-full">
@@ -238,5 +241,3 @@ export function FeedbackTile({
 		</div>
 	);
 }
-
-

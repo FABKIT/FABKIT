@@ -1,7 +1,6 @@
 import { snapdom } from "@zumer/snapdom";
 import { useRef, useState } from "react";
-
-const USERNAME_KEY = "fabble:shareUsername";
+import { getUsername, setUsername as storeUsername } from "@fabkit/apps/fabble/lib/usernameStorage";
 
 export interface UseShareImageResult {
 	cardRef: React.RefObject<HTMLDivElement | null>;
@@ -14,18 +13,12 @@ export interface UseShareImageResult {
 export function useShareImage(): UseShareImageResult {
 	const cardRef = useRef<HTMLDivElement>(null);
 	const [capturing, setCapturing] = useState(false);
-	const [username, setUsernameState] = useState<string>(
-		() => localStorage.getItem(USERNAME_KEY) ?? "",
-	);
+	const [username, setUsernameState] = useState<string>(getUsername);
 
 	function setUsername(value: string) {
 		const trimmed = value.slice(0, 20);
 		setUsernameState(trimmed);
-		if (trimmed) {
-			localStorage.setItem(USERNAME_KEY, trimmed);
-		} else {
-			localStorage.removeItem(USERNAME_KEY);
-		}
+		storeUsername(trimmed);
 	}
 
 	async function shareImage(): Promise<void> {
@@ -67,4 +60,3 @@ export function useShareImage(): UseShareImageResult {
 
 	return { cardRef, username, setUsername, capturing, shareImage };
 }
-

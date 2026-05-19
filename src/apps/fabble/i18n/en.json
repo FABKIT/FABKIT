@@ -127,6 +127,7 @@
 	"tile": {
 		"rainbow_all_colors": "All colors",
 		"na_suffix": "None",
+		"not_classed": "None",
 		"tooltip": {
 			"match": "{{column}}: {{value}} — exact match.",
 			"match_numeric": "{{column}}: {{value}} — exact match.",
@@ -176,7 +177,18 @@
 		"copied": "Copied!",
 		"label": "Fabble {{mode}} {{date}}",
 		"mode_standard": "Standard",
-		"mode_chaos": "Chaos"
+		"mode_chaos": "Chaos",
+		"copy_error": "Copy failed",
+		"generating": "Generating…",
+		"share_result": "Share Result",
+		"solved_in": "solved today's Fabble in",
+		"played_today": "played today's Fabble —",
+		"hints_used": "Hints used: {{count}}/2",
+		"tagline": "A daily Flesh and Blood deduction puzzle",
+		"username_label": "Add your name to the share card",
+		"username_optional": "optional",
+		"username_placeholder": "Your name or @handle",
+		"username_note": "Saved for next time · not stored anywhere else"
 	},
 	"already_solved": {
 		"title": "Already solved today",
@@ -195,6 +207,31 @@
 			"rarity": "Rarity",
 			"set": "First printed in"
 		}
+	},
+	"column_abbr": {
+		"type": "Type",
+		"class": "Class",
+		"talent": "Talent",
+		"pitch": "Pitch",
+		"cost": "Cost",
+		"power": "Pwr",
+		"defense": "Def",
+		"life_intellect": "L/INT",
+		"subtype": "Sub",
+		"keyword": "KW",
+		"set": "Set"
+	},
+	"rarity": {
+		"basic": "Basic",
+		"common": "Common",
+		"rare": "Rare",
+		"superrare": "Super Rare",
+		"majestic": "Majestic",
+		"legendary": "Legendary",
+		"fabled": "Fabled",
+		"token": "Token",
+		"promo": "Promo",
+		"marvel": "Marvel"
 	},
 	"rotation": {
 		"equipment": "Equipment",

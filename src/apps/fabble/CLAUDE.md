@@ -55,11 +55,12 @@ The `$mode` route loader fetches the pool JSON and calls `useFabbleStore.getStat
 
 ## Pool Files
 
-`public/pool-standard.json` and `public/pool-chaos.json` are pre-built assets (~1.5 MB each) generated from `@flesh-and-blood/cards`. Regenerate with `bun run build:pool`.
+`public/pool-standard.json` and `public/pool-chaos.json` are generated at build time from `@flesh-and-blood/cards`. They are **not** checked into git. Regenerate with `bun run build:pool`.
 
 ## Import Rules
 
-- Components import lib/hooks/stores via relative paths within this app.
+- `./ComponentName` (same-directory) relative imports are fine.
+- Any import that traverses directories (`../../`) must use `@fabkit/apps/fabble/*` instead.
 - Platform utilities are imported via `@fabkit/platform/*`.
 - Shared utilities are imported via `@fabkit/shared/*`.
 - Route files import app components via `@fabkit/apps/fabble/*`.

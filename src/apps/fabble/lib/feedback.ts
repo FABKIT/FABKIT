@@ -1,3 +1,13 @@
+/**
+ * Provides one `evaluate*` function per FeedbackRow column plus a top-level
+ * `evaluateGuess(guess, daily)` that calls them all and returns the full row.
+ *
+ * Each evaluator compares one attribute of the guessed card against the daily
+ * card and returns a FeedbackCell with state "match", "partial", "no-match",
+ * or "na" (not applicable — the attribute doesn't exist on this card type).
+ * Numeric columns ("cost", "power", "defense", "lifeOrIntellect") and "set"
+ * include directional feedback (higher/lower) so players can narrow down.
+ */
 import { SET_NAME_TO_INDEX } from "./constants";
 import type {
 	CanonicalCard,
@@ -19,8 +29,12 @@ function evaluateType(guess: CanonicalCard, daily: DailyCard): FeedbackCell {
 	return { state: "no-match" };
 }
 
+// i18n key used when a card has no class ("NotClassed" in the data).
+// Callers that render this value should call t(NOTCLASSED_LABEL_KEY).
+export const NOTCLASSED_LABEL_KEY = "tile.not_classed" as const;
+
 export function humanizeClass(c: string): string {
-	return c === "NotClassed" ? "None" : c;
+	return c === "NotClassed" ? NOTCLASSED_LABEL_KEY : c;
 }
 
 function evaluateClass(guess: CanonicalCard, daily: DailyCard): FeedbackCell {

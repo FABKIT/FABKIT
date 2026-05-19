@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { GUESS_LIMITS } from "../../lib/constants";
+import { GUESS_LIMITS } from "@fabkit/apps/fabble/lib/constants";
 import { TileExampleRow } from "./TileExampleRow";
 
 const COLUMN_ENTRIES: [string, string][] = [

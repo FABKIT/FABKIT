@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, HelpCircle, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { Rotation } from "../../lib/rotations";
-import type { FabbleMode } from "../../lib/types";
+import type { Rotation } from "@fabkit/apps/fabble/lib/rotations";
+import type { FabbleMode } from "@fabkit/apps/fabble/lib/types";
 
 interface PuzzleToolbarProps {
 	mode: FabbleMode;
@@ -11,6 +11,15 @@ interface PuzzleToolbarProps {
 	onOpenRules: () => void;
 	onReset: () => void;
 	activeRotation?: Rotation | null;
+}
+
+function getModeLabelKey(mode: PuzzleToolbarProps["mode"]): string {
+	switch (mode) {
+		case "standard":
+			return "puzzle.mode_label_standard";
+		case "chaos":
+			return "puzzle.mode_label_chaos";
+	}
 }
 
 export function PuzzleToolbar({
@@ -23,17 +32,14 @@ export function PuzzleToolbar({
 }: PuzzleToolbarProps) {
 	const { t } = useTranslation("fabble");
 
-	const modeLabelKey =
-		mode === "standard"
-			? "puzzle.mode_label_standard"
-			: "puzzle.mode_label_chaos";
+	const modeLabelKey = getModeLabelKey(mode);
 
 	return (
 		<div className="flex items-center justify-between w-full max-w-2xl mx-auto px-4 py-3">
 			<div className="flex items-center gap-3">
 				<Link
 					to="/fabble"
-					className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-sm font-semibold text-muted hover:text-heading hover:border-border-primary transition-colors min-h-[44px]"
+					className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-sm font-semibold text-muted hover:text-heading hover:border-border-primary transition-colors min-h-11"
 					aria-label={t("aria.back_to_mode_select")}
 				>
 					<ArrowLeft className="size-4" />
@@ -69,7 +75,7 @@ export function PuzzleToolbar({
 					type="button"
 					onClick={onOpenRules}
 					aria-label={t("aria.open_rules")}
-					className="min-h-[44px] min-w-[44px] flex items-center justify-center text-muted hover:text-heading transition-colors"
+					className="min-h-11 min-w-11 flex items-center justify-center text-muted hover:text-heading transition-colors"
 				>
 					<HelpCircle className="size-5" />
 				</button>

@@ -1,14 +1,14 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FAB_CDN_BASE } from "../../lib/constants";
-import { getCardColumnValues } from "../../lib/displayValues";
+import { FAB_CDN_BASE } from "@fabkit/apps/fabble/lib/constants";
+import { getCardColumnValues } from "@fabkit/apps/fabble/lib/displayValues";
 import type {
 	CanonicalCard,
 	ColumnId,
 	GuessEntry,
 	MatchCell,
-} from "../../lib/types";
+} from "@fabkit/apps/fabble/lib/types";
 import { FeedbackTile } from "./FeedbackTile";
 
 interface GuessCardProps {
@@ -18,20 +18,6 @@ interface GuessCardProps {
 	card: CanonicalCard | undefined;
 	isAnswer: boolean;
 }
-
-const COLUMNS: ColumnId[] = [
-	"type",
-	"class",
-	"talent",
-	"pitch",
-	"cost",
-	"power",
-	"defense",
-	"lifeOrIntellect",
-	"subtype",
-	"keyword",
-	"set",
-];
 
 const COLUMN_I18N_KEYS: Record<ColumnId, string> = {
 	type: "column.type",
@@ -47,6 +33,8 @@ const COLUMN_I18N_KEYS: Record<ColumnId, string> = {
 	set: "column.set",
 };
 
+const COLUMNS = Object.keys(COLUMN_I18N_KEYS) as ColumnId[];
+
 export function GuessCard({
 	row,
 	animate,
@@ -61,7 +49,7 @@ export function GuessCard({
 
 	const typeCell = row.feedbackRow.type;
 	const typeLabel =
-		typeCell.state === "match" ? String((typeCell as MatchCell).value) : null;
+		typeCell.state === "match" ? `${(typeCell as MatchCell).value}` : null;
 
 	return (
 		<div
@@ -82,16 +70,13 @@ export function GuessCard({
 						height={112}
 						className="rounded object-cover bg-surface-muted shrink-0"
 						style={{
-							width: 80,
-							height: 112,
 							filter: isAnswer ? "none" : "grayscale(100%) brightness(0.75)",
 						}}
 						onError={() => setImgFailed(true)}
 					/>
 				) : (
 					<div
-						className="rounded bg-surface-muted shrink-0 flex items-center justify-center"
-						style={{ width: 80, height: 112 }}
+						className="rounded bg-surface-muted shrink-0 flex items-center justify-center w-20 h-28"
 						aria-hidden="true"
 					>
 						<span className="text-xs text-muted font-bold">
@@ -114,7 +99,7 @@ export function GuessCard({
 						)}
 					</div>
 					{typeLabel && (
-						<span className="text-[11px] text-muted leading-tight">
+						<span className="text-xs text-muted leading-tight">
 							{typeLabel}
 						</span>
 					)}
@@ -142,5 +127,3 @@ export function GuessCard({
 		</div>
 	);
 }
-
-

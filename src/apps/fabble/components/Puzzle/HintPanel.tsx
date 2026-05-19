@@ -1,7 +1,7 @@
 import { Eye, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { HINT_UNLOCK_THRESHOLDS } from "../../lib/constants";
-import type { Hint } from "../../lib/hints";
+import { HINT_UNLOCK_THRESHOLDS } from "@fabkit/apps/fabble/lib/constants";
+import type { Hint } from "@fabkit/apps/fabble/lib/hints";
 
 interface HintPanelProps {
 	hints: Hint[];
@@ -24,7 +24,7 @@ export function HintPanel({
 			className="w-full max-w-2xl mx-auto px-4 py-2"
 		>
 			<div className="flex items-center gap-2 flex-wrap">
-				<span className="text-[10px] font-semibold text-subtle uppercase tracking-wide shrink-0">
+				<span className="text-xs font-semibold text-subtle uppercase tracking-wide shrink-0">
 					{t("hint.section_label")}
 				</span>
 
@@ -48,7 +48,9 @@ export function HintPanel({
 								<span aria-hidden="true" className="text-muted">
 									{t(hint.labelKey)}:
 								</span>
-								<span aria-hidden="true">{hint.value}</span>
+								<span aria-hidden="true">
+						{hint.id === "rarity" ? t(`rarity.${hint.value}`) : hint.value}
+					</span>
 							</span>
 						);
 					}
@@ -62,7 +64,7 @@ export function HintPanel({
 								aria-label={t("hint.aria.reveal", {
 									label: t(hint.labelKey),
 								})}
-								className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-white hover:opacity-90 transition-opacity min-h-[32px]"
+								className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-white hover:opacity-90 transition-opacity min-h-8"
 							>
 								<Eye className="size-3 shrink-0" />
 								{t("hint.reveal", { label: t(hint.labelKey) })}

@@ -192,7 +192,7 @@ function FabbleModeRouteComponent() {
 						<PostSolvePanel
 							daily={daily}
 							guesses={guesses}
-							status={status as "won" | "lost"}
+							hasWon={status === "won"}
 							streak={streak}
 							mode={mode}
 						/>

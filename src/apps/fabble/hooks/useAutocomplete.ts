@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import type { AutocompleteItem } from "../lib/autocomplete";
-import { searchPool } from "../lib/autocomplete";
-import type { CanonicalCard } from "../lib/types";
+import type { AutocompleteItem } from "@fabkit/apps/fabble/lib/autocomplete";
+import { searchPool } from "@fabkit/apps/fabble/lib/autocomplete";
+import type { CanonicalCard } from "@fabkit/apps/fabble/lib/types";
 
 // ─── Hook output shape ────────────────────────────────────────────────────────
 

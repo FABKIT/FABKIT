@@ -1,7 +1,7 @@
-import { forwardRef } from "react";
+import { forwardRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useShareResult } from "../../hooks/useShareResult";
-import type { FabbleMode, GuessEntry } from "../../lib/types";
+import { useShareResult } from "@fabkit/apps/fabble/hooks/useShareResult";
+import type { FabbleMode, GuessEntry } from "@fabkit/apps/fabble/lib/types";
 
 interface ShareButtonProps {
 	guesses: GuessEntry[];
@@ -12,15 +12,13 @@ interface ShareButtonProps {
 }
 
 export const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(
-	function ShareButton({ guesses, mode, date, guessLimit, won }, ref) {
+	({ guesses, mode, date, guessLimit, won }, ref) => {
 		const { t } = useTranslation("fabble");
-		const { share, copied } = useShareResult();
+		const { share, copied, copyError } = useShareResult();
 
-		// Note: @zumer/snapdom is available as a runtime dep for future image-based
-		// share. Current implementation uses emoji grid text only.
-		function handleShare() {
+		const handleShare = useCallback(() => {
 			share({ guesses, mode, date, guessLimit, won });
-		}
+		}, [share, guesses, mode, date, guessLimit, won]);
 
 		return (
 			<button
@@ -28,12 +26,10 @@ export const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(
 				type="button"
 				onClick={handleShare}
 				aria-label={t("aria.share_result")}
-				className="min-h-[44px] px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
+				className="min-h-11 px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
 			>
-				{copied ? t("share.copied") : t("result.share")}
+				{copyError ? t("share.copy_error") : copied ? t("share.copied") : t("result.share")}
 			</button>
 		);
 	},
 );
-
-

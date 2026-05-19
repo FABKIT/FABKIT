@@ -25,6 +25,8 @@ dist-ssr
 
 # Compiler generated files
 src/routeTree.gen.ts
+public/pool-standard.json
+public/pool-chaos.json
 src/i18n.d.ts
 analyse.html
 .tanstack/
