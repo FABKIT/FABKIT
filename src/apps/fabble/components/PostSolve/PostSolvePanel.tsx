@@ -1,5 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Droplets, Sparkles } from "lucide-react";
 import { CardRarities, type CardRarity } from "@fabkit/shared/config/cards/rarities";
 import { DISPLAY_TO_RARITY } from "@fabkit/apps/fabble/lib/rarityUtils";
 import { useShareImage } from "@fabkit/apps/fabble/hooks/useShareImage";
@@ -24,19 +26,69 @@ interface PostSolvePanelProps {
 	mode: FabbleMode;
 }
 
-// Re-use the shared display→slug mapping rather than duplicating it
-const RARITY_SLUG = DISPLAY_TO_RARITY;
-
 const MAIN_RARITY_SLUGS: CardRarity[] = ["fabled", "legendary", "majestic", "superrare", "rare", "common"];
 
 function getPrimaryRarity(rarities: string[]): string | null {
 	if (rarities.length === 0) return null;
 	const primarySlug = MAIN_RARITY_SLUGS.find((slug) =>
-		rarities.some((r) => RARITY_SLUG[r] === slug),
+		rarities.some((r) => DISPLAY_TO_RARITY[r] === slug),
 	);
-	if (primarySlug) return rarities.find((r) => RARITY_SLUG[r] === primarySlug) ?? null;
+	if (primarySlug) return rarities.find((r) => DISPLAY_TO_RARITY[r] === primarySlug) ?? null;
 	return rarities[0] ?? null;
 }
+
+// ─── Card identity sub-component ─────────────────────────────────────────────
+
+function RevealedCardMeta({ daily }: { daily: DailyCard }) {
+	const { t } = useTranslation("fabble");
+	const primaryRarity = getPrimaryRarity(daily.rarities);
+	const primaryRaritySlug = primaryRarity ? DISPLAY_TO_RARITY[primaryRarity] : null;
+	const primaryArtist = daily.artists?.[0];
+
+	return (
+		<div className="flex flex-col sm:flex-row items-start gap-8 w-full">
+			<CardReveal daily={daily} won />
+
+			<div className="flex flex-col gap-2.5 min-w-0 pt-1">
+				<h2 className="text-2xl font-bold text-heading leading-tight">
+					{daily.name}
+				</h2>
+
+				{primaryRarity && primaryRaritySlug && (
+					<div className="flex items-center gap-1.5">
+						<img
+							src={CardRarities[primaryRaritySlug].icon}
+							alt=""
+							aria-hidden="true"
+							className="size-5 shrink-0"
+						/>
+						<span className="text-sm text-muted">
+							{t(`rarity.${primaryRaritySlug}`)}
+						</span>
+					</div>
+				)}
+
+				{daily.sets.length > 0 && (
+					<div className="flex flex-col gap-0.5">
+						{[...daily.sets].reverse().map((set) => (
+							<span key={set} className="text-sm text-muted">
+								{set}
+							</span>
+						))}
+					</div>
+				)}
+
+				{primaryArtist && (
+					<span className="text-xs text-subtle">
+						{t("result.art_by", { artist: primaryArtist })}
+					</span>
+				)}
+			</div>
+		</div>
+	);
+}
+
+// ─── Main panel ───────────────────────────────────────────────────────────────
 
 export function PostSolvePanel({
 	daily,
@@ -48,73 +100,57 @@ export function PostSolvePanel({
 	const { t } = useTranslation("fabble");
 	const navigate = useNavigate();
 	const guessLimit = GUESS_LIMITS[mode];
-	const _d = new Date();
-	const date = `${String(_d.getDate()).padStart(2, "0")}-${String(_d.getMonth() + 1).padStart(2, "0")}-${String(_d.getFullYear()).slice(2)}`;
 	const revealedHintCount = useFabbleStore((s) => s.revealedHintCount);
+	const storeDate = useFabbleStore((s) => s.date); // YYYY-MM-DD UTC — stays in sync with the puzzle day
+
+	const date = useMemo(() => {
+		if (!storeDate) return "";
+		const [year, month, day] = storeDate.split("-");
+		return `${day}-${month}-${String(year).slice(2)}`;
+	}, [storeDate]);
 
 	const { cardRef, username, setUsername, capturing, shareImage } =
 		useShareImage();
+
+	const handleUsernameChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value),
+		[setUsername],
+	);
 
 	const winMessage =
 		guesses.length === 1
 			? t("result.won_one")
 			: t("result.won_other", { count: guesses.length });
 
-	const primaryRarity = getPrimaryRarity(daily.rarities);
-	const primaryRaritySlug = primaryRarity ? RARITY_SLUG[primaryRarity] : null;
-	const primaryArtist = daily.artists?.[0];
-
 	return (
-		<div className="flex flex-col items-center gap-6 w-full max-w-lg mx-auto px-4 py-6">
-			{/* Card identity: image + meta side by side */}
-			<div className="flex flex-col sm:flex-row items-start gap-8 w-full">
-				<CardReveal daily={daily} won={hasWon} />
-
-				<div className="flex flex-col gap-2.5 min-w-0 pt-1">
-					<h2 className="text-2xl font-bold text-heading leading-tight">
-						{daily.name}
-					</h2>
-
-					{primaryRarity && primaryRaritySlug && (
-						<div className="flex items-center gap-1.5">
-							<img
-								src={CardRarities[primaryRaritySlug].icon}
-								alt=""
-								aria-hidden="true"
-								className="size-5 shrink-0"
-							/>
-							<span className="text-sm text-muted">
-								{t(`rarity.${primaryRaritySlug}`)}
-							</span>
-						</div>
-					)}
-
-					{daily.sets.length > 0 && (
-						<div className="flex flex-col gap-0.5">
-							{[...daily.sets].reverse().map((set) => (
-								<span key={set} className="text-sm text-muted">
-									{set}
-								</span>
-							))}
-							{daily.pitchVariantImage && (
-								<span className="text-xs text-subtle">
-									{daily.pitchVariantImage}
-								</span>
-							)}
-						</div>
-					)}
-
-					{primaryArtist && (
-						<span className="text-xs text-subtle">
-							{t("result.art_by", { artist: primaryArtist })}
+		<div className="flex flex-col items-center w-full max-w-lg mx-auto px-4 pt-2 pb-6">
+			{/* Victory / Defeat banner */}
+			<div className="flex justify-center w-full mb-8">
+				{hasWon ? (
+					<div className="fabble-result-banner flex items-center gap-3">
+						<Sparkles className="fabble-sparkle-icon size-8 text-fabble-match" />
+						<span className="text-4xl font-black tracking-tight uppercase text-fabble-match">
+							{t("result.victory")}
 						</span>
-					)}
-				</div>
+						<Sparkles className="fabble-sparkle-icon fabble-sparkle-icon--delayed size-8 text-fabble-match" />
+					</div>
+				) : (
+					<div className="fabble-result-banner flex items-center gap-3">
+						<Droplets className="fabble-teardrop-icon size-7 text-fabble-no-match" />
+						<span className="text-4xl font-black tracking-tight uppercase text-fabble-no-match">
+							{t("result.defeat")}
+						</span>
+						<Droplets className="fabble-teardrop-icon fabble-teardrop-icon--delayed size-7 text-fabble-no-match" />
+					</div>
+				)}
 			</div>
 
-			{/* Result message */}
+			<RevealedCardMeta daily={daily} />
+
+			{/* Result message + rest of content */}
+			<div className="flex flex-col items-center gap-6 w-full mt-6">
 			<div className="flex flex-col items-center gap-2 text-center">
-				<span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-white">
+				<span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-on-primary">
 					{mode === "standard"
 						? t("puzzle.mode_label_standard")
 						: t("puzzle.mode_label_chaos")}
@@ -137,7 +173,6 @@ export function PostSolvePanel({
 
 			{/* ── Share image section ── */}
 			<div className="flex flex-col items-center gap-3 w-full">
-				{/* Optional username input */}
 				<div className="flex flex-col gap-1 w-full max-w-xs">
 					<label className="text-xs text-muted text-center">
 						{t("share.username_label")}{" "}
@@ -146,12 +181,12 @@ export function PostSolvePanel({
 					<input
 						type="text"
 						value={username}
-						onChange={(e) => setUsername(e.target.value)}
+						onChange={handleUsernameChange}
 						placeholder={t("share.username_placeholder")}
 						maxLength={20}
 						className="w-full px-3 py-2 text-sm rounded-md border border-border-primary bg-surface-muted text-body placeholder:text-subtle text-center focus:outline-none focus:ring-2 focus:ring-primary/50"
 					/>
-					<p className="text-[11px] text-subtle text-center">
+					<p className="text-xs text-subtle text-center">
 						{t("share.username_note")}
 					</p>
 				</div>
@@ -160,24 +195,19 @@ export function PostSolvePanel({
 					type="button"
 					onClick={shareImage}
 					disabled={capturing}
-					className="min-h-11 px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-wait"
+					className="min-h-11 px-6 py-2.5 bg-primary text-on-primary text-sm font-semibold rounded-md hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-wait"
 				>
 					{capturing ? t("share.generating") : t("share.share_result")}
 				</button>
 			</div>
 
 			<Countdown onExpired={() => navigate({ to: "/fabble/$mode", params: { mode } })} />
+			</div>{/* end gap-6 content wrapper */}
 
 			{/* ── Off-screen ShareCard (captured by snapdom) ── */}
 			<div
 				aria-hidden="true"
-				style={{
-					position: "fixed",
-					left: -1200,
-					top: 0,
-					pointerEvents: "none",
-					zIndex: -1,
-				}}
+				style={{ position: "fixed", left: -1200, top: 0, zIndex: -1, pointerEvents: "none" }}
 			>
 				<ShareCard
 					ref={cardRef}

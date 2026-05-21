@@ -16,6 +16,7 @@
 	"mode": {
 		"standard": "Standard",
 		"chaos": "Chaos",
+		"suffix": "mode",
 		"standard_description": "A curated selection of popular cards from the current meta",
 		"chaos_description": "Every printed card, including banned ones",
 		"guess_limit": "{{count}} guesses",
@@ -161,6 +162,8 @@
 		"guess_result": "Guess {{guessNumber}}: {{guessName}} — {{matchCount}} matches, {{partialCount}} partials. {{remaining}} guesses remaining."
 	},
 	"result": {
+		"victory": "Victory",
+		"defeat": "Defeat",
 		"won_one": "You got it in 1 guess!",
 		"won_other": "You got it in {{count}} guesses!",
 		"lost": "The card was…",
@@ -185,6 +188,7 @@
 		"played_today": "played today's Fabble —",
 		"hints_used": "Hints used: {{count}}/2",
 		"tagline": "A daily Flesh and Blood deduction puzzle",
+		"powered_by": "Powered by Fabkit.io",
 		"username_label": "Add your name to the share card",
 		"username_optional": "optional",
 		"username_placeholder": "Your name or @handle",

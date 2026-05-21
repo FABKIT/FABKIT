@@ -18,7 +18,7 @@ export function ModeSelect() {
 					<p className="text-base text-muted">{t("landing.description")}</p>
 					<Link
 						to="/fabble/rules"
-						className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm text-muted hover:text-heading hover:border-border-primary transition-colors min-h-[36px]"
+						className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm text-muted hover:text-heading hover:border-border-primary transition-colors min-h-9"
 					>
 						<HelpCircle className="size-4" />
 						{t("action.view_rules")}

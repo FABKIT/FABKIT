@@ -1,9 +1,46 @@
 import type {
+	DailyCard,
 	FabbleMode,
 	SessionData,
 	SessionState,
 	StreakData,
 } from "./types";
+
+// ─── Safe localStorage helpers ───────────────────────────────────────────────
+
+function safeLSWrite(key: string, value: unknown): void {
+	try {
+		localStorage.setItem(key, JSON.stringify(value));
+	} catch {
+		// Storage failure is non-fatal
+	}
+}
+
+function safeLSRemove(key: string): void {
+	try {
+		localStorage.removeItem(key);
+	} catch {
+		// Storage failure is non-fatal
+	}
+}
+
+// ─── Session write helpers ────────────────────────────────────────────────────
+
+export function saveSession(mode: FabbleMode, date: string, data: SessionData): void {
+	safeLSWrite(`fabble:session:${mode}:${date}`, data);
+}
+
+export function clearSession(mode: FabbleMode, date: string): void {
+	safeLSRemove(`fabble:session:${mode}:${date}`);
+}
+
+export function saveStreak(mode: FabbleMode, streak: StreakData): void {
+	safeLSWrite(`fabble:streak:${mode}`, streak);
+}
+
+export function markFirstVisitSeen(): void {
+	safeLSWrite("fabble:firstVisit", { seen: true, date: new Date().toISOString() });
+}
 
 // ─── Date arithmetic ──────────────────────────────────────────────────────────
 
@@ -13,7 +50,7 @@ import type {
  */
 export function getDateOffset(date: string, offsetDays: number): string {
 	const [year, month, day] = date.split("-").map(Number);
-	const ms = Date.UTC(year, month - 1, day) + offsetDays * 86_400_000;
+	const ms = Date.UTC(year as number, (month as number) - 1, day as number) + offsetDays * 86_400_000;
 	return new Date(ms).toISOString().slice(0, 10);
 }
 
@@ -66,66 +103,87 @@ export function loadFirstVisit(): boolean {
 
 /**
  * Builds a fresh session — no localStorage read.
- * startedAt is set here (the store layer handles Date access; this is acceptable
- * since this function is only called from the store).
+ * The daily card is passed in from the store (already computed by selectDaily).
  */
 export function buildFreshSession(
 	mode: FabbleMode,
 	date: string,
 	poolVersion: string,
+	daily: DailyCard,
 	startedAt?: string,
 ): SessionState {
 	return {
 		mode,
 		date,
 		poolVersion,
-		daily: null,
+		daily,
 		guesses: [],
 		status: "in_progress",
 		startedAt: startedAt ?? new Date().toISOString(),
 		revealedHintCount: 0,
-		workerHints: null,
 	};
 }
 
 /**
  * Initializes or restores a game session for the given mode and date.
  * Reads from localStorage to check for an existing session.
- * On pool version mismatch: discards session guesses, preserves streak.
+ *
+ * Session continuity: if a stored session exists for today and includes the
+ * daily card, that card is restored directly — independent of poolVersion.
+ * This means a pool update pushed mid-day never disrupts an active player.
+ * The new pool takes effect the following day when the date changes.
  */
 export function initSession(
 	mode: FabbleMode,
 	date: string,
 	poolVersion: string,
+	daily: DailyCard,
 ): SessionState {
 	const stored = loadSession(mode, date);
 
 	if (stored !== null) {
-		// Pool version mismatch: discard session, preserve streak
-		if (stored.poolVersion !== poolVersion) {
-			console.warn(
-				`[Fabble] Pool version mismatch for ${mode}:${date}. ` +
-					`Session was ${stored.poolVersion}, current is ${poolVersion}. ` +
-					`Session invalidated; streak preserved.`,
-			);
-			return buildFreshSession(mode, date, poolVersion);
-		}
+		// Restore the stored daily card if present (session continuity guarantee).
+		// If absent (sessions from before this version), fall back to the freshly
+		// computed daily — same result for same date + pool.
+		const restoredDaily = stored.daily ?? daily;
 
-		// Valid stored session: restore daily and workerHints from the Worker's reveal payload
 		return {
 			mode,
 			date,
-			poolVersion: stored.poolVersion,
-			daily: stored.reveal ?? null,
+			poolVersion,
+			daily: restoredDaily,
 			guesses: stored.guesses,
 			status: stored.status,
 			startedAt: stored.startedAt,
 			revealedHintCount: stored.revealedHintCount ?? 0,
-			workerHints: stored.workerHints ?? null,
 		};
 	}
 
-	return buildFreshSession(mode, date, poolVersion);
+	return buildFreshSession(mode, date, poolVersion, daily);
+}
+
+// ─── Revealed hint count persistence ─────────────────────────────────────────
+
+/**
+ * Updates only the revealedHintCount in the stored session.
+ * Call from the store after a hint is revealed.
+ */
+export function updateRevealedHintCount(
+	mode: FabbleMode,
+	date: string,
+	count: number,
+): void {
+	try {
+		const raw = localStorage.getItem(`fabble:session:${mode}:${date}`);
+		if (!raw) return;
+		const session = JSON.parse(raw) as SessionData;
+		localStorage.setItem(
+			`fabble:session:${mode}:${date}`,
+			JSON.stringify({ ...session, revealedHintCount: count }),
+		);
+	} catch {
+		// Silently ignore — hint count is non-critical
+	}
 }
 
 // ─── Session completion ───────────────────────────────────────────────────────

@@ -64,7 +64,7 @@ export function HintPanel({
 								aria-label={t("hint.aria.reveal", {
 									label: t(hint.labelKey),
 								})}
-								className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-white hover:opacity-90 transition-opacity min-h-8"
+								className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-on-primary hover:opacity-90 transition-opacity min-h-8"
 							>
 								<Eye className="size-3 shrink-0" />
 								{t("hint.reveal", { label: t(hint.labelKey) })}

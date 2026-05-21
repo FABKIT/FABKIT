@@ -7,17 +7,21 @@ import { PuzzleToolbar } from "@fabkit/apps/fabble/components/Puzzle/PuzzleToolb
 import { RulesModal } from "@fabkit/apps/fabble/components/Rules/RulesModal";
 import { useFabbleGame } from "@fabkit/apps/fabble/hooks/useFabbleGame";
 import { POST_SOLVE_DELAY_MS } from "@fabkit/apps/fabble/lib/constants";
-import type { CanonicalCard, FabbleMode } from "@fabkit/apps/fabble/lib/types";
+import { buildChaosPool, buildStandardSearchPool } from "@fabkit/apps/fabble/lib/pool";
+import {
+	STANDARD_SELECTION,
+	STANDARD_SELECTION_VERSION,
+} from "@fabkit/apps/fabble/lib/standardSelection.generated";
+import type { CanonicalCard, FabbleMode, RawCard } from "@fabkit/apps/fabble/lib/types";
 import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabbleStore";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 // ─── Loader data type ─────────────────────────────────────────────────────────
 
 type ModeLoaderData = {
 	pool: CanonicalCard[];
-	version: string;
 };
 
 // ─── Card type pills ──────────────────────────────────────────────────────────
@@ -43,21 +47,31 @@ export const Route = createFileRoute("/fabble/$mode")({
 		}
 	},
 	loader: async ({ params }): Promise<ModeLoaderData> => {
-		const mode = params.mode as FabbleMode; // safe: guarded by beforeLoad
-		const base = import.meta.env.BASE_URL ?? "/";
-		const filename =
-			mode === "chaos" ? "pool-chaos.json" : "pool-standard.json";
+		const mode = params.mode as FabbleMode;
 
-		const poolRes = await fetch(`${base}${filename}`);
-		if (!poolRes.ok) {
-			throw new Error(`Failed to fetch ${filename}: ${poolRes.status}`);
+		// Dynamic import: loads the card package lazily (not in the initial bundle).
+		// @flesh-and-blood/cards is in dependencies so it's available at runtime.
+		const { cards } = await import("@flesh-and-blood/cards");
+		const rawCards = cards as unknown as RawCard[];
+
+		let searchPool: CanonicalCard[];
+		let dailyPool: CanonicalCard[];
+
+		if (mode === "chaos") {
+			const chaosPool = buildChaosPool(rawCards);
+			searchPool = chaosPool;
+			// Chaos daily: all eligible non-banned cards (players can still guess banned cards)
+			dailyPool = chaosPool.filter((c) => !c.isBanned && !c.isAmbiguous);
+		} else {
+			searchPool = buildStandardSearchPool(rawCards);
+			// Standard daily: the curated 350-card selection from fabble-admin
+			dailyPool = STANDARD_SELECTION as unknown as CanonicalCard[];
 		}
-		const data = await poolRes.json();
 
 		// Populate store before component renders — eliminates useEffect init cycle
-		useFabbleStore.getState().initMode(mode, data.pool, data.version);
+		useFabbleStore.getState().initMode(mode, searchPool, dailyPool, STANDARD_SELECTION_VERSION);
 
-		return { pool: data.pool, version: data.version };
+		return { pool: searchPool };
 	},
 	component: FabbleModeRouteComponent,
 });
@@ -67,14 +81,14 @@ function CardTypePills() {
 
 	return (
 		<div className="flex flex-col gap-2 w-full max-w-2xl mx-auto px-4 pb-2">
-			<span className="text-[10px] font-semibold text-subtle uppercase tracking-wide">
+			<span className="text-xs font-semibold text-subtle uppercase tracking-wide">
 				{t("mode.eligible_types_label")}
 			</span>
-			<div className="flex flex-wrap lg:flex-nowrap gap-1.5 overflow-x-auto">
+			<div className="flex gap-1 w-full min-w-0">
 				{CARD_TYPES.map((key) => (
 					<span
 						key={key}
-						className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-surface border border-border text-muted whitespace-nowrap"
+						className="flex-1 min-w-0 flex items-center justify-center text-center px-1 py-0.5 rounded-full text-xs font-medium bg-surface border border-border-primary text-muted leading-tight"
 					>
 						{t(key)}
 					</span>
@@ -91,7 +105,6 @@ function FabbleModeRouteComponent() {
 	const resetSession = useFabbleStore((s) => s.resetSession);
 
 	const [showRules, setShowRules] = useState(false);
-	const [showPostSolve, setShowPostSolve] = useState(false);
 
 	const {
 		daily,
@@ -103,9 +116,9 @@ function FabbleModeRouteComponent() {
 		firstVisitPending,
 		submitGuess,
 		submitError,
-		isSubmitting,
 		dismissFirstVisit,
 		suppressGridAnimation,
+		remainingGuesses,
 		hints,
 		availableHintCount,
 		revealedHintCount,
@@ -113,7 +126,15 @@ function FabbleModeRouteComponent() {
 		activeRotation,
 	} = useFabbleGame(mode);
 
-	// Show post-solve panel after tile flip animation, or immediately if restored
+	// On back-navigation the component re-mounts while status is already won/lost —
+	// initialise directly to true so there is no blank gap or animation delay.
+	const [showPostSolve, setShowPostSolve] = useState(
+		() => status === "won" || status === "lost",
+	);
+
+	// When the player actively wins/loses during this session, reveal post-solve
+	// after the tile-flip animation. suppressGridAnimation skips the delay for
+	// sessions restored from localStorage.
 	useEffect(() => {
 		if (status === "won" || status === "lost") {
 			if (suppressGridAnimation) {
@@ -129,24 +150,35 @@ function FabbleModeRouteComponent() {
 		setShowPostSolve(false);
 	}, [status, suppressGridAnimation]);
 
+	// Recovery: if the store says the game is already over (e.g. corrupted session
+	// restored as in_progress), surfacing game_over forces the post-solve panel open
+	// so the user is never stuck on a broken unsubmittable input.
+	const handleSubmit = useCallback(
+		(name: string) => {
+			const { gameOver } = submitGuess(name);
+			if (gameOver) setShowPostSolve(true);
+		},
+		[submitGuess],
+	);
+
 	// Memoize so useAutocomplete's useMemo doesn't bust on every parent re-render
 	const alreadyGuessed = useMemo(() => guesses.map((g) => g.name), [guesses]);
 
-	function handleReset() {
+	const handleReset = useCallback(() => {
 		resetSession(mode);
 		setShowPostSolve(false);
-	}
+	}, [resetSession, mode]);
 
-	function handleCloseRules() {
+	const handleCloseRules = useCallback(() => {
 		setShowRules(false);
 		if (firstVisitPending) {
 			dismissFirstVisit();
 		}
-	}
+	}, [firstVisitPending, dismissFirstVisit]);
 
 	if (status === "idle") {
 		return (
-			<div className="flex items-center justify-center min-h-[200px] w-full">
+			<div className="flex items-center justify-center min-h-48 w-full">
 				<span className="text-muted text-sm">{t("landing.title")}…</span>
 			</div>
 		);
@@ -183,10 +215,9 @@ function FabbleModeRouteComponent() {
 						<GuessInput
 							pool={pool}
 							alreadyGuessed={alreadyGuessed}
-							onSubmit={submitGuess}
+							onSubmit={handleSubmit}
 							submitError={submitError}
-							disabled={isSubmitting}
-							guessesRemaining={Math.max(0, guessLimit - guessCount)}
+							guessesRemaining={remainingGuesses}
 						/>
 					) : showPostSolve && daily ? (
 						<PostSolvePanel
@@ -219,4 +250,3 @@ function FabbleModeRouteComponent() {
 		</div>
 	);
 }
-

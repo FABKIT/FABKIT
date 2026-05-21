@@ -1,5 +1,5 @@
 import { snapdom } from "@zumer/snapdom";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getUsername, setUsername as storeUsername } from "@fabkit/apps/fabble/lib/usernameStorage";
 
 export interface UseShareImageResult {
@@ -15,13 +15,22 @@ export function useShareImage(): UseShareImageResult {
 	const [capturing, setCapturing] = useState(false);
 	const [username, setUsernameState] = useState<string>(getUsername);
 
-	function setUsername(value: string) {
+	// Track mounted state to prevent state updates after unmount
+	const mountedRef = useRef(true);
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+		};
+	}, []);
+
+	const setUsername = useCallback((value: string) => {
 		const trimmed = value.slice(0, 20);
 		setUsernameState(trimmed);
 		storeUsername(trimmed);
-	}
+	}, []);
 
-	async function shareImage(): Promise<void> {
+	const shareImage = useCallback(async (): Promise<void> => {
 		const el = cardRef.current;
 		if (!el || capturing) return;
 
@@ -48,15 +57,18 @@ export function useShareImage(): UseShareImageResult {
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
-				setTimeout(() => URL.revokeObjectURL(url), 1000);
+				// Revoke after the browser has had time to initiate the download
+				const revoke = setTimeout(() => URL.revokeObjectURL(url), 1000);
+				// Clean up if unmounted before timer fires
+				if (!mountedRef.current) clearTimeout(revoke);
 			}
 		} catch (err) {
 			if (err instanceof DOMException && err.name === "AbortError") return;
 			console.error("[Fabble] Share image failed:", err);
 		} finally {
-			setCapturing(false);
+			if (mountedRef.current) setCapturing(false);
 		}
-	}
+	}, [capturing]);
 
 	return { cardRef, username, setUsername, capturing, shareImage };
 }

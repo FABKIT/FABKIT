@@ -45,6 +45,12 @@
 	--color-border: #e5e7eb;
 	--color-border-primary: rgba(166, 134, 74, 0.2);
 
+	/* On-primary: text color for elements sitting on a primary-colored background */
+	--color-on-primary: #ffffff;
+
+	/* Overlay: semi-transparent backdrop behind modals and drawers */
+	--color-overlay: rgba(0, 0, 0, 0.5);
+
 	--breakpoint-xs: 30rem;
 
 	/* Fonts */
@@ -243,6 +249,99 @@
 	animation:
 		fabble-card-sparkle 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both,
 		fabble-card-glow-loop 2.8s ease-in-out 1.2s infinite;
+}
+
+/* Cap the rules modal to 90% of the viewport height */
+.fabble-modal-panel {
+	max-height: 90vh;
+}
+
+/* Tight, dark drop-shadow so the logo reads against any background */
+.fabble-logo-shadow {
+	filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+/* Smaller text for set tiles that have 4–5 printings */
+.fabble-set-tight {
+	font-size: 0.625rem;
+	line-height: 1.2;
+}
+
+/* Even smaller for 6+ printings */
+.fabble-set-tighter {
+	font-size: 0.55rem;
+	line-height: 1.15;
+}
+
+@keyframes fabble-result-banner {
+	0% {
+		opacity: 0;
+		transform: scale(0.7);
+	}
+	60% {
+		transform: scale(1.08);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.fabble-result-banner {
+	animation: fabble-result-banner 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Victory sparkle icons ─────────────────────────────────── */
+@keyframes fabble-sparkle-in {
+	0% { opacity: 0; transform: scale(0) rotate(-20deg); }
+	70% { transform: scale(1.25) rotate(8deg); }
+	100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes fabble-sparkle-pulse {
+	0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+	50% { opacity: 0.55; transform: scale(0.8) rotate(14deg); }
+}
+
+.fabble-sparkle-icon {
+	animation:
+		fabble-sparkle-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
+		fabble-sparkle-pulse 2.6s ease-in-out 0.7s infinite;
+}
+
+.fabble-sparkle-icon--delayed {
+	animation-delay: 0.15s, 0.9s;
+}
+
+/* ── Defeat teardrop icons ─────────────────────────────────── */
+@keyframes fabble-teardrop-in {
+	0% { opacity: 0; transform: translateY(-10px); }
+	60% { transform: translateY(2px); }
+	100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fabble-teardrop-drip {
+	0%, 35%, 100% { transform: translateY(0); opacity: 1; }
+	65% { transform: translateY(5px); opacity: 0.6; }
+	80% { transform: translateY(-1px); opacity: 1; }
+}
+
+.fabble-teardrop-icon {
+	animation:
+		fabble-teardrop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both,
+		fabble-teardrop-drip 2.4s ease-in-out 0.65s infinite;
+}
+
+.fabble-teardrop-icon--delayed {
+	animation-delay: 0.12s, 0.77s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fabble-result-banner,
+	.fabble-sparkle-icon,
+	.fabble-teardrop-icon {
+		animation: none;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

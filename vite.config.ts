@@ -20,7 +20,11 @@ export default defineConfig({
 		rolldownOptions: {
 			output: {
 				advancedChunks: {
-					groups: [{ name: "tiptap-emoji", test: /@tiptap\/extension-emoji/ }],
+					groups: [
+						{ name: "tiptap-emoji", test: /@tiptap\/extension-emoji/ },
+						// fab-cards is ~9MB — excluded from PWA precache, loaded lazily by Fabble
+						{ name: "fab-cards", test: /@flesh-and-blood\/cards/ },
+					],
 				},
 			},
 		},
@@ -58,6 +62,9 @@ export default defineConfig({
 			},
 			workbox: {
 				cleanupOutdatedCaches: true,
+				// Exclude the @flesh-and-blood/cards chunk (~9MB) from precaching.
+				// It's loaded lazily when the user plays Fabble; the browser cache handles it.
+				globIgnores: ["**/fab-cards*.js"],
 			},
 			includeAssets: [
 				"favicon.ico",

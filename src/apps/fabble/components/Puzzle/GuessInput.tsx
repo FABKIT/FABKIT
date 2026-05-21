@@ -9,7 +9,6 @@ interface GuessInputProps {
 	alreadyGuessed: string[];
 	onSubmit: (name: string) => void;
 	submitError: string | null;
-	disabled?: boolean;
 	guessesRemaining: number;
 }
 
@@ -18,11 +17,14 @@ export function GuessInput({
 	alreadyGuessed,
 	onSubmit,
 	submitError,
-	disabled = false,
 	guessesRemaining,
 }: GuessInputProps) {
 	const { t } = useTranslation("fabble");
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	const refocusInput = useCallback(() => {
+		setTimeout(() => inputRef.current?.focus(), 0);
+	}, []);
 
 	const {
 		inputValue,
@@ -36,15 +38,15 @@ export function GuessInput({
 	} = useAutocomplete(pool, alreadyGuessed, (name) => {
 		onSubmit(name);
 		clearInput();
-		setTimeout(() => inputRef.current?.focus(), 0);
+		refocusInput();
 	});
 
 	const handleSubmit = useCallback(() => {
 		if (inputValue.trim().length === 0) return;
 		if (activeIndex >= 0 && activeIndex < results.length) {
 			const item = results[activeIndex];
-			if (!item.alreadyGuessed) {
-				selectItem(item.name);
+			if (!item?.alreadyGuessed) {
+				selectItem(item?.name ?? "");
 				return;
 			}
 		}
@@ -54,21 +56,25 @@ export function GuessInput({
 		if (match) {
 			onSubmit(match.name);
 			clearInput();
-			setTimeout(() => inputRef.current?.focus(), 0);
+			refocusInput();
 		} else if (results.length > 0) {
 			const topEnabled = results.find((r) => !r.alreadyGuessed);
 			if (topEnabled) {
 				selectItem(topEnabled.name);
 			}
 		}
-	}, [inputValue, activeIndex, results, pool, onSubmit, selectItem, clearInput]);
+	}, [inputValue, activeIndex, results, pool, onSubmit, selectItem, clearInput, refocusInput]);
+
+	const handleDropdownSelect = useCallback((name: string) => {
+		selectItem(name);
+		refocusInput();
+	}, [selectItem, refocusInput]);
 
 	const canSubmit = useMemo(
 		() =>
-			!disabled &&
 			inputValue.trim().length > 0 &&
 			(activeIndex >= 0 || results.some((r) => !r.alreadyGuessed)),
-		[disabled, inputValue, activeIndex, results],
+		[inputValue, activeIndex, results],
 	);
 
 	return (
@@ -89,18 +95,14 @@ export function GuessInput({
 						onChange={(e) => setInputValue(e.target.value)}
 						onKeyDown={handleKeyDown}
 						placeholder={t("input.placeholder")}
-						disabled={disabled}
-						className="w-full px-3 py-2.5 min-h-11 border border-border rounded-md text-sm text-body bg-surface focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+						className="w-full px-3 py-2.5 min-h-11 border border-border rounded-md text-sm text-body bg-surface focus:outline-none focus:ring-2 focus:ring-primary"
 						autoComplete="off"
 					/>
 					{isOpen && results.length > 0 && (
 						<AutocompleteDropdown
 							items={results}
 							activeIndex={activeIndex}
-							onSelect={(name) => {
-								selectItem(name);
-								setTimeout(() => inputRef.current?.focus(), 0);
-							}}
+							onSelect={handleDropdownSelect}
 						/>
 					)}
 				</div>
@@ -109,7 +111,7 @@ export function GuessInput({
 					onClick={handleSubmit}
 					disabled={!canSubmit}
 					aria-label={t("aria.submit_guess")}
-					className="w-full min-h-11 px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+					className="w-full min-h-11 px-4 py-2.5 bg-primary text-on-primary text-sm font-semibold rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					{t("input.submit")}
 				</button>
@@ -120,7 +122,7 @@ export function GuessInput({
 					role="status"
 					aria-live="polite"
 					aria-atomic="true"
-					className="text-xs text-fabble-no-match-text bg-fabble-no-match rounded px-2 py-1 min-h-[1.5rem] empty:hidden"
+					className="text-xs text-fabble-no-match-text bg-fabble-no-match rounded px-2 py-1 min-h-6 empty:hidden"
 				>
 					{submitError}
 				</p>
@@ -128,5 +130,3 @@ export function GuessInput({
 		</div>
 	);
 }
-
-

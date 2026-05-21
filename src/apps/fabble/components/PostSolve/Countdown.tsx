@@ -25,7 +25,7 @@ export function Countdown({ onExpired }: CountdownProps) {
 			<button
 				type="button"
 				onClick={onExpired}
-				className="min-h-11 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
+				className="min-h-11 px-4 py-2 bg-primary text-on-primary text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
 			>
 				{t("result.reload")}
 			</button>

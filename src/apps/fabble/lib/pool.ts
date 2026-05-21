@@ -68,14 +68,10 @@ export function computeEarliestSetIndex(setIdentifiers: string[]): number {
 	return min; // Infinity if all codes are unknown
 }
 
-// ─── Standard pool filter ─────────────────────────────────────────────────────
+// ─── Raw card filter (shared pre-processing step) ────────────────────────────
 
-/**
- * Standard pool: all guessable cards (correct types, all rarities, includes banned).
- * Banned cards are included so players can search and guess them; daily selection
- * filters them out at runtime via the isBanned flag on each CanonicalCard.
- */
-export function filterForStandard(cards: RawCard[]): RawCard[] {
+/** Removes card types that are not meaningful for the deduction puzzle. */
+export function filterEligible(cards: RawCard[]): RawCard[] {
 	return cards.filter((card) => {
 		if (card.types.some((t: string) => EXCLUDED_TYPES.has(t))) return false;
 		if (card.isCardBack === true) return false;
@@ -83,21 +79,47 @@ export function filterForStandard(cards: RawCard[]): RawCard[] {
 	});
 }
 
+// ─── Standard pool filter ─────────────────────────────────────────────────────
+
+/**
+ * Standard search pool: all eligible cards (correct types, all rarities,
+ * includes banned). Banned cards are included so players can search and guess
+ * them; the daily selection uses a separate curated pool (standardSelection.generated.ts).
+ */
+export function filterForStandard(cards: RawCard[]): RawCard[] {
+	return filterEligible(cards);
+}
+
 // ─── Chaos pool filter ────────────────────────────────────────────────────────
 
 /**
  * Returns the subset of raw card objects eligible for the Chaos pool.
- * All cards (including banned) pass except for excluded types and promos.
+ * All cards (including banned) pass except for excluded types and card backs.
  */
 export function filterForChaos(cards: RawCard[]): RawCard[] {
-	return cards.filter((card) => {
-		// Same type exclusions as Standard
-		if (card.types.some((t: string) => EXCLUDED_TYPES.has(t))) return false;
-		if (card.isCardBack === true) return false;
-		// NO rarity exclusion
-		// NO ban exclusion (Chaos includes banned cards)
-		return true;
-	});
+	return filterEligible(cards);
+}
+
+// ─── Runtime pool builders ────────────────────────────────────────────────────
+// These are called in the route loader at runtime (dynamic import of card data).
+
+/**
+ * Builds the Standard search pool from raw card data.
+ * Returns all standard-legal canonical cards (including banned) for autocomplete
+ * and guess validation. The daily card comes from the separate curated selection.
+ */
+export function buildStandardSearchPool(rawCards: RawCard[]): CanonicalCard[] {
+	const filtered = filterForStandard(rawCards);
+	return groupByName(filtered, uniformPopularityProvider);
+}
+
+/**
+ * Builds the Chaos pool from raw card data.
+ * Returns all eligible canonical cards — both search pool and daily pool are the same.
+ */
+export function buildChaosPool(rawCards: RawCard[]): CanonicalCard[] {
+	const filtered = filterForChaos(rawCards);
+	return groupByName(filtered, uniformPopularityProvider);
 }
 
 // ─── Group by name (rainbow collapse) ────────────────────────────────────────

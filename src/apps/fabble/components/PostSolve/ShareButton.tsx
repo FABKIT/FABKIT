@@ -26,7 +26,7 @@ export const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(
 				type="button"
 				onClick={handleShare}
 				aria-label={t("aria.share_result")}
-				className="min-h-11 px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
+				className="min-h-11 px-6 py-2.5 bg-primary text-on-primary text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
 			>
 				{copyError ? t("share.copy_error") : copied ? t("share.copied") : t("result.share")}
 			</button>

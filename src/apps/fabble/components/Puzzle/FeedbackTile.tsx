@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Ban, Check, X } from "lucide-react";
-import { useCallback } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { formatPitchValue } from "@fabkit/apps/fabble/lib/displayValues";
 import { NOTCLASSED_LABEL_KEY } from "@fabkit/apps/fabble/lib/feedback";
@@ -40,14 +40,18 @@ function getTileClasses(cell: FeedbackCell, isWinningRow?: boolean): string {
 }
 
 function SetComparisonList({ comparisons }: { comparisons: SetComparison[] }) {
+	const sizeClass =
+		comparisons.length >= 6 ? "fabble-set-tighter" :
+		comparisons.length >= 4 ? "fabble-set-tight" :
+		"text-xs";
 	return (
-		<div className="flex flex-col gap-0.5 w-full">
+		<div className={`flex flex-col gap-px w-full ${sizeClass}`}>
 			{comparisons.map((c) => (
 				<span
 					key={c.name}
-					className="text-xs font-semibold leading-tight w-full text-left flex items-center gap-0.5"
+					className="font-semibold leading-tight w-full text-left flex items-center gap-0.5"
 				>
-					<span className="break-words flex-1">{c.name}</span>
+					<span className="flex-1">{c.name}</span>
 					{c.state === "match" ? (
 						<Check className="size-2.5 shrink-0" />
 					) : c.state === "higher" ? (
@@ -63,7 +67,7 @@ function SetComparisonList({ comparisons }: { comparisons: SetComparison[] }) {
 
 export function FeedbackTile({
 	cell,
-	column: _column,
+	column: columnId,
 	columnLabel,
 	guessValue,
 	animate = false,
@@ -79,7 +83,7 @@ export function FeedbackTile({
 		cell.state === "match" && (cell as MatchCell).rainbowHint === true;
 
 	const setComparisons =
-		_column === "set" && (cell.state === "match" || cell.state === "no-match")
+		columnId === "set" && (cell.state === "match" || cell.state === "no-match")
 			? (cell as MatchCell | NoMatchCell).setComparisons
 			: undefined;
 
@@ -88,7 +92,7 @@ export function FeedbackTile({
 	if (cell.state === "match") {
 		if (isRainbowMatch) {
 			ariaLabel = t("aria.pitch_rainbow");
-		} else if (_column === "pitch" && cell.value === "—") {
+		} else if (columnId === "pitch" && cell.value === "—") {
 			ariaLabel = t("aria.pitch_match_no_pitch");
 		} else {
 			ariaLabel = t("aria.match", {
@@ -103,9 +107,9 @@ export function FeedbackTile({
 			overlapping: cell.overlapping?.join(", ") ?? cell.guessValue,
 		});
 	} else if (cell.state === "no-match") {
-		if (_column === "pitch" && cell.revealedDailyValue !== undefined) {
+		if (columnId === "pitch" && cell.revealedDailyValue !== undefined) {
 			ariaLabel = t("aria.pitch_no_match", {
-				value: cell.revealedDailyValue,
+				value: guessValue,
 				revealedValue: cell.revealedDailyValue,
 			});
 		} else if (cell.direction === "higher") {
@@ -130,8 +134,8 @@ export function FeedbackTile({
 		? t(NOTCLASSED_LABEL_KEY)
 		: guessValue;
 
-	const renderValue = useCallback(() => {
-		if (_column === "set" && setComparisons && setComparisons.length > 0) {
+	const tileContent = useMemo((): ReactNode => {
+		if (columnId === "set" && setComparisons && setComparisons.length > 0) {
 			return <SetComparisonList comparisons={setComparisons} />;
 		}
 
@@ -143,8 +147,8 @@ export function FeedbackTile({
 					</span>
 				);
 			}
-			const displayVal =
-				_column === "pitch" ? formatPitchValue(cell.value) : `${cell.value}`;
+			const rawVal = columnId === "pitch" ? formatPitchValue(cell.value) : `${cell.value}`;
+			const displayVal = rawVal === NOTCLASSED_LABEL_KEY ? t(NOTCLASSED_LABEL_KEY) : rawVal;
 			return (
 				<span className="text-xs font-bold leading-tight w-full text-left break-words">
 					{displayVal}
@@ -172,7 +176,7 @@ export function FeedbackTile({
 			}
 
 			const displayVal =
-				_column === "pitch" || cell.direction !== undefined
+				columnId === "pitch" || cell.direction !== undefined
 					? resolvedGuessValue
 					: cell.revealedDailyValue !== undefined
 						? `${cell.revealedDailyValue}`
@@ -213,7 +217,7 @@ export function FeedbackTile({
 		}
 
 		return null;
-	}, [cell, _column, resolvedGuessValue, t, setComparisons, isRainbowMatch]);
+	}, [cell, columnId, resolvedGuessValue, t, setComparisons, isRainbowMatch]);
 
 	return (
 		<div
@@ -221,7 +225,7 @@ export function FeedbackTile({
 			className={[
 				tileClasses,
 				animClass,
-				"min-h-20 w-full p-2 rounded-md font-semibold flex flex-col items-start justify-between gap-1",
+				"h-28 w-full p-2 rounded-md font-semibold flex flex-col items-start justify-between gap-1 overflow-hidden",
 			]
 				.filter(Boolean)
 				.join(" ")}
@@ -236,7 +240,7 @@ export function FeedbackTile({
 				{columnLabel}
 			</span>
 			<div className="flex flex-col items-start justify-center flex-1 w-full">
-				{renderValue()}
+				{tileContent}
 			</div>
 		</div>
 	);

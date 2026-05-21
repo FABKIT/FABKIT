@@ -32,7 +32,7 @@ export function getCardColumnValues(
 	return {
 		type: card.types.join(" / ") || "—",
 		class: card.classes.map(humanizeClass).join(" / ") || "—",
-		talent: card.talents.length > 0 ? card.talents.join(" / ") : "None",
+		talent: card.talents.length > 0 ? card.talents.join(" / ") : "—",
 		pitch: formatPitchSet(card.pitchSet),
 		cost: formatNumericStat(card.cost),
 		power: formatNumericStat(card.power),

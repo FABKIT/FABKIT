@@ -23,9 +23,8 @@ export interface UseFabbleGameResult {
 	remainingGuesses: number;
 	streak: StreakData;
 	firstVisitPending: boolean;
-	submitGuess: (name: string) => void;
+	submitGuess: (name: string) => { gameOver: boolean };
 	submitError: string | null;
-	isSubmitting: boolean;
 	dismissFirstVisit: () => void;
 	suppressGridAnimation: boolean;
 	hints: Hint[];
@@ -40,7 +39,6 @@ export interface UseFabbleGameResult {
 export function useFabbleGame(mode: FabbleMode): UseFabbleGameResult {
 	const { t } = useTranslation("fabble");
 	const [submitError, setSubmitError] = useState<string | null>(null);
-	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	// Individual selectors — never whole-store read
 	const daily = useFabbleStore((s) => s.daily);
@@ -54,22 +52,18 @@ export function useFabbleGame(mode: FabbleMode): UseFabbleGameResult {
 	const revealedHintCount = useFabbleStore((s) => s.revealedHintCount);
 	const storeRevealHint = useFabbleStore((s) => s.revealHint);
 	const activeRotation = useFabbleStore((s) => s.activeRotation);
-	const workerHints = useFabbleStore((s) => s.workerHints);
 
 	const guessLimit = GUESS_LIMITS[mode] ?? 8;
 	const guessCount = guesses.length;
-	const remainingGuesses = Math.max(0, guessLimit - guessCount);
+	const remainingGuesses = useMemo(
+		() => Math.max(0, guessLimit - guessCount),
+		[guessLimit, guessCount],
+	);
 
 	const hints = useMemo((): Hint[] => {
-		if (workerHints) {
-			return [
-				{ id: "rarity", labelKey: "hint.label.rarity", value: workerHints.rarity ?? "—" },
-				{ id: "set", labelKey: "hint.label.set", value: workerHints.firstSet ?? "—" },
-			];
-		}
 		if (daily) return generateHints(daily);
 		return [];
-	}, [workerHints, daily]);
+	}, [daily]);
 
 	const availableHintCount = useMemo(
 		() => getAvailableHintCount(guessCount, mode),
@@ -77,36 +71,28 @@ export function useFabbleGame(mode: FabbleMode): UseFabbleGameResult {
 	);
 
 	const submitGuess = useCallback(
-		async (name: string): Promise<void> => {
-			if (isSubmitting) return;
-			setIsSubmitting(true);
-			try {
-				const result = await storeSubmitGuess(name);
-				if (result.ok) {
-					setSubmitError(null);
-				} else {
-					switch (result.error) {
-						case "unknown_card":
-							setSubmitError(t("error.unknown_card"));
-							break;
-						case "already_guessed":
-							setSubmitError(t("error.already_guessed"));
-							break;
-						case "network_error":
-							setSubmitError(t("error.network_error"));
-							break;
-						case "game_over":
-							setSubmitError(null);
-							break;
-					}
-				}
-			} catch {
-				setSubmitError(t("error.network_error"));
-			} finally {
-				setIsSubmitting(false);
+		(name: string): { gameOver: boolean } => {
+			const result = storeSubmitGuess(name);
+			if (result.ok) {
+				setSubmitError(null);
+				return { gameOver: false };
 			}
+			switch (result.error) {
+				case "unknown_card":
+					setSubmitError(t("error.unknown_card"));
+					break;
+				case "already_guessed":
+					setSubmitError(t("error.already_guessed"));
+					break;
+				case "game_over":
+					setSubmitError(null);
+					break;
+				default:
+					break;
+			}
+			return { gameOver: result.error === "game_over" };
 		},
-		[isSubmitting, storeSubmitGuess, t],
+		[storeSubmitGuess, t],
 	);
 
 	return {
@@ -120,7 +106,6 @@ export function useFabbleGame(mode: FabbleMode): UseFabbleGameResult {
 		firstVisitPending,
 		submitGuess,
 		submitError,
-		isSubmitting,
 		dismissFirstVisit,
 		suppressGridAnimation,
 		hints,

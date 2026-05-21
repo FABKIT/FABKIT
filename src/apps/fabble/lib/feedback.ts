@@ -58,6 +58,15 @@ function evaluateClass(guess: CanonicalCard, daily: DailyCard): FeedbackCell {
 		};
 	}
 
+	// Daily has no real class (NotClassed/empty) but the guess has one →
+	// show the guessed class + ban icon so the player knows to exclude class cards
+	const dailyHasNoRealClass =
+		dSet.size === 0 || [...dSet].every((c) => c === "NotClassed");
+	const guessHasRealClass = [...gSet].some((c) => c !== "NotClassed");
+	if (dailyHasNoRealClass && guessHasRealClass) {
+		return { state: "no-match", naDaily: true };
+	}
+
 	return { state: "no-match" };
 }
 
@@ -78,7 +87,6 @@ function evaluateTalent(guess: CanonicalCard, daily: DailyCard): FeedbackCell {
 	}
 
 	// Partial: any overlap between non-empty arrays
-	// One empty / one non-empty → no overlap → NoMatchCell (no special case needed)
 	const overlapping = [...gSet].filter((t) => dSet.has(t));
 	if (overlapping.length > 0) {
 		return {
@@ -86,6 +94,12 @@ function evaluateTalent(guess: CanonicalCard, daily: DailyCard): FeedbackCell {
 			guessValue: gArr.join(" / "),
 			overlapping,
 		};
+	}
+
+	// Daily has no talent but the guess has one →
+	// show the guessed talent + ban icon so the player knows to exclude talent cards
+	if (gArr.length > 0 && dArr.length === 0) {
+		return { state: "no-match", naDaily: true };
 	}
 
 	return { state: "no-match" };
@@ -171,8 +185,9 @@ function evaluateLifeOrIntellect(
 	guess: CanonicalCard,
 	daily: DailyCard,
 ): FeedbackCell {
-	const g = guess.lifeOrIntellect;
-	const d = daily.lifeOrIntellect;
+	// Normalize null → undefined: the generated JSON serialises absent fields as null
+	const g = guess.lifeOrIntellect ?? undefined;
+	const d = daily.lifeOrIntellect ?? undefined;
 
 	// Both absent: confirmed neither card has this stat
 	if (g === undefined && d === undefined) return { state: "na" };
@@ -225,12 +240,19 @@ function evaluateKeyword(guess: CanonicalCard, daily: DailyCard): FeedbackCell {
 	return evaluateTagSet(guess.keywords, daily.keywords);
 }
 
+function isPromoSet(name: string): boolean {
+	return name.toLowerCase().includes("promo");
+}
+
 function buildSetComparisons(
 	guess: CanonicalCard,
 	daily: DailyCard,
 ): SetComparison[] {
 	const dSets = new Set(daily.sets);
 	const comparisons = guess.sets.map((setName) => {
+		// Promos span all time periods — always show as confirmed (checkmark),
+		// never as a directional hint, so the player is never misled.
+		if (isPromoSet(setName)) return { name: setName, state: "match" as const };
 		if (dSets.has(setName)) return { name: setName, state: "match" as const };
 		const guessSetIdx = SET_NAME_TO_INDEX[setName] ?? Number.POSITIVE_INFINITY;
 		return {
@@ -240,8 +262,12 @@ function buildSetComparisons(
 				| "lower",
 		};
 	});
-	// Show newest printing first so the player reads the most recent release context first
+	// Promos always first, then newest printing first
 	comparisons.sort((a, b) => {
+		const aPromo = isPromoSet(a.name);
+		const bPromo = isPromoSet(b.name);
+		if (aPromo && !bPromo) return -1;
+		if (!aPromo && bPromo) return 1;
 		const idxA = SET_NAME_TO_INDEX[a.name] ?? Number.POSITIVE_INFINITY;
 		const idxB = SET_NAME_TO_INDEX[b.name] ?? Number.POSITIVE_INFINITY;
 		return idxB - idxA;

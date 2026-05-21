@@ -24,11 +24,11 @@ export function RulesModal({ isFirstVisit, onClose }: RulesModalProps) {
 	return (
 		<Dialog open={true} onClose={onClose} className="relative z-50">
 			{/* Overlay */}
-			<div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+			<div className="fixed inset-0 bg-overlay" aria-hidden="true" />
 
 			{/* Modal panel */}
 			<div className="fixed inset-0 flex items-center justify-center p-4">
-				<DialogPanel ref={panelRef} className="w-full max-w-lg rounded-xl bg-surface p-6 shadow-xl overflow-y-auto max-h-[90vh]">
+				<DialogPanel ref={panelRef} className="w-full max-w-lg rounded-xl bg-surface p-6 shadow-xl overflow-y-auto fabble-modal-panel">
 					<div className="flex flex-col gap-6">
 						<div className="flex items-start justify-between">
 							<DialogTitle className="text-xl font-bold text-heading">
@@ -42,7 +42,7 @@ export function RulesModal({ isFirstVisit, onClose }: RulesModalProps) {
 							<button
 								type="button"
 								onClick={onClose}
-								className="min-h-11 px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
+								className="min-h-11 px-6 py-2.5 bg-primary text-on-primary text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
 								// biome-ignore lint/a11y/noAutofocus: intentional - focus rules button on modal open per accessibility spec
 								autoFocus
 							>

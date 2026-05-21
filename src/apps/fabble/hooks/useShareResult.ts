@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FabbleModes, type FabbleMode, type FeedbackRow, type GuessEntry } from "@fabkit/apps/fabble/lib/types";
 
@@ -71,7 +71,39 @@ export function useShareResult(): UseShareResultResult {
 	const [copied, setCopied] = useState(false);
 	const [copyError, setCopyError] = useState(false);
 
-	function share(payload: SharePayload): void {
+	// Track mounted state and pending timers to prevent state updates after unmount
+	const mountedRef = useRef(true);
+	const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+			for (const timer of timersRef.current) clearTimeout(timer);
+		};
+	}, []);
+
+	const copyToClipboard = useCallback(async (text: string): Promise<void> => {
+		try {
+			await navigator.clipboard.writeText(text);
+			if (!mountedRef.current) return;
+			setCopied(true);
+			setCopyError(false);
+			const timer = setTimeout(() => {
+				if (mountedRef.current) setCopied(false);
+			}, 2000);
+			timersRef.current.push(timer);
+		} catch {
+			if (!mountedRef.current) return;
+			setCopyError(true);
+			const timer = setTimeout(() => {
+				if (mountedRef.current) setCopyError(false);
+			}, 3000);
+			timersRef.current.push(timer);
+		}
+	}, []);
+
+	const share = useCallback((payload: SharePayload): void => {
 		const modeName = t(FabbleModes[payload.mode]);
 		const text = buildShareText(payload, modeName);
 
@@ -83,19 +115,7 @@ export function useShareResult(): UseShareResultResult {
 		} else {
 			copyToClipboard(text);
 		}
-	}
-
-	async function copyToClipboard(text: string): Promise<void> {
-		try {
-			await navigator.clipboard.writeText(text);
-			setCopied(true);
-			setCopyError(false);
-			setTimeout(() => setCopied(false), 2000);
-		} catch {
-			setCopyError(true);
-			setTimeout(() => setCopyError(false), 3000);
-		}
-	}
+	}, [t, copyToClipboard]);
 
 	return { share, copied, copyError };
 }

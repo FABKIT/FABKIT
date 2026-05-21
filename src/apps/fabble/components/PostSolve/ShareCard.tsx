@@ -1,4 +1,4 @@
-import { forwardRef, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FabkitIconSrc from "@fabkit/assets/Fabkitlogo_notext.svg?url";
 import { FabbleModes, type FabbleMode, type FeedbackRow, type GuessEntry } from "@fabkit/apps/fabble/lib/types";
@@ -73,6 +73,12 @@ const TILE_W = Math.floor((INNER_W - NUM_W - TILE_GAP - (COLS - 1) * TILE_GAP) /
 const TILE_H = 22;
 const ROW_GAP = 3;
 
+// Conservative sum of all fixed chrome sections: header + logo + separator +
+// score zone + column labels + footer. Used to derive how much vertical space
+// remains for the guess rows.
+const CHROME_H = 130 + 50 + 13 + 50 + 14 + 46;
+const GRID_AVAIL = CARD_SIZE - CHROME_H;
+
 function tileColor(C: ShareCardColors, state: string, isWinningRow = false): string {
 	if (isWinningRow) return C.match;
 	switch (state) {
@@ -123,8 +129,15 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 			}
 		}, []);
 
-		const modeLabel = t(FabbleModes[mode]);
+		const modeLabel = `${t(FabbleModes[mode])} ${t("mode.suffix")}`;
 		const scoreText = won ? `${guesses.length}/${guessLimit}` : `X/${guessLimit}`;
+
+		// Shrink tile height when many guesses would push the footer off-card.
+		const n = guesses.length;
+		const naturalGridH = n * TILE_H + Math.max(0, n - 1) * ROW_GAP;
+		const effectiveTileH = naturalGridH <= GRID_AVAIL
+			? TILE_H
+			: Math.max(12, Math.floor((GRID_AVAIL - Math.max(0, n - 1) * ROW_GAP) / n));
 
 		const colLabels = useMemo(() => [
 			t("column_abbr.type"),
@@ -140,12 +153,13 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 			t("column_abbr.set"),
 		], [t]);
 
-		// Merge the forwarded ref with our internal rootRef
-		function setRefs(el: HTMLDivElement | null) {
+		// Merge the forwarded ref with our internal rootRef.
+		// useCallback prevents a detach/reattach cycle on every re-render.
+		const setRefs = useCallback((el: HTMLDivElement | null) => {
 			rootRef.current = el;
 			if (typeof ref === "function") ref(el);
 			else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
-		}
+		}, [ref]);
 
 		return (
 			<div
@@ -163,22 +177,49 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 			>
 				{/* ── Header banner ── */}
 				<div
-					className="flex items-center justify-center shrink-0 relative overflow-hidden"
-					style={{ height: 80, backgroundColor: C.surface }}
+					className="shrink-0 relative overflow-hidden"
+					style={{ height: 130, backgroundColor: C.bg }}
 				>
+					{/* Meeps art — both meep characters visible */}
 					<img
 						src="/img/Mischievous-Meeps.png"
-						alt=""
+						alt="Mischievous Meeps artwork"
 						aria-hidden="true"
-						className="absolute inset-0 w-full h-full object-cover object-top opacity-40"
-					/>
-					<div
-						className="absolute top-2.5 right-3.5 rounded-full"
 						style={{
-							backgroundColor: "rgba(0,0,0,0.55)",
-							padding: "3px 10px",
+							position: "absolute",
+							inset: 0,
+							width: "100%",
+							height: "100%",
+							objectFit: "cover",
+							objectPosition: "47% 33%",
+							opacity: 0.75,
+						}}
+					/>
+					{/* Left vignette — fades gently so more art shows through */}
+					<div
+						style={{
+							position: "absolute",
+							inset: 0,
+							background: `linear-gradient(to right, ${C.bg} 0%, transparent 45%)`,
+						}}
+					/>
+					{/* Bottom vignette — blends into the card body */}
+					<div
+						style={{
+							position: "absolute",
+							inset: 0,
+							background: `linear-gradient(to top, ${C.bg} 0%, transparent 50%)`,
+						}}
+					/>
+					{/* Mode / date badge */}
+					<div
+						style={{
+							position: "absolute",
+							top: 12,
+							left: 14,
 							fontSize: 11,
 							color: C.muted,
+							fontWeight: 600,
 						}}
 					>
 						{modeLabel} · {date}
@@ -245,7 +286,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 					{guesses.map((g, ri) => {
 						const isWinningRow = won && ri === guesses.length - 1;
 						return (
-							<div key={ri} className="flex items-center" style={{ gap: TILE_GAP }}>
+							<div key={g.name} className="flex items-center" style={{ gap: TILE_GAP }}>
 								<div
 									className="text-center font-bold shrink-0"
 									style={{ width: NUM_W, minWidth: NUM_W, fontSize: 8, color: C.subtle }}
@@ -254,11 +295,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 								</div>
 								{rowStates(g.feedbackRow).map((state, ci) => (
 									<div
-										key={ci}
+										key={`${g.name}-col-${ci}`}
 										style={{
 											width: TILE_W,
 											minWidth: TILE_W,
-											height: TILE_H,
+											height: effectiveTileH,
 											borderRadius: 3,
 											backgroundColor: tileColor(C, state, isWinningRow),
 										}}
@@ -274,18 +315,22 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
 				{/* ── Footer ── */}
 				<div
-					className="flex items-center justify-center shrink-0 gap-1.5"
+					className="flex flex-col items-center justify-center shrink-0 gap-1"
 					style={{ padding: `10px ${PAD}px 14px` }}
 				>
-					<img src={FabkitIconSrc} alt="" style={{ height: 18, width: 18 }} />
-					<span style={{ color: C.accent, fontWeight: 700, fontSize: 13 }}>
-						fabkit.io/fabble
+					<span style={{ color: C.subtle, fontSize: 11 }}>
+						{t("share.tagline")}
 					</span>
-					<span style={{ color: C.subtle, fontSize: 11, marginLeft: 2 }}>
-						· {t("share.tagline")}
-					</span>
+					<div className="flex items-center gap-1.5">
+						<img src={FabkitIconSrc} alt="" style={{ height: 14, width: 14 }} />
+						<span style={{ color: C.accent, fontWeight: 700, fontSize: 11 }}>
+							{t("share.powered_by")}
+						</span>
+					</div>
 				</div>
 			</div>
 		);
 	},
 );
+
+ShareCard.displayName = "ShareCard";

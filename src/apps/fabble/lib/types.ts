@@ -152,13 +152,11 @@ export interface GuessEntry {
 
 export interface SessionData {
 	poolVersion: string;
-	dailyName?: string; // deprecated, no longer written by new sessions
+	daily?: DailyCard; // stored so pool updates mid-day don't disrupt active sessions
 	guesses: GuessEntry[];
 	status: "in_progress" | "won" | "lost";
 	startedAt: string; // ISO 8601
 	revealedHintCount?: number; // optional — absent in sessions written before hints shipped
-	reveal?: DailyCard;
-	workerHints?: { rarity: string; firstSet: string | null };
 }
 
 // ─── Streak data ──────────────────────────────────────────────────────────────
@@ -180,7 +178,7 @@ export interface FirstVisitData {
 
 export type SubmitResult =
 	| { ok: true }
-	| { ok: false; error: "unknown_card" | "already_guessed" | "game_over" | "network_error" };
+	| { ok: false; error: "unknown_card" | "already_guessed" | "game_over" };
 
 // ─── Session state (in-memory, used by store) ────────────────────────────────
 
@@ -188,10 +186,9 @@ export interface SessionState {
 	mode: FabbleMode;
 	date: string;
 	poolVersion: string;
-	daily: DailyCard | null; // null during gameplay, set on Worker reveal
+	daily: DailyCard; // always set immediately on initMode — never null
 	guesses: GuessEntry[];
 	status: "in_progress" | "won" | "lost";
 	startedAt: string;
 	revealedHintCount: number;
-	workerHints: { rarity: string; firstSet: string | null } | null;
 }

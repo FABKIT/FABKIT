@@ -43,7 +43,7 @@ export function ModeCard({ mode, guessLimit }: ModeCardProps) {
 				<Link
 					to="/fabble/$mode"
 					params={{ mode }}
-					className="inline-flex items-center justify-center min-h-11 px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
+					className="inline-flex items-center justify-center min-h-11 px-4 py-2.5 bg-primary text-on-primary text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
 					aria-label={`${t("action.play")} ${t(modeLabelKey)}`}
 				>
 					{t("action.play")}

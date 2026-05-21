@@ -45,7 +45,7 @@ export function PuzzleToolbar({
 					<ArrowLeft className="size-4" />
 					<span>{t("action.back_to_menu")}</span>
 				</Link>
-				<span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-white">
+				<span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary text-on-primary">
 					{t(modeLabelKey)}
 				</span>
 				{activeRotation && (
@@ -66,7 +66,7 @@ export function PuzzleToolbar({
 					<button
 						type="button"
 						onClick={onReset}
-						className="text-[11px] text-faint hover:text-subtle transition-colors px-2 py-1"
+						className="text-xs text-faint hover:text-subtle transition-colors px-2 py-1"
 					>
 						{t("action.reset_session")}
 					</button>

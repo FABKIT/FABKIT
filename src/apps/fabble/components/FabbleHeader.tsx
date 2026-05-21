@@ -1,18 +1,25 @@
 export function FabbleHeader() {
 	return (
-		<div className="relative w-full overflow-hidden h-72">
+		<div className="relative w-full overflow-hidden h-85">
+			{/* Meeps art — positioned to keep the Meep faces in frame */}
 			<img
 				src="/img/Mischievous-Meeps.png"
 				alt=""
 				aria-hidden="true"
-				className="absolute inset-0 w-full h-full object-cover object-top select-none"
+				className="absolute inset-0 w-full h-full object-cover select-none"
+				style={{ objectPosition: "45% 32%" }}
 			/>
-			<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface" />
-			<div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-4">
+
+			{/* Full-height fade — starts imperceptibly at the top and builds toward
+			    the bottom so there is no visible seam where the gradient begins */}
+			<div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-surface via-surface/20 to-transparent" />
+
+			{/* Logo */}
+			<div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-8">
 				<img
 					src="/FabbleLogo.svg"
 					alt="Fabble"
-					className="select-none w-[300px] h-auto drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
+					className="select-none w-72 h-auto fabble-logo-shadow"
 				/>
 			</div>
 		</div>
