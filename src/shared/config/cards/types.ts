@@ -16,6 +16,7 @@ export const CardTypes = {
 			"CardSubType",
 			"CardRarity",
 			"CardDefense",
+			"CardLife",
 		],
 	},
 	attack_reaction: {

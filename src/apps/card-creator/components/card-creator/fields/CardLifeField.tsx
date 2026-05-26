@@ -10,7 +10,8 @@ export function CardLifeField() {
 	const CardType = useCardCreator((state) => state.CardType);
 	const CardDefense = useCardCreator((state) => state.CardDefense);
 	const shouldShow = useIsFieldVisible("CardLife");
-	const isConflicted = CardType === "meld" && Boolean(CardDefense);
+	const isConflicted =
+		(CardType === "meld" || CardType === "action") && Boolean(CardDefense);
 
 	if (!shouldShow) return null;
 	return (
