@@ -10,6 +10,8 @@ export function FeaturedArtist() {
 	const featuredArtist =
 		featuredArtists[Math.floor(Math.random() * featuredArtists.length)];
 
+	const [pauseSlideshow, setPauseSlideshow] = useState(false);
+
 	const nextSlide = useCallback(() => {
 		setCurrentSlide((prev) => (prev + 1) % featuredArtist.images.length);
 	}, [featuredArtist.images.length]);
@@ -23,9 +25,12 @@ export function FeaturedArtist() {
 	}, [featuredArtist.images.length]);
 
 	useEffect(() => {
+		if (pauseSlideshow) {
+			return;
+		}
 		const intervalId = setInterval(nextSlide, 7000);
 		return () => clearInterval(intervalId);
-	}, [nextSlide]);
+	}, [nextSlide, pauseSlideshow]);
 
 	return (
 		<div className="mx-auto max-w-[1600px] overflow-hidden rounded-lg border-2 border-border-primary bg-surface/50 shadow-lg backdrop-blur-sm">
@@ -56,7 +61,12 @@ export function FeaturedArtist() {
 							<ChevronLeft className="h-6 w-6 text-primary" />
 						</button>
 
-						<div className="relative aspect-[450/628] w-full max-w-[450px] overflow-hidden rounded-lg lg:w-[450px]">
+						{/** biome-ignore lint/a11y/noStaticElementInteractions: the slideshow is dynamic, so we can add the mouse interactions */}
+						<div
+							className="relative aspect-[450/628] w-full max-w-[450px] overflow-hidden rounded-lg lg:w-[450px]"
+							onMouseEnter={() => setPauseSlideshow(true)}
+							onMouseLeave={() => setPauseSlideshow(false)}
+						>
 							{featuredArtist.images.map((image, index) => (
 								<img
 									key={image}
