@@ -61,8 +61,9 @@ export function FeaturedArtist() {
 							<ChevronLeft className="h-6 w-6 text-primary" />
 						</button>
 
-						{/** biome-ignore lint/a11y/noStaticElementInteractions: the slideshow is dynamic, so we can add the mouse interactions */}
 						<div
+							role={"tabpanel"}
+							aria-roledescription={"slide"}
 							className="relative aspect-[450/628] w-full max-w-[450px] overflow-hidden rounded-lg lg:w-[450px]"
 							onMouseEnter={() => setPauseSlideshow(true)}
 							onMouseLeave={() => setPauseSlideshow(false)}
