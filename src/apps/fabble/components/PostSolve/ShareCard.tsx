@@ -64,22 +64,33 @@ function readThemeColors(el: Element): ShareCardColors {
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 // ShareCard is a fixed-size canvas (CARD_SIZE×CARD_SIZE px) captured via snapdom.
-// The pixel arithmetic below is intentional — CSS flex/grid cannot guarantee
-// pixel-perfect output across browsers and zoom levels when the target is a screenshot.
+//
+// WHY pixel values throughout this component:
+// This is not a normal UI component — it is rendered off-screen solely to be
+// screenshot'd into a PNG. CSS flex/grid cannot guarantee pixel-perfect,
+// consistent output across browsers and zoom levels when the target is a static
+// image capture. Every spacing, font-size, and dimension value here is a
+// deliberate design choice for the 540×540 card format, not a responsive layout.
+//
+// Values that control the grid math (PAD, TILE_GAP, CHROME_H) are defined as
+// JS constants here so the arithmetic stays in one place. They are passed to
+// inline styles at the usage site so the two can never drift apart. Pure
+// decorative values (font sizes, border radius, letter-spacing) are expressed
+// as Tailwind arbitrary classes since they don't feed into the tile calculation.
 
 const CARD_SIZE = 540;
-const PAD = 22;
+const PAD = 22;        // horizontal inset shared by separator, column labels, guess rows, and footer
 const INNER_W = CARD_SIZE - PAD * 2;
 const COLS = 11;
-const TILE_GAP = 3;
-const NUM_W = 14;
+const TILE_GAP = 3;    // gap between tiles and between rows
+const NUM_W = 14;      // width of the row-number gutter
 const TILE_W = Math.floor((INNER_W - NUM_W - TILE_GAP - (COLS - 1) * TILE_GAP) / COLS);
-const TILE_H = 22;
-const ROW_GAP = 3;
+const TILE_H = 22;     // default tile height; shrinks dynamically when there are many guesses
+const ROW_GAP = 3;     // alias of TILE_GAP for vertical spacing — kept separate for clarity
 
-// Conservative sum of all fixed chrome sections: header + logo + separator +
-// score zone + column labels + footer. Used to derive how much vertical space
-// remains for the guess rows.
+// Conservative sum of all fixed chrome sections (px): header(130) + logo area(50) +
+// separator(13) + score zone(50) + column labels(14) + footer(46).
+// Used to derive the remaining vertical space available for guess rows.
 const CHROME_H = 130 + 50 + 13 + 50 + 14 + 46;
 const GRID_AVAIL = CARD_SIZE - CHROME_H;
 
@@ -177,6 +188,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				}}
 			>
 				{/* ── Header banner ── */}
+				{/* h-[130px] matches the CHROME_H header term (130) — keep in sync */}
 				<div
 					className="shrink-0 relative overflow-hidden h-[130px]"
 					style={{ backgroundColor: colors.bg }}
@@ -199,6 +211,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 						style={{ background: `linear-gradient(to top, ${colors.bg} 0%, transparent 50%)` }}
 					/>
 					{/* Mode / date badge */}
+					{/* text-[11px]: no named Tailwind equivalent for this screenshot-card size */}
 					<div
 						className="absolute top-3 left-3.5 text-[11px] font-semibold"
 						style={{ color: colors.muted }}
@@ -208,6 +221,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				</div>
 
 				{/* ── Fabble logo ── */}
+				{/* h-[38px]: logo target height for this card size; py-1.5 × 2 + 38 ≈ CHROME_H logo term (50) */}
 				<div className="flex justify-center shrink-0 py-1.5">
 					<img
 						src="/FabbleLogo.svg"
@@ -217,13 +231,16 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				</div>
 
 				{/* ── Separator ── */}
+				{/* mx uses PAD inline so it stays in sync with the grid math constant */}
 				<div
-					className="shrink-0 h-px mx-[22px] mb-3"
-					style={{ backgroundColor: colors.separator }}
+					className="shrink-0 h-px mb-3"
+					style={{ marginLeft: PAD, marginRight: PAD, backgroundColor: colors.separator }}
 				/>
 
 				{/* ── Score zone ── */}
 				<div className="flex flex-col items-center shrink-0 gap-1 mb-3.5 px-2">
+					{/* text-[Npx] sizes below: Tailwind named scale (e.g. text-lg=18px, text-sm=14px) */}
+					{/* doesn't align to these values; pixel-exact sizing is required for the card format */}
 					{username && (
 						<span
 							className="font-bold text-[17px] leading-[1.2]"
@@ -249,12 +266,13 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				</div>
 
 				{/* ── Column labels ── */}
-				<div className="flex shrink-0 mb-1 gap-[3px] px-[22px]">
+				{/* gap and px use TILE_GAP / PAD inline to stay in sync with tile math */}
+				<div className="flex shrink-0 mb-1" style={{ gap: TILE_GAP, paddingLeft: PAD, paddingRight: PAD }}>
 					<div style={{ width: NUM_W, minWidth: NUM_W }} />
 					{colLabels.map((label) => (
 						<div
 							key={label}
-							className="text-center uppercase font-semibold text-[7px] tracking-[0.04em]"
+							className="text-center uppercase font-semibold text-[7px] tracking-[0.04em]" /* px sizes: screenshot-card design; no named Tailwind equivalent */
 							style={{
 								width: TILE_W,
 								minWidth: TILE_W,
@@ -267,11 +285,12 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				</div>
 
 				{/* ── Guess rows ── */}
-				<div className="flex flex-col shrink-0 gap-[3px] px-[22px]">
+				{/* gap and px use ROW_GAP / PAD inline to stay in sync with tile math */}
+				<div className="flex flex-col shrink-0" style={{ gap: ROW_GAP, paddingLeft: PAD, paddingRight: PAD }}>
 					{guesses.map((g, ri) => {
 						const isWinningRow = won && ri === guesses.length - 1;
 						return (
-							<div key={g.name} className="flex items-center gap-[3px]">
+							<div key={g.name} className="flex items-center" style={{ gap: TILE_GAP }}>
 								<div
 									className="text-center font-bold shrink-0 text-[8px]"
 									style={{ width: NUM_W, minWidth: NUM_W, color: colors.subtle }}
@@ -299,7 +318,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				<div className="flex-1" />
 
 				{/* ── Footer ── */}
-				<div className="flex flex-col items-center justify-center shrink-0 gap-1 pt-[10px] px-[22px] pb-[14px]">
+				{/* pt/pb/px are part of the CHROME_H footer term (46px); px matches PAD */}
+				<div className="flex flex-col items-center justify-center shrink-0 gap-1" style={{ paddingTop: 10, paddingBottom: 14, paddingLeft: PAD, paddingRight: PAD }}>
 					<span className="text-[11px]" style={{ color: colors.subtle }}>
 						{t("share.tagline")}
 					</span>
