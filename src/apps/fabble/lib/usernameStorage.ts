@@ -3,7 +3,8 @@ const USERNAME_KEY = "fabble:shareUsername";
 export function getUsername(): string {
 	try {
 		return localStorage.getItem(USERNAME_KEY) ?? "";
-	} catch {
+	} catch (err) {
+		console.warn("[usernameStorage] getUsername failed:", err);
 		return "";
 	}
 }
@@ -15,7 +16,7 @@ export function setUsername(value: string): void {
 		} else {
 			localStorage.removeItem(USERNAME_KEY);
 		}
-	} catch {
-		// Storage failure is non-fatal
+	} catch (err) {
+		console.warn("[usernameStorage] setUsername failed:", err);
 	}
 }

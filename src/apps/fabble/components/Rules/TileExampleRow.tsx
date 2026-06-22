@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { FeedbackCell } from "@fabkit/apps/fabble/lib/types";
-import { FeedbackTile } from "../Puzzle/FeedbackTile";
+import { FeedbackTile } from "@fabkit/apps/fabble/components/Puzzle/FeedbackTile";
 
 const EXAMPLE_CELLS: {
 	id: string;

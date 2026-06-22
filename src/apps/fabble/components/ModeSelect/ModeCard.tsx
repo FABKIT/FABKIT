@@ -8,20 +8,25 @@ interface ModeCardProps {
 	guessLimit: number;
 }
 
-function getModeKeys(mode: FabbleMode): { desc: string; label: string } {
+/** Returns all i18n keys for a given game mode: its title, description, and mode label. */
+function getModeKeys(mode: FabbleMode): { titleKey: string; description: string; label: string } | null {
 	switch (mode) {
 		case "standard":
-			return { desc: "mode.standard_description", label: "puzzle.mode_label_standard" };
+			return { titleKey: FabbleModes.standard, description: "mode.standard_description", label: "puzzle.mode_label_standard" };
 		case "chaos":
-			return { desc: "mode.chaos_description", label: "puzzle.mode_label_chaos" };
+			return { titleKey: FabbleModes.chaos, description: "mode.chaos_description", label: "puzzle.mode_label_chaos" };
+		default:
+			console.warn(`[getModeKeys] Unexpected mode: ${mode as string}`);
+			return null;
 	}
 }
 
 export function ModeCard({ mode, guessLimit }: ModeCardProps) {
 	const { t } = useTranslation("fabble");
 
-	const titleKey = FabbleModes[mode];
-	const { desc: descKey, label: modeLabelKey } = getModeKeys(mode);
+	const keys = getModeKeys(mode);
+	if (!keys) return null;
+	const { titleKey, description: descKey, label: modeLabelKey } = keys;
 
 	return (
 		<div className="flex flex-col gap-4 p-6 rounded-xl border border-border-primary bg-surface shadow-sm hover:shadow-md transition-shadow">

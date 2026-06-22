@@ -70,6 +70,11 @@ export function GuessInput({
 		refocusInput();
 	}, [selectItem, refocusInput]);
 
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value),
+		[setInputValue],
+	);
+
 	const canSubmit = useMemo(
 		() =>
 			inputValue.trim().length > 0 &&
@@ -92,7 +97,7 @@ export function GuessInput({
 							activeIndex >= 0 ? `fabble-option-${activeIndex}` : undefined
 						}
 						value={inputValue}
-						onChange={(e) => setInputValue(e.target.value)}
+						onChange={handleChange}
 						onKeyDown={handleKeyDown}
 						placeholder={t("input.placeholder")}
 						className="w-full px-3 py-2.5 min-h-11 border border-border rounded-md text-sm text-body bg-surface focus:outline-none focus:ring-2 focus:ring-primary"

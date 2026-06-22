@@ -51,11 +51,36 @@ src/apps/fabble/
 | `src/routes/fabble.index.tsx` | `/fabble` | Mode select landing |
 | `src/routes/fabble.$mode.tsx` | `/fabble/standard`, `/fabble/chaos` | Puzzle page + loader |
 
-The `$mode` route loader fetches the pool JSON and calls `useFabbleStore.getState().initMode()` before the component renders.
+The `$mode` route loader imports `@flesh-and-blood/cards` at runtime (lazy chunk, ~9MB), builds the search pool via `pool.ts`, then calls `useFabbleStore.getState().initMode()` before the component renders. The daily card is selected deterministically from `lib/standardSelection.g.ts` (Standard) or the full pool (Chaos) using a PRNG seeded by date — no server call required.
+
+## Data Flow
+
+```
+@flesh-and-blood/cards (npm dep, lazy)
+  → route loader: buildStandardSearchPool / buildChaosPool
+  → initMode(searchPool, dailyPool, poolVersion)
+    → selectDaily(dailyPool, today) → DailyCard
+    → initSession(mode, today, poolVersion, daily) → SessionState (from localStorage)
+    → fabbleStore hydrated with guesses, status, streak
+      → useFabbleGame hook (granular selectors)
+        → GuessGrid / GuessInput / HintPanel (React)
+```
+
+## Local Development
+
+No Cloudflare Worker needed to run the puzzle. The worker is only required to validate admin tokens for the `fabble-admin` companion repo. Everything needed to play locally:
+
+```sh
+bun install
+bun dev
+# Open http://localhost:5173/fabble
+```
+
+The generated files `lib/setOrder.g.ts` and `lib/standardSelection.g.ts` hold curated/generated data. `standardSelection.g.ts` requires human review before deployment; update it from the `fabble-admin` companion repo and commit the result.
 
 ## Pool Files
 
-`public/pool-standard.json` and `public/pool-chaos.json` are generated at build time from `@flesh-and-blood/cards`. They are **not** checked into git. Regenerate with `bun run build:pool`.
+`public/pool-standard.json` and `public/pool-chaos.json` are no longer used. Card data is imported directly from `@flesh-and-blood/cards` at runtime and split into its own lazy JS chunk (`fab-cards`) excluded from PWA precaching.
 
 ## Import Rules
 

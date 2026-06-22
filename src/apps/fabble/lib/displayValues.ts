@@ -8,7 +8,7 @@ export const PITCH_COLOR: Record<number, string> = {
 };
 
 function formatNumericStat(stat: NumericStat): string {
-	if (stat.kind === "numeric") return stat.value.toString();
+	if (stat.kind === "numeric") return `${stat.value}`;
 	if (stat.kind === "special") return stat.value;
 	return "—";
 }
@@ -23,7 +23,7 @@ export function formatPitchValue(val: string | number): string {
 	if (val === "rainbow" || val === "All colors") return "all colors";
 	const n = typeof val === "number" ? val : Number(val);
 	if (!Number.isNaN(n) && PITCH_COLOR[n]) return `${n} (${PITCH_COLOR[n]})`;
-	return String(val);
+	return `${val}`;
 }
 
 export function getCardColumnValues(

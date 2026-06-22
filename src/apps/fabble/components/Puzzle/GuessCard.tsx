@@ -33,7 +33,6 @@ const COLUMN_I18N_KEYS: Record<ColumnId, string> = {
 	set: "column.set",
 };
 
-const COLUMNS = Object.keys(COLUMN_I18N_KEYS) as ColumnId[];
 
 export function GuessCard({
 	row,
@@ -66,12 +65,10 @@ export function GuessCard({
 					<img
 						src={`${FAB_CDN_BASE}${imageKey}.webp`}
 						alt={row.name}
-						width={80}
-						height={112}
-						className="rounded object-cover bg-surface-muted shrink-0"
-						style={{
-							filter: isAnswer ? "none" : "grayscale(100%) brightness(0.75)",
-						}}
+						className={[
+							"rounded object-cover bg-surface-muted shrink-0 w-20 h-28",
+							isAnswer ? "" : "grayscale brightness-75",
+						].filter(Boolean).join(" ")}
 						onError={() => setImgFailed(true)}
 					/>
 				) : (
@@ -108,7 +105,7 @@ export function GuessCard({
 
 			{/* Zone B: tile grid */}
 			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5">
-				{COLUMNS.map((column, colIndex) => {
+				{(Object.keys(COLUMN_I18N_KEYS) as ColumnId[]).map((column, colIndex) => {
 					const cell = row.feedbackRow[column];
 					return (
 						<FeedbackTile

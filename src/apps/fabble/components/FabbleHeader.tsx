@@ -6,8 +6,7 @@ export function FabbleHeader() {
 				src="/img/Mischievous-Meeps.png"
 				alt=""
 				aria-hidden="true"
-				className="absolute inset-0 w-full h-full object-cover select-none"
-				style={{ objectPosition: "45% 32%" }}
+				className="absolute inset-0 w-full h-full object-cover object-[45%_32%] select-none"
 			/>
 
 			{/* Full-height fade — starts imperceptibly at the top and builds toward

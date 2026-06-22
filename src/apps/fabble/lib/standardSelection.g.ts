@@ -1,6 +1,6 @@
 // GENERATED — do not edit directly.
 // Regenerate: bun run generate (in fabble-admin)
-// Then copy to: src/apps/fabble/lib/standardSelection.generated.ts
+// Then copy to: src/apps/fabble/lib/standardSelection.g.ts
 // Updated: 2026-05
 
 export const STANDARD_SELECTION_VERSION = "2026-05";

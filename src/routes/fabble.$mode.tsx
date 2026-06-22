@@ -11,7 +11,7 @@ import { buildChaosPool, buildStandardSearchPool } from "@fabkit/apps/fabble/lib
 import {
 	STANDARD_SELECTION,
 	STANDARD_SELECTION_VERSION,
-} from "@fabkit/apps/fabble/lib/standardSelection.generated";
+} from "@fabkit/apps/fabble/lib/standardSelection.g";
 import type { CanonicalCard, FabbleMode, RawCard } from "@fabkit/apps/fabble/lib/types";
 import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabbleStore";
 import { createFileRoute, redirect } from "@tanstack/react-router";

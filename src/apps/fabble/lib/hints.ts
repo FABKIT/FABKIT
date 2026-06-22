@@ -3,13 +3,9 @@ import type { DailyCard, FabbleMode } from "./types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import { DISPLAY_TO_RARITY } from "./rarityUtils";
 
-export interface Hint {
-	id: "rarity" | "set";
-	labelKey: string;
-	// For "rarity" hints, value is a CardRarity slug (translatable via t(`rarity.${value}`)).
-	// For "set" hints, value is the raw set display name.
-	value: string;
-}
+export type Hint =
+	| { id: "rarity"; labelKey: string; value: CardRarity }
+	| { id: "set"; labelKey: string; value: string };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

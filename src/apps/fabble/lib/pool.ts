@@ -6,18 +6,11 @@ import type { CanonicalCard, NumericStat, RawCard } from "./types";
 // algorithm normalizes them. A real implementation would supply weights derived
 // from tournament frequency data (e.g. FaBlazing card frequency across CC decks).
 // Contact blazingdatafab@gmail.com before building a scraper or integration.
-export type PopularityProvider = {
-	/** Returns the relative weight for a card name. Returns 1.0 if unknown. */
-	getWeight(cardName: string): number;
-};
+export type PopularityProvider = (cardName: string) => number;
 
 /** Stub: uniform weights for all cards. Do NOT swap for a real implementation
  * without explicit review. */
-export const uniformPopularityProvider: PopularityProvider = {
-	getWeight(_cardName: string): number {
-		return 1.0;
-	},
-};
+export const uniformPopularityProvider: PopularityProvider = (_cardName: string) => 1.0;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -219,7 +212,7 @@ export function groupByName(
 		];
 
 		// Popularity weight
-		const weight = popularityProvider.getWeight(name);
+		const weight = popularityProvider(name);
 
 		result.push({
 			name,

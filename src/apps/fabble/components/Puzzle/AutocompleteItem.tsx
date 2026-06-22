@@ -22,6 +22,10 @@ export function AutocompleteItem({
 		}
 	}, [isDisabled, onSelect, item.name]);
 
+	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+		if (e.key === "Enter") handleClick();
+	}, [handleClick]);
+
 	// tabIndex={-1}: programmatically focusable (satisfies Biome) but NOT a tab stop.
 	// Keyboard focus stays on the input; active item communicated via aria-activedescendant.
 	return (
@@ -31,9 +35,7 @@ export function AutocompleteItem({
 			aria-disabled={isDisabled}
 			tabIndex={-1}
 			onClick={handleClick}
-			onKeyDown={(e) => {
-				if (e.key === "Enter") handleClick();
-			}}
+			onKeyDown={handleKeyDown}
 			className={[
 				"flex items-center gap-2 px-2 py-1.5 cursor-pointer min-h-11",
 				isActive ? "bg-surface-active" : "hover:bg-surface-muted",
@@ -47,14 +49,11 @@ export function AutocompleteItem({
 					src={`${FAB_CDN_BASE}${item.imageKey}.png`}
 					alt=""
 					aria-hidden="true"
-					width={30}
-					height={42}
-					className="rounded shrink-0 object-cover bg-surface-muted"
+					className="rounded shrink-0 object-cover bg-surface-muted w-[30px] h-[42px]"
 				/>
 			) : (
 				<div
-					className="rounded bg-surface-muted shrink-0"
-					style={{ width: 30, height: 42 }}
+					className="rounded bg-surface-muted shrink-0 w-[30px] h-[42px]"
 					aria-hidden="true"
 				/>
 			)}

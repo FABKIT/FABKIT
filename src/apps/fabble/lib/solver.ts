@@ -1,3 +1,5 @@
+// Dev/build utility only — not imported by any component or store.
+// Used by scripts/build-pool.ts to detect ambiguous cards during pool generation.
 import type { CanonicalCard, NumericStat } from "./types";
 
 // ─── Fingerprint helpers ──────────────────────────────────────────────────────

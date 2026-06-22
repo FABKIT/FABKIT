@@ -15,7 +15,7 @@ export interface SharePayload {
 // ─── Hook output shape ────────────────────────────────────────────────────────
 
 export interface UseShareResultResult {
-	share: (payload: SharePayload) => void;
+	share: (payload: SharePayload) => Promise<void>;
 	copied: boolean;
 	copyError: boolean;
 }
@@ -103,17 +103,19 @@ export function useShareResult(): UseShareResultResult {
 		}
 	}, []);
 
-	const share = useCallback((payload: SharePayload): void => {
+	const share = useCallback(async (payload: SharePayload): Promise<void> => {
 		const modeName = t(FabbleModes[payload.mode]);
 		const text = buildShareText(payload, modeName);
 
 		if (navigator.share) {
-			navigator.share({ text }).catch((e: unknown) => {
+			try {
+				await navigator.share({ text });
+			} catch (e: unknown) {
 				if (e instanceof DOMException && e.name === "AbortError") return;
-				copyToClipboard(text);
-			});
+				await copyToClipboard(text);
+			}
 		} else {
-			copyToClipboard(text);
+			await copyToClipboard(text);
 		}
 	}, [t, copyToClipboard]);
 

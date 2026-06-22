@@ -207,7 +207,7 @@ export function PostSolvePanel({
 			{/* ── Off-screen ShareCard (captured by snapdom) ── */}
 			<div
 				aria-hidden="true"
-				style={{ position: "fixed", left: -1200, top: 0, zIndex: -1, pointerEvents: "none" }}
+				className="fixed -left-[1200px] top-0 z-[-1] pointer-events-none"
 			>
 				<ShareCard
 					ref={cardRef}

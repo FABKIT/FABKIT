@@ -1,7 +1,7 @@
 import type { FabbleMode } from "./types";
 
 // ─── Set release order ────────────────────────────────────────────────────────
-// 19 confirmed booster set codes in confirmed release order (Decision #3).
+// 19 confirmed booster set codes in confirmed release order.
 // Cards from set codes not in this list get earliestSetIndex = Infinity and
 // emit a build-time warning. The 3-char prefix is extracted from setIdentifiers
 // (e.g. "MST131" → "MST").
@@ -66,7 +66,7 @@ export const EXCLUDED_TYPES: Set<string> = new Set([
 export const FAB_CDN_BASE = "https://content.fabrary.net/cards/";
 
 // ─── Set name → release order index ──────────────────────────────────────────
-// Kept in setOrder.generated.ts — edit data/set-release-order.csv and re-run
+// Kept in setOrder.g.ts — edit data/set-release-order.csv and re-run
 // scripts/generate-set-order.ts instead of editing that file directly.
-export { SET_NAME_TO_INDEX } from "./setOrder.generated";
+export { SET_NAME_TO_INDEX } from "./setOrder.g";
 

@@ -28,6 +28,8 @@ src/routeTree.gen.ts
 public/pool-standard.json
 public/pool-chaos.json
 src/i18n.d.ts
+src/apps/fabble/lib/setOrder.g.ts
+src/apps/fabble/lib/standardSelection.g.ts
 analyse.html
 .tanstack/
 dev-dist/

@@ -65,6 +65,98 @@ function SetComparisonList({ comparisons }: { comparisons: SetComparison[] }) {
 	);
 }
 
+function buildTileContent(
+	cell: FeedbackCell,
+	columnId: ColumnId,
+	resolvedGuessValue: string | undefined,
+	t: (key: string, options?: Record<string, unknown>) => string,
+	setComparisons: SetComparison[] | undefined,
+	isRainbowMatch: boolean,
+): ReactNode {
+	if (columnId === "set" && setComparisons && setComparisons.length > 0) {
+		return <SetComparisonList comparisons={setComparisons} />;
+	}
+
+	if (cell.state === "match") {
+		if (isRainbowMatch) {
+			return (
+				<span className="text-xs font-bold leading-tight w-full text-left break-words">
+					{t("tile.rainbow_all_colors")}
+				</span>
+			);
+		}
+		const rawVal = columnId === "pitch" ? formatPitchValue(cell.value) : `${cell.value}`;
+		const displayVal = rawVal === NOTCLASSED_LABEL_KEY ? t(NOTCLASSED_LABEL_KEY) : rawVal;
+		return (
+			<span className="text-xs font-bold leading-tight w-full text-left break-words">
+				{displayVal}
+			</span>
+		);
+	}
+
+	if (cell.state === "partial") {
+		const displayVal = cell.overlapping?.join(", ") ?? cell.guessValue;
+		return (
+			<span className="text-xs font-bold leading-tight w-full text-left break-words">
+				{displayVal}
+			</span>
+		);
+	}
+
+	if (cell.state === "no-match") {
+		if (cell.naDaily) {
+			return (
+				<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
+					<span className="break-words">{resolvedGuessValue}</span>
+					<Ban className="size-3 shrink-0" aria-hidden="true" />
+				</span>
+			);
+		}
+
+		const displayVal =
+			columnId === "pitch" || cell.direction !== undefined
+				? resolvedGuessValue
+				: cell.revealedDailyValue !== undefined
+					? `${cell.revealedDailyValue}`
+					: resolvedGuessValue;
+
+		if (displayVal && cell.direction) {
+			return (
+				<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
+					<span className="break-words">{displayVal}</span>
+					{cell.direction === "higher" ? (
+						<ArrowUp className="size-3 shrink-0" />
+					) : (
+						<ArrowDown className="size-3 shrink-0" />
+					)}
+				</span>
+			);
+		}
+		if (displayVal) {
+			return (
+				<span className="text-xs font-bold leading-tight w-full text-left break-words">
+					{displayVal}
+				</span>
+			);
+		}
+		return <X className="size-4" />;
+	}
+
+	if (cell.state === "na") {
+		if (resolvedGuessValue && resolvedGuessValue !== "—") {
+			return (
+				<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
+					<span className="break-words">{resolvedGuessValue}</span>
+					<Ban className="size-3 shrink-0" aria-hidden="true" />
+				</span>
+			);
+		}
+		return <Ban className="size-3 shrink-0" aria-hidden="true" />;
+	}
+
+	return null;
+}
+
 export function FeedbackTile({
 	cell,
 	column: columnId,
@@ -134,90 +226,10 @@ export function FeedbackTile({
 		? t(NOTCLASSED_LABEL_KEY)
 		: guessValue;
 
-	const tileContent = useMemo((): ReactNode => {
-		if (columnId === "set" && setComparisons && setComparisons.length > 0) {
-			return <SetComparisonList comparisons={setComparisons} />;
-		}
-
-		if (cell.state === "match") {
-			if (isRainbowMatch) {
-				return (
-					<span className="text-xs font-bold leading-tight w-full text-left break-words">
-						{t("tile.rainbow_all_colors")}
-					</span>
-				);
-			}
-			const rawVal = columnId === "pitch" ? formatPitchValue(cell.value) : `${cell.value}`;
-			const displayVal = rawVal === NOTCLASSED_LABEL_KEY ? t(NOTCLASSED_LABEL_KEY) : rawVal;
-			return (
-				<span className="text-xs font-bold leading-tight w-full text-left break-words">
-					{displayVal}
-				</span>
-			);
-		}
-
-		if (cell.state === "partial") {
-			const displayVal = cell.overlapping?.join(", ") ?? cell.guessValue;
-			return (
-				<span className="text-xs font-bold leading-tight w-full text-left break-words">
-					{displayVal}
-				</span>
-			);
-		}
-
-		if (cell.state === "no-match") {
-			if (cell.naDaily) {
-				return (
-					<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
-						<span className="break-words">{resolvedGuessValue}</span>
-						<Ban className="size-3 shrink-0" aria-hidden="true" />
-					</span>
-				);
-			}
-
-			const displayVal =
-				columnId === "pitch" || cell.direction !== undefined
-					? resolvedGuessValue
-					: cell.revealedDailyValue !== undefined
-						? `${cell.revealedDailyValue}`
-						: resolvedGuessValue;
-
-			if (displayVal && cell.direction) {
-				return (
-					<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
-						<span className="break-words">{displayVal}</span>
-						{cell.direction === "higher" ? (
-							<ArrowUp className="size-3 shrink-0" />
-						) : (
-							<ArrowDown className="size-3 shrink-0" />
-						)}
-					</span>
-				);
-			}
-			if (displayVal) {
-				return (
-					<span className="text-xs font-bold leading-tight w-full text-left break-words">
-						{displayVal}
-					</span>
-				);
-			}
-			return <X className="size-4" />;
-		}
-
-		if (cell.state === "na") {
-			if (resolvedGuessValue && resolvedGuessValue !== "—") {
-				return (
-					<span className="text-xs font-bold leading-tight w-full text-left flex items-center gap-1">
-						<span className="break-words">{resolvedGuessValue}</span>
-						<Ban className="size-3 shrink-0" aria-hidden="true" />
-					</span>
-				);
-			}
-			return <Ban className="size-3 shrink-0" aria-hidden="true" />;
-		}
-
-		return null;
-	}, [cell, columnId, resolvedGuessValue, t, setComparisons, isRainbowMatch]);
+	const tileContent = useMemo(
+		() => buildTileContent(cell, columnId, resolvedGuessValue, t, setComparisons, isRainbowMatch),
+		[cell, columnId, resolvedGuessValue, t, setComparisons, isRainbowMatch],
+	);
 
 	return (
 		<div
