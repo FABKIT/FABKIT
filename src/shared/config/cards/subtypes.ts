@@ -83,6 +83,7 @@ export const CardSubtypes: Record<CardType, Record<string, string>> = {
 		orb: "card.subtype.orb",
 		pistol: "card.subtype.pistol",
 		polearm: "card.subtype.polearm",
+		rock: "card.subtype.rock",
 		scepter: "card.subtype.scepter",
 		scroll: "card.subtype.scroll",
 		scythe: "card.subtype.scythe",
