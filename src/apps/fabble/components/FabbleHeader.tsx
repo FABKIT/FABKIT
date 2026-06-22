@@ -3,7 +3,7 @@ export function FabbleHeader() {
 		<div className="relative w-full overflow-hidden h-85">
 			{/* Meeps art — positioned to keep the Meep faces in frame */}
 			<img
-				src="/img/Mischievous-Meeps.png"
+				src="/img/Mischievous-Meeps.webp"
 				alt=""
 				aria-hidden="true"
 				className="absolute inset-0 w-full h-full object-cover object-[45%_32%] select-none"

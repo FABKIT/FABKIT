@@ -195,7 +195,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				>
 					{/* Meeps art — both meep characters visible */}
 					<img
-						src="/img/Mischievous-Meeps.png"
+						src="/img/Mischievous-Meeps.webp"
 						alt="Mischievous Meeps artwork"
 						aria-hidden="true"
 						className="absolute inset-0 w-full h-full object-cover object-[47%_33%] opacity-75"
