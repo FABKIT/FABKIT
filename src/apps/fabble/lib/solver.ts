@@ -32,6 +32,6 @@ export function computeFingerprint(card: CanonicalCard): string {
 			? `${card.lifeOrIntellect.label}:${card.lifeOrIntellect.value}`
 			: "na",
 		sortedJoin([...card.subtypes, ...card.keywords]),
-		String(card.earliestSetIndex),
+		`${card.earliestSetIndex}`,
 	].join("::");
 }

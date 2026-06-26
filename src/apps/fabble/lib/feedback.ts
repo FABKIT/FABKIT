@@ -29,10 +29,16 @@ function evaluateType(guess: CanonicalCard, daily: DailyCard): FeedbackCell {
 	return { state: "no-match" };
 }
 
-// i18n key used when a card has no class ("NotClassed" in the data).
-// Callers that render this value should call t(NOTCLASSED_LABEL_KEY).
+/**
+ * i18n key for cards with no class ("NotClassed" in the raw data).
+ * Pass this through `t()` from react-i18next wherever the class label is rendered.
+ */
 export const NOTCLASSED_LABEL_KEY = "tile.not_classed" as const;
 
+/**
+ * Converts the raw "NotClassed" sentinel to {@link NOTCLASSED_LABEL_KEY} so the UI
+ * can render a translated label; all other class strings are returned unchanged.
+ */
 export function humanizeClass(c: string): string {
 	return c === "NotClassed" ? NOTCLASSED_LABEL_KEY : c;
 }
@@ -189,9 +195,6 @@ function evaluateLifeOrIntellect(
 	const g = guess.lifeOrIntellect ?? undefined;
 	const d = daily.lifeOrIntellect ?? undefined;
 
-	// Both absent: confirmed neither card has this stat
-	if (g === undefined && d === undefined) return { state: "na" };
-
 	// Daily has a value, guess doesn't: the answer's life/int is higher than "none"
 	if (g === undefined && d !== undefined) {
 		return {
@@ -206,15 +209,23 @@ function evaluateLifeOrIntellect(
 		return { state: "no-match" };
 	}
 
+	// Any absent: confirmed neither card has this stat
+	if (g === undefined || d === undefined) return { state: "na" };
+
+	// All cases where g or d is undefined have returned above; both are defined here
+	const gDefined = g;
+	const dDefined = d;
+
 	// Both present but different labels (ally life vs hero intellect): not comparable
-	if (g!.label !== d!.label) return { state: "na" };
+	if (gDefined.label !== dDefined.label) return { state: "na" };
 
 	// Same label: compare numerically
-	if (g!.value === d!.value) return { state: "match", value: d!.value };
+	if (gDefined.value === dDefined.value)
+		return { state: "match", value: dDefined.value };
 	return {
 		state: "no-match",
-		direction: d!.value > g!.value ? "higher" : "lower",
-		revealedDailyValue: d!.value,
+		direction: dDefined.value > gDefined.value ? "higher" : "lower",
+		revealedDailyValue: dDefined.value,
 	};
 }
 
@@ -302,8 +313,10 @@ function evaluateSet(guess: CanonicalCard, daily: DailyCard): FeedbackCell {
 // ─── Main evaluate function ───────────────────────────────────────────────────
 
 /**
- * Pure function. Accepts the guessed canonical card and the daily card;
- * returns a complete FeedbackRow. No I/O, no React, no side effects.
+ * Evaluates all 11 feedback columns for one guess against the daily card and
+ * returns a complete FeedbackRow. Each cell carries a state ("match" | "partial" |
+ * "no-match" | "na") plus optional directional hints for numeric and set columns.
+ * Pure function — no I/O, no React, no side effects.
  */
 export function evaluateGuess(
 	guess: CanonicalCard,

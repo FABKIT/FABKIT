@@ -119,7 +119,7 @@ export function PostSolvePanel({
 	const date = useMemo(() => {
 		if (!storeDate) return "";
 		const [year, month, day] = storeDate.split("-");
-		return `${day}-${month}-${String(year).slice(2)}`;
+		return `${day}-${month}-${`${year}`.slice(2)}`;
 	}, [storeDate]);
 
 	const { cardRef, username, setUsername, capturing, shareImage } =
@@ -187,13 +187,17 @@ export function PostSolvePanel({
 				{/* ── Share image section ── */}
 				<div className="flex flex-col items-center gap-3 w-full">
 					<div className="flex flex-col gap-1 w-full max-w-xs">
-						<label className="text-xs text-muted text-center">
+						<label
+							htmlFor="username-input"
+							className="text-xs text-muted text-center"
+						>
 							{t("share.username_label")}{" "}
 							<span className="text-subtle">
 								({t("share.username_optional")})
 							</span>
 						</label>
 						<input
+							id="username-input"
 							type="text"
 							value={username}
 							onChange={handleUsernameChange}

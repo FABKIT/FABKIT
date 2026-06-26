@@ -1,9 +1,11 @@
 import type { FabbleMode } from "./types";
 
 // ─── Set release order ────────────────────────────────────────────────────────
-// 19 confirmed booster set codes in confirmed release order.
-// Cards from set codes not in this list get earliestSetIndex = Infinity and
-// emit a build-time warning. The 3-char prefix is extracted from setIdentifiers
+// Curated list of 19 booster set codes in release order. Not generated —
+// updating this list is a deliberate curation decision (see setOrder.g.ts for
+// the generated set-name → index map). Used at runtime by pool.ts to compute
+// earliestSetIndex; cards whose codes are absent get Infinity and emit a
+// runtime warning. The 3-char prefix is extracted from setIdentifiers
 // (e.g. "MST131" → "MST").
 export const SET_ORDER: string[] = [
 	"WTR", // Welcome to Rathe

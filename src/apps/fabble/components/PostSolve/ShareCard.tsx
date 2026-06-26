@@ -140,19 +140,19 @@ function tileColor(
 	}
 }
 
-function rowStates(row: FeedbackRow): string[] {
+function rowStates(row: FeedbackRow): Array<{ key: string; state: string }> {
 	return [
-		row.type.state,
-		row.class.state,
-		row.talent.state,
-		row.pitch.state,
-		row.cost.state,
-		row.power.state,
-		row.defense.state,
-		row.lifeOrIntellect.state,
-		row.subtype.state,
-		row.keyword.state,
-		row.set.state,
+		{ key: "type", state: row.type.state },
+		{ key: "class", state: row.class.state },
+		{ key: "talent", state: row.talent.state },
+		{ key: "pitch", state: row.pitch.state },
+		{ key: "cost", state: row.cost.state },
+		{ key: "power", state: row.power.state },
+		{ key: "defense", state: row.defense.state },
+		{ key: "lifeOrIntellect", state: row.lifeOrIntellect.state },
+		{ key: "subtype", state: row.subtype.state },
+		{ key: "keyword", state: row.keyword.state },
+		{ key: "set", state: row.set.state },
 	];
 }
 
@@ -370,9 +370,9 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 								>
 									{ri + 1}
 								</div>
-								{rowStates(g.feedbackRow).map((state, ci) => (
+								{rowStates(g.feedbackRow).map(({ key, state }) => (
 									<div
-										key={`${g.name}-col-${ci}`}
+										key={`${g.name}-${key}`}
 										className="rounded-[3px]"
 										style={{
 											width: TILE_W,
