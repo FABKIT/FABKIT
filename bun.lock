@@ -5,6 +5,7 @@
     "": {
       "name": "fabkit",
       "dependencies": {
+        "@flesh-and-blood/cards": "^3.7.16",
         "@headlessui/react": "^2.2.10",
         "@tanstack/react-router": "^1.169.1",
         "@tanstack/react-router-devtools": "^1.166.13",
@@ -41,7 +42,6 @@
       },
       "devDependencies": {
         "@biomejs/biome": "2.4.13",
-        "@flesh-and-blood/cards": "^3.7.16",
         "@rolldown/plugin-babel": "^0.2.3",
         "@tailwindcss/vite": "^4.2.4",
         "@tanstack/router-plugin": "^1.167.31",
