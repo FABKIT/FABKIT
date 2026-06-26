@@ -60,15 +60,17 @@ export function useAutocomplete(
 	// Skip already-guessed items when navigating keyboard (not memoized — no deps from closure)
 	const nextEnabledIndex = useCallback(
 		(from: number, direction: 1 | -1): number => {
-		const len = results.length;
-		if (len === 0) return -1;
-		let idx = from;
-		for (let i = 0; i < len; i++) {
-			idx = (((idx + direction) % len) + len) % len;
-			if (!results[idx]?.alreadyGuessed) return idx;
-		}
-		return -1; // all disabled
-	}, [results]);
+			const len = results.length;
+			if (len === 0) return -1;
+			let idx = from;
+			for (let i = 0; i < len; i++) {
+				idx = (((idx + direction) % len) + len) % len;
+				if (!results[idx]?.alreadyGuessed) return idx;
+			}
+			return -1; // all disabled
+		},
+		[results],
+	);
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent): void => {
