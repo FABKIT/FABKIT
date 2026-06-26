@@ -69,8 +69,7 @@ export function computeEarliestSetIndex(setIdentifiers: string[]): number {
 export function filterEligible(cards: RawCard[]): RawCard[] {
 	return cards.filter((card) => {
 		if (card.types.some((t: string) => EXCLUDED_TYPES.has(t))) return false;
-		if (card.isCardBack === true) return false;
-		return true;
+		return card.isCardBack !== true;
 	});
 }
 
