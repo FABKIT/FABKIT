@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import type { StreakData } from "@fabkit/apps/fabble/lib/types";
+import { useTranslation } from "react-i18next";
 
 interface StreakStatsProps {
 	streak: StreakData;
@@ -27,5 +27,3 @@ export function StreakStats({ streak }: StreakStatsProps) {
 		</div>
 	);
 }
-
-

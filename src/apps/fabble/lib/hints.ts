@@ -1,7 +1,7 @@
-import { HINT_UNLOCK_THRESHOLDS, SET_NAME_TO_INDEX } from "./constants";
-import type { DailyCard, FabbleMode } from "./types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import { HINT_UNLOCK_THRESHOLDS, SET_NAME_TO_INDEX } from "./constants";
 import { DISPLAY_TO_RARITY } from "./rarityUtils";
+import type { DailyCard, FabbleMode } from "./types";
 
 export type Hint =
 	| { id: "rarity"; labelKey: string; value: CardRarity }
@@ -26,10 +26,13 @@ const RARITY_RANK: Record<CardRarity, number> = {
 // Returns the slug of the most premium rarity present in the list.
 function bestRaritySlug(rarities: string[]): CardRarity | null {
 	if (rarities.length === 0) return null;
-	const slugs = rarities.map((r) => DISPLAY_TO_RARITY[r]).filter(Boolean) as CardRarity[];
+	const slugs = rarities
+		.map((r) => DISPLAY_TO_RARITY[r])
+		.filter(Boolean) as CardRarity[];
 	if (slugs.length === 0) return null;
 	return slugs.reduce(
-		(best, slug) => ((RARITY_RANK[slug] ?? 99) < (RARITY_RANK[best] ?? 99) ? slug : best),
+		(best, slug) =>
+			(RARITY_RANK[slug] ?? 99) < (RARITY_RANK[best] ?? 99) ? slug : best,
 		slugs[0],
 	);
 }
@@ -68,7 +71,10 @@ export function generateHints(daily: DailyCard): Hint[] {
  * Returns how many hints are currently unlocked based on guess count.
  * Standard mode only — Chaos always returns 0.
  */
-export function getAvailableHintCount(guessCount: number, mode: FabbleMode): number {
+export function getAvailableHintCount(
+	guessCount: number,
+	mode: FabbleMode,
+): number {
 	if (mode !== "standard") return 0;
 	return HINT_UNLOCK_THRESHOLDS.filter((t) => guessCount >= t).length;
 }

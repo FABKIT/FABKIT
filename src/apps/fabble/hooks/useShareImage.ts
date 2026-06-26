@@ -1,6 +1,9 @@
+import {
+	getUsername,
+	setUsername as storeUsername,
+} from "@fabkit/apps/fabble/lib/usernameStorage";
 import { snapdom } from "@zumer/snapdom";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getUsername, setUsername as storeUsername } from "@fabkit/apps/fabble/lib/usernameStorage";
 
 export interface UseShareImageResult {
 	cardRef: React.RefObject<HTMLDivElement | null>;

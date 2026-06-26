@@ -1,7 +1,7 @@
-import { Eye, Lock } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { HINT_UNLOCK_THRESHOLDS } from "@fabkit/apps/fabble/lib/constants";
 import type { Hint } from "@fabkit/apps/fabble/lib/hints";
+import { Eye, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface HintPanelProps {
 	hints: Hint[];
@@ -49,8 +49,10 @@ export function HintPanel({
 									{t(hint.labelKey)}:
 								</span>
 								<span aria-hidden="true">
-						{hint.id === "rarity" ? t(`rarity.${hint.value}`) : hint.value}
-					</span>
+									{hint.id === "rarity"
+										? t(`rarity.${hint.value}`)
+										: hint.value}
+								</span>
 							</span>
 						);
 					}
@@ -87,5 +89,3 @@ export function HintPanel({
 		</section>
 	);
 }
-
-

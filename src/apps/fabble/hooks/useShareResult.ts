@@ -1,6 +1,11 @@
+import {
+	type FabbleMode,
+	FabbleModes,
+	type FeedbackRow,
+	type GuessEntry,
+} from "@fabkit/apps/fabble/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FabbleModes, type FabbleMode, type FeedbackRow, type GuessEntry } from "@fabkit/apps/fabble/lib/types";
 
 // ─── Share payload ────────────────────────────────────────────────────────────
 
@@ -103,21 +108,24 @@ export function useShareResult(): UseShareResultResult {
 		}
 	}, []);
 
-	const share = useCallback(async (payload: SharePayload): Promise<void> => {
-		const modeName = t(FabbleModes[payload.mode]);
-		const text = buildShareText(payload, modeName);
+	const share = useCallback(
+		async (payload: SharePayload): Promise<void> => {
+			const modeName = t(FabbleModes[payload.mode]);
+			const text = buildShareText(payload, modeName);
 
-		if (navigator.share) {
-			try {
-				await navigator.share({ text });
-			} catch (e: unknown) {
-				if (e instanceof DOMException && e.name === "AbortError") return;
+			if (navigator.share) {
+				try {
+					await navigator.share({ text });
+				} catch (e: unknown) {
+					if (e instanceof DOMException && e.name === "AbortError") return;
+					await copyToClipboard(text);
+				}
+			} else {
 				await copyToClipboard(text);
 			}
-		} else {
-			await copyToClipboard(text);
-		}
-	}, [t, copyToClipboard]);
+		},
+		[t, copyToClipboard],
+	);
 
 	return { share, copied, copyError };
 }

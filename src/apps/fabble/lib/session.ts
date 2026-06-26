@@ -26,7 +26,11 @@ function safeLSRemove(key: string): void {
 
 // ─── Session write helpers ────────────────────────────────────────────────────
 
-export function saveSession(mode: FabbleMode, date: string, data: SessionData): void {
+export function saveSession(
+	mode: FabbleMode,
+	date: string,
+	data: SessionData,
+): void {
 	safeLSWrite(`fabble:session:${mode}:${date}`, data);
 }
 
@@ -39,7 +43,10 @@ export function saveStreak(mode: FabbleMode, streak: StreakData): void {
 }
 
 export function markFirstVisitSeen(): void {
-	safeLSWrite("fabble:firstVisit", { seen: true, date: new Date().toISOString() });
+	safeLSWrite("fabble:firstVisit", {
+		seen: true,
+		date: new Date().toISOString(),
+	});
 }
 
 // ─── Date arithmetic ──────────────────────────────────────────────────────────
@@ -50,7 +57,9 @@ export function markFirstVisitSeen(): void {
  */
 export function getDateOffset(date: string, offsetDays: number): string {
 	const [year, month, day] = date.split("-").map(Number);
-	const ms = Date.UTC(year as number, (month as number) - 1, day as number) + offsetDays * 86_400_000;
+	const ms =
+		Date.UTC(year as number, (month as number) - 1, day as number) +
+		offsetDays * 86_400_000;
 	return new Date(ms).toISOString().slice(0, 10);
 }
 

@@ -194,7 +194,11 @@ function evaluateLifeOrIntellect(
 
 	// Daily has a value, guess doesn't: the answer's life/int is higher than "none"
 	if (g === undefined && d !== undefined) {
-		return { state: "no-match", direction: "higher", revealedDailyValue: d.value };
+		return {
+			state: "no-match",
+			direction: "higher",
+			revealedDailyValue: d.value,
+		};
 	}
 
 	// Guess has a value, daily doesn't: no useful direction

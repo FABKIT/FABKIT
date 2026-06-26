@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { TILE_FLIP_DURATION_MS } from "@fabkit/apps/fabble/lib/constants";
 import type { CanonicalCard, GuessEntry } from "@fabkit/apps/fabble/lib/types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { GuessCard } from "./GuessCard";
 
 interface GuessGridProps {
@@ -81,5 +81,3 @@ export function GuessGrid({
 		</section>
 	);
 }
-
-

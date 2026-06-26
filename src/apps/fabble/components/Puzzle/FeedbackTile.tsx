@@ -1,6 +1,3 @@
-import { ArrowDown, ArrowUp, Ban, Check, X } from "lucide-react";
-import { type ReactNode, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { formatPitchValue } from "@fabkit/apps/fabble/lib/displayValues";
 import { NOTCLASSED_LABEL_KEY } from "@fabkit/apps/fabble/lib/feedback";
 import type {
@@ -10,6 +7,9 @@ import type {
 	NoMatchCell,
 	SetComparison,
 } from "@fabkit/apps/fabble/lib/types";
+import { ArrowDown, ArrowUp, Ban, Check, X } from "lucide-react";
+import { type ReactNode, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 interface FeedbackTileProps {
 	cell: FeedbackCell;
@@ -41,9 +41,11 @@ function getTileClasses(cell: FeedbackCell, isWinningRow?: boolean): string {
 
 function SetComparisonList({ comparisons }: { comparisons: SetComparison[] }) {
 	const sizeClass =
-		comparisons.length >= 6 ? "fabble-set-tighter" :
-		comparisons.length >= 4 ? "fabble-set-tight" :
-		"text-xs";
+		comparisons.length >= 6
+			? "fabble-set-tighter"
+			: comparisons.length >= 4
+				? "fabble-set-tight"
+				: "text-xs";
 	return (
 		<div className={`flex flex-col gap-px w-full ${sizeClass}`}>
 			{comparisons.map((c) => (
@@ -85,8 +87,10 @@ function buildTileContent(
 				</span>
 			);
 		}
-		const rawVal = columnId === "pitch" ? formatPitchValue(cell.value) : `${cell.value}`;
-		const displayVal = rawVal === NOTCLASSED_LABEL_KEY ? t(NOTCLASSED_LABEL_KEY) : rawVal;
+		const rawVal =
+			columnId === "pitch" ? formatPitchValue(cell.value) : `${cell.value}`;
+		const displayVal =
+			rawVal === NOTCLASSED_LABEL_KEY ? t(NOTCLASSED_LABEL_KEY) : rawVal;
 		return (
 			<span className="text-xs font-bold leading-tight w-full text-left break-words">
 				{displayVal}
@@ -222,12 +226,19 @@ export function FeedbackTile({
 	}
 
 	// Translate i18n sentinel values that come through the pure-function pipeline
-	const resolvedGuessValue = guessValue === NOTCLASSED_LABEL_KEY
-		? t(NOTCLASSED_LABEL_KEY)
-		: guessValue;
+	const resolvedGuessValue =
+		guessValue === NOTCLASSED_LABEL_KEY ? t(NOTCLASSED_LABEL_KEY) : guessValue;
 
 	const tileContent = useMemo(
-		() => buildTileContent(cell, columnId, resolvedGuessValue, t, setComparisons, isRainbowMatch),
+		() =>
+			buildTileContent(
+				cell,
+				columnId,
+				resolvedGuessValue,
+				t,
+				setComparisons,
+				isRainbowMatch,
+			),
 		[cell, columnId, resolvedGuessValue, t, setComparisons, isRainbowMatch],
 	);
 

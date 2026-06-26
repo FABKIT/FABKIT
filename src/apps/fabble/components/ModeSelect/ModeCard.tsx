@@ -1,7 +1,7 @@
+import { HINT_UNLOCK_THRESHOLDS } from "@fabkit/apps/fabble/lib/constants";
+import { type FabbleMode, FabbleModes } from "@fabkit/apps/fabble/lib/types";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { HINT_UNLOCK_THRESHOLDS } from "@fabkit/apps/fabble/lib/constants";
-import { FabbleModes, type FabbleMode } from "@fabkit/apps/fabble/lib/types";
 
 interface ModeCardProps {
 	mode: FabbleMode;
@@ -9,12 +9,22 @@ interface ModeCardProps {
 }
 
 /** Returns all i18n keys for a given game mode: its title, description, and mode label. */
-function getModeKeys(mode: FabbleMode): { titleKey: string; description: string; label: string } | null {
+function getModeKeys(
+	mode: FabbleMode,
+): { titleKey: string; description: string; label: string } | null {
 	switch (mode) {
 		case "standard":
-			return { titleKey: FabbleModes.standard, description: "mode.standard_description", label: "puzzle.mode_label_standard" };
+			return {
+				titleKey: FabbleModes.standard,
+				description: "mode.standard_description",
+				label: "puzzle.mode_label_standard",
+			};
 		case "chaos":
-			return { titleKey: FabbleModes.chaos, description: "mode.chaos_description", label: "puzzle.mode_label_chaos" };
+			return {
+				titleKey: FabbleModes.chaos,
+				description: "mode.chaos_description",
+				label: "puzzle.mode_label_chaos",
+			};
 		default:
 			console.warn(`[getModeKeys] Unexpected mode: ${mode as string}`);
 			return null;
@@ -41,7 +51,9 @@ export function ModeCard({ mode, guessLimit }: ModeCardProps) {
 					</span>
 					<span className="text-xs text-faint">
 						{mode === "standard"
-							? t("mode.hints_available", { count: HINT_UNLOCK_THRESHOLDS.length })
+							? t("mode.hints_available", {
+									count: HINT_UNLOCK_THRESHOLDS.length,
+								})
 							: t("mode.no_hints")}
 					</span>
 				</div>
@@ -57,5 +69,3 @@ export function ModeCard({ mode, guessLimit }: ModeCardProps) {
 		</div>
 	);
 }
-
-

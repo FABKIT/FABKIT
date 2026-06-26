@@ -1,8 +1,8 @@
-import { create } from "zustand";
-import { evaluateGuess } from "@fabkit/apps/fabble/lib/feedback";
 import { GUESS_LIMITS } from "@fabkit/apps/fabble/lib/constants";
+import { evaluateGuess } from "@fabkit/apps/fabble/lib/feedback";
 import type { Rotation } from "@fabkit/apps/fabble/lib/rotations";
 import { getRotationForDate } from "@fabkit/apps/fabble/lib/rotations";
+import { selectDaily } from "@fabkit/apps/fabble/lib/selection";
 import {
 	buildFreshSession,
 	clearSession,
@@ -15,7 +15,6 @@ import {
 	saveStreak,
 	updateRevealedHintCount,
 } from "@fabkit/apps/fabble/lib/session";
-import { selectDaily } from "@fabkit/apps/fabble/lib/selection";
 import type {
 	CanonicalCard,
 	DailyCard,
@@ -25,13 +24,14 @@ import type {
 	StreakData,
 	SubmitResult,
 } from "@fabkit/apps/fabble/lib/types";
+import { create } from "zustand";
 
 // ─── Store interface ──────────────────────────────────────────────────────────
 
 interface FabbleStore {
 	// Pools (loaded once per mode, stable after initMode)
-	pool: CanonicalCard[] | null;       // search pool (autocomplete + guessing)
-	dailyPool: CanonicalCard[] | null;  // daily selection pool (curated for Standard; same as pool for Chaos)
+	pool: CanonicalCard[] | null; // search pool (autocomplete + guessing)
+	dailyPool: CanonicalCard[] | null; // daily selection pool (curated for Standard; same as pool for Chaos)
 	poolVersion: string | null;
 
 	// Active session
@@ -52,7 +52,12 @@ interface FabbleStore {
 	activeRotation: Rotation | null;
 
 	// Actions
-	initMode(mode: FabbleMode, searchPool: CanonicalCard[], dailyPool: CanonicalCard[], poolVersion: string): void;
+	initMode(
+		mode: FabbleMode,
+		searchPool: CanonicalCard[],
+		dailyPool: CanonicalCard[],
+		poolVersion: string,
+	): void;
 	resetSession(mode: FabbleMode): void;
 	submitGuess(name: string): SubmitResult;
 	revealHint(): void;
@@ -94,7 +99,12 @@ export const useFabbleStore = create<FabbleStore>((set, get) => ({
 
 	// ─── initMode ──────────────────────────────────────────────────────────────
 	initMode: (mode, searchPool, dailyPool, poolVersion) => {
-		const { mode: currentMode, poolVersion: currentVersion, pool: currentPool, status: currentStatus } = get();
+		const {
+			mode: currentMode,
+			poolVersion: currentVersion,
+			pool: currentPool,
+			status: currentStatus,
+		} = get();
 
 		// Idempotent: no-op if same mode and pool version are already loaded
 		if (
@@ -158,7 +168,17 @@ export const useFabbleStore = create<FabbleStore>((set, get) => ({
 
 	// ─── submitGuess ───────────────────────────────────────────────────────────
 	submitGuess: (name) => {
-		const { mode, poolVersion, pool, daily, status, guesses, revealedHintCount, startedAt, streak } = get();
+		const {
+			mode,
+			poolVersion,
+			pool,
+			daily,
+			status,
+			guesses,
+			revealedHintCount,
+			startedAt,
+			streak,
+		} = get();
 
 		if (!mode || !poolVersion || !pool || !daily || status !== "in_progress") {
 			return { ok: false, error: "game_over" };
@@ -177,10 +197,17 @@ export const useFabbleStore = create<FabbleStore>((set, get) => ({
 		const feedbackRow = evaluateGuess(guessedCard, daily);
 		const correct = guessedCard.name === daily.name;
 
-		const updatedGuesses: GuessEntry[] = [...guesses, { name: guessedCard.name, feedbackRow }];
+		const updatedGuesses: GuessEntry[] = [
+			...guesses,
+			{ name: guessedCard.name, feedbackRow },
+		];
 		const guessLimit = GUESS_LIMITS[mode] ?? 8;
 		const didExhaust = updatedGuesses.length >= guessLimit;
-		const newStatus: SessionData["status"] = correct ? "won" : didExhaust ? "lost" : "in_progress";
+		const newStatus: SessionData["status"] = correct
+			? "won"
+			: didExhaust
+				? "lost"
+				: "in_progress";
 
 		const today = getTodayUTC();
 		const sessionToWrite: SessionData = {

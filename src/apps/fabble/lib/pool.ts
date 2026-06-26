@@ -10,7 +10,9 @@ export type PopularityProvider = (cardName: string) => number;
 
 /** Stub: uniform weights for all cards. Do NOT swap for a real implementation
  * without explicit review. */
-export const uniformPopularityProvider: PopularityProvider = (_cardName: string) => 1.0;
+export const uniformPopularityProvider: PopularityProvider = (
+	_cardName: string,
+) => 1.0;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

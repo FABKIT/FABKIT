@@ -25,5 +25,3 @@ export function CardReveal({ daily, won }: CardRevealProps) {
 		</div>
 	);
 }
-
-

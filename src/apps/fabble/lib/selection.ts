@@ -28,7 +28,7 @@ export const FABBLE_EPOCH = "2026-05-20";
 
 const SHUFFLE_SEEDS: Record<FabbleMode, string> = {
 	standard: "fabble:v1:standard:shuffle",
-	chaos:    "fabble:v1:chaos:shuffle",
+	chaos: "fabble:v1:chaos:shuffle",
 };
 
 // ─── cyrb53 — deterministic 53-bit hash ──────────────────────────────────────
@@ -138,7 +138,8 @@ export function selectDaily(
 	const shuffled = buildShuffledPool(dailyPool, SHUFFLE_SEEDS[mode]);
 	const offset = daysBetween(FABBLE_EPOCH, today);
 	// Positive modulo so dates before epoch map safely (shouldn't happen in production)
-	const index = ((offset % shuffled.length) + shuffled.length) % shuffled.length;
+	const index =
+		((offset % shuffled.length) + shuffled.length) % shuffled.length;
 	const canonical = shuffled[index] as CanonicalCard;
 
 	// Pick pitch variant deterministically: use a secondary hash of today + variant count
@@ -155,7 +156,9 @@ export function selectDaily(
 		variant = variants[0] as CanonicalCard["pitchVariants"][number];
 	} else {
 		const pitchHash = cyrb53(`${today}:${mode}:pitch`);
-		variant = variants[pitchHash % variants.length] as CanonicalCard["pitchVariants"][number];
+		variant = variants[
+			pitchHash % variants.length
+		] as CanonicalCard["pitchVariants"][number];
 	}
 
 	return buildDailyCard(canonical, variant);

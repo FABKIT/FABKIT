@@ -7,12 +7,19 @@ import { PuzzleToolbar } from "@fabkit/apps/fabble/components/Puzzle/PuzzleToolb
 import { RulesModal } from "@fabkit/apps/fabble/components/Rules/RulesModal";
 import { useFabbleGame } from "@fabkit/apps/fabble/hooks/useFabbleGame";
 import { POST_SOLVE_DELAY_MS } from "@fabkit/apps/fabble/lib/constants";
-import { buildChaosPool, buildStandardSearchPool } from "@fabkit/apps/fabble/lib/pool";
+import {
+	buildChaosPool,
+	buildStandardSearchPool,
+} from "@fabkit/apps/fabble/lib/pool";
 import {
 	STANDARD_SELECTION,
 	STANDARD_SELECTION_VERSION,
 } from "@fabkit/apps/fabble/lib/standardSelection.g";
-import type { CanonicalCard, FabbleMode, RawCard } from "@fabkit/apps/fabble/lib/types";
+import type {
+	CanonicalCard,
+	FabbleMode,
+	RawCard,
+} from "@fabkit/apps/fabble/lib/types";
 import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabbleStore";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -69,7 +76,9 @@ export const Route = createFileRoute("/fabble/$mode")({
 		}
 
 		// Populate store before component renders — eliminates useEffect init cycle
-		useFabbleStore.getState().initMode(mode, searchPool, dailyPool, STANDARD_SELECTION_VERSION);
+		useFabbleStore
+			.getState()
+			.initMode(mode, searchPool, dailyPool, STANDARD_SELECTION_VERSION);
 
 		return { pool: searchPool };
 	},

@@ -56,4 +56,3 @@ export function useCountdown(): UseCountdownResult {
 		isExpired,
 	};
 }
-

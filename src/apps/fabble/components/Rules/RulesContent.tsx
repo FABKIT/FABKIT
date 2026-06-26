@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { GUESS_LIMITS } from "@fabkit/apps/fabble/lib/constants";
+import { useTranslation } from "react-i18next";
 import { TileExampleRow } from "./TileExampleRow";
 
 const COLUMN_ENTRIES: [string, string][] = [
@@ -10,10 +10,7 @@ const COLUMN_ENTRIES: [string, string][] = [
 	["column.cost", "rules.column_description.cost"],
 	["column.power", "rules.column_description.power"],
 	["column.defense", "rules.column_description.defense"],
-	[
-		"column.life_intellect",
-		"rules.column_description.life_intellect",
-	],
+	["column.life_intellect", "rules.column_description.life_intellect"],
 	["column.subtype", "rules.column_description.subtype"],
 	["column.keyword", "rules.column_description.keyword"],
 	["column.set", "rules.column_description.set"],
@@ -96,8 +93,7 @@ export function RulesContent() {
 						{t("mode.guess_limit", { count: GUESS_LIMITS.standard })}.
 					</li>
 					<li>
-						<strong>{t("mode.chaos")}:</strong>{" "}
-						{t("mode.chaos_description")}.{" "}
+						<strong>{t("mode.chaos")}:</strong> {t("mode.chaos_description")}.{" "}
 						{t("mode.guess_limit", { count: GUESS_LIMITS.chaos })}.
 					</li>
 				</ul>
@@ -119,5 +115,3 @@ export function RulesContent() {
 		</div>
 	);
 }
-
-

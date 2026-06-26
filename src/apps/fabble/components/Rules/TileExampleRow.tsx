@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
-import type { FeedbackCell } from "@fabkit/apps/fabble/lib/types";
 import { FeedbackTile } from "@fabkit/apps/fabble/components/Puzzle/FeedbackTile";
+import type { FeedbackCell } from "@fabkit/apps/fabble/lib/types";
+import { useTranslation } from "react-i18next";
 
 const EXAMPLE_CELLS: {
 	id: string;
@@ -69,5 +69,3 @@ export function TileExampleRow() {
 		</div>
 	);
 }
-
-

@@ -1,6 +1,3 @@
-import { X } from "lucide-react";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { FAB_CDN_BASE } from "@fabkit/apps/fabble/lib/constants";
 import { getCardColumnValues } from "@fabkit/apps/fabble/lib/displayValues";
 import type {
@@ -9,6 +6,9 @@ import type {
 	GuessEntry,
 	MatchCell,
 } from "@fabkit/apps/fabble/lib/types";
+import { X } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FeedbackTile } from "./FeedbackTile";
 
 interface GuessCardProps {
@@ -32,7 +32,6 @@ const COLUMN_I18N_KEYS: Record<ColumnId, string> = {
 	keyword: "column.keyword",
 	set: "column.set",
 };
-
 
 export function GuessCard({
 	row,
@@ -68,7 +67,9 @@ export function GuessCard({
 						className={[
 							"rounded object-cover bg-surface-muted shrink-0 w-20 h-28",
 							isAnswer ? "" : "grayscale brightness-75",
-						].filter(Boolean).join(" ")}
+						]
+							.filter(Boolean)
+							.join(" ")}
 						onError={() => setImgFailed(true)}
 					/>
 				) : (
@@ -105,21 +106,23 @@ export function GuessCard({
 
 			{/* Zone B: tile grid */}
 			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5">
-				{(Object.keys(COLUMN_I18N_KEYS) as ColumnId[]).map((column, colIndex) => {
-					const cell = row.feedbackRow[column];
-					return (
-						<FeedbackTile
-							key={column}
-							cell={cell}
-							column={column}
-							columnLabel={t(COLUMN_I18N_KEYS[column])}
-							guessValue={guessValues?.[column]}
-							animate={animate}
-							animationDelay={animate ? colIndex * 100 : 0}
-							isWinningRow={isAnswer}
-						/>
-					);
-				})}
+				{(Object.keys(COLUMN_I18N_KEYS) as ColumnId[]).map(
+					(column, colIndex) => {
+						const cell = row.feedbackRow[column];
+						return (
+							<FeedbackTile
+								key={column}
+								cell={cell}
+								column={column}
+								columnLabel={t(COLUMN_I18N_KEYS[column])}
+								guessValue={guessValues?.[column]}
+								animate={animate}
+								animationDelay={animate ? colIndex * 100 : 0}
+								isWinningRow={isAnswer}
+							/>
+						);
+					},
+				)}
 			</div>
 		</div>
 	);

@@ -1,7 +1,7 @@
-import { forwardRef, useCallback } from "react";
-import { useTranslation } from "react-i18next";
 import { useShareResult } from "@fabkit/apps/fabble/hooks/useShareResult";
 import type { FabbleMode, GuessEntry } from "@fabkit/apps/fabble/lib/types";
+import { forwardRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ShareButtonProps {
 	guesses: GuessEntry[];
@@ -28,7 +28,11 @@ export const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(
 				aria-label={t("aria.share_result")}
 				className="min-h-11 px-6 py-2.5 bg-primary text-on-primary text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
 			>
-				{copyError ? t("share.copy_error") : copied ? t("share.copied") : t("result.share")}
+				{copyError
+					? t("share.copy_error")
+					: copied
+						? t("share.copied")
+						: t("result.share")}
 			</button>
 		);
 	},

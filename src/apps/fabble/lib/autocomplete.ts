@@ -17,12 +17,9 @@ const RE_DIACRITICS = /[̀-ͯ]/g;
 // Apostrophes removed so "Hunter's" = "Hunters", "Bolt'n'" = "Boltn"
 // straight U+0027, right-curly U+2019, left-curly U+2018, low-9 U+201A,
 // high-reversed U+201B, modifier-letter U+02BC, grave/backtick U+0060
-const RE_APOSTROPHES = new RegExp(
-	"['’‘‚‛ʼ`]",
-	"g",
-);
+const RE_APOSTROPHES = /['’‘‚‛ʼ`]/g;
 // Curly double quotes → straight (U+201C left, U+201D right, U+201E low-9, U+201F high-rev)
-const RE_DBL_QUOTES = new RegExp("[“”„‟]", "g");
+const RE_DBL_QUOTES = /[“”„‟]/g;
 
 function normalize(str: string): string {
 	return str

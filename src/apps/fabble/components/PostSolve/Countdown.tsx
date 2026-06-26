@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { useCountdown } from "@fabkit/apps/fabble/hooks/useCountdown";
+import { useTranslation } from "react-i18next";
 
 interface CountdownProps {
 	onExpired?: () => void;
@@ -32,5 +32,3 @@ export function Countdown({ onExpired }: CountdownProps) {
 		</div>
 	);
 }
-
-

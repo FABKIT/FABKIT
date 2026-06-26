@@ -1,8 +1,8 @@
+import type { Rotation } from "@fabkit/apps/fabble/lib/rotations";
+import type { FabbleMode } from "@fabkit/apps/fabble/lib/types";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, HelpCircle, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { Rotation } from "@fabkit/apps/fabble/lib/rotations";
-import type { FabbleMode } from "@fabkit/apps/fabble/lib/types";
 
 interface PuzzleToolbarProps {
 	mode: FabbleMode;
@@ -21,7 +21,9 @@ function getModeLabelKey(mode: PuzzleToolbarProps["mode"]): string {
 			return "puzzle.mode_label_chaos";
 		default: {
 			const _exhaustive: never = mode;
-			console.warn(`[getModeLabelKey] Unexpected mode: ${_exhaustive as string}`);
+			console.warn(
+				`[getModeLabelKey] Unexpected mode: ${_exhaustive as string}`,
+			);
 			return "puzzle.mode_label_standard";
 		}
 	}
@@ -88,5 +90,3 @@ export function PuzzleToolbar({
 		</div>
 	);
 }
-
-

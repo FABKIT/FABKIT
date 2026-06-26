@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
 import type { AutocompleteItem } from "@fabkit/apps/fabble/lib/autocomplete";
 import { searchPool } from "@fabkit/apps/fabble/lib/autocomplete";
 import type { CanonicalCard } from "@fabkit/apps/fabble/lib/types";
+import { useCallback, useMemo, useState } from "react";
 
 // ─── Hook output shape ────────────────────────────────────────────────────────
 
@@ -44,15 +44,18 @@ export function useAutocomplete(
 		setIsOpen(false);
 	}, []);
 
-	const selectItem = useCallback((name: string): void => {
-		// Check if item is already guessed (disabled) — don't submit if so
-		const item = results.find((r) => r.name === name);
-		if (item?.alreadyGuessed) return;
-		setInputValueRaw(name);
-		setIsOpen(false);
-		setActiveIndex(-1);
-		onSubmit(name);
-	}, [results, onSubmit]);
+	const selectItem = useCallback(
+		(name: string): void => {
+			// Check if item is already guessed (disabled) — don't submit if so
+			const item = results.find((r) => r.name === name);
+			if (item?.alreadyGuessed) return;
+			setInputValueRaw(name);
+			setIsOpen(false);
+			setActiveIndex(-1);
+			onSubmit(name);
+		},
+		[results, onSubmit],
+	);
 
 	// Skip already-guessed items when navigating keyboard (not memoized — no deps from closure)
 	function nextEnabledIndex(from: number, direction: 1 | -1): number {
@@ -66,51 +69,54 @@ export function useAutocomplete(
 		return -1; // all disabled
 	}
 
-	const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
-		if (!isOpen && e.key !== "ArrowDown") return;
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent): void => {
+			if (!isOpen && e.key !== "ArrowDown") return;
 
-		switch (e.key) {
-			case "ArrowDown": {
-				e.preventDefault();
-				if (!isOpen && inputValue.trim().length > 0) {
-					setIsOpen(true);
-					return;
-				}
-				const next = nextEnabledIndex(activeIndex, 1);
-				setActiveIndex(next);
-				break;
-			}
-			case "ArrowUp": {
-				e.preventDefault();
-				const prev = nextEnabledIndex(activeIndex, -1);
-				setActiveIndex(prev);
-				break;
-			}
-			case "Enter": {
-				e.preventDefault();
-				if (activeIndex >= 0 && activeIndex < results.length) {
-					const item = results[activeIndex];
-					if (!item?.alreadyGuessed) {
-						selectItem(item?.name ?? "");
+			switch (e.key) {
+				case "ArrowDown": {
+					e.preventDefault();
+					if (!isOpen && inputValue.trim().length > 0) {
+						setIsOpen(true);
+						return;
 					}
-				} else if (results.length > 0) {
-					const topEnabled = results.find((r) => !r.alreadyGuessed);
-					if (topEnabled) selectItem(topEnabled.name);
+					const next = nextEnabledIndex(activeIndex, 1);
+					setActiveIndex(next);
+					break;
 				}
-				break;
+				case "ArrowUp": {
+					e.preventDefault();
+					const prev = nextEnabledIndex(activeIndex, -1);
+					setActiveIndex(prev);
+					break;
+				}
+				case "Enter": {
+					e.preventDefault();
+					if (activeIndex >= 0 && activeIndex < results.length) {
+						const item = results[activeIndex];
+						if (!item?.alreadyGuessed) {
+							selectItem(item?.name ?? "");
+						}
+					} else if (results.length > 0) {
+						const topEnabled = results.find((r) => !r.alreadyGuessed);
+						if (topEnabled) selectItem(topEnabled.name);
+					}
+					break;
+				}
+				case "Escape": {
+					setIsOpen(false);
+					setActiveIndex(-1);
+					break;
+				}
+				case "Tab": {
+					setIsOpen(false);
+					setActiveIndex(-1);
+					break;
+				}
 			}
-			case "Escape": {
-				setIsOpen(false);
-				setActiveIndex(-1);
-				break;
-			}
-			case "Tab": {
-				setIsOpen(false);
-				setActiveIndex(-1);
-				break;
-			}
-		}
-	}, [isOpen, inputValue, activeIndex, results, selectItem]);
+		},
+		[isOpen, inputValue, activeIndex, results, selectItem],
+	);
 
 	return {
 		inputValue,

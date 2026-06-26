@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { useAutocomplete } from "@fabkit/apps/fabble/hooks/useAutocomplete";
 import type { CanonicalCard } from "@fabkit/apps/fabble/lib/types";
+import { useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { AutocompleteDropdown } from "./AutocompleteDropdown";
 
 interface GuessInputProps {
@@ -63,12 +63,24 @@ export function GuessInput({
 				selectItem(topEnabled.name);
 			}
 		}
-	}, [inputValue, activeIndex, results, pool, onSubmit, selectItem, clearInput, refocusInput]);
+	}, [
+		inputValue,
+		activeIndex,
+		results,
+		pool,
+		onSubmit,
+		selectItem,
+		clearInput,
+		refocusInput,
+	]);
 
-	const handleDropdownSelect = useCallback((name: string) => {
-		selectItem(name);
-		refocusInput();
-	}, [selectItem, refocusInput]);
+	const handleDropdownSelect = useCallback(
+		(name: string) => {
+			selectItem(name);
+			refocusInput();
+		},
+		[selectItem, refocusInput],
+	);
 
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value),

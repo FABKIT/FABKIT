@@ -79,9 +79,7 @@ if (chaosCollisions.length > 0) {
 		console.warn(`  - ${names.join(" / ")}`);
 	}
 }
-const chaosAmbiguousNames = new Set(
-	chaosCollisions.flatMap((c) => c.names),
-);
+const chaosAmbiguousNames = new Set(chaosCollisions.flatMap((c) => c.names));
 const chaosClean = chaosAll.map((c) =>
 	chaosAmbiguousNames.has(c.name) ? { ...c, isAmbiguous: true } : c,
 );

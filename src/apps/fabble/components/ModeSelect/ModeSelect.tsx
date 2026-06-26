@@ -1,8 +1,8 @@
+import { FabbleHeader } from "@fabkit/apps/fabble/components/FabbleHeader";
+import { GUESS_LIMITS } from "@fabkit/apps/fabble/lib/constants";
 import { Link } from "@tanstack/react-router";
 import { HelpCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { GUESS_LIMITS } from "@fabkit/apps/fabble/lib/constants";
-import { FabbleHeader } from "@fabkit/apps/fabble/components/FabbleHeader";
 import { ModeCard } from "./ModeCard";
 
 export function ModeSelect() {
@@ -32,5 +32,3 @@ export function ModeSelect() {
 		</div>
 	);
 }
-
-

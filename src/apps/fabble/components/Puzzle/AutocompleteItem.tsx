@@ -1,7 +1,7 @@
-import { Check } from "lucide-react";
-import { useCallback } from "react";
 import type { AutocompleteItem as AutocompleteItemType } from "@fabkit/apps/fabble/lib/autocomplete";
 import { FAB_CDN_BASE } from "@fabkit/apps/fabble/lib/constants";
+import { Check } from "lucide-react";
+import { useCallback } from "react";
 
 interface AutocompleteItemProps {
 	item: AutocompleteItemType;
@@ -22,9 +22,12 @@ export function AutocompleteItem({
 		}
 	}, [isDisabled, onSelect, item.name]);
 
-	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-		if (e.key === "Enter") handleClick();
-	}, [handleClick]);
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Enter") handleClick();
+		},
+		[handleClick],
+	);
 
 	// tabIndex={-1}: programmatically focusable (satisfies Biome) but NOT a tab stop.
 	// Keyboard focus stays on the input; active item communicated via aria-activedescendant.
@@ -73,5 +76,3 @@ export function AutocompleteItem({
 		</div>
 	);
 }
-
-

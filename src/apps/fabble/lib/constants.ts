@@ -69,4 +69,3 @@ export const FAB_CDN_BASE = "https://content.fabrary.net/cards/";
 // Kept in setOrder.g.ts — edit data/set-release-order.csv and re-run
 // scripts/generate-set-order.ts instead of editing that file directly.
 export { SET_NAME_TO_INDEX } from "./setOrder.g";
-

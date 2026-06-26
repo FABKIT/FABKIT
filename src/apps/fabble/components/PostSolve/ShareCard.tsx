@@ -1,7 +1,19 @@
-import { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import {
+	type FabbleMode,
+	FabbleModes,
+	type FeedbackRow,
+	type GuessEntry,
+} from "@fabkit/apps/fabble/lib/types";
 import FabkitIconSrc from "@fabkit/assets/Fabkitlogo_notext.svg?url";
-import { FabbleModes, type FabbleMode, type FeedbackRow, type GuessEntry } from "@fabkit/apps/fabble/lib/types";
+import {
+	forwardRef,
+	useCallback,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { useTranslation } from "react-i18next";
 
 // ─── Share card theme ─────────────────────────────────────────────────────────
 // Colors are read from CSS custom properties at runtime so the share card
@@ -52,9 +64,21 @@ function readThemeColors(el: Element): ShareCardColors {
 		heading: readCssVar(el, "--color-heading", FALLBACK_COLORS.heading),
 		muted: readCssVar(el, "--color-muted", FALLBACK_COLORS.muted),
 		subtle: readCssVar(el, "--color-subtle", FALLBACK_COLORS.subtle),
-		separator: readCssVar(el, "--color-border-primary", FALLBACK_COLORS.separator),
-		tileEmpty: readCssVar(el, "--color-fabble-empty", FALLBACK_COLORS.tileEmpty),
-		tileEmptyBorder: readCssVar(el, "--color-fabble-border", FALLBACK_COLORS.tileEmptyBorder),
+		separator: readCssVar(
+			el,
+			"--color-border-primary",
+			FALLBACK_COLORS.separator,
+		),
+		tileEmpty: readCssVar(
+			el,
+			"--color-fabble-empty",
+			FALLBACK_COLORS.tileEmpty,
+		),
+		tileEmptyBorder: readCssVar(
+			el,
+			"--color-fabble-border",
+			FALLBACK_COLORS.tileEmptyBorder,
+		),
 		match: readCssVar(el, "--color-fabble-match", FALLBACK_COLORS.match),
 		partial: readCssVar(el, "--color-fabble-partial", FALLBACK_COLORS.partial),
 		noMatch: readCssVar(el, "--color-fabble-no-match", FALLBACK_COLORS.noMatch),
@@ -79,14 +103,16 @@ function readThemeColors(el: Element): ShareCardColors {
 // as Tailwind arbitrary classes since they don't feed into the tile calculation.
 
 const CARD_SIZE = 540;
-const PAD = 22;        // horizontal inset shared by separator, column labels, guess rows, and footer
+const PAD = 22; // horizontal inset shared by separator, column labels, guess rows, and footer
 const INNER_W = CARD_SIZE - PAD * 2;
 const COLS = 11;
-const TILE_GAP = 3;    // gap between tiles and between rows
-const NUM_W = 14;      // width of the row-number gutter
-const TILE_W = Math.floor((INNER_W - NUM_W - TILE_GAP - (COLS - 1) * TILE_GAP) / COLS);
-const TILE_H = 22;     // default tile height; shrinks dynamically when there are many guesses
-const ROW_GAP = 3;     // alias of TILE_GAP for vertical spacing — kept separate for clarity
+const TILE_GAP = 3; // gap between tiles and between rows
+const NUM_W = 14; // width of the row-number gutter
+const TILE_W = Math.floor(
+	(INNER_W - NUM_W - TILE_GAP - (COLS - 1) * TILE_GAP) / COLS,
+);
+const TILE_H = 22; // default tile height; shrinks dynamically when there are many guesses
+const ROW_GAP = 3; // alias of TILE_GAP for vertical spacing — kept separate for clarity
 
 // Conservative sum of all fixed chrome sections (px): header(130) + logo area(50) +
 // separator(13) + score zone(50) + column labels(14) + footer(46).
@@ -94,14 +120,23 @@ const ROW_GAP = 3;     // alias of TILE_GAP for vertical spacing — kept separa
 const CHROME_H = 130 + 50 + 13 + 50 + 14 + 46;
 const GRID_AVAIL = CARD_SIZE - CHROME_H;
 
-function tileColor(colors: ShareCardColors, state: string, isWinningRow = false): string {
+function tileColor(
+	colors: ShareCardColors,
+	state: string,
+	isWinningRow = false,
+): string {
 	if (isWinningRow) return colors.match;
 	switch (state) {
-		case "match":    return colors.match;
-		case "partial":  return colors.partial;
-		case "no-match": return colors.noMatch;
-		case "na":       return colors.match;
-		default:         return colors.tileEmpty;
+		case "match":
+			return colors.match;
+		case "partial":
+			return colors.partial;
+		case "no-match":
+			return colors.noMatch;
+		case "na":
+			return colors.match;
+		default:
+			return colors.tileEmpty;
 	}
 }
 
@@ -145,36 +180,49 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 		}, []);
 
 		const modeLabel = `${t(FabbleModes[mode])} ${t("mode.suffix")}`;
-		const scoreText = won ? `${guesses.length}/${guessLimit}` : `X/${guessLimit}`;
+		const scoreText = won
+			? `${guesses.length}/${guessLimit}`
+			: `X/${guessLimit}`;
 
 		// Shrink tile height when many guesses would push the footer off-card.
 		const n = guesses.length;
 		const naturalGridH = n * TILE_H + Math.max(0, n - 1) * ROW_GAP;
-		const effectiveTileH = naturalGridH <= GRID_AVAIL
-			? TILE_H
-			: Math.max(12, Math.floor((GRID_AVAIL - Math.max(0, n - 1) * ROW_GAP) / n));
+		const effectiveTileH =
+			naturalGridH <= GRID_AVAIL
+				? TILE_H
+				: Math.max(
+						12,
+						Math.floor((GRID_AVAIL - Math.max(0, n - 1) * ROW_GAP) / n),
+					);
 
-		const colLabels = useMemo(() => [
-			t("column_abbr.type"),
-			t("column_abbr.class"),
-			t("column_abbr.talent"),
-			t("column_abbr.pitch"),
-			t("column_abbr.cost"),
-			t("column_abbr.power"),
-			t("column_abbr.defense"),
-			t("column_abbr.life_intellect"),
-			t("column_abbr.subtype"),
-			t("column_abbr.keyword"),
-			t("column_abbr.set"),
-		], [t]);
+		const colLabels = useMemo(
+			() => [
+				t("column_abbr.type"),
+				t("column_abbr.class"),
+				t("column_abbr.talent"),
+				t("column_abbr.pitch"),
+				t("column_abbr.cost"),
+				t("column_abbr.power"),
+				t("column_abbr.defense"),
+				t("column_abbr.life_intellect"),
+				t("column_abbr.subtype"),
+				t("column_abbr.keyword"),
+				t("column_abbr.set"),
+			],
+			[t],
+		);
 
 		// Merge the forwarded ref with our internal rootRef.
 		// useCallback prevents a detach/reattach cycle on every re-render.
-		const setRefs = useCallback((el: HTMLDivElement | null) => {
-			rootRef.current = el;
-			if (typeof ref === "function") ref(el);
-			else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
-		}, [ref]);
+		const setRefs = useCallback(
+			(el: HTMLDivElement | null) => {
+				rootRef.current = el;
+				if (typeof ref === "function") ref(el);
+				else if (ref)
+					(ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+			},
+			[ref],
+		);
 
 		return (
 			<div
@@ -203,12 +251,16 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 					{/* Left vignette — fades gently so more art shows through */}
 					<div
 						className="absolute inset-0"
-						style={{ background: `linear-gradient(to right, ${colors.bg} 0%, transparent 45%)` }}
+						style={{
+							background: `linear-gradient(to right, ${colors.bg} 0%, transparent 45%)`,
+						}}
 					/>
 					{/* Bottom vignette — blends into the card body */}
 					<div
 						className="absolute inset-0"
-						style={{ background: `linear-gradient(to top, ${colors.bg} 0%, transparent 50%)` }}
+						style={{
+							background: `linear-gradient(to top, ${colors.bg} 0%, transparent 50%)`,
+						}}
 					/>
 					{/* Mode / date badge */}
 					{/* text-[11px]: no named Tailwind equivalent for this screenshot-card size */}
@@ -223,18 +275,18 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				{/* ── Fabble logo ── */}
 				{/* h-[38px]: logo target height for this card size; py-1.5 × 2 + 38 ≈ CHROME_H logo term (50) */}
 				<div className="flex justify-center shrink-0 py-1.5">
-					<img
-						src="/FabbleLogo.svg"
-						alt="Fabble"
-						className="h-[38px] w-auto"
-					/>
+					<img src="/FabbleLogo.svg" alt="Fabble" className="h-[38px] w-auto" />
 				</div>
 
 				{/* ── Separator ── */}
 				{/* mx uses PAD inline so it stays in sync with the grid math constant */}
 				<div
 					className="shrink-0 h-px mb-3"
-					style={{ marginLeft: PAD, marginRight: PAD, backgroundColor: colors.separator }}
+					style={{
+						marginLeft: PAD,
+						marginRight: PAD,
+						backgroundColor: colors.separator,
+					}}
 				/>
 
 				{/* ── Score zone ── */}
@@ -253,10 +305,17 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 						className="text-[13px] leading-[1.4]"
 						style={{ color: colors.heading }}
 					>
-						{won
-							? <>{t("share.solved_in")}&nbsp;<strong style={{ color: colors.accent }}>{scoreText}</strong></>
-							: <>{t("share.played_today")}&nbsp;<strong style={{ color: colors.subtle }}>{scoreText}</strong></>
-						}
+						{won ? (
+							<>
+								{t("share.solved_in")}&nbsp;
+								<strong style={{ color: colors.accent }}>{scoreText}</strong>
+							</>
+						) : (
+							<>
+								{t("share.played_today")}&nbsp;
+								<strong style={{ color: colors.subtle }}>{scoreText}</strong>
+							</>
+						)}
 					</span>
 					{hintsUsed !== undefined && (
 						<span className="text-[11px]" style={{ color: colors.muted }}>
@@ -267,7 +326,10 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
 				{/* ── Column labels ── */}
 				{/* gap and px use TILE_GAP / PAD inline to stay in sync with tile math */}
-				<div className="flex shrink-0 mb-1" style={{ gap: TILE_GAP, paddingLeft: PAD, paddingRight: PAD }}>
+				<div
+					className="flex shrink-0 mb-1"
+					style={{ gap: TILE_GAP, paddingLeft: PAD, paddingRight: PAD }}
+				>
 					<div style={{ width: NUM_W, minWidth: NUM_W }} />
 					{colLabels.map((label) => (
 						<div
@@ -286,14 +348,25 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
 				{/* ── Guess rows ── */}
 				{/* gap and px use ROW_GAP / PAD inline to stay in sync with tile math */}
-				<div className="flex flex-col shrink-0" style={{ gap: ROW_GAP, paddingLeft: PAD, paddingRight: PAD }}>
+				<div
+					className="flex flex-col shrink-0"
+					style={{ gap: ROW_GAP, paddingLeft: PAD, paddingRight: PAD }}
+				>
 					{guesses.map((g, ri) => {
 						const isWinningRow = won && ri === guesses.length - 1;
 						return (
-							<div key={g.name} className="flex items-center" style={{ gap: TILE_GAP }}>
+							<div
+								key={g.name}
+								className="flex items-center"
+								style={{ gap: TILE_GAP }}
+							>
 								<div
 									className="text-center font-bold shrink-0 text-[8px]"
-									style={{ width: NUM_W, minWidth: NUM_W, color: colors.subtle }}
+									style={{
+										width: NUM_W,
+										minWidth: NUM_W,
+										color: colors.subtle,
+									}}
 								>
 									{ri + 1}
 								</div>
@@ -319,7 +392,15 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
 				{/* ── Footer ── */}
 				{/* pt/pb/px are part of the CHROME_H footer term (46px); px matches PAD */}
-				<div className="flex flex-col items-center justify-center shrink-0 gap-1" style={{ paddingTop: 10, paddingBottom: 14, paddingLeft: PAD, paddingRight: PAD }}>
+				<div
+					className="flex flex-col items-center justify-center shrink-0 gap-1"
+					style={{
+						paddingTop: 10,
+						paddingBottom: 14,
+						paddingLeft: PAD,
+						paddingRight: PAD,
+					}}
+				>
 					<span className="text-[11px]" style={{ color: colors.subtle }}>
 						{t("share.tagline")}
 					</span>

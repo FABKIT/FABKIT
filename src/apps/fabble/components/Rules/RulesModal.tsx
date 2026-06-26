@@ -17,9 +17,7 @@ export function RulesModal({ isFirstVisit, onClose }: RulesModalProps) {
 		panelRef.current?.scrollTo(0, 0);
 	}, []);
 
-	const actionKey = isFirstVisit
-		? "rules.action.got_it"
-		: "rules.action.close";
+	const actionKey = isFirstVisit ? "rules.action.got_it" : "rules.action.close";
 
 	return (
 		<Dialog open={true} onClose={onClose} className="relative z-50">
@@ -28,7 +26,10 @@ export function RulesModal({ isFirstVisit, onClose }: RulesModalProps) {
 
 			{/* Modal panel */}
 			<div className="fixed inset-0 flex items-center justify-center p-4">
-				<DialogPanel ref={panelRef} className="w-full max-w-lg rounded-xl bg-surface p-6 shadow-xl overflow-y-auto fabble-modal-panel">
+				<DialogPanel
+					ref={panelRef}
+					className="w-full max-w-lg rounded-xl bg-surface p-6 shadow-xl overflow-y-auto fabble-modal-panel"
+				>
 					<div className="flex flex-col gap-6">
 						<div className="flex items-start justify-between">
 							<DialogTitle className="text-xl font-bold text-heading">
