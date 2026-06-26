@@ -35,25 +35,3 @@ export function computeFingerprint(card: CanonicalCard): string {
 		String(card.earliestSetIndex),
 	].join("::");
 }
-
-/**
- * Detects fingerprint collisions in the pool.
- * A collision means two cards are indistinguishable via the 10-column grid.
- * Called at build time; ambiguous cards are excluded from daily selection.
- */
-export function findCollisions(
-	pool: CanonicalCard[],
-): Array<{ fingerprint: string; names: string[] }> {
-	const fingerprintMap = new Map<string, string[]>();
-
-	for (const card of pool) {
-		const fp = computeFingerprint(card);
-		const existing = fingerprintMap.get(fp) ?? [];
-		existing.push(card.name);
-		fingerprintMap.set(fp, existing);
-	}
-
-	return [...fingerprintMap.entries()]
-		.filter(([, names]) => names.length > 1)
-		.map(([fingerprint, names]) => ({ fingerprint, names }));
-}
