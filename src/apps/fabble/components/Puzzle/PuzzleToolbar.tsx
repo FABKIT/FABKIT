@@ -20,9 +20,8 @@ function getModeLabelKey(mode: PuzzleToolbarProps["mode"]): string {
 		case "chaos":
 			return "puzzle.mode_label_chaos";
 		default: {
-			const _exhaustive: never = mode;
 			console.warn(
-				`[getModeLabelKey] Unexpected mode: ${_exhaustive as string}`,
+				`[getModeLabelKey] Unexpected mode: ${mode as string}`,
 			);
 			return "puzzle.mode_label_standard";
 		}
