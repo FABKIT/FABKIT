@@ -9,7 +9,7 @@ export function Countdown({ onExpired }: CountdownProps) {
 	const { t } = useTranslation("fabble");
 	const { timeString, isExpired } = useCountdown();
 
-	if (isExpired === false) {
+	if (!isExpired) {
 		return (
 			<p className="text-sm text-muted" aria-live="off" aria-atomic="false">
 				{t("result.next_puzzle_in", { time: timeString })}
