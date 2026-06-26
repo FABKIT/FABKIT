@@ -75,7 +75,6 @@ export interface DailyCard {
 
 // ─── Feedback cell types ──────────────────────────────────────────────────────
 
-export type TileState = "match" | "partial" | "no-match" | "na";
 export type Direction = "higher" | "lower";
 
 export type SetComparison = {
@@ -165,13 +164,6 @@ export interface StreakData {
 	current: number;
 	max: number;
 	lastSolvedDate: string; // YYYY-MM-DD (UTC)
-}
-
-// ─── First visit data ─────────────────────────────────────────────────────────
-
-export interface FirstVisitData {
-	seen: true;
-	date: string; // ISO 8601
 }
 
 // ─── Submit result ────────────────────────────────────────────────────────────
