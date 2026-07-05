@@ -18,7 +18,6 @@
 		"@tanstack/react-router-devtools": "^1.166.13",
 		"@tiptap/extension-bold": "^3.22.5",
 		"@tiptap/extension-document": "^3.22.5",
-		"@tiptap/extension-emoji": "^3.22.5",
 		"@tiptap/extension-italic": "^3.22.5",
 		"@tiptap/extension-list": "^3.22.5",
 		"@tiptap/extension-paragraph": "^3.22.5",
