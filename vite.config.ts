@@ -17,13 +17,6 @@ export default defineConfig({
 	},
 	build: {
 		sourcemap: true,
-		rolldownOptions: {
-			output: {
-				advancedChunks: {
-					groups: [{ name: "tiptap-emoji", test: /@tiptap\/extension-emoji/ }],
-				},
-			},
-		},
 	},
 	plugins: [
 		tsconfigPaths(),

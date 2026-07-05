@@ -1,5 +1,4 @@
 import Bold from "@tiptap/extension-bold";
-import Emoji from "@tiptap/extension-emoji";
 import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
@@ -21,16 +20,11 @@ import {
 	Underline as UnderlineIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Emoji, type EmojiItem } from "./extensions/Emoji.ts";
 import { FabDash } from "./extensions/FabDash.ts";
 import "../../../styles/components/rich-text-editor.css";
 
-export interface EmojiItem {
-	name: string;
-	shortcodes: string[];
-	tags: string[];
-	group: string;
-	fallbackImage?: string;
-}
+export type { EmojiItem };
 
 export interface RichTextEditorProps {
 	content: Content | null;
