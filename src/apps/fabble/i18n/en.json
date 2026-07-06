@@ -49,7 +49,8 @@
 		"title": "Hints",
 		"locked": "After guess {{count}}",
 		"rarity_label": "Reveal rarity",
-		"set_label": "Reveal set"
+		"set_label": "Reveal set",
+		"used": "Hints used: {{used}}/2"
 	},
 	"rarity": {
 		"basic": "Basic",
@@ -99,6 +100,17 @@
 		"streak_best": "Best streak",
 		"next_puzzle": "Next puzzle in {{time}}",
 		"new_puzzle": "New puzzle available"
+	},
+	"share": {
+		"button": "Share Result",
+		"copy_text": "Copy as text",
+		"copied": "Copied!",
+		"username_label": "Add your name to the share card (optional)",
+		"username_hint": "Saved for next time · not stored anywhere else",
+		"result_solved": "solved today's Fabble in {{score}}",
+		"result_failed": "couldn't solve today's Fabble",
+		"footer_line": "A daily Flesh and Blood deduction puzzle",
+		"footer_brand": "Powered by Fabkit.io"
 	},
 	"errors": {
 		"load_failed": "Couldn't load today's puzzle",

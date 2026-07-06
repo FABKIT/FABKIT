@@ -2,28 +2,30 @@ import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { useTranslation } from "react-i18next";
 import type { FabbleMode } from "../config";
 import { earliestRegularPrinting } from "../game/compare";
+import type { ModeSession } from "../stores/fabble";
 import type { FabbleCard, PersistedStreaks } from "../types";
 import { Countdown } from "./Countdown";
+import { ShareBlock } from "./ShareBlock";
 
 interface EndPanelProps {
 	mode: FabbleMode;
-	status: "won" | "lost";
-	guessCount: number;
+	session: ModeSession;
 	answer: FabbleCard;
 	streaks: PersistedStreaks;
+	today: Date;
 	onNewDay: () => void;
 }
 
 export function EndPanel({
 	mode,
-	status,
-	guessCount,
+	session,
 	answer,
 	streaks,
+	today,
 	onNewDay,
 }: EndPanelProps) {
 	const { t } = useTranslation("fabble");
-	const won = status === "won";
+	const won = session.status === "won";
 	const set = earliestRegularPrinting(answer);
 
 	return (
@@ -64,7 +66,7 @@ export function EndPanel({
 
 			<p className="text-body">
 				{won
-					? t("end.solved_in", { count: guessCount })
+					? t("end.solved_in", { count: session.guesses.length })
 					: t("end.defeat_reveal", { name: answer.name })}
 			</p>
 
@@ -82,6 +84,8 @@ export function EndPanel({
 					<span className="text-xs text-muted">{t("end.streak_best")}</span>
 				</div>
 			</div>
+
+			<ShareBlock mode={mode} session={session} today={today} />
 
 			<Countdown onNewDay={onNewDay} />
 		</div>

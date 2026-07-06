@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { FabbleMode } from "../config";
-import { HINT_UNLOCK_GUESSES, MAX_GUESSES } from "../config";
+import {
+	HINT_UNLOCK_GUESSES,
+	MAX_GUESSES,
+	USERNAME_MAX_LENGTH,
+} from "../config";
 import { compareCards } from "../game/compare";
 import { type DailyPuzzle, getDailyPuzzle } from "../game/daily";
 import { dayBefore, getToday, localDateKey } from "../game/date";
@@ -37,6 +41,7 @@ interface FabbleState {
 	searchIndex: SearchEntry[] | null;
 	sessions: Partial<Record<FabbleMode, ModeSession>>;
 	streaks: Partial<Record<FabbleMode, PersistedStreaks>>;
+	username: string;
 }
 
 interface FabbleActions {
@@ -46,6 +51,7 @@ interface FabbleActions {
 	revealHint(mode: FabbleMode, hintIndex: 0 | 1): void;
 	markGuessAnimated(mode: FabbleMode, guessId: string): void;
 	advanceToNewDay(mode: FabbleMode): void;
+	setUsername(name: string): void;
 	devReset(mode: FabbleMode): void;
 }
 
@@ -55,6 +61,7 @@ const initialState: FabbleState = {
 	searchIndex: null,
 	sessions: {},
 	streaks: {},
+	username: safeStorage.get<string>(STORAGE_KEYS.username) ?? "",
 };
 
 const emptyStreaks: PersistedStreaks = {
@@ -80,6 +87,17 @@ function persistSession(mode: FabbleMode, session: ModeSession): void {
 		status: session.status,
 	};
 	safeStorage.set(STORAGE_KEYS.session(mode), persisted);
+}
+
+/** Guess + twin results merged back into their real submission order (oldest first). */
+export function getOrderedResults(session: ModeSession): GuessResult[] {
+	const resultsById = new Map<string, GuessResult>([
+		...session.guesses.map((g): [string, GuessResult] => [g.guessId, g]),
+		...session.twinGuesses.map((g): [string, GuessResult] => [g.guessId, g]),
+	]);
+	return session.order
+		.map((id) => resultsById.get(id))
+		.filter((g): g is GuessResult => g !== undefined);
 }
 
 function hydrateSession(
@@ -296,6 +314,12 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 
 		advanceToNewDay: (mode) => {
 			get().startOrRestoreSession(mode);
+		},
+
+		setUsername: (name) => {
+			const trimmed = name.slice(0, USERNAME_MAX_LENGTH);
+			safeStorage.set(STORAGE_KEYS.username, trimmed);
+			set({ username: trimmed }, undefined, "fabble/setUsername");
 		},
 
 		devReset: (mode) => {

@@ -1,6 +1,5 @@
 import type { FabbleMode } from "../config";
-import { useFabbleStore } from "../stores/fabble";
-import type { GuessResult } from "../types";
+import { getOrderedResults, useFabbleStore } from "../stores/fabble";
 import { FeedbackBlock } from "./FeedbackBlock";
 
 interface GuessHistoryProps {
@@ -14,25 +13,20 @@ export function GuessHistory({ mode }: GuessHistoryProps) {
 
 	if (!session || !cardsById || session.order.length === 0) return null;
 
-	const resultsById = new Map<string, GuessResult>([
-		...session.guesses.map((g): [string, GuessResult] => [g.guessId, g]),
-		...session.twinGuesses.map((g): [string, GuessResult] => [g.guessId, g]),
-	]);
-	const order = [...session.order].reverse();
+	const results = [...getOrderedResults(session)].reverse();
 
 	return (
 		<div className="flex w-full max-w-180 flex-col gap-5">
-			{order.map((guessId) => {
-				const result = resultsById.get(guessId);
-				const card = cardsById.get(guessId);
-				if (!result || !card) return null;
+			{results.map((result) => {
+				const card = cardsById.get(result.guessId);
+				if (!card) return null;
 				return (
 					<FeedbackBlock
-						key={guessId}
+						key={result.guessId}
 						result={result}
 						card={card}
-						alreadyAnimated={session.animatedGuessIds.includes(guessId)}
-						onAnimated={() => markGuessAnimated(mode, guessId)}
+						alreadyAnimated={session.animatedGuessIds.includes(result.guessId)}
+						onAnimated={() => markGuessAnimated(mode, result.guessId)}
 					/>
 				);
 			})}

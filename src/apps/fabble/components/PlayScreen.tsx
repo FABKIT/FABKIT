@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { FabbleMode } from "../config";
 import { MAX_GUESSES, REVEAL_TOTAL_MS } from "../config";
+import { getToday } from "../game/date";
 import { useFabbleStore } from "../stores/fabble";
 import { CardSearchInput } from "./CardSearchInput";
 import { EndPanel } from "./EndPanel";
@@ -96,8 +97,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 			{session.status !== "playing" && answer && showEndPanel && (
 				<EndPanel
 					mode={mode}
-					status={session.status}
-					guessCount={session.guesses.length}
+					session={session}
 					answer={answer}
 					streaks={
 						streaks ?? {
@@ -108,6 +108,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 							lastResult: null,
 						}
 					}
+					today={getToday()}
 					onNewDay={() => advanceToNewDay(mode)}
 				/>
 			)}
