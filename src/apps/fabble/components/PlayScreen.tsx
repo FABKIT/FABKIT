@@ -4,11 +4,12 @@ import { useTranslation } from "react-i18next";
 import type { FabbleMode } from "../config";
 import { MAX_GUESSES, REVEAL_TOTAL_MS } from "../config";
 import { getToday } from "../game/date";
-import { useFabbleStore } from "../stores/fabble";
+import { getOrderedResults, useFabbleStore } from "../stores/fabble";
 import { CardSearchInput } from "./CardSearchInput";
 import { EndPanel } from "./EndPanel";
 import { GuessHistory } from "./GuessHistory";
 import { HintsRow } from "./HintsRow";
+import { RulesDialog } from "./RulesDialog";
 import { StatusBar } from "./StatusBar";
 import { ThemeBanner } from "./ThemeBanner";
 import { TypeChipsRow } from "./TypeChipsRow";
@@ -33,6 +34,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 	const cardsById = useFabbleStore((s) => s.cardsById);
 
 	const [showEndPanel, setShowEndPanel] = useState(false);
+	const [rulesOpen, setRulesOpen] = useState(false);
 
 	useEffect(() => {
 		ingestDataset(dataset);
@@ -75,14 +77,30 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 		startOrRestoreSession(mode);
 	}
 
+	const orderedResults = getOrderedResults(session);
+	const lastResult = orderedResults[orderedResults.length - 1];
+	const lastCard = lastResult ? cardsById.get(lastResult.guessId) : undefined;
+	const announcement =
+		lastResult && lastCard
+			? t("feedback.announce", {
+					name: lastCard.name,
+					matches: lastResult.columns.filter((c) => c.state === "match").length,
+					total: lastResult.columns.length,
+				})
+			: "";
+
 	return (
 		<div className="flex w-full flex-col items-center gap-6">
+			<span aria-live="polite" className="sr-only">
+				{announcement}
+			</span>
 			<TypeChipsRow />
 			<StatusBar
 				mode={mode}
 				guessCount={session.guesses.length}
 				maxGuesses={MAX_GUESSES[mode]}
 				onReset={handleReset}
+				onHelp={() => setRulesOpen(true)}
 			/>
 			<ThemeBanner theme={session.theme} />
 			{mode === "standard" && answer && (
@@ -113,6 +131,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 				/>
 			)}
 			<GuessHistory mode={mode} />
+			<RulesDialog open={rulesOpen} onClose={() => setRulesOpen(false)} />
 		</div>
 	);
 }

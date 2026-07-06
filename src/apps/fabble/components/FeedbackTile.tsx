@@ -26,10 +26,14 @@ export function FeedbackTile({ feedback, style, flip }: FeedbackTileProps) {
 		? t("feedback.all_colors")
 		: feedback.guessDisplay || t("feedback.none");
 
-	const ariaLabel = t(`feedback.aria.${feedback.state}`, {
+	const ariaKey = feedback.notApplicable
+		? "not_applicable"
+		: (feedback.direction ?? feedback.state);
+	const ariaLabel = t(`feedback.aria.${ariaKey}`, {
 		column: t(`feedback.columns.${feedback.column}`),
 		value,
 		shared: feedback.shared?.join(", "),
+		revealed: feedback.revealedValue,
 	});
 
 	return (

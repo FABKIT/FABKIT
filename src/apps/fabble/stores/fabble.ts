@@ -42,6 +42,7 @@ interface FabbleState {
 	sessions: Partial<Record<FabbleMode, ModeSession>>;
 	streaks: Partial<Record<FabbleMode, PersistedStreaks>>;
 	username: string;
+	hasSeenRules: boolean;
 }
 
 interface FabbleActions {
@@ -52,6 +53,7 @@ interface FabbleActions {
 	markGuessAnimated(mode: FabbleMode, guessId: string): void;
 	advanceToNewDay(mode: FabbleMode): void;
 	setUsername(name: string): void;
+	markRulesSeen(): void;
 	devReset(mode: FabbleMode): void;
 }
 
@@ -62,6 +64,7 @@ const initialState: FabbleState = {
 	sessions: {},
 	streaks: {},
 	username: safeStorage.get<string>(STORAGE_KEYS.username) ?? "",
+	hasSeenRules: safeStorage.get<boolean>(STORAGE_KEYS.seenRules) ?? false,
 };
 
 const emptyStreaks: PersistedStreaks = {
@@ -320,6 +323,11 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 			const trimmed = name.slice(0, USERNAME_MAX_LENGTH);
 			safeStorage.set(STORAGE_KEYS.username, trimmed);
 			set({ username: trimmed }, undefined, "fabble/setUsername");
+		},
+
+		markRulesSeen: () => {
+			safeStorage.set(STORAGE_KEYS.seenRules, true);
+			set({ hasSeenRules: true }, undefined, "fabble/markRulesSeen");
 		},
 
 		devReset: (mode) => {

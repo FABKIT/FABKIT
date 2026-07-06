@@ -1,16 +1,33 @@
 import { Link } from "@tanstack/react-router";
 import { HelpCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MODES } from "../config";
+import { useFabbleStore } from "../stores/fabble";
+import { RulesDialog } from "./RulesDialog";
 
 export function ModeSelect() {
 	const { t } = useTranslation("fabble");
+	const hasSeenRules = useFabbleStore((s) => s.hasSeenRules);
+	const markRulesSeen = useFabbleStore((s) => s.markRulesSeen);
+	const [rulesOpen, setRulesOpen] = useState(false);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only check once per mount, not on every hasSeenRules change
+	useEffect(() => {
+		if (!hasSeenRules) setRulesOpen(true);
+	}, []);
+
+	function closeRules() {
+		setRulesOpen(false);
+		markRulesSeen();
+	}
 
 	return (
 		<div className="flex w-full flex-col items-center gap-6">
 			<p className="text-muted">{t("home.tagline")}</p>
 			<button
 				type="button"
+				onClick={() => setRulesOpen(true)}
 				className="flex items-center gap-1.5 rounded-full border border-border-primary px-4 py-1.5 text-sm text-body transition-colors hover:bg-surface-active"
 			>
 				<HelpCircle className="h-4 w-4" />
@@ -42,6 +59,7 @@ export function ModeSelect() {
 					</div>
 				))}
 			</div>
+			<RulesDialog open={rulesOpen} onClose={closeRules} />
 		</div>
 	);
 }

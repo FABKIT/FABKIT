@@ -8,6 +8,7 @@ interface StatusBarProps {
 	guessCount: number;
 	maxGuesses: number;
 	onReset: () => void;
+	onHelp: () => void;
 }
 
 export function StatusBar({
@@ -15,6 +16,7 @@ export function StatusBar({
 	guessCount,
 	maxGuesses,
 	onReset,
+	onHelp,
 }: StatusBarProps) {
 	const { t } = useTranslation("fabble");
 
@@ -46,6 +48,7 @@ export function StatusBar({
 				)}
 				<button
 					type="button"
+					onClick={onHelp}
 					aria-label={t("common.help")}
 					className="text-muted transition-colors hover:text-body"
 				>

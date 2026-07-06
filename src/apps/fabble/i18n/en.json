@@ -83,10 +83,51 @@
 		"none": "—",
 		"all_colors": "All colors",
 		"twin_badge": "✨ Twin",
+		"announce": "{{name}}: {{matches}} of {{total}} attributes matched",
 		"aria": {
 			"match": "{{column}}: match — {{value}}",
 			"partial": "{{column}}: partial match — shared {{shared}}",
-			"miss": "{{column}}: no match — {{value}}"
+			"miss": "{{column}}: no match — {{value}}",
+			"higher": "{{column}}: no match — {{value}}, answer is higher ({{revealed}})",
+			"lower": "{{column}}: no match — {{value}}, answer is lower ({{revealed}})",
+			"not_applicable": "{{column}}: not applicable — the answer doesn't have this attribute"
+		}
+	},
+	"rules": {
+		"title": "How to Play Fabble",
+		"what_is_title": "What is Fabble",
+		"what_is_body": "Fabble is a daily Flesh and Blood card deduction puzzle. Guess the secret card by comparing its attributes to your guesses — get closer with every try.",
+		"making_a_guess_title": "Making a Guess",
+		"making_a_guess_body": "Type any real card name and submit it. You'll get feedback on 11 attributes of your guess compared to the answer.",
+		"feedback_title": "Reading Your Feedback",
+		"columns_title": "The 11 Columns",
+		"modes_title": "Game Modes",
+		"legend": {
+			"match": "Match",
+			"partial": "Partial",
+			"miss": "No Match",
+			"higher": "Higher ↑",
+			"lower": "Lower ↓",
+			"not_applicable": "Not applicable",
+			"green_label": "Green:",
+			"green_body": "exact match.",
+			"yellow_label": "Yellow:",
+			"yellow_body": "partial overlap — some shared values.",
+			"red_label": "Red (with arrow):",
+			"red_body": "no match; an arrow means the answer's value is higher or lower."
+		},
+		"columns": {
+			"type": "Type: the card's type (Hero, Weapon, Action, …).",
+			"class": "Class: the class(es) the card belongs to, if any.",
+			"talent": "Talent: the talent(s) the card belongs to, if any.",
+			"pitch": "Pitch: the pitch value(s) printed on the card.",
+			"cost": "Cost: the resource cost to play the card.",
+			"power": "Power: the card's printed power, if it has one.",
+			"defense": "Defense: the card's printed defense, if it has one.",
+			"life": "Life / Int: a Hero or Ally's life total.",
+			"subtypes": "Subtypes: the card's subtypes (Attack, Arrow, Trap, …).",
+			"keywords": "Keywords: functional keywords on the card (Go again, Dominate, …).",
+			"set": "Set: every set the card has been printed in."
 		}
 	},
 	"end": {
