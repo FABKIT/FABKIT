@@ -21,6 +21,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 
 	const ingestDataset = useFabbleStore((s) => s.ingestDataset);
 	const startOrRestoreSession = useFabbleStore((s) => s.startOrRestoreSession);
+	const devReset = useFabbleStore((s) => s.devReset);
 	const session = useFabbleStore((s) => s.sessions[mode]);
 	const cardsById = useFabbleStore((s) => s.cardsById);
 
@@ -43,6 +44,11 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 
 	const answer = cardsById.get(session.answerId);
 
+	function handleReset() {
+		devReset(mode);
+		startOrRestoreSession(mode);
+	}
+
 	return (
 		<div className="flex w-full flex-col items-center gap-6">
 			<TypeChipsRow />
@@ -50,6 +56,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 				mode={mode}
 				guessCount={session.guesses.length}
 				maxGuesses={MAX_GUESSES[mode]}
+				onReset={handleReset}
 			/>
 			{session.status === "playing" && <CardSearchInput mode={mode} />}
 			{session.status !== "playing" && answer && (

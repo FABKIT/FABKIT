@@ -7,9 +7,15 @@ interface StatusBarProps {
 	mode: FabbleMode;
 	guessCount: number;
 	maxGuesses: number;
+	onReset: () => void;
 }
 
-export function StatusBar({ mode, guessCount, maxGuesses }: StatusBarProps) {
+export function StatusBar({
+	mode,
+	guessCount,
+	maxGuesses,
+	onReset,
+}: StatusBarProps) {
 	const { t } = useTranslation("fabble");
 
 	return (
@@ -28,13 +34,24 @@ export function StatusBar({ mode, guessCount, maxGuesses }: StatusBarProps) {
 					{t("play.guess_counter", { current: guessCount, max: maxGuesses })}
 				</span>
 			</div>
-			<button
-				type="button"
-				aria-label={t("common.help")}
-				className="text-muted transition-colors hover:text-body"
-			>
-				<HelpCircle className="h-5 w-5" />
-			</button>
+			<div className="flex items-center gap-3">
+				{import.meta.env.DEV && (
+					<button
+						type="button"
+						onClick={onReset}
+						className="text-sm text-muted underline-offset-2 transition-colors hover:text-body hover:underline"
+					>
+						{t("play.dev_reset")}
+					</button>
+				)}
+				<button
+					type="button"
+					aria-label={t("common.help")}
+					className="text-muted transition-colors hover:text-body"
+				>
+					<HelpCircle className="h-5 w-5" />
+				</button>
+			</div>
 		</div>
 	);
 }

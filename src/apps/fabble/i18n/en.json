@@ -34,6 +34,7 @@
 		"mode_badge_standard": "Standard mode",
 		"mode_badge_chaos": "Chaos mode",
 		"guess_counter": "Guess {{current}} of {{max}}",
+		"dev_reset": "Reset",
 		"guesses_remaining_one": "{{count}} guess remaining",
 		"guesses_remaining_other": "{{count}} guesses remaining",
 		"input_placeholder": "Type a card name…",
