@@ -1,3 +1,83 @@
 {
-	"coming_soon": "Fabble — Coming Soon"
+	"home": {
+		"logo_alt": "Fabble",
+		"tagline": "Daily Flesh and Blood card deduction puzzle",
+		"how_to_play": "How to Play",
+		"modes": {
+			"play": "Play",
+			"standard": {
+				"name": "Standard",
+				"blurb": "A curated selection of popular cards from the current meta",
+				"meta": "8 guesses · 2 hints"
+			},
+			"chaos": {
+				"name": "Chaos",
+				"blurb": "Every printed card, including banned ones",
+				"meta": "12 guesses · No hints"
+			}
+		}
+	},
+	"types": {
+		"hero": "Hero",
+		"weapon": "Weapon",
+		"equipment": "Equipment",
+		"action": "Action",
+		"attack_action": "Attack Action",
+		"attack_reaction": "Attack Reaction",
+		"defense_reaction": "Defense Reaction",
+		"instant": "Instant",
+		"ally": "Ally"
+	},
+	"play": {
+		"possible_types": "Possible card types",
+		"menu_back": "← Menu",
+		"mode_badge_standard": "Standard mode",
+		"mode_badge_chaos": "Chaos mode",
+		"guess_counter": "Guess {{current}} of {{max}}",
+		"guesses_remaining_one": "{{count}} guess remaining",
+		"guesses_remaining_other": "{{count}} guesses remaining",
+		"input_placeholder": "Type a card name…",
+		"submit": "Submit Guess"
+	},
+	"search": {
+		"no_results": "No cards found",
+		"already_guessed": "Already guessed"
+	},
+	"feedback": {
+		"columns": {
+			"type": "Type",
+			"class": "Class",
+			"talent": "Talent",
+			"pitch": "Pitch",
+			"cost": "Cost",
+			"power": "Power",
+			"defense": "Defense",
+			"life": "Life / Int",
+			"subtypes": "Subtypes",
+			"keywords": "Keywords",
+			"set": "Set"
+		},
+		"none": "—",
+		"all_colors": "All colors",
+		"twin_badge": "✨ Twin",
+		"aria": {
+			"match": "{{column}}: match — {{value}}",
+			"partial": "{{column}}: partial match — shared {{shared}}",
+			"miss": "{{column}}: no match — {{value}}"
+		}
+	},
+	"end": {
+		"solved_in_one": "You got it in {{count}} guess!",
+		"solved_in_other": "You got it in {{count}} guesses!",
+		"defeat_reveal": "The answer was {{name}}."
+	},
+	"errors": {
+		"load_failed": "Couldn't load today's puzzle",
+		"no_puzzle": "No puzzle is scheduled for today yet — check back soon."
+	},
+	"common": {
+		"retry": "Retry",
+		"close": "Close",
+		"help": "Help"
+	}
 }

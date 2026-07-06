@@ -1,0 +1,38 @@
+.fabble-tile {
+	transform-style: preserve-3d;
+}
+
+.fabble-tile--flip {
+	animation: fabble-flip 0.5s ease both;
+}
+
+@keyframes fabble-flip {
+	0% {
+		transform: rotateX(90deg);
+		opacity: 0;
+	}
+	100% {
+		transform: rotateX(0);
+		opacity: 1;
+	}
+}
+
+.fabble-fade-in {
+	animation: fabble-fade 0.3s ease both;
+}
+
+@keyframes fabble-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fabble-tile--flip,
+	.fabble-fade-in {
+		animation: none;
+	}
+}

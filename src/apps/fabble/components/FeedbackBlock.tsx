@@ -1,0 +1,70 @@
+import { X } from "lucide-react";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { TILE_STAGGER_MS } from "../config";
+import type { FabbleCard, GuessResult } from "../types";
+import { FeedbackTile } from "./FeedbackTile";
+
+interface FeedbackBlockProps {
+	result: GuessResult;
+	card: FabbleCard;
+	alreadyAnimated: boolean;
+	onAnimated: () => void;
+}
+
+export function FeedbackBlock({
+	result,
+	card,
+	alreadyAnimated,
+	onAnimated,
+}: FeedbackBlockProps) {
+	const { t } = useTranslation("fabble");
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fires once per mount to mark the reveal as played
+	useEffect(() => {
+		if (alreadyAnimated) return;
+		onAnimated();
+	}, []);
+
+	return (
+		<div className="w-full max-w-180 rounded-lg border border-border-primary bg-surface p-4">
+			<div className="mb-3 flex items-center gap-3">
+				<img
+					src={card.thumbnailUrl}
+					alt=""
+					loading="lazy"
+					crossOrigin="anonymous"
+					className={`h-16 w-11 rounded-sm object-cover ${result.correct ? "" : "grayscale"}`}
+				/>
+				<div>
+					<div className="flex items-center gap-1.5">
+						<span className="font-bold text-heading">{card.name}</span>
+						{!result.correct && !result.isTwin && (
+							<X className="h-4 w-4 rounded-full bg-feedback-miss text-feedback-on-tile-inverted" />
+						)}
+						{result.isTwin && (
+							<span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-heading">
+								{t("feedback.twin_badge")}
+							</span>
+						)}
+					</div>
+					<span className="text-xs text-muted">{t(`types.${card.type}`)}</span>
+				</div>
+			</div>
+			<div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+				{result.columns.map((feedback, i) => (
+					<FeedbackTile
+						key={feedback.column}
+						feedback={feedback}
+						flip={!alreadyAnimated}
+						style={
+							alreadyAnimated
+								? undefined
+								: { animationDelay: `${i * TILE_STAGGER_MS}ms` }
+						}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
