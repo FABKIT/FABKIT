@@ -89,9 +89,16 @@
 		}
 	},
 	"end": {
+		"victory": "✨ VICTORY ✨",
+		"defeat": "🔥 DEFEAT 🔥",
 		"solved_in_one": "You got it in {{count}} guess!",
 		"solved_in_other": "You got it in {{count}} guesses!",
-		"defeat_reveal": "The answer was {{name}}."
+		"defeat_reveal": "The answer was {{name}}.",
+		"art_by": "Art by {{artist}}",
+		"streak_current": "Current streak",
+		"streak_best": "Best streak",
+		"next_puzzle": "Next puzzle in {{time}}",
+		"new_puzzle": "New puzzle available"
 	},
 	"errors": {
 		"load_failed": "Couldn't load today's puzzle",

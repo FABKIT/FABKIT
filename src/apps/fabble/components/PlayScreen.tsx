@@ -1,10 +1,11 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { FabbleMode } from "../config";
-import { MAX_GUESSES } from "../config";
+import { MAX_GUESSES, REVEAL_TOTAL_MS } from "../config";
 import { useFabbleStore } from "../stores/fabble";
 import { CardSearchInput } from "./CardSearchInput";
+import { EndPanel } from "./EndPanel";
 import { GuessHistory } from "./GuessHistory";
 import { HintsRow } from "./HintsRow";
 import { StatusBar } from "./StatusBar";
@@ -23,10 +24,14 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 
 	const ingestDataset = useFabbleStore((s) => s.ingestDataset);
 	const startOrRestoreSession = useFabbleStore((s) => s.startOrRestoreSession);
+	const advanceToNewDay = useFabbleStore((s) => s.advanceToNewDay);
 	const devReset = useFabbleStore((s) => s.devReset);
 	const revealHint = useFabbleStore((s) => s.revealHint);
 	const session = useFabbleStore((s) => s.sessions[mode]);
+	const streaks = useFabbleStore((s) => s.streaks[mode]);
 	const cardsById = useFabbleStore((s) => s.cardsById);
+
+	const [showEndPanel, setShowEndPanel] = useState(false);
 
 	useEffect(() => {
 		ingestDataset(dataset);
@@ -38,6 +43,23 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 		if (session) return;
 		startOrRestoreSession(mode);
 	}, [mode, cardsById]);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only the fields read below should retrigger the delay
+	useEffect(() => {
+		if (!session || session.status === "playing") {
+			setShowEndPanel(false);
+			return;
+		}
+		const lastGuessId = session.order[session.order.length - 1];
+		const alreadyAnimated =
+			!lastGuessId || session.animatedGuessIds.includes(lastGuessId);
+		if (alreadyAnimated) {
+			setShowEndPanel(true);
+			return;
+		}
+		const timer = setTimeout(() => setShowEndPanel(true), REVEAL_TOTAL_MS);
+		return () => clearTimeout(timer);
+	}, [session?.status, session?.order, session?.animatedGuessIds]);
 
 	if (!cardsById) return null;
 
@@ -71,12 +93,23 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 				/>
 			)}
 			{session.status === "playing" && <CardSearchInput mode={mode} />}
-			{session.status !== "playing" && answer && (
-				<p className="text-center text-body">
-					{session.status === "won"
-						? t("end.solved_in", { count: session.guesses.length })
-						: t("end.defeat_reveal", { name: answer.name })}
-				</p>
+			{session.status !== "playing" && answer && showEndPanel && (
+				<EndPanel
+					mode={mode}
+					status={session.status}
+					guessCount={session.guesses.length}
+					answer={answer}
+					streaks={
+						streaks ?? {
+							schema: 1,
+							current: 0,
+							best: 0,
+							lastResultDate: null,
+							lastResult: null,
+						}
+					}
+					onNewDay={() => advanceToNewDay(mode)}
+				/>
 			)}
 			<GuessHistory mode={mode} />
 		</div>

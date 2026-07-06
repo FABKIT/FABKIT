@@ -45,6 +45,7 @@ interface FabbleActions {
 	submitGuess(mode: FabbleMode, cardId: string): void;
 	revealHint(mode: FabbleMode, hintIndex: 0 | 1): void;
 	markGuessAnimated(mode: FabbleMode, guessId: string): void;
+	advanceToNewDay(mode: FabbleMode): void;
 	devReset(mode: FabbleMode): void;
 }
 
@@ -291,6 +292,10 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 				undefined,
 				"fabble/markGuessAnimated",
 			);
+		},
+
+		advanceToNewDay: (mode) => {
+			get().startOrRestoreSession(mode);
 		},
 
 		devReset: (mode) => {

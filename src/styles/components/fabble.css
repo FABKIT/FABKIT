@@ -30,9 +30,31 @@
 	}
 }
 
+.fabble-glow-victory {
+	animation: fabble-glow-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes fabble-glow-pulse {
+	0%,
+	100% {
+		box-shadow: 0 0 16px 2px var(--color-fabble-glow);
+	}
+	50% {
+		box-shadow: 0 0 32px 8px var(--color-fabble-glow);
+	}
+}
+
+.fabble-glow-defeat {
+	box-shadow: 0 0 12px 2px var(--color-fabble-glow-defeat);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.fabble-tile--flip,
 	.fabble-fade-in {
 		animation: none;
+	}
+	.fabble-glow-victory {
+		animation: none;
+		box-shadow: 0 0 20px 4px var(--color-fabble-glow);
 	}
 }
