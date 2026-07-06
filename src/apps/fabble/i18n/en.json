@@ -38,7 +38,28 @@
 		"guesses_remaining_one": "{{count}} guess remaining",
 		"guesses_remaining_other": "{{count}} guesses remaining",
 		"input_placeholder": "Type a card name…",
-		"submit": "Submit Guess"
+		"submit": "Submit Guess",
+		"twin_message": "Same properties, different card — this guess is free!",
+		"theme": {
+			"equipment_monday": "Equipment Monday — today's card is an Equipment",
+			"class_thursday": "Class Thursday — today's card is a {{className}}"
+		}
+	},
+	"hints": {
+		"title": "Hints",
+		"locked": "After guess {{count}}",
+		"rarity_label": "Reveal rarity",
+		"set_label": "Reveal set"
+	},
+	"rarity": {
+		"basic": "Basic",
+		"common": "Common",
+		"rare": "Rare",
+		"superrare": "Super Rare",
+		"majestic": "Majestic",
+		"legendary": "Legendary",
+		"fabled": "Fabled",
+		"promo": "Promo"
 	},
 	"search": {
 		"no_results": "No cards found",

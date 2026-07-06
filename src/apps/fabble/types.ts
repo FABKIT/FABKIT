@@ -136,6 +136,9 @@ export interface PersistedSession {
 	theme: { kind: "equipment" } | { kind: "class"; className: string } | null;
 	guesses: string[];
 	twinGuessIds: string[];
+	/** All guess ids (spent + twin), oldest first — the real submission order,
+	    since guesses and twinGuessIds don't interleave on their own. */
+	order: string[];
 	hintsRevealed: [boolean, boolean];
 	status: "playing" | "won" | "lost";
 }

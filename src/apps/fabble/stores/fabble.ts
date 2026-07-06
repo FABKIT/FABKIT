@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { FabbleMode } from "../config";
-import { MAX_GUESSES } from "../config";
+import { HINT_UNLOCK_GUESSES, MAX_GUESSES } from "../config";
 import { compareCards } from "../game/compare";
 import { type DailyPuzzle, getDailyPuzzle } from "../game/daily";
 import { dayBefore, getToday, localDateKey } from "../game/date";
@@ -24,6 +24,8 @@ export interface ModeSession {
 	theme: DailyPuzzle["theme"];
 	guesses: GuessResult[];
 	twinGuesses: GuessResult[];
+	/** All guess ids (spent + twin), oldest first — real submission order. */
+	order: string[];
 	hintsRevealed: [boolean, boolean];
 	status: "playing" | "won" | "lost";
 	animatedGuessIds: string[];
@@ -35,13 +37,13 @@ interface FabbleState {
 	searchIndex: SearchEntry[] | null;
 	sessions: Partial<Record<FabbleMode, ModeSession>>;
 	streaks: Partial<Record<FabbleMode, PersistedStreaks>>;
-	lastTwinMessage: string | null;
 }
 
 interface FabbleActions {
 	ingestDataset(dataset: FabbleDataset): void;
 	startOrRestoreSession(mode: FabbleMode): void;
 	submitGuess(mode: FabbleMode, cardId: string): void;
+	revealHint(mode: FabbleMode, hintIndex: 0 | 1): void;
 	markGuessAnimated(mode: FabbleMode, guessId: string): void;
 	devReset(mode: FabbleMode): void;
 }
@@ -52,7 +54,6 @@ const initialState: FabbleState = {
 	searchIndex: null,
 	sessions: {},
 	streaks: {},
-	lastTwinMessage: null,
 };
 
 const emptyStreaks: PersistedStreaks = {
@@ -73,6 +74,7 @@ function persistSession(mode: FabbleMode, session: ModeSession): void {
 		theme: session.theme,
 		guesses: session.guesses.map((g) => g.guessId),
 		twinGuessIds: session.twinGuesses.map((g) => g.guessId),
+		order: session.order,
 		hintsRevealed: session.hintsRevealed,
 		status: session.status,
 	};
@@ -102,6 +104,7 @@ function hydrateSession(
 		theme: persisted.theme,
 		guesses,
 		twinGuesses,
+		order: persisted.order,
 		hintsRevealed: persisted.hintsRevealed,
 		status: persisted.status,
 		animatedGuessIds: [...guesses, ...twinGuesses].map((g) => g.guessId),
@@ -152,6 +155,7 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 					theme: puzzle.theme,
 					guesses: [],
 					twinGuesses: [],
+					order: [],
 					hintsRevealed: [false, false],
 					status: "playing",
 					animatedGuessIds: [],
@@ -196,16 +200,16 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 					const current = state.sessions[mode];
 					if (!current) return state;
 
+					const order = [...current.order, cardId];
+
 					if (result.isTwin) {
 						const next: ModeSession = {
 							...current,
 							twinGuesses: [...current.twinGuesses, result],
+							order,
 						};
 						persistSession(mode, next);
-						return {
-							sessions: { ...state.sessions, [mode]: next },
-							lastTwinMessage: guessCard.name,
-						};
+						return { sessions: { ...state.sessions, [mode]: next } };
 					}
 
 					const guesses = [...current.guesses, result];
@@ -216,7 +220,7 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 						status = "lost";
 					}
 
-					const next: ModeSession = { ...current, guesses, status };
+					const next: ModeSession = { ...current, guesses, order, status };
 					persistSession(mode, next);
 
 					if (status === "playing") {
@@ -241,6 +245,30 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 				},
 				undefined,
 				"fabble/submitGuess",
+			);
+		},
+
+		revealHint: (mode, hintIndex) => {
+			set(
+				(state) => {
+					const current = state.sessions[mode];
+					if (!current) return state;
+					if (current.hintsRevealed[hintIndex]) return state;
+					if (current.guesses.length < HINT_UNLOCK_GUESSES[hintIndex])
+						return state;
+
+					const hintsRevealed = [...current.hintsRevealed] as [
+						boolean,
+						boolean,
+					];
+					hintsRevealed[hintIndex] = true;
+					const next: ModeSession = { ...current, hintsRevealed };
+					persistSession(mode, next);
+
+					return { sessions: { ...state.sessions, [mode]: next } };
+				},
+				undefined,
+				"fabble/revealHint",
 			);
 		},
 

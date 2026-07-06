@@ -6,7 +6,9 @@ import { MAX_GUESSES } from "../config";
 import { useFabbleStore } from "../stores/fabble";
 import { CardSearchInput } from "./CardSearchInput";
 import { GuessHistory } from "./GuessHistory";
+import { HintsRow } from "./HintsRow";
 import { StatusBar } from "./StatusBar";
+import { ThemeBanner } from "./ThemeBanner";
 import { TypeChipsRow } from "./TypeChipsRow";
 
 const routeApi = getRouteApi("/fabble");
@@ -22,6 +24,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 	const ingestDataset = useFabbleStore((s) => s.ingestDataset);
 	const startOrRestoreSession = useFabbleStore((s) => s.startOrRestoreSession);
 	const devReset = useFabbleStore((s) => s.devReset);
+	const revealHint = useFabbleStore((s) => s.revealHint);
 	const session = useFabbleStore((s) => s.sessions[mode]);
 	const cardsById = useFabbleStore((s) => s.cardsById);
 
@@ -58,6 +61,15 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 				maxGuesses={MAX_GUESSES[mode]}
 				onReset={handleReset}
 			/>
+			<ThemeBanner theme={session.theme} />
+			{mode === "standard" && answer && (
+				<HintsRow
+					answer={answer}
+					guessCount={session.guesses.length}
+					hintsRevealed={session.hintsRevealed}
+					onReveal={(hintIndex) => revealHint(mode, hintIndex)}
+				/>
+			)}
 			{session.status === "playing" && <CardSearchInput mode={mode} />}
 			{session.status !== "playing" && answer && (
 				<p className="text-center text-body">

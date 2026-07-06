@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { TILE_STAGGER_MS } from "../config";
 import type { FabbleCard, GuessResult } from "../types";
 import { FeedbackTile } from "./FeedbackTile";
+import { TwinToast } from "./TwinToast";
 
 interface FeedbackBlockProps {
 	result: GuessResult;
@@ -65,6 +66,7 @@ export function FeedbackBlock({
 					/>
 				))}
 			</div>
+			{result.isTwin && <TwinToast />}
 		</div>
 	);
 }
