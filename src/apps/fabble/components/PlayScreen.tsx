@@ -90,7 +90,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 			: "";
 
 	return (
-		<div className="flex w-full flex-col items-center gap-6">
+		<div className="flex w-full flex-col items-center gap-3">
 			<span aria-live="polite" className="sr-only">
 				{announcement}
 			</span>

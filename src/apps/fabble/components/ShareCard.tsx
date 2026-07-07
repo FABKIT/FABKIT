@@ -1,7 +1,10 @@
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
+import FabkitIcon from "../../../assets/Fabkitlogo_notext.svg";
 import type { GuessResult } from "../types";
 import { COLUMNS } from "../types";
+
+const SHARE_FONT_FAMILY = "ui-sans-serif, system-ui, sans-serif";
 
 /** The share card is a static PNG capture of the brand, not a themed UI surface —
     it must always render dark regardless of the site's light/dark setting, so it
@@ -58,7 +61,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 		ref,
 	) {
 		const { t } = useTranslation("fabble");
-		const squareSize = rows.length > 8 ? 32 : 52;
+		const tileWidth = rows.length > 8 ? 42 : 62;
+		const tileHeight = rows.length > 8 ? 24 : 36;
 
 		return (
 			<div
@@ -71,7 +75,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 					height: 864,
 					backgroundColor: COLORS.bg,
 					color: COLORS.body,
-					fontFamily: "sans-serif",
+					fontFamily: SHARE_FONT_FAMILY,
 					overflow: "hidden",
 				}}
 			>
@@ -81,15 +85,22 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 						height: 190,
 						backgroundImage: "url(/img/fabble/Mischievous-Meeps.webp)",
 						backgroundSize: "cover",
-						backgroundPosition: "center",
+						backgroundPosition: "center 30%",
 					}}
 				>
 					<div
 						style={{
 							position: "absolute",
 							inset: 0,
+							backgroundColor: "rgba(29,29,29,0.18)",
+						}}
+					/>
+					<div
+						style={{
+							position: "absolute",
+							inset: 0,
 							background:
-								"linear-gradient(to bottom, transparent, rgba(29,29,29,0.9))",
+								"linear-gradient(to bottom, transparent 0%, rgba(29,29,29,0.05) 35%, rgba(29,29,29,0.25) 55%, rgba(29,29,29,0.55) 72%, rgba(29,29,29,0.82) 88%, rgba(29,29,29,0.97) 100%)",
 						}}
 					/>
 					<div
@@ -98,7 +109,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 							top: 12,
 							left: 16,
 							fontWeight: "bold",
-							fontSize: 14,
+							fontSize: 15,
 							color: COLORS.body,
 						}}
 					>
@@ -107,9 +118,15 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 				</div>
 
 				<div
-					style={{ display: "flex", justifyContent: "center", marginTop: -20 }}
+					style={{
+						position: "relative",
+						zIndex: 1,
+						display: "flex",
+						justifyContent: "center",
+						marginTop: -24,
+					}}
 				>
-					<img src="/img/fabble/FabbleLogo.svg" alt="" style={{ height: 48 }} />
+					<img src="/img/fabble/FabbleLogo.svg" alt="" style={{ height: 58 }} />
 				</div>
 
 				<div
@@ -126,13 +143,14 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 							style={{
 								color: COLORS.heading,
 								fontWeight: "bold",
-								marginBottom: 4,
+								fontSize: 20,
+								marginBottom: 6,
 							}}
 						>
 							{username}
 						</div>
 					)}
-					<div>
+					<div style={{ fontSize: 16 }}>
 						{won
 							? t("share.result_solved", {
 									score: `${guessCount}/${maxGuesses}`,
@@ -140,7 +158,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 							: t("share.result_failed")}
 					</div>
 					{hintsUsed > 0 && (
-						<div style={{ color: COLORS.muted, fontSize: 13 }}>
+						<div style={{ color: COLORS.muted, fontSize: 14 }}>
 							{t("hints.used", { used: hintsUsed })}
 						</div>
 					)}
@@ -154,13 +172,14 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 						padding: "16px 32px",
 					}}
 				>
-					<div style={{ display: "flex", gap: 4, paddingLeft: 24 }}>
+					<div style={{ display: "flex", gap: 6, paddingLeft: 26 }}>
 						{COLUMNS.map((column) => (
 							<span
 								key={column}
 								style={{
-									width: squareSize,
-									fontSize: 9,
+									width: tileWidth,
+									fontSize: 10,
+									fontWeight: "bold",
 									textAlign: "center",
 									color: COLORS.muted,
 									textTransform: "uppercase",
@@ -173,17 +192,17 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 					{rows.map((result, rowIndex) => (
 						<div
 							key={result.guessId}
-							style={{ display: "flex", gap: 4, alignItems: "center" }}
+							style={{ display: "flex", gap: 6, alignItems: "center" }}
 						>
-							<span style={{ width: 20, fontSize: 11, color: COLORS.muted }}>
+							<span style={{ width: 20, fontSize: 12, color: COLORS.muted }}>
 								{rowIndex + 1}
 							</span>
 							{result.columns.map((col) => (
 								<span
 									key={col.column}
 									style={{
-										width: squareSize,
-										height: squareSize,
+										width: tileWidth,
+										height: tileHeight,
 										borderRadius: 6,
 										backgroundColor: COLORS[col.state],
 									}}
@@ -200,14 +219,24 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 						left: 0,
 						right: 0,
 						textAlign: "center",
-						fontSize: 12,
+						fontSize: 15,
 					}}
 				>
-					<span style={{ color: COLORS.muted }}>{t("share.footer_line")}</span>
-					{" · "}
-					<span style={{ color: COLORS.heading, fontWeight: "bold" }}>
-						{t("share.footer_brand")}
-					</span>
+					<div style={{ color: COLORS.muted }}>{t("share.footer_line")}</div>
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							gap: 6,
+							marginTop: 6,
+						}}
+					>
+						<img src={FabkitIcon} alt="" style={{ height: 19, width: 19 }} />
+						<span style={{ color: COLORS.heading, fontWeight: "bold" }}>
+							{t("share.footer_brand")}
+						</span>
+					</div>
 				</div>
 			</div>
 		);

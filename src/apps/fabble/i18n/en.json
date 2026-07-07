@@ -21,7 +21,7 @@
 		"hero": "Hero",
 		"weapon": "Weapon",
 		"equipment": "Equipment",
-		"action": "Action",
+		"action": "Action (non-attack)",
 		"attack_action": "Attack Action",
 		"attack_reaction": "Attack Reaction",
 		"defense_reaction": "Defense Reaction",
@@ -64,7 +64,8 @@
 	},
 	"search": {
 		"no_results": "No cards found",
-		"already_guessed": "Already guessed"
+		"already_guessed": "Already guessed",
+		"not_recognized": "That's not a recognized card name"
 	},
 	"feedback": {
 		"columns": {
@@ -143,7 +144,10 @@
 		"new_puzzle": "New puzzle available"
 	},
 	"share": {
-		"button": "Share Result",
+		"button": "Share",
+		"unsupported": "Sharing isn't supported on this browser — try Export instead",
+		"export": "Export image",
+		"exported": "Saved!",
 		"copy_text": "Copy as text",
 		"copied": "Copied!",
 		"username_label": "Add your name to the share card (optional)",

@@ -7,6 +7,7 @@ const TILE_EMOJI: Record<TileState, string> = {
 };
 
 export function buildShareText(args: {
+	username?: string;
 	modeLabel: string;
 	dateLabel: string;
 	won: boolean;
@@ -19,7 +20,10 @@ export function buildShareText(args: {
 	const score = args.won
 		? `${args.guessCount}/${args.maxGuesses}`
 		: `X/${args.maxGuesses}`;
-	const lines = [`Fabble ${args.modeLabel} · ${args.dateLabel} · ${score}`];
+	const header = args.username
+		? `${args.username} — Fabble ${args.modeLabel} · ${args.dateLabel} · ${score}`
+		: `Fabble ${args.modeLabel} · ${args.dateLabel} · ${score}`;
+	const lines = [header];
 
 	if (args.hintsUsed > 0) {
 		lines.push(`Hints: ${args.hintsUsed}/2`);

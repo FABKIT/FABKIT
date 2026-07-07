@@ -16,6 +16,12 @@ const STATE_BG: Record<ColumnFeedback["state"], string> = {
 	miss: "bg-feedback-miss",
 };
 
+const STATE_TEXT: Record<ColumnFeedback["state"], string> = {
+	match: "text-feedback-on-tile",
+	partial: "text-feedback-on-tile",
+	miss: "text-feedback-on-tile-inverted",
+};
+
 const MAX_VISIBLE_SET_ENTRIES = 3;
 
 export function FeedbackTile({ feedback, style, flip }: FeedbackTileProps) {
@@ -24,7 +30,9 @@ export function FeedbackTile({ feedback, style, flip }: FeedbackTileProps) {
 
 	const value = feedback.isRainbow
 		? t("feedback.all_colors")
-		: feedback.guessDisplay || t("feedback.none");
+		: feedback.column === "type"
+			? t(`types.${feedback.guessDisplay}`)
+			: feedback.guessDisplay || t("feedback.none");
 
 	const ariaKey = feedback.notApplicable
 		? "not_applicable"
@@ -41,7 +49,7 @@ export function FeedbackTile({ feedback, style, flip }: FeedbackTileProps) {
 			role="note"
 			style={style}
 			aria-label={ariaLabel}
-			className={`fabble-tile ${flip ? "fabble-tile--flip" : ""} ${STATE_BG[feedback.state]} flex min-h-22 flex-col justify-between gap-1 rounded-md p-2 text-feedback-on-tile-inverted`}
+			className={`fabble-tile ${flip ? "fabble-tile--flip" : ""} ${STATE_BG[feedback.state]} ${STATE_TEXT[feedback.state]} flex min-h-22 flex-col justify-between gap-1 rounded-md p-2`}
 		>
 			<div className="flex items-start justify-between gap-1">
 				<span className="text-[10px] font-semibold tracking-wide uppercase">

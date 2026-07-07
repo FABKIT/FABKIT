@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { TILE_STAGGER_MS } from "../config";
+import { REVEAL_TOTAL_MS, TILE_STAGGER_MS } from "../config";
 import type { FabbleCard, GuessResult } from "../types";
 import { FeedbackTile } from "./FeedbackTile";
 import { TwinToast } from "./TwinToast";
@@ -24,7 +24,11 @@ export function FeedbackBlock({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: fires once per mount to mark the reveal as played
 	useEffect(() => {
 		if (alreadyAnimated) return;
-		onAnimated();
+		// Deferred until the flip sequence actually finishes — calling this
+		// synchronously on mount re-renders with alreadyAnimated=true almost
+		// immediately, stripping the flip class before the tiles ever animate.
+		const timer = setTimeout(onAnimated, REVEAL_TOTAL_MS);
+		return () => clearTimeout(timer);
 	}, []);
 
 	return (

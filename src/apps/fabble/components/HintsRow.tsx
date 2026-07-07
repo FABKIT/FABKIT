@@ -22,11 +22,11 @@ export function HintsRow({
 	const { t } = useTranslation("fabble");
 
 	return (
-		<div className="flex w-full max-w-160 flex-col items-center gap-2">
-			<span className="text-xs font-medium tracking-wide text-muted uppercase">
+		<div className="flex w-full max-w-160 flex-wrap items-center gap-2">
+			<span className="text-[11px] font-medium tracking-wide text-muted uppercase">
 				{t("hints.title")}
 			</span>
-			<div className="flex gap-2">
+			<div className="flex flex-nowrap gap-1.5">
 				<HintPill
 					label={t("hints.rarity_label")}
 					unlockAt={HINT_UNLOCK_GUESSES[0]}
@@ -76,7 +76,7 @@ function HintPill({
 
 	if (revealed) {
 		return (
-			<span className="flex items-center gap-1.5 rounded-full border border-primary bg-surface-active px-3 py-1.5 text-sm text-body">
+			<span className="flex items-center gap-1.5 rounded-full border border-primary bg-surface-active px-2.5 py-1 text-xs text-body">
 				{children}
 			</span>
 		);
@@ -87,17 +87,17 @@ function HintPill({
 			<button
 				type="button"
 				onClick={onReveal}
-				className="flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-sm text-heading transition-colors hover:bg-surface-active"
+				className="flex items-center gap-1.5 rounded-full border border-primary px-2.5 py-1 text-xs text-heading transition-colors hover:bg-surface-active"
 			>
-				<LockOpen className="h-3.5 w-3.5" />
+				<LockOpen className="h-3 w-3" />
 				{label}
 			</button>
 		);
 	}
 
 	return (
-		<span className="flex items-center gap-1.5 rounded-full border border-border-primary px-3 py-1.5 text-sm text-muted">
-			<Lock className="h-3.5 w-3.5" />
+		<span className="flex items-center gap-1.5 rounded-full border border-border-primary px-2.5 py-1 text-xs text-muted">
+			<Lock className="h-3 w-3" />
 			{t("hints.locked", { count: unlockAt })}
 		</span>
 	);

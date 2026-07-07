@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 import type { FabbleMode } from "../config";
 import { MAX_GUESSES } from "../config";
+import { normalizeCardName } from "../game/normalize";
 import { searchCards } from "../game/search";
 import { useFabbleStore } from "../stores/fabble";
 import type { FabbleCard } from "../types";
@@ -22,7 +23,7 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 	const { t } = useTranslation("fabble");
 	const [query, setQuery] = useState("");
 	const [debouncedQuery] = useDebounce(query, 150);
-	const [selected, setSelected] = useState<FabbleCard | null>(null);
+	const [error, setError] = useState<string | null>(null);
 
 	const searchIndex = useFabbleStore((s) => s.searchIndex);
 	const cardsById = useFabbleStore((s) => s.cardsById);
@@ -30,6 +31,8 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 	const submitGuess = useFabbleStore((s) => s.submitGuess);
 
 	if (!searchIndex || !cardsById || !session) return null;
+	const index = searchIndex;
+	const cards = cardsById;
 
 	const guessedIds = new Set([
 		...session.guesses.map((g) => g.guessId),
@@ -44,24 +47,45 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 	const remaining = maxGuesses - guessCount;
 	const isPlaying = session.status === "playing";
 
-	function handleSubmit() {
-		if (!selected || !isPlaying) return;
-		submitGuess(mode, selected.id);
-		setSelected(null);
+	function submitCard(card: FabbleCard) {
+		if (!isPlaying) return;
+		setError(null);
+		submitGuess(mode, card.id);
 		setQuery("");
+	}
+
+	function handleSelect(card: FabbleCard | null) {
+		if (!card) return;
+		submitCard(card);
+	}
+
+	function handleSubmit() {
+		if (!isPlaying) return;
+		const match = searchCards(index, query).find(
+			(entry) => entry.normalized === normalizeCardName(query),
+		);
+		const card = match && cards.get(match.id);
+		if (!card) {
+			setError(t("search.not_recognized"));
+			return;
+		}
+		if (guessedIds.has(card.id)) {
+			setError(t("search.already_guessed"));
+			return;
+		}
+		submitCard(card);
 	}
 
 	return (
 		<div className="flex w-full max-w-100 flex-col items-center gap-2">
-			<Combobox
-				value={selected}
-				onChange={(card: FabbleCard | null) => setSelected(card)}
-				disabled={!isPlaying}
-			>
+			<Combobox value={null} onChange={handleSelect} disabled={!isPlaying}>
 				<div className="relative w-full">
 					<ComboboxInput
-						displayValue={(card: FabbleCard | null) => card?.name ?? ""}
-						onChange={(event) => setQuery(event.target.value)}
+						value={query}
+						onChange={(event) => {
+							setQuery(event.target.value);
+							setError(null);
+						}}
 						placeholder={t("play.input_placeholder")}
 						className="w-full rounded-md border border-border-primary bg-surface px-3 py-2 text-body placeholder:text-faint focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
 					/>
@@ -70,7 +94,7 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 						className="mt-1 max-h-72 w-(--input-width) overflow-auto rounded-md border border-border-primary bg-surface py-1 shadow-lg empty:invisible"
 					>
 						{results.length === 0 && debouncedQuery !== "" ? (
-							<div className="px-3 py-2 text-sm text-muted">
+							<div className="pointer-events-none px-3 py-2 text-sm text-muted">
 								{t("search.no_results")}
 							</div>
 						) : (
@@ -107,11 +131,12 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 			<button
 				type="button"
 				onClick={handleSubmit}
-				disabled={!selected || !isPlaying}
+				disabled={!query.trim() || !isPlaying}
 				className="w-full rounded-md bg-primary px-4 py-2.5 font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 			>
 				{t("play.submit")}
 			</button>
+			{error && <span className="text-sm text-feedback-miss">{error}</span>}
 			<span className="text-sm text-muted">
 				{t("play.guesses_remaining", { count: remaining })}
 			</span>

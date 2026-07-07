@@ -35,57 +35,62 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 	const modeName = t(`home.modes.${mode}.name`);
 	const dateLabel = shareDateLabel(today);
 
+	const fileName = `${(username || "fabble").replace(/[^a-z0-9_-]/gi, "")}_fabble-result_${dateLabel}.png`;
+
 	function showToast(message: string) {
 		setToast(message);
 		setTimeout(() => setToast(null), 3000);
 	}
 
-	async function handleShareImage() {
+	async function captureCardBlob(): Promise<Blob | null> {
 		setCapturing(true);
 		await new Promise((r) => requestAnimationFrame(r));
 		await new Promise((r) => requestAnimationFrame(r));
 
 		try {
 			const node = cardRef.current;
-			if (!node) return;
+			if (!node) return null;
 			const capture = await snapdom(node, { scale: 2, embedFonts: true });
-			const blob = await capture.toBlob({ type: "png" });
-			const file = new File([blob], "fabble-result.png", { type: "image/png" });
-
-			if (navigator.canShare?.({ files: [file] })) {
-				try {
-					await navigator.share({ files: [file], title: "Fabble" });
-					return;
-				} catch (err) {
-					// AbortError means the user dismissed the share sheet — not a failure.
-					if (err instanceof Error && err.name === "AbortError") return;
-					// Any other failure (e.g. no share target registered) falls through
-					// to the clipboard/download paths below.
-				}
-			}
-
-			if (navigator.clipboard?.write) {
-				await navigator.clipboard.write([
-					new ClipboardItem({ "image/png": blob }),
-				]);
-				showToast(t("share.copied"));
-			} else {
-				const url = URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = "fabble-result.png";
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-				URL.revokeObjectURL(url);
-			}
+			return await capture.toBlob({ type: "png" });
 		} finally {
 			setCapturing(false);
 		}
 	}
 
+	async function handleShare() {
+		const blob = await captureCardBlob();
+		if (!blob) return;
+		const file = new File([blob], fileName, { type: "image/png" });
+
+		if (!navigator.canShare?.({ files: [file] })) {
+			showToast(t("share.unsupported"));
+			return;
+		}
+		try {
+			await navigator.share({ files: [file], title: "Fabble" });
+		} catch (err) {
+			// AbortError means the user dismissed the share sheet — not a failure.
+			if (err instanceof Error && err.name === "AbortError") return;
+		}
+	}
+
+	async function handleExport() {
+		const blob = await captureCardBlob();
+		if (!blob) return;
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = fileName;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+		showToast(t("share.exported"));
+	}
+
 	async function handleCopyText() {
 		const text = buildShareText({
+			username,
 			modeLabel: modeName,
 			dateLabel,
 			won,
@@ -117,10 +122,10 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 				<span className="text-xs text-faint">{t("share.username_hint")}</span>
 			</div>
 
-			<div className="flex gap-2">
+			<div className="flex flex-wrap justify-center gap-2">
 				<button
 					type="button"
-					onClick={handleShareImage}
+					onClick={handleShare}
 					disabled={capturing}
 					className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 				>
@@ -128,8 +133,16 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 				</button>
 				<button
 					type="button"
+					onClick={handleExport}
+					disabled={capturing}
+					className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+				>
+					{t("share.export")}
+				</button>
+				<button
+					type="button"
 					onClick={handleCopyText}
-					className="rounded-md border border-border-primary px-4 py-2 text-sm text-body transition-colors hover:bg-surface-active"
+					className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 				>
 					{t("share.copy_text")}
 				</button>
