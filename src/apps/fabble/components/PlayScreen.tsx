@@ -1,22 +1,25 @@
+import { CardSearchInput } from "@fabkit/apps/fabble/components/CardSearchInput";
+import { EndPanel } from "@fabkit/apps/fabble/components/EndPanel";
+import { GuessHistory } from "@fabkit/apps/fabble/components/GuessHistory";
+import { HintsRow } from "@fabkit/apps/fabble/components/HintsRow";
+import { RulesDialog } from "@fabkit/apps/fabble/components/RulesDialog";
+import { StatusBar } from "@fabkit/apps/fabble/components/StatusBar";
+import { ThemeBanner } from "@fabkit/apps/fabble/components/ThemeBanner";
+import { TypeChipsRow } from "@fabkit/apps/fabble/components/TypeChipsRow";
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
+import { MAX_GUESSES, REVEAL_TOTAL_MS } from "@fabkit/apps/fabble/config";
+import { getToday } from "@fabkit/apps/fabble/game/date";
+import {
+	getOrderedResults,
+	useFabbleStore,
+} from "@fabkit/apps/fabble/stores/fabble";
 import { getRouteApi } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { FabbleMode } from "../config";
-import { MAX_GUESSES, REVEAL_TOTAL_MS } from "../config";
-import { getToday } from "../game/date";
-import { getOrderedResults, useFabbleStore } from "../stores/fabble";
-import { CardSearchInput } from "./CardSearchInput";
-import { EndPanel } from "./EndPanel";
-import { GuessHistory } from "./GuessHistory";
-import { HintsRow } from "./HintsRow";
-import { RulesDialog } from "./RulesDialog";
-import { StatusBar } from "./StatusBar";
-import { ThemeBanner } from "./ThemeBanner";
-import { TypeChipsRow } from "./TypeChipsRow";
 
 const routeApi = getRouteApi("/fabble");
 
-interface PlayScreenProps {
+export interface PlayScreenProps {
 	mode: FabbleMode;
 }
 
@@ -40,14 +43,12 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 		ingestDataset(dataset);
 	}, [dataset, ingestDataset]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: only (re)start once per mode once the dataset is ingested
 	useEffect(() => {
 		if (!cardsById) return;
 		if (session) return;
 		startOrRestoreSession(mode);
-	}, [mode, cardsById]);
+	}, [mode, cardsById, session, startOrRestoreSession]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: only the fields read below should retrigger the delay
 	useEffect(() => {
 		if (!session || session.status === "playing") {
 			setShowEndPanel(false);
@@ -62,7 +63,7 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 		}
 		const timer = setTimeout(() => setShowEndPanel(true), REVEAL_TOTAL_MS);
 		return () => clearTimeout(timer);
-	}, [session?.status, session?.order, session?.animatedGuessIds]);
+	}, [session]);
 
 	if (!cardsById) return null;
 

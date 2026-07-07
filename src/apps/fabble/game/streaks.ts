@@ -1,4 +1,4 @@
-import type { PersistedStreaks } from "../types";
+import type { PersistedStreaks } from "@fabkit/apps/fabble/types";
 
 export function applyResult(
 	prev: PersistedStreaks,

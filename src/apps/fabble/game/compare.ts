@@ -3,7 +3,7 @@ import type {
 	FabbleCard,
 	FabbleSetPrinting,
 	GuessResult,
-} from "../types";
+} from "@fabkit/apps/fabble/types";
 
 type NumericVal = number | "X" | "*";
 
@@ -19,7 +19,7 @@ function lifeAsArray(card: FabbleCard): number[] {
 	return card.life === null ? [] : [card.life];
 }
 
-interface NumericComparison {
+export interface NumericComparison {
 	state: "match" | "miss";
 	direction?: "higher" | "lower";
 	revealedValue?: string;
@@ -150,159 +150,91 @@ function compareSetColumn(
 	return { state: matched ? "match" : "miss", setDetails };
 }
 
+function setColumn(
+	column: ColumnFeedback["column"],
+	guessVals: string[],
+	answerVals: string[],
+	emptyAnswerIsBan: boolean,
+): ColumnFeedback {
+	const comparison = compareSet(guessVals, answerVals, emptyAnswerIsBan);
+	return {
+		column,
+		state: comparison.state,
+		guessDisplay: formatVals(guessVals),
+		shared: comparison.shared,
+		notApplicable: comparison.notApplicable,
+	};
+}
+
+function numericColumn(
+	column: ColumnFeedback["column"],
+	guessVals: NumericVal[],
+	answerVals: NumericVal[],
+): ColumnFeedback {
+	const comparison = compareNumericSet(guessVals, answerVals);
+	return {
+		column,
+		state: comparison.state,
+		guessDisplay: formatVals(guessVals),
+		direction: comparison.direction,
+		revealedValue: comparison.revealedValue,
+		notApplicable: comparison.notApplicable,
+	};
+}
+
+function pitchColumn(guess: FabbleCard, answer: FabbleCard): ColumnFeedback {
+	const guessRainbow =
+		guess.pitches.includes(1) &&
+		guess.pitches.includes(2) &&
+		guess.pitches.includes(3);
+	if (guessRainbow) {
+		return {
+			column: "pitch",
+			state: "match",
+			guessDisplay: formatVals(guess.pitches),
+			isRainbow: true,
+		};
+	}
+	if (guess.pitches.length === 0 && answer.pitches.length === 0) {
+		return { column: "pitch", state: "match", guessDisplay: "" };
+	}
+	const intersects = guess.pitches.some((p) => answer.pitches.includes(p));
+	return {
+		column: "pitch",
+		state: intersects ? "match" : "miss",
+		guessDisplay: formatVals(guess.pitches),
+	};
+}
+
 export function compareCards(
 	guess: FabbleCard,
 	answer: FabbleCard,
 ): GuessResult {
-	const columns: ColumnFeedback[] = [];
+	const setComparison = compareSetColumn(guess, answer);
 
-	// type
-	columns.push({
-		column: "type",
-		state: guess.type === answer.type ? "match" : "miss",
-		guessDisplay: guess.type,
-	});
-
-	// class
-	{
-		const r = compareSet(guess.classes, answer.classes, true);
-		columns.push({
-			column: "class",
-			state: r.state,
-			guessDisplay: formatVals(guess.classes),
-			shared: r.shared,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// talent
-	{
-		const r = compareSet(guess.talents, answer.talents, true);
-		columns.push({
-			column: "talent",
-			state: r.state,
-			guessDisplay: formatVals(guess.talents),
-			shared: r.shared,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// pitch
-	{
-		const guessRainbow =
-			guess.pitches.includes(1) &&
-			guess.pitches.includes(2) &&
-			guess.pitches.includes(3);
-		if (guessRainbow) {
-			columns.push({
-				column: "pitch",
-				state: "match",
-				guessDisplay: formatVals(guess.pitches),
-				isRainbow: true,
-			});
-		} else if (guess.pitches.length === 0 && answer.pitches.length === 0) {
-			columns.push({ column: "pitch", state: "match", guessDisplay: "" });
-		} else if (guess.pitches.some((p) => answer.pitches.includes(p))) {
-			columns.push({
-				column: "pitch",
-				state: "match",
-				guessDisplay: formatVals(guess.pitches),
-			});
-		} else {
-			columns.push({
-				column: "pitch",
-				state: "miss",
-				guessDisplay: formatVals(guess.pitches),
-			});
-		}
-	}
-
-	// cost
-	{
-		const r = compareNumericSet(guess.costs, answer.costs);
-		columns.push({
-			column: "cost",
-			state: r.state,
-			guessDisplay: formatVals(guess.costs),
-			direction: r.direction,
-			revealedValue: r.revealedValue,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// power
-	{
-		const r = compareNumericSet(guess.powers, answer.powers);
-		columns.push({
-			column: "power",
-			state: r.state,
-			guessDisplay: formatVals(guess.powers),
-			direction: r.direction,
-			revealedValue: r.revealedValue,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// defense
-	{
-		const r = compareNumericSet(guess.defenses, answer.defenses);
-		columns.push({
-			column: "defense",
-			state: r.state,
-			guessDisplay: formatVals(guess.defenses),
-			direction: r.direction,
-			revealedValue: r.revealedValue,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// life
-	{
-		const r = compareNumericSet(lifeAsArray(guess), lifeAsArray(answer));
-		columns.push({
-			column: "life",
-			state: r.state,
-			guessDisplay: formatVals(lifeAsArray(guess)),
-			direction: r.direction,
-			revealedValue: r.revealedValue,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// subtypes (answer-empty is plain red, not ban)
-	{
-		const r = compareSet(guess.subtypes, answer.subtypes, false);
-		columns.push({
-			column: "subtypes",
-			state: r.state,
-			guessDisplay: formatVals(guess.subtypes),
-			shared: r.shared,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// keywords (same as subtypes)
-	{
-		const r = compareSet(guess.keywords, answer.keywords, false);
-		columns.push({
-			column: "keywords",
-			state: r.state,
-			guessDisplay: formatVals(guess.keywords),
-			shared: r.shared,
-			notApplicable: r.notApplicable,
-		});
-	}
-
-	// set
-	{
-		const r = compareSetColumn(guess, answer);
-		columns.push({
+	const columns: ColumnFeedback[] = [
+		{
+			column: "type",
+			state: guess.type === answer.type ? "match" : "miss",
+			guessDisplay: guess.type,
+		},
+		setColumn("class", guess.classes, answer.classes, true),
+		setColumn("talent", guess.talents, answer.talents, true),
+		pitchColumn(guess, answer),
+		numericColumn("cost", guess.costs, answer.costs),
+		numericColumn("power", guess.powers, answer.powers),
+		numericColumn("defense", guess.defenses, answer.defenses),
+		numericColumn("life", lifeAsArray(guess), lifeAsArray(answer)),
+		// subtypes and keywords: answer-empty is plain red, not ban
+		setColumn("subtypes", guess.subtypes, answer.subtypes, false),
+		setColumn("keywords", guess.keywords, answer.keywords, false),
+		{
 			column: "set",
-			state: r.state,
+			state: setComparison.state,
 			guessDisplay: formatVals(guess.sets.map((s) => s.code)),
-			setDetails: r.setDetails,
-		});
-	}
+			setDetails: setComparison.setDetails,
+		},
+	];
 
 	const correct = guess.id === answer.id;
 	const isTwin = !correct && columns.every((c) => c.state === "match");

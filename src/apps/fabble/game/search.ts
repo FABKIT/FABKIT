@@ -1,6 +1,6 @@
-import { MAX_SEARCH_RESULTS } from "../config";
-import type { FabbleCard } from "../types";
-import { normalizeCardName } from "./normalize";
+import { MAX_SEARCH_RESULTS } from "@fabkit/apps/fabble/config";
+import { normalizeCardName } from "@fabkit/apps/fabble/game/normalize";
+import type { FabbleCard } from "@fabkit/apps/fabble/types";
 
 export interface SearchEntry {
 	id: string;
@@ -16,24 +16,26 @@ export function buildSearchIndex(cards: FabbleCard[]): SearchEntry[] {
 	}));
 }
 
+function byName(a: SearchEntry, b: SearchEntry): number {
+	return a.name.localeCompare(b.name);
+}
+
 export function searchCards(
 	index: SearchEntry[],
 	query: string,
 ): SearchEntry[] {
-	const q = normalizeCardName(query);
-	if (q === "") return [];
+	const normalizedQuery = normalizeCardName(query);
+	if (normalizedQuery === "") return [];
 
 	const startsWith: SearchEntry[] = [];
 	const includes: SearchEntry[] = [];
 	for (const entry of index) {
-		if (entry.normalized.startsWith(q)) {
+		if (entry.normalized.startsWith(normalizedQuery)) {
 			startsWith.push(entry);
-		} else if (entry.normalized.includes(q)) {
+		} else if (entry.normalized.includes(normalizedQuery)) {
 			includes.push(entry);
 		}
 	}
-	const byName = (a: SearchEntry, b: SearchEntry) =>
-		a.name.localeCompare(b.name);
 	startsWith.sort(byName);
 	includes.sort(byName);
 

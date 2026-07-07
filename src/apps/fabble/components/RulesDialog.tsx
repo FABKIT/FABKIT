@@ -1,3 +1,6 @@
+import { FeedbackTile } from "@fabkit/apps/fabble/components/FeedbackTile";
+import type { ColumnFeedback } from "@fabkit/apps/fabble/types";
+import { COLUMNS } from "@fabkit/apps/fabble/types";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -6,11 +9,8 @@ import {
 } from "@headlessui/react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { ColumnFeedback } from "../types";
-import { COLUMNS } from "../types";
-import { FeedbackTile } from "./FeedbackTile";
 
-interface RulesDialogProps {
+export interface RulesDialogProps {
 	open: boolean;
 	onClose: () => void;
 }

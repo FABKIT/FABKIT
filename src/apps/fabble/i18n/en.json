@@ -146,6 +146,7 @@
 	"share": {
 		"button": "Share",
 		"unsupported": "Sharing isn't supported on this browser — try Export instead",
+		"failed": "Sharing failed — try Export instead",
 		"export": "Export image",
 		"exported": "Saved!",
 		"copy_text": "Copy as text",

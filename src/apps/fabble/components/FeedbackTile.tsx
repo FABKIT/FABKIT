@@ -1,10 +1,10 @@
+import type { ColumnFeedback } from "@fabkit/apps/fabble/types";
 import { ArrowDown, ArrowUp, Ban, Check } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ColumnFeedback } from "../types";
 
-interface FeedbackTileProps {
+export interface FeedbackTileProps {
 	feedback: ColumnFeedback;
 	style?: CSSProperties;
 	flip?: boolean;

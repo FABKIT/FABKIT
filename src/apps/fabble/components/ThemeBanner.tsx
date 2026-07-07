@@ -1,8 +1,8 @@
+import type { DailyPuzzle } from "@fabkit/apps/fabble/game/daily";
 import { Swords } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { DailyPuzzle } from "../game/daily";
 
-interface ThemeBannerProps {
+export interface ThemeBannerProps {
 	theme: DailyPuzzle["theme"];
 }
 

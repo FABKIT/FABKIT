@@ -1,12 +1,15 @@
+import { getToday, msUntilLocalMidnight } from "@fabkit/apps/fabble/game/date";
 import { useEffect, useState } from "react";
-import { getToday, msUntilLocalMidnight } from "../game/date";
+
+function pad(value: number): string {
+	return String(value).padStart(2, "0");
+}
 
 function formatDuration(ms: number): string {
 	const totalSeconds = Math.max(0, Math.floor(ms / 1000));
 	const hours = Math.floor(totalSeconds / 3600);
 	const minutes = Math.floor((totalSeconds % 3600) / 60);
 	const seconds = totalSeconds % 60;
-	const pad = (n: number) => String(n).padStart(2, "0");
 	return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 

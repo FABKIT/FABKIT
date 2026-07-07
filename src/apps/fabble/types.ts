@@ -1,6 +1,6 @@
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
 import type { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import type { CardType } from "@fabkit/shared/config/cards/types";
-import type { FabbleMode } from "./config";
 
 /** The 9 eligible types (spec §2), as shared-vocab keys. NOTE: the shared vocab has no
     "attack_action" (card-creator models Attack as an action subtype) — Fabble's dataset

@@ -1,16 +1,18 @@
+import { FeedbackTile } from "@fabkit/apps/fabble/components/FeedbackTile";
+import { TwinToast } from "@fabkit/apps/fabble/components/TwinToast";
+import { REVEAL_TOTAL_MS, TILE_STAGGER_MS } from "@fabkit/apps/fabble/config";
+import type { FabbleCard, GuessResult } from "@fabkit/apps/fabble/types";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { REVEAL_TOTAL_MS, TILE_STAGGER_MS } from "../config";
-import type { FabbleCard, GuessResult } from "../types";
-import { FeedbackTile } from "./FeedbackTile";
-import { TwinToast } from "./TwinToast";
 
-interface FeedbackBlockProps {
+export interface FeedbackBlockProps {
 	result: GuessResult;
 	card: FabbleCard;
 	alreadyAnimated: boolean;
-	onAnimated: () => void;
+	/** Must be referentially stable (e.g. a store action) so the reveal timer
+	 * below isn't reset by parent re-renders mid-animation. */
+	onAnimated: (guessId: string) => void;
 }
 
 export function FeedbackBlock({
@@ -20,16 +22,16 @@ export function FeedbackBlock({
 	onAnimated,
 }: FeedbackBlockProps) {
 	const { t } = useTranslation("fabble");
+	const guessId = result.guessId;
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: fires once per mount to mark the reveal as played
 	useEffect(() => {
 		if (alreadyAnimated) return;
 		// Deferred until the flip sequence actually finishes — calling this
 		// synchronously on mount re-renders with alreadyAnimated=true almost
 		// immediately, stripping the flip class before the tiles ever animate.
-		const timer = setTimeout(onAnimated, REVEAL_TOTAL_MS);
+		const timer = setTimeout(() => onAnimated(guessId), REVEAL_TOTAL_MS);
 		return () => clearTimeout(timer);
-	}, []);
+	}, [alreadyAnimated, onAnimated, guessId]);
 
 	return (
 		<div className="w-full max-w-180 rounded-lg border border-border-primary bg-surface p-4">

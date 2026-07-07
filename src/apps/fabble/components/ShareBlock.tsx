@@ -1,21 +1,47 @@
-import { snapdom } from "@zumer/snapdom";
-import { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { FabbleMode } from "../config";
-import { MAX_GUESSES, SHARE_LINK, USERNAME_MAX_LENGTH } from "../config";
-import { shareDateLabel } from "../game/date";
-import { buildShareText } from "../game/share-text";
+import { ShareCard } from "@fabkit/apps/fabble/components/ShareCard";
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
+import {
+	MAX_GUESSES,
+	SHARE_LINK,
+	USERNAME_MAX_LENGTH,
+} from "@fabkit/apps/fabble/config";
+import { shareDateLabel } from "@fabkit/apps/fabble/game/date";
+import { buildShareText } from "@fabkit/apps/fabble/game/share-text";
+import { useToast } from "@fabkit/apps/fabble/hooks/useToast";
 import {
 	getOrderedResults,
 	type ModeSession,
 	useFabbleStore,
-} from "../stores/fabble";
-import { ShareCard } from "./ShareCard";
+} from "@fabkit/apps/fabble/stores/fabble";
+import { snapdom } from "@zumer/snapdom";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-interface ShareBlockProps {
+export interface ShareBlockProps {
 	mode: FabbleMode;
 	session: ModeSession;
 	today: Date;
+}
+
+function buildFileName(username: string, dateLabel: string): string {
+	const safeName = (username || "fabble").replace(/[^a-z0-9_-]/gi, "");
+	return `${safeName}_fabble-result_${dateLabel}.png`;
+}
+
+async function captureNodeBlob(node: HTMLElement): Promise<Blob> {
+	const capture = await snapdom(node, { scale: 2, embedFonts: true });
+	return capture.toBlob({ type: "png" });
+}
+
+function downloadBlob(blob: Blob, fileName: string): void {
+	const url = URL.createObjectURL(blob);
+	const anchor = document.createElement("a");
+	anchor.href = url;
+	anchor.download = fileName;
+	document.body.appendChild(anchor);
+	anchor.click();
+	document.body.removeChild(anchor);
+	URL.revokeObjectURL(url);
 }
 
 export function ShareBlock({ mode, session, today }: ShareBlockProps) {
@@ -24,7 +50,7 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 	const setUsername = useFabbleStore((s) => s.setUsername);
 	const [usernameInput, setUsernameInput] = useState(username);
 	const [capturing, setCapturing] = useState(false);
-	const [toast, setToast] = useState<string | null>(null);
+	const { toast, showToast } = useToast();
 	const cardRef = useRef<HTMLDivElement>(null);
 
 	const won = session.status === "won";
@@ -35,12 +61,7 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 	const modeName = t(`home.modes.${mode}.name`);
 	const dateLabel = shareDateLabel(today);
 
-	const fileName = `${(username || "fabble").replace(/[^a-z0-9_-]/gi, "")}_fabble-result_${dateLabel}.png`;
-
-	function showToast(message: string) {
-		setToast(message);
-		setTimeout(() => setToast(null), 3000);
-	}
+	const fileName = buildFileName(username, dateLabel);
 
 	async function captureCardBlob(): Promise<Blob | null> {
 		setCapturing(true);
@@ -50,8 +71,7 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 		try {
 			const node = cardRef.current;
 			if (!node) return null;
-			const capture = await snapdom(node, { scale: 2, embedFonts: true });
-			return await capture.toBlob({ type: "png" });
+			return await captureNodeBlob(node);
 		} finally {
 			setCapturing(false);
 		}
@@ -68,23 +88,18 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 		}
 		try {
 			await navigator.share({ files: [file], title: "Fabble" });
-		} catch (err) {
+		} catch (error) {
 			// AbortError means the user dismissed the share sheet — not a failure.
-			if (err instanceof Error && err.name === "AbortError") return;
+			if (error instanceof Error && error.name === "AbortError") return;
+			console.error("Fabble: share failed", error);
+			showToast(t("share.failed"));
 		}
 	}
 
 	async function handleExport() {
 		const blob = await captureCardBlob();
 		if (!blob) return;
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = fileName;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
+		downloadBlob(blob, fileName);
 		showToast(t("share.exported"));
 	}
 
@@ -97,7 +112,7 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 			guessCount: session.guesses.length,
 			maxGuesses,
 			hintsUsed,
-			rows: rows.map((r) => r.columns.map((c) => c.state)),
+			rows: rows.map((row) => row.columns.map((column) => column.state)),
 			link: SHARE_LINK,
 		});
 		await navigator.clipboard.writeText(text);

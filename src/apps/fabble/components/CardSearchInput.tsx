@@ -1,3 +1,9 @@
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
+import { MAX_GUESSES } from "@fabkit/apps/fabble/config";
+import { normalizeCardName } from "@fabkit/apps/fabble/game/normalize";
+import { type SearchEntry, searchCards } from "@fabkit/apps/fabble/game/search";
+import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabble";
+import type { FabbleCard } from "@fabkit/apps/fabble/types";
 import {
 	Combobox,
 	ComboboxInput,
@@ -8,15 +14,20 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
-import type { FabbleMode } from "../config";
-import { MAX_GUESSES } from "../config";
-import { normalizeCardName } from "../game/normalize";
-import { searchCards } from "../game/search";
-import { useFabbleStore } from "../stores/fabble";
-import type { FabbleCard } from "../types";
 
-interface CardSearchInputProps {
+export interface CardSearchInputProps {
 	mode: FabbleMode;
+}
+
+function findExactMatch(
+	index: SearchEntry[],
+	cards: Map<string, FabbleCard>,
+	query: string,
+): FabbleCard | undefined {
+	const match = searchCards(index, query).find(
+		(entry) => entry.normalized === normalizeCardName(query),
+	);
+	return match ? cards.get(match.id) : undefined;
 }
 
 export function CardSearchInput({ mode }: CardSearchInputProps) {
@@ -61,10 +72,7 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 
 	function handleSubmit() {
 		if (!isPlaying) return;
-		const match = searchCards(index, query).find(
-			(entry) => entry.normalized === normalizeCardName(query),
-		);
-		const card = match && cards.get(match.id);
+		const card = findExactMatch(index, cards, query);
 		if (!card) {
 			setError(t("search.not_recognized"));
 			return;
@@ -112,7 +120,7 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 											alt=""
 											loading="lazy"
 											crossOrigin="anonymous"
-											className="h-[50px] w-9 rounded-sm object-cover"
+											className="h-12.5 w-9 rounded-sm object-cover"
 										/>
 										<div className="flex flex-1 flex-col">
 											<span className="text-sm text-body">{card.name}</span>

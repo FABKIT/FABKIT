@@ -1,5 +1,5 @@
+import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabble";
 import { registerReportDataProvider } from "@fabkit/platform/bug-report";
-import { useFabbleStore } from "./stores/fabble";
 
 registerReportDataProvider("fabble", () => {
 	const { sessions, streaks, dataset } = useFabbleStore.getState();

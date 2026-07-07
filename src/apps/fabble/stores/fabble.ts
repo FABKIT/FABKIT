@@ -1,25 +1,32 @@
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
-import type { FabbleMode } from "../config";
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
 import {
 	HINT_UNLOCK_GUESSES,
 	MAX_GUESSES,
 	USERNAME_MAX_LENGTH,
-} from "../config";
-import { compareCards } from "../game/compare";
-import { type DailyPuzzle, getDailyPuzzle } from "../game/daily";
-import { dayBefore, getToday, localDateKey } from "../game/date";
-import type { SearchEntry } from "../game/search";
-import { buildSearchIndex } from "../game/search";
-import { STORAGE_KEYS, safeStorage } from "../game/storage";
-import { applyResult } from "../game/streaks";
+} from "@fabkit/apps/fabble/config";
+import { compareCards } from "@fabkit/apps/fabble/game/compare";
+import {
+	type DailyPuzzle,
+	getDailyPuzzle,
+} from "@fabkit/apps/fabble/game/daily";
+import {
+	dayBefore,
+	getToday,
+	localDateKey,
+} from "@fabkit/apps/fabble/game/date";
+import type { SearchEntry } from "@fabkit/apps/fabble/game/search";
+import { buildSearchIndex } from "@fabkit/apps/fabble/game/search";
+import { STORAGE_KEYS, safeStorage } from "@fabkit/apps/fabble/game/storage";
+import { applyResult } from "@fabkit/apps/fabble/game/streaks";
 import type {
 	FabbleCard,
 	FabbleDataset,
 	GuessResult,
 	PersistedSession,
 	PersistedStreaks,
-} from "../types";
+} from "@fabkit/apps/fabble/types";
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
 export interface ModeSession {
 	date: string;
@@ -35,7 +42,7 @@ export interface ModeSession {
 	animatedGuessIds: string[];
 }
 
-interface FabbleState {
+export interface FabbleState {
 	dataset: FabbleDataset | null;
 	cardsById: Map<string, FabbleCard> | null;
 	searchIndex: SearchEntry[] | null;
@@ -45,7 +52,7 @@ interface FabbleState {
 	hasSeenRules: boolean;
 }
 
-interface FabbleActions {
+export interface FabbleActions {
 	ingestDataset(dataset: FabbleDataset): void;
 	startOrRestoreSession(mode: FabbleMode): void;
 	submitGuess(mode: FabbleMode, cardId: string): void;

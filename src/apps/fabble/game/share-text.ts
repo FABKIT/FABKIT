@@ -1,4 +1,4 @@
-import type { TileState } from "../types";
+import type { TileState } from "@fabkit/apps/fabble/types";
 
 const TILE_EMOJI: Record<TileState, string> = {
 	match: "🟩",

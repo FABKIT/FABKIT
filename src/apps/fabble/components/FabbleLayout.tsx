@@ -1,9 +1,9 @@
 import { useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import "../../../styles/components/fabble.css";
+import "@fabkit/styles/components/fabble.css";
 
-interface FabbleLayoutProps {
+export interface FabbleLayoutProps {
 	children: ReactNode;
 }
 
@@ -13,7 +13,7 @@ export function FabbleLayout({ children }: FabbleLayoutProps) {
 
 	return (
 		<div className="flex w-full flex-col items-center">
-			<div className="relative h-[150px] w-full overflow-hidden sm:h-[260px]">
+			<div className="relative h-37.5 w-full overflow-hidden sm:h-65">
 				<img
 					src="/img/fabble/Mischievous-Meeps.webp"
 					alt=""

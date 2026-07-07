@@ -1,5 +1,5 @@
-import type { FabbleCardType } from "./types";
-import { COLUMNS } from "./types";
+import type { FabbleCardType } from "@fabkit/apps/fabble/types";
+import { COLUMNS } from "@fabkit/apps/fabble/types";
 
 export const FABBLE_DATA_URL = "/fabble-sample-data.json";
 // ^ THE swap point: later becomes the data repo's stable remote URL.

@@ -1,6 +1,6 @@
-import type { FabbleMode } from "../config";
-import type { FabbleDataset } from "../types";
-import { localDateKey } from "./date";
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
+import { localDateKey } from "@fabkit/apps/fabble/game/date";
+import type { FabbleDataset } from "@fabkit/apps/fabble/types";
 
 export interface DailyPuzzle {
 	answerId: string;

@@ -1,7 +1,7 @@
+import { useCountdown } from "@fabkit/apps/fabble/hooks/useCountdown";
 import { useTranslation } from "react-i18next";
-import { useCountdown } from "../hooks/useCountdown";
 
-interface CountdownProps {
+export interface CountdownProps {
 	onNewDay: () => void;
 }
 

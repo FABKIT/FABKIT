@@ -1,19 +1,34 @@
-import type { FabbleMode } from "../config";
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
 
 const memoryFallback = new Map<string, string>();
+
+let storageWarned = false;
+
+/** Graceful degradation is intentional (private mode, quota) — the in-memory
+ * fallback keeps the session playable. Log once so failures aren't invisible. */
+function warnStorageUnavailable(error: unknown): void {
+	if (storageWarned) return;
+	storageWarned = true;
+	console.warn(
+		"Fabble: localStorage unavailable, using memory fallback",
+		error,
+	);
+}
 
 export const safeStorage = {
 	get<T>(key: string): T | null {
 		let raw: string | undefined;
 		try {
 			raw = localStorage.getItem(key) ?? memoryFallback.get(key);
-		} catch {
+		} catch (error) {
+			warnStorageUnavailable(error);
 			raw = memoryFallback.get(key);
 		}
 		if (raw === undefined) return null;
 		try {
 			return JSON.parse(raw) as T;
-		} catch {
+		} catch (error) {
+			console.warn(`Fabble: corrupt stored value for "${key}"`, error);
 			return null;
 		}
 	},
@@ -23,8 +38,8 @@ export const safeStorage = {
 		memoryFallback.set(key, raw);
 		try {
 			localStorage.setItem(key, raw);
-		} catch {
-			// localStorage unavailable (private mode, quota) — memory fallback already set above.
+		} catch (error) {
+			warnStorageUnavailable(error);
 		}
 	},
 
@@ -32,15 +47,15 @@ export const safeStorage = {
 		memoryFallback.delete(key);
 		try {
 			localStorage.removeItem(key);
-		} catch {
-			// localStorage unavailable — nothing further to clean up.
+		} catch (error) {
+			warnStorageUnavailable(error);
 		}
 	},
 };
 
 export const STORAGE_KEYS = {
-	session: (m: FabbleMode) => `fabble:session:${m}`,
-	streaks: (m: FabbleMode) => `fabble:streaks:${m}`,
+	session: (mode: FabbleMode) => `fabble:session:${mode}`,
+	streaks: (mode: FabbleMode) => `fabble:streaks:${mode}`,
 	username: "fabble:username",
 	seenRules: "fabble:seen-rules",
 } as const;

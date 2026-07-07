@@ -1,5 +1,5 @@
+import { ELIGIBLE_TYPES } from "@fabkit/apps/fabble/config";
 import { useTranslation } from "react-i18next";
-import { ELIGIBLE_TYPES } from "../config";
 
 export function TypeChipsRow() {
 	const { t } = useTranslation("fabble");

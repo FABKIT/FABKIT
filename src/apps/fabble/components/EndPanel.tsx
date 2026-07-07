@@ -1,13 +1,13 @@
+import { Countdown } from "@fabkit/apps/fabble/components/Countdown";
+import { ShareBlock } from "@fabkit/apps/fabble/components/ShareBlock";
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
+import { earliestRegularPrinting } from "@fabkit/apps/fabble/game/compare";
+import type { ModeSession } from "@fabkit/apps/fabble/stores/fabble";
+import type { FabbleCard, PersistedStreaks } from "@fabkit/apps/fabble/types";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { useTranslation } from "react-i18next";
-import type { FabbleMode } from "../config";
-import { earliestRegularPrinting } from "../game/compare";
-import type { ModeSession } from "../stores/fabble";
-import type { FabbleCard, PersistedStreaks } from "../types";
-import { Countdown } from "./Countdown";
-import { ShareBlock } from "./ShareBlock";
 
-interface EndPanelProps {
+export interface EndPanelProps {
 	mode: FabbleMode;
 	session: ModeSession;
 	answer: FabbleCard;

@@ -1,10 +1,10 @@
+import { RulesDialog } from "@fabkit/apps/fabble/components/RulesDialog";
+import { MODES } from "@fabkit/apps/fabble/config";
+import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabble";
 import { Link } from "@tanstack/react-router";
 import { HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MODES } from "../config";
-import { useFabbleStore } from "../stores/fabble";
-import { RulesDialog } from "./RulesDialog";
 
 export function ModeSelect() {
 	const { t } = useTranslation("fabble");
@@ -12,10 +12,9 @@ export function ModeSelect() {
 	const markRulesSeen = useFabbleStore((s) => s.markRulesSeen);
 	const [rulesOpen, setRulesOpen] = useState(false);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: only check once per mount, not on every hasSeenRules change
 	useEffect(() => {
 		if (!hasSeenRules) setRulesOpen(true);
-	}, []);
+	}, [hasSeenRules]);
 
 	function closeRules() {
 		setRulesOpen(false);

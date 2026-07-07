@@ -1,12 +1,12 @@
+import { HINT_UNLOCK_GUESSES } from "@fabkit/apps/fabble/config";
+import { earliestRegularPrinting } from "@fabkit/apps/fabble/game/compare";
+import type { FabbleCard } from "@fabkit/apps/fabble/types";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { Lock, LockOpen } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { HINT_UNLOCK_GUESSES } from "../config";
-import { earliestRegularPrinting } from "../game/compare";
-import type { FabbleCard } from "../types";
 
-interface HintsRowProps {
+export interface HintsRowProps {
 	answer: FabbleCard;
 	guessCount: number;
 	hintsRevealed: [boolean, boolean];
@@ -55,7 +55,7 @@ export function HintsRow({
 	);
 }
 
-interface HintPillProps {
+export interface HintPillProps {
 	label: string;
 	unlockAt: number;
 	guessCount: number;

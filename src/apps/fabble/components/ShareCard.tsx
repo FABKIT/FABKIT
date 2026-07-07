@@ -1,8 +1,8 @@
+import type { GuessResult } from "@fabkit/apps/fabble/types";
+import { COLUMNS } from "@fabkit/apps/fabble/types";
+import FabkitIcon from "@fabkit/assets/Fabkitlogo_notext.svg";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
-import FabkitIcon from "../../../assets/Fabkitlogo_notext.svg";
-import type { GuessResult } from "../types";
-import { COLUMNS } from "../types";
 
 const SHARE_FONT_FAMILY = "ui-sans-serif, system-ui, sans-serif";
 
@@ -35,7 +35,7 @@ const COLUMN_INITIALS: Record<(typeof COLUMNS)[number], string> = {
 	set: "SET",
 };
 
-interface ShareCardProps {
+export interface ShareCardProps {
 	modeLabel: string;
 	dateLabel: string;
 	username: string;

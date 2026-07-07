@@ -1,9 +1,9 @@
+import type { FabbleMode } from "@fabkit/apps/fabble/config";
 import { Link } from "@tanstack/react-router";
 import { HelpCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { FabbleMode } from "../config";
 
-interface StatusBarProps {
+export interface StatusBarProps {
 	mode: FabbleMode;
 	guessCount: number;
 	maxGuesses: number;
