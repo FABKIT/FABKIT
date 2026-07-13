@@ -14,7 +14,7 @@ import {
 	useFabbleStore,
 } from "@fabkit/apps/fabble/stores/fabble";
 import { getRouteApi } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const routeApi = getRouteApi("/fabble");
@@ -65,6 +65,11 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 		return () => clearTimeout(timer);
 	}, [session]);
 
+	const handleReset = useCallback(() => {
+		devReset(mode);
+		startOrRestoreSession(mode);
+	}, [devReset, mode, startOrRestoreSession]);
+
 	if (!cardsById) return null;
 
 	if (!session) {
@@ -72,11 +77,6 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 	}
 
 	const answer = cardsById.get(session.answerId);
-
-	function handleReset() {
-		devReset(mode);
-		startOrRestoreSession(mode);
-	}
 
 	const orderedResults = getOrderedResults(session);
 	const lastResult = orderedResults[orderedResults.length - 1];

@@ -2,6 +2,7 @@ import type { FabbleMode } from "@fabkit/apps/fabble/config";
 import { MAX_GUESSES } from "@fabkit/apps/fabble/config";
 import { normalizeCardName } from "@fabkit/apps/fabble/game/normalize";
 import { type SearchEntry, searchCards } from "@fabkit/apps/fabble/game/search";
+import type { ModeSession } from "@fabkit/apps/fabble/stores/fabble";
 import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabble";
 import type { FabbleCard } from "@fabkit/apps/fabble/types";
 import {
@@ -11,7 +12,7 @@ import {
 	ComboboxOptions,
 } from "@headlessui/react";
 import { Check } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 
@@ -30,6 +31,13 @@ function findExactMatch(
 	return match ? cards.get(match.id) : undefined;
 }
 
+function guessedIdsOf(session: ModeSession): Set<string> {
+	return new Set([
+		...session.guesses.map((g) => g.guessId),
+		...session.twinGuesses.map((g) => g.guessId),
+	]);
+}
+
 export function CardSearchInput({ mode }: CardSearchInputProps) {
 	const { t } = useTranslation("fabble");
 	const [query, setQuery] = useState("");
@@ -41,14 +49,42 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 	const session = useFabbleStore((s) => s.sessions[mode]);
 	const submitGuess = useFabbleStore((s) => s.submitGuess);
 
-	if (!searchIndex || !cardsById || !session) return null;
-	const index = searchIndex;
-	const cards = cardsById;
+	const submitCard = useCallback(
+		(card: FabbleCard) => {
+			if (!session || session.status !== "playing") return;
+			setError(null);
+			submitGuess(mode, card.id);
+			setQuery("");
+		},
+		[mode, session, submitGuess],
+	);
 
-	const guessedIds = new Set([
-		...session.guesses.map((g) => g.guessId),
-		...session.twinGuesses.map((g) => g.guessId),
-	]);
+	const handleSelect = useCallback(
+		(card: FabbleCard | null) => {
+			if (!card) return;
+			submitCard(card);
+		},
+		[submitCard],
+	);
+
+	const handleSubmit = useCallback(() => {
+		if (!searchIndex || !cardsById || !session || session.status !== "playing")
+			return;
+		const card = findExactMatch(searchIndex, cardsById, query);
+		if (!card) {
+			setError(t("search.not_recognized"));
+			return;
+		}
+		if (guessedIdsOf(session).has(card.id)) {
+			setError(t("search.already_guessed"));
+			return;
+		}
+		submitCard(card);
+	}, [searchIndex, cardsById, session, query, t, submitCard]);
+
+	if (!searchIndex || !cardsById || !session) return null;
+
+	const guessedIds = guessedIdsOf(session);
 	const results = searchCards(searchIndex, debouncedQuery)
 		.map((entry) => cardsById.get(entry.id))
 		.filter((c): c is FabbleCard => c !== undefined);
@@ -57,32 +93,6 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 	const maxGuesses = MAX_GUESSES[mode];
 	const remaining = maxGuesses - guessCount;
 	const isPlaying = session.status === "playing";
-
-	function submitCard(card: FabbleCard) {
-		if (!isPlaying) return;
-		setError(null);
-		submitGuess(mode, card.id);
-		setQuery("");
-	}
-
-	function handleSelect(card: FabbleCard | null) {
-		if (!card) return;
-		submitCard(card);
-	}
-
-	function handleSubmit() {
-		if (!isPlaying) return;
-		const card = findExactMatch(index, cards, query);
-		if (!card) {
-			setError(t("search.not_recognized"));
-			return;
-		}
-		if (guessedIds.has(card.id)) {
-			setError(t("search.already_guessed"));
-			return;
-		}
-		submitCard(card);
-	}
 
 	return (
 		<div className="flex w-full max-w-100 flex-col items-center gap-2">

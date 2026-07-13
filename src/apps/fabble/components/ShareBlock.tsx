@@ -14,7 +14,7 @@ import {
 	useFabbleStore,
 } from "@fabkit/apps/fabble/stores/fabble";
 import { snapdom } from "@zumer/snapdom";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export interface ShareBlockProps {
@@ -63,7 +63,7 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 
 	const fileName = buildFileName(username, dateLabel);
 
-	async function captureCardBlob(): Promise<Blob | null> {
+	const captureCardBlob = useCallback(async (): Promise<Blob | null> => {
 		setCapturing(true);
 		await new Promise((r) => requestAnimationFrame(r));
 		await new Promise((r) => requestAnimationFrame(r));
@@ -75,9 +75,9 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 		} finally {
 			setCapturing(false);
 		}
-	}
+	}, []);
 
-	async function handleShare() {
+	const handleShare = useCallback(async () => {
 		const blob = await captureCardBlob();
 		if (!blob) return;
 		const file = new File([blob], fileName, { type: "image/png" });
@@ -94,16 +94,16 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 			console.error("Fabble: share failed", error);
 			showToast(t("share.failed"));
 		}
-	}
+	}, [captureCardBlob, fileName, showToast, t]);
 
-	async function handleExport() {
+	const handleExport = useCallback(async () => {
 		const blob = await captureCardBlob();
 		if (!blob) return;
 		downloadBlob(blob, fileName);
 		showToast(t("share.exported"));
-	}
+	}, [captureCardBlob, fileName, showToast, t]);
 
-	async function handleCopyText() {
+	const handleCopyText = useCallback(async () => {
 		const text = buildShareText({
 			username,
 			modeLabel: modeName,
@@ -117,7 +117,18 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 		});
 		await navigator.clipboard.writeText(text);
 		showToast(t("share.copied"));
-	}
+	}, [
+		username,
+		modeName,
+		dateLabel,
+		won,
+		session,
+		maxGuesses,
+		hintsUsed,
+		rows,
+		showToast,
+		t,
+	]);
 
 	return (
 		<div className="flex w-full max-w-140 flex-col items-center gap-3">

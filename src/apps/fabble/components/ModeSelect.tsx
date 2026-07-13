@@ -3,7 +3,7 @@ import { MODES } from "@fabkit/apps/fabble/config";
 import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabble";
 import { Link } from "@tanstack/react-router";
 import { HelpCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function ModeSelect() {
@@ -16,10 +16,10 @@ export function ModeSelect() {
 		if (!hasSeenRules) setRulesOpen(true);
 	}, [hasSeenRules]);
 
-	function closeRules() {
+	const closeRules = useCallback(() => {
 		setRulesOpen(false);
 		markRulesSeen();
-	}
+	}, [markRulesSeen]);
 
 	return (
 		<div className="flex w-full flex-col items-center gap-6">

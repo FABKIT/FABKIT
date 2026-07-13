@@ -4,6 +4,7 @@ import {
 	getOrderedResults,
 	useFabbleStore,
 } from "@fabkit/apps/fabble/stores/fabble";
+import { useCallback } from "react";
 
 export interface GuessHistoryProps {
 	mode: FabbleMode;
@@ -14,13 +15,14 @@ export function GuessHistory({ mode }: GuessHistoryProps) {
 	const cardsById = useFabbleStore((s) => s.cardsById);
 	const markGuessAnimated = useFabbleStore((s) => s.markGuessAnimated);
 
+	const handleAnimated = useCallback(
+		(guessId: string) => markGuessAnimated(mode, guessId),
+		[markGuessAnimated, mode],
+	);
+
 	if (!session || !cardsById || session.order.length === 0) return null;
 
 	const results = [...getOrderedResults(session)].reverse();
-
-	// Stable across items and re-renders (memoized by the React Compiler from
-	// the stable store action + mode), so FeedbackBlock's reveal timer never resets.
-	const handleAnimated = (guessId: string) => markGuessAnimated(mode, guessId);
 
 	return (
 		<div className="flex w-full max-w-180 flex-col gap-5">
