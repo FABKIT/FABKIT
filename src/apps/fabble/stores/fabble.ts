@@ -50,6 +50,7 @@ export interface FabbleState {
 	streaks: Partial<Record<FabbleMode, PersistedStreaks>>;
 	username: string;
 	hasSeenRules: boolean;
+	hasSeenRainbowHint: boolean;
 }
 
 export interface FabbleActions {
@@ -61,6 +62,7 @@ export interface FabbleActions {
 	advanceToNewDay(mode: FabbleMode): void;
 	setUsername(name: string): void;
 	markRulesSeen(): void;
+	markRainbowHintSeen(): void;
 	devReset(mode: FabbleMode): void;
 }
 
@@ -72,6 +74,8 @@ const initialState: FabbleState = {
 	streaks: {},
 	username: safeStorage.get<string>(STORAGE_KEYS.username) ?? "",
 	hasSeenRules: safeStorage.get<boolean>(STORAGE_KEYS.seenRules) ?? false,
+	hasSeenRainbowHint:
+		safeStorage.get<boolean>(STORAGE_KEYS.seenRainbowHint) ?? false,
 };
 
 const emptyStreaks: PersistedStreaks = {
@@ -335,6 +339,15 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 		markRulesSeen: () => {
 			safeStorage.set(STORAGE_KEYS.seenRules, true);
 			set({ hasSeenRules: true }, undefined, "fabble/markRulesSeen");
+		},
+
+		markRainbowHintSeen: () => {
+			safeStorage.set(STORAGE_KEYS.seenRainbowHint, true);
+			set(
+				{ hasSeenRainbowHint: true },
+				undefined,
+				"fabble/markRainbowHintSeen",
+			);
 		},
 
 		devReset: (mode) => {

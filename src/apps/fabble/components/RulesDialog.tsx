@@ -39,7 +39,6 @@ const EXAMPLE_TILES: { feedback: ColumnFeedback; labelKey: string }[] = [
 			state: "miss",
 			guessDisplay: "1",
 			direction: "higher",
-			revealedValue: "3",
 		},
 		labelKey: "rules.legend.higher",
 	},
@@ -49,7 +48,6 @@ const EXAMPLE_TILES: { feedback: ColumnFeedback; labelKey: string }[] = [
 			state: "miss",
 			guessDisplay: "5",
 			direction: "lower",
-			revealedValue: "3",
 		},
 		labelKey: "rules.legend.lower",
 	},
@@ -63,6 +61,37 @@ const EXAMPLE_TILES: { feedback: ColumnFeedback; labelKey: string }[] = [
 		labelKey: "rules.legend.not_applicable",
 	},
 ];
+
+const RAINBOW_EXAMPLE_TILES: { feedback: ColumnFeedback; labelKey: string }[] =
+	[
+		{
+			feedback: {
+				column: "power",
+				state: "partial",
+				guessDisplay: "4",
+				shared: ["4"],
+			},
+			labelKey: "rules.rainbow.example_number",
+		},
+		{
+			feedback: {
+				column: "pitch",
+				state: "match",
+				guessDisplay: "1, 2, 3",
+				isRainbow: true,
+			},
+			labelKey: "rules.rainbow.example_pitch_match",
+		},
+		{
+			feedback: {
+				column: "pitch",
+				state: "partial",
+				guessDisplay: "1",
+				shared: ["1"],
+			},
+			labelKey: "rules.rainbow.example_pitch_partial",
+		},
+	];
 
 export function RulesDialog({ open, onClose }: RulesDialogProps) {
 	const { t } = useTranslation("fabble");
@@ -139,6 +168,27 @@ export function RulesDialog({ open, onClose }: RulesDialogProps) {
 								<span className="text-muted">{t("rules.legend.red_body")}</span>
 							</li>
 						</ul>
+					</section>
+
+					<section className="space-y-2">
+						<h3 className="font-semibold text-body">
+							{t("rules.rainbow.title")}
+						</h3>
+						<p className="text-sm text-muted">{t("rules.rainbow.body_1")}</p>
+						<p className="text-sm text-muted">{t("rules.rainbow.body_2")}</p>
+						<div className="flex flex-wrap justify-center gap-2">
+							{RAINBOW_EXAMPLE_TILES.map(({ feedback, labelKey }) => (
+								<div
+									key={labelKey}
+									className="flex w-20 flex-col items-center gap-1"
+								>
+									<FeedbackTile feedback={feedback} />
+									<span className="text-center text-[11px] text-muted">
+										{t(labelKey)}
+									</span>
+								</div>
+							))}
+						</div>
 					</section>
 
 					<section className="space-y-1">

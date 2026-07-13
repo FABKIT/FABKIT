@@ -19,10 +19,21 @@ function lifeAsArray(card: FabbleCard): number[] {
 	return card.life === null ? [] : [card.life];
 }
 
+/** Order-insensitive set equality, used to require an EXACT match on multi-value
+    columns (numbers, pitch) rather than any overlap — a mono guess against a rainbow
+    answer with different stats per colour is a partial, not a match. */
+function sameValueSet<T>(a: T[], b: T[]): boolean {
+	const aSet = new Set(a);
+	const bSet = new Set(b);
+	if (aSet.size !== bSet.size) return false;
+	for (const v of aSet) if (!bSet.has(v)) return false;
+	return true;
+}
+
 export interface NumericComparison {
-	state: "match" | "miss";
+	state: "match" | "partial" | "miss";
 	direction?: "higher" | "lower";
-	revealedValue?: string;
+	shared?: string[];
 	notApplicable?: boolean;
 }
 
@@ -39,9 +50,15 @@ function compareNumericSet(
 	if (answerVals.length === 0 && guessVals.length > 0) {
 		return { state: "miss", notApplicable: true };
 	}
-	const intersects = guessVals.some((v) => answerVals.includes(v));
-	if (intersects) {
+	if (sameValueSet(guessVals, answerVals)) {
 		return { state: "match" };
+	}
+	const shared = guessVals.filter((v) => answerVals.includes(v));
+	if (shared.length > 0) {
+		return {
+			state: "partial",
+			shared: [...new Set(shared)].map(String).sort(),
+		};
 	}
 
 	const gNums = guessVals.filter(isNumber);
@@ -54,20 +71,12 @@ function compareNumericSet(
 	const aMax = Math.max(...aNums);
 	const aMin = Math.min(...aNums);
 	if (gMax < aMin) {
-		return {
-			state: "miss",
-			direction: "higher",
-			revealedValue: [...aNums].sort((a, b) => a - b).join(" / "),
-		};
+		return { state: "miss", direction: "higher" };
 	}
 	if (gMin > aMax) {
-		return {
-			state: "miss",
-			direction: "lower",
-			revealedValue: [...aNums].sort((a, b) => a - b).join(" / "),
-		};
+		return { state: "miss", direction: "lower" };
 	}
-	return { state: "miss", revealedValue: aNums.join(", ") };
+	return { state: "miss" };
 }
 
 function compareSet(
@@ -177,7 +186,7 @@ function numericColumn(
 		state: comparison.state,
 		guessDisplay: formatVals(guessVals),
 		direction: comparison.direction,
-		revealedValue: comparison.revealedValue,
+		shared: comparison.shared,
 		notApplicable: comparison.notApplicable,
 	};
 }
@@ -187,22 +196,27 @@ function pitchColumn(guess: FabbleCard, answer: FabbleCard): ColumnFeedback {
 		guess.pitches.includes(1) &&
 		guess.pitches.includes(2) &&
 		guess.pitches.includes(3);
-	if (guessRainbow) {
-		return {
-			column: "pitch",
-			state: "match",
-			guessDisplay: formatVals(guess.pitches),
-			isRainbow: true,
-		};
-	}
+	const guessDisplay = formatVals(guess.pitches);
+
 	if (guess.pitches.length === 0 && answer.pitches.length === 0) {
 		return { column: "pitch", state: "match", guessDisplay: "" };
 	}
-	const intersects = guess.pitches.some((p) => answer.pitches.includes(p));
+	if (sameValueSet(guess.pitches, answer.pitches)) {
+		return {
+			column: "pitch",
+			state: "match",
+			guessDisplay,
+			isRainbow: guessRainbow || undefined,
+		};
+	}
+	const shared = guess.pitches.filter((p) => answer.pitches.includes(p));
 	return {
 		column: "pitch",
-		state: intersects ? "match" : "miss",
-		guessDisplay: formatVals(guess.pitches),
+		state: shared.length > 0 ? "partial" : "miss",
+		guessDisplay,
+		shared:
+			shared.length > 0 ? [...new Set(shared)].map(String).sort() : undefined,
+		isRainbow: guessRainbow || undefined,
 	};
 }
 

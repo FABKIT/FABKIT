@@ -44,7 +44,7 @@ src/apps/fabble/
   since spent guesses and twins live in separate arrays and don't interleave on
   their own — use `getOrderedResults(session)` to merge them back
 - `streaks: Partial<Record<FabbleMode, PersistedStreaks>>`
-- `username`, `hasSeenRules` — cross-mode player prefs
+- `username`, `hasSeenRules`, `hasSeenRainbowHint` — cross-mode player prefs
 
 Key actions: `startOrRestoreSession` (hydrates from `safeStorage` if the persisted
 session matches today, else starts fresh and persists immediately — this is the
@@ -55,6 +55,19 @@ re-runs `startOrRestoreSession` once the date has rolled over), `devReset`
 
 Feedback (`GuessResult[]`) is never persisted — it's recomputed from
 `guesses: string[]` + `answerId` via `compareCards()` on every restore.
+
+## Comparison rules (rainbow cards)
+
+Rainbow cards (printed in red/yellow/blue with different stats per colour) are merged
+into one `FabbleCard` whose numeric fields (`pitches`, `costs`, `powers`, `defenses`)
+hold the union of values across colours. `compare.ts` requires an EXACT value-set match
+for green on these columns: a mono guess against a multi-value answer (or vice versa) is
+yellow (`partial`), not green, even if one value overlaps. Arrows on a numeric miss only
+appear when every one of the answer's values is fully higher or fully lower than every
+one of the guess's values; there is no `revealedValue` field, a miss never reveals the
+answer's actual numbers. The `game/rainbow-hint.ts` helper (`hasRainbowPartial`) detects
+this partial state to drive the one-time in-play hint toast (`hasSeenRainbowHint` /
+`markRainbowHintSeen`, plumbed exactly like `hasSeenRules`).
 
 ## Import Rules
 

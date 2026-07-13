@@ -102,12 +102,21 @@ describe("compareCards — talent", () => {
 });
 
 describe("compareCards — pitch", () => {
-	it("rainbow guess matches and flags isRainbow", () => {
+	it("rainbow guess vs rainbow answer matches and flags isRainbow", () => {
 		const a = makeCard({ id: "a", pitches: [1, 2, 3] });
-		const b = makeCard({ id: "b", pitches: [2] });
+		const b = makeCard({ id: "b", pitches: [1, 2, 3] });
 		const c = col(compareCards(a, b), "pitch");
 		expect(c.state).toBe("match");
 		expect(c.isRainbow).toBe(true);
+	});
+
+	it("rainbow guess vs mono answer is partial and flags isRainbow", () => {
+		const a = makeCard({ id: "a", pitches: [1, 2, 3] });
+		const b = makeCard({ id: "b", pitches: [2] });
+		const c = col(compareCards(a, b), "pitch");
+		expect(c.state).toBe("partial");
+		expect(c.isRainbow).toBe(true);
+		expect(c.shared).toEqual(["2"]);
 	});
 
 	it("both none matches", () => {
@@ -131,17 +140,19 @@ describe("compareCards — pitch", () => {
 		expect(c.notApplicable).toBeUndefined();
 	});
 
-	it("[1,3] vs [3] matches", () => {
+	it("[1,3] vs [3] is partial, not a match", () => {
 		const a = makeCard({ id: "a", pitches: [1, 3] });
 		const b = makeCard({ id: "b", pitches: [3] });
-		expect(col(compareCards(a, b), "pitch").state).toBe("match");
+		const c = col(compareCards(a, b), "pitch");
+		expect(c.state).toBe("partial");
+		expect(c.shared).toEqual(["3"]);
 	});
 
-	it("[2] guess vs rainbow answer matches without isRainbow", () => {
-		const a = makeCard({ id: "a", pitches: [2] });
+	it("mono guess [1] vs rainbow answer is partial, not a match", () => {
+		const a = makeCard({ id: "a", pitches: [1] });
 		const b = makeCard({ id: "b", pitches: [1, 2, 3] });
 		const c = col(compareCards(a, b), "pitch");
-		expect(c.state).toBe("match");
+		expect(c.state).toBe("partial");
 		expect(c.isRainbow).toBeUndefined();
 	});
 });
@@ -153,12 +164,12 @@ describe("compareCards — cost", () => {
 		expect(col(compareCards(a, b), "cost").state).toBe("match");
 	});
 
-	it("1 vs 3 is higher, reveals 3", () => {
+	it("1 vs 3 is higher", () => {
 		const a = makeCard({ id: "a", costs: [1] });
 		const b = makeCard({ id: "b", costs: [3] });
 		const c = col(compareCards(a, b), "cost");
+		expect(c.state).toBe("miss");
 		expect(c.direction).toBe("higher");
-		expect(c.revealedValue).toBe("3");
 	});
 
 	it("4 vs 2 is lower", () => {
@@ -193,18 +204,31 @@ describe("compareCards — cost", () => {
 		expect(col(compareCards(a, b), "cost").notApplicable).toBe(true);
 	});
 
-	it("guess [] vs answer 2 is plain miss, no reveal", () => {
+	it("guess [] vs answer 2 is plain miss", () => {
 		const a = makeCard({ id: "a", costs: [] });
 		const b = makeCard({ id: "b", costs: [2] });
 		const c = col(compareCards(a, b), "cost");
 		expect(c.state).toBe("miss");
 		expect(c.notApplicable).toBeUndefined();
-		expect(c.revealedValue).toBeUndefined();
 	});
 
-	it("[2,3] vs [3] matches", () => {
+	it("[2,3] vs [3] is partial, not a match (overlap but not identical)", () => {
 		const a = makeCard({ id: "a", costs: [2, 3] });
 		const b = makeCard({ id: "b", costs: [3] });
+		const c = col(compareCards(a, b), "cost");
+		expect(c.state).toBe("partial");
+		expect(c.shared).toEqual(["3"]);
+	});
+
+	it("[3] vs [3] identical single value matches", () => {
+		const a = makeCard({ id: "a", costs: [3] });
+		const b = makeCard({ id: "b", costs: [3] });
+		expect(col(compareCards(a, b), "cost").state).toBe("match");
+	});
+
+	it("[2,3,4] vs [2,3,4] identical sets matches", () => {
+		const a = makeCard({ id: "a", costs: [2, 3, 4] });
+		const b = makeCard({ id: "b", costs: [2, 3, 4] });
 		expect(col(compareCards(a, b), "cost").state).toBe("match");
 	});
 
@@ -247,6 +271,37 @@ describe("compareCards — power", () => {
 		const b = makeCard({ id: "b", powers: [] });
 		expect(col(compareCards(a, b), "power").notApplicable).toBe(true);
 	});
+
+	it("mono guess 4 vs rainbow answer [3,4,5] is partial, not a match", () => {
+		const a = makeCard({ id: "a", powers: [4] });
+		const b = makeCard({ id: "b", powers: [3, 4, 5] });
+		const c = col(compareCards(a, b), "power");
+		expect(c.state).toBe("partial");
+		expect(c.direction).toBeUndefined();
+		expect(c.shared).toEqual(["4"]);
+	});
+
+	it("rainbow guess [3,4,5] vs identical rainbow answer matches", () => {
+		const a = makeCard({ id: "a", powers: [3, 4, 5] });
+		const b = makeCard({ id: "b", powers: [3, 4, 5] });
+		expect(col(compareCards(a, b), "power").state).toBe("match");
+	});
+
+	it("guess 6 vs rainbow answer [3,4,5] misses lower (guess is above the answer's range)", () => {
+		const a = makeCard({ id: "a", powers: [6] });
+		const b = makeCard({ id: "b", powers: [3, 4, 5] });
+		const c = col(compareCards(a, b), "power");
+		expect(c.state).toBe("miss");
+		expect(c.direction).toBe("lower");
+	});
+
+	it("guess 1 vs rainbow answer [3,4,5] misses higher (guess is below the answer's range)", () => {
+		const a = makeCard({ id: "a", powers: [1] });
+		const b = makeCard({ id: "b", powers: [3, 4, 5] });
+		const c = col(compareCards(a, b), "power");
+		expect(c.state).toBe("miss");
+		expect(c.direction).toBe("higher");
+	});
 });
 
 describe("compareCards — defense", () => {
@@ -270,12 +325,12 @@ describe("compareCards — defense", () => {
 });
 
 describe("compareCards — life", () => {
-	it("hero 20 vs 18 is lower, reveals 18", () => {
+	it("hero 20 vs 18 is lower", () => {
 		const a = makeCard({ id: "a", type: "hero", life: 20 });
 		const b = makeCard({ id: "b", type: "hero", life: 18 });
 		const c = col(compareCards(a, b), "life");
+		expect(c.state).toBe("miss");
 		expect(c.direction).toBe("lower");
-		expect(c.revealedValue).toBe("18");
 	});
 
 	it("null vs null matches", () => {

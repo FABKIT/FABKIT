@@ -2,6 +2,7 @@ import { CardSearchInput } from "@fabkit/apps/fabble/components/CardSearchInput"
 import { EndPanel } from "@fabkit/apps/fabble/components/EndPanel";
 import { GuessHistory } from "@fabkit/apps/fabble/components/GuessHistory";
 import { HintsRow } from "@fabkit/apps/fabble/components/HintsRow";
+import { RainbowHintToast } from "@fabkit/apps/fabble/components/RainbowHintToast";
 import { RulesDialog } from "@fabkit/apps/fabble/components/RulesDialog";
 import { StatusBar } from "@fabkit/apps/fabble/components/StatusBar";
 import { ThemeBanner } from "@fabkit/apps/fabble/components/ThemeBanner";
@@ -9,6 +10,7 @@ import { TypeChipsRow } from "@fabkit/apps/fabble/components/TypeChipsRow";
 import type { FabbleMode } from "@fabkit/apps/fabble/config";
 import { MAX_GUESSES, REVEAL_TOTAL_MS } from "@fabkit/apps/fabble/config";
 import { getToday } from "@fabkit/apps/fabble/game/date";
+import { hasRainbowPartial } from "@fabkit/apps/fabble/game/rainbow-hint";
 import {
 	getOrderedResults,
 	useFabbleStore,
@@ -35,6 +37,8 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 	const session = useFabbleStore((s) => s.sessions[mode]);
 	const streaks = useFabbleStore((s) => s.streaks[mode]);
 	const cardsById = useFabbleStore((s) => s.cardsById);
+	const hasSeenRainbowHint = useFabbleStore((s) => s.hasSeenRainbowHint);
+	const markRainbowHintSeen = useFabbleStore((s) => s.markRainbowHintSeen);
 
 	const [showEndPanel, setShowEndPanel] = useState(false);
 	const [rulesOpen, setRulesOpen] = useState(false);
@@ -90,6 +94,9 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 				})
 			: "";
 
+	const rainbowHintTriggered =
+		!hasSeenRainbowHint && orderedResults.some(hasRainbowPartial);
+
 	return (
 		<div className="flex w-full flex-col items-center gap-3">
 			<span aria-live="polite" className="sr-only">
@@ -113,6 +120,9 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 				/>
 			)}
 			{session.status === "playing" && <CardSearchInput mode={mode} />}
+			{rainbowHintTriggered && (
+				<RainbowHintToast onDismiss={markRainbowHintSeen} />
+			)}
 			{session.status !== "playing" && answer && showEndPanel && (
 				<EndPanel
 					mode={mode}

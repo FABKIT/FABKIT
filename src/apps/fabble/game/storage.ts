@@ -58,4 +58,5 @@ export const STORAGE_KEYS = {
 	streaks: (mode: FabbleMode) => `fabble:streaks:${mode}`,
 	username: "fabble:username",
 	seenRules: "fabble:seen-rules",
+	seenRainbowHint: "fabble:seen-rainbow-hint",
 } as const;

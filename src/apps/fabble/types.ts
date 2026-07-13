@@ -109,7 +109,6 @@ export interface ColumnFeedback {
 	state: TileState;
 	guessDisplay: string;
 	direction?: "higher" | "lower";
-	revealedValue?: string;
 	notApplicable?: boolean;
 	shared?: string[];
 	setDetails?: {

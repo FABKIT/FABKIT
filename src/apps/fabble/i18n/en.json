@@ -43,6 +43,10 @@
 		"theme": {
 			"equipment_monday": "Equipment Monday — today's card is an Equipment",
 			"class_thursday": "Class Thursday — today's card is a {{className}}"
+		},
+		"rainbow_hint": {
+			"message": "Yellow on a number or pitch tile means your guess matches some of the answer's colours, not all of them. Rainbow cards have different stats per colour.",
+			"dismiss": "Got it"
 		}
 	},
 	"hints": {
@@ -89,8 +93,8 @@
 			"match": "{{column}}: match — {{value}}",
 			"partial": "{{column}}: partial match — shared {{shared}}",
 			"miss": "{{column}}: no match — {{value}}",
-			"higher": "{{column}}: no match — {{value}}, answer is higher ({{revealed}})",
-			"lower": "{{column}}: no match — {{value}}, answer is lower ({{revealed}})",
+			"higher": "{{column}}: no match — {{value}}, answer is higher",
+			"lower": "{{column}}: no match — {{value}}, answer is lower",
 			"not_applicable": "{{column}}: not applicable — the answer doesn't have this attribute"
 		}
 	},
@@ -129,6 +133,14 @@
 			"subtypes": "Subtypes: the card's subtypes (Attack, Arrow, Trap, …).",
 			"keywords": "Keywords: functional keywords on the card (Go again, Dominate, …).",
 			"set": "Set: every set the card has been printed in."
+		},
+		"rainbow": {
+			"title": "Rainbow Cards",
+			"body_1": "Some cards are printed in red, yellow and blue, and their numbers can differ by colour.",
+			"body_2": "Yellow on a number or pitch tile means your guess matches some of the answer's colours, not all of them. An arrow only appears when every colour of the answer is higher or lower than your guess.",
+			"example_number": "Matches one of the answer's colours, not all of them",
+			"example_pitch_match": "Same colours as the answer",
+			"example_pitch_partial": "The answer has more colours than this"
 		}
 	},
 	"end": {

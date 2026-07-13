@@ -41,7 +41,6 @@ export function FeedbackTile({ feedback, style, flip }: FeedbackTileProps) {
 		column: t(`feedback.columns.${feedback.column}`),
 		value,
 		shared: feedback.shared?.join(", "),
-		revealed: feedback.revealedValue,
 	});
 
 	return (
@@ -72,11 +71,6 @@ export function FeedbackTile({ feedback, style, flip }: FeedbackTileProps) {
 					)}
 					{feedback.direction === "lower" && (
 						<ArrowDown className="h-3.5 w-3.5" />
-					)}
-					{feedback.revealedValue && (
-						<span className="text-xs font-normal opacity-80">
-							({feedback.revealedValue})
-						</span>
 					)}
 				</span>
 			)}
