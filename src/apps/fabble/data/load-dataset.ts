@@ -9,7 +9,9 @@ function isValidDataset(data: unknown): data is FabbleDataset {
 	return (
 		candidate.schemaVersion === 1 &&
 		Array.isArray(candidate.cards) &&
-		candidate.cards.length > 0
+		candidate.cards.length > 0 &&
+		Array.isArray(candidate.schedule?.standard) &&
+		Array.isArray(candidate.schedule?.chaos)
 	);
 }
 

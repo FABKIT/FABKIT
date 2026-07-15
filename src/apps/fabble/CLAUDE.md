@@ -8,11 +8,15 @@ no hints/themes).
 ## Data contract
 
 The binding dataset shape lives in `types.ts` (`FabbleDataset`, `FabbleCard`,
-`FabbleScheduleEntry`). It's produced by a separate card-data repo (schedule,
-pool curation, banned-card exclusion, set `order` semantics) — Fabble only fetches
-and looks up. Until the real feed exists, `public/fabble-sample-data.json` is a
-hand-authored ~30-card fixture with the same schema; the fetch URL is the single
-`FABBLE_DATA_URL` constant in `config.ts`.
+`FabbleScheduleEntry`). It's produced by a separate pipeline repo,
+[FABKIT/fabble-admin](https://github.com/FABKIT/fabble-admin) (schedule, pool
+curation, banned-card exclusion, set `order` semantics) — Fabble only fetches
+and looks up. In production the dataset is fetched from
+`https://fabkit.github.io/fabble-data/v1/dataset.json`, a public repo
+([FABKIT/fabble-data](https://github.com/FABKIT/fabble-data)) that
+fabble-admin's weekly GitHub Action publishes to. In dev,
+`public/fabble-sample-data.json` is a hand-authored ~30-card fixture with the
+same schema instead — see `config.ts`'s `FABBLE_DATA_URL` for the swap.
 
 ## Structure
 
@@ -79,8 +83,9 @@ this partial state to drive the one-time in-play hint toast (`hasSeenRainbowHint
 
 ## Known fixture quirks
 
-`public/fabble-sample-data.json` fictionalizes a twin pair (`whispering-mists` /
-`echoing-mists` — two invented cards sharing every comparable attribute) since no
-two real cards in the small sample fit naturally. Card `imageUrl`/`thumbnailUrl`
-point at placehold.co placeholders, not a real card-image CDN — swap
-`FABBLE_DATA_URL` in `config.ts` once the real feed exists.
+`public/fabble-sample-data.json` (dev only) fictionalizes a twin pair
+(`whispering-mists` / `echoing-mists` — two invented cards sharing every
+comparable attribute) since no two real cards in the small sample fit
+naturally. Card `imageUrl`/`thumbnailUrl` point at placehold.co placeholders,
+not the real card-image CDN — the production feed uses real
+`content.fabrary.net` URLs.

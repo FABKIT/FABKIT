@@ -80,8 +80,9 @@ export interface FabbleDataset {
 	datasetVersion: string;
 	generatedAt: string;
 	/** Precomputed daily schedules, one entry per calendar date, per mode.
-	    External repo guarantees: a rolling window covering at least ~60 days ahead of
-	    generatedAt; anti-repeat within each pool; twins never scheduled in standard;
+	    External repo guarantees: a rolling window from yesterday (covers every
+	    timezone's local "today") through ~14 days ahead of generatedAt;
+	    anti-repeat within each pool; twins never scheduled in standard;
 	    no banned/ineligible cards in standard; theme days on Mondays/Thursdays. */
 	schedule: { standard: FabbleScheduleEntry[]; chaos: FabbleScheduleEntry[] };
 	/** Every eligible card (the guessable universe for BOTH modes), incl. banned cards. */
