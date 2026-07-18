@@ -7,6 +7,7 @@ import {
 	DialogPanel,
 	DialogTitle,
 } from "@headlessui/react";
+import { ArrowDown, ArrowUp, Check } from "lucide-react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -199,6 +200,28 @@ export function RulesDialog({ open, onClose }: RulesDialogProps) {
 							{COLUMNS.map((column) => (
 								<li key={column}>{t(`rules.columns.${column}`)}</li>
 							))}
+						</ul>
+					</section>
+
+					<section className="space-y-1">
+						<h3 className="font-semibold text-body">
+							{t("rules.set_tile.title")}
+						</h3>
+						<p className="text-sm text-muted">{t("rules.set_tile.body")}</p>
+						<ul className="space-y-1 text-sm text-muted">
+							<li className="flex items-center gap-2">
+								<Check className="h-3.5 w-3.5 shrink-0" />
+								{t("rules.set_tile.check")}
+							</li>
+							<li className="flex items-center gap-2">
+								<ArrowUp className="h-3.5 w-3.5 shrink-0" />
+								{t("rules.set_tile.arrow_up")}
+							</li>
+							<li className="flex items-center gap-2">
+								<ArrowDown className="h-3.5 w-3.5 shrink-0" />
+								{t("rules.set_tile.arrow_down")}
+							</li>
+							<li>{t("rules.set_tile.promo")}</li>
 						</ul>
 					</section>
 

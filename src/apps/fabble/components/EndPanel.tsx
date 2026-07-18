@@ -37,29 +37,29 @@ export function EndPanel({
 			</h2>
 
 			<div className="mt-6 flex w-full flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-center sm:gap-10">
-				<div className="relative w-64 shrink-0">
+				<div className="relative w-64 shrink-0 rounded-lg sm:w-80">
 					<img
 						src={answer.imageUrl}
 						alt={answer.name}
 						crossOrigin="anonymous"
-						className="fabble-card-reveal w-64 rounded-lg"
+						className="fabble-card-reveal w-64 rounded-lg sm:w-80"
 					/>
 					<div
 						className={`fabble-glow-layer ${won ? "fabble-glow-layer--victory" : "fabble-glow-layer--defeat"}`}
 					/>
 				</div>
 				<div className="fabble-card-reveal flex flex-col items-center gap-1 sm:items-start">
-					<span className="text-lg font-bold text-heading">{answer.name}</span>
-					<span className="flex items-center gap-1.5 text-sm text-body">
+					<span className="text-2xl font-bold text-heading">{answer.name}</span>
+					<span className="flex items-center gap-1.5 text-base text-body">
 						<img
 							src={CardRarities[answer.rarity].icon}
 							alt=""
-							className="h-4 w-4"
+							className="h-5 w-5"
 						/>
 						{t(`rarity.${answer.rarity}`)}
 					</span>
-					<span className="text-sm text-body">{set.name}</span>
-					<span className="text-xs text-muted">
+					<span className="text-base text-body">{set.name}</span>
+					<span className="text-sm text-muted">
 						{t("end.art_by", { artist: answer.artist })}
 					</span>
 				</div>

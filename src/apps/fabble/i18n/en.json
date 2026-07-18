@@ -39,13 +39,13 @@
 		"guesses_remaining_other": "{{count}} guesses remaining",
 		"input_placeholder": "Type a card name…",
 		"submit": "Submit Guess",
-		"twin_message": "Same properties, different card — this guess is free!",
+		"twin_message": "Same properties, different card. This guess is free!",
 		"theme": {
-			"equipment_monday": "Equipment Monday — today's card is an Equipment",
-			"class_thursday": "Class Thursday — today's card is a {{className}}"
+			"equipment_monday": "Equipment Monday: today's card is an Equipment",
+			"class_thursday": "Class Thursday: today's card is a {{className}}"
 		},
 		"rainbow_hint": {
-			"message": "Yellow on a number or pitch tile means your guess matches some of the answer's colours, not all of them. Rainbow cards have different stats per colour.",
+			"message": "Yellow on a Pitch, Power or Defense tile means your guess matches some of the answer's colours, but not all of them. Rainbow cards have different stats per colour.",
 			"dismiss": "Got it"
 		}
 	},
@@ -90,20 +90,20 @@
 		"twin_badge": "✨ Twin",
 		"announce": "{{name}}: {{matches}} of {{total}} attributes matched",
 		"aria": {
-			"match": "{{column}}: match — {{value}}",
-			"partial": "{{column}}: partial match — shared {{shared}}",
-			"miss": "{{column}}: no match — {{value}}",
-			"higher": "{{column}}: no match — {{value}}, answer is higher",
-			"lower": "{{column}}: no match — {{value}}, answer is lower",
-			"not_applicable": "{{column}}: not applicable — the answer doesn't have this attribute"
+			"match": "{{column}}: match, {{value}}",
+			"partial": "{{column}}: partial match, shared {{shared}}",
+			"miss": "{{column}}: no match, {{value}}",
+			"higher": "{{column}}: no match, {{value}}, answer is higher",
+			"lower": "{{column}}: no match, {{value}}, answer is lower",
+			"not_applicable": "{{column}}: not applicable, the answer doesn't have this attribute"
 		}
 	},
 	"rules": {
 		"title": "How to Play Fabble",
 		"what_is_title": "What is Fabble",
-		"what_is_body": "Fabble is a daily Flesh and Blood card deduction puzzle. Guess the secret card by comparing its attributes to your guesses — get closer with every try.",
+		"what_is_body": "Fabble is a daily Flesh and Blood card guessing game. Pick a card, see how its attributes compare to the secret card, and use the clues to close in on the answer.",
 		"making_a_guess_title": "Making a Guess",
-		"making_a_guess_body": "Type any real card name and submit it. You'll get feedback on 11 attributes of your guess compared to the answer.",
+		"making_a_guess_body": "Type any real card name and submit it. Your guess is compared to the answer across 11 attributes, and each tile tells you how close you are.",
 		"feedback_title": "Reading Your Feedback",
 		"columns_title": "The 11 Columns",
 		"modes_title": "Game Modes",
@@ -117,9 +117,9 @@
 			"green_label": "Green:",
 			"green_body": "exact match.",
 			"yellow_label": "Yellow:",
-			"yellow_body": "partial overlap — some shared values.",
+			"yellow_body": "some values are shared, but not all of them.",
 			"red_label": "Red (with arrow):",
-			"red_body": "no match; an arrow means the answer's value is higher or lower."
+			"red_body": "no match. An arrow means the answer's value is higher or lower."
 		},
 		"columns": {
 			"type": "Type: the card's type (Hero, Weapon, Action, …).",
@@ -134,10 +134,18 @@
 			"keywords": "Keywords: functional keywords on the card (Go again, Dominate, …).",
 			"set": "Set: every set the card has been printed in."
 		},
+		"set_tile": {
+			"title": "The Set Tile",
+			"body": "The Set tile turns green when your guess shares at least one set with the answer. Each set on the tile also gets its own mark:",
+			"check": "The answer was also printed in this set",
+			"arrow_up": "The answer comes from a later set",
+			"arrow_down": "The answer comes from an earlier set",
+			"promo": "Promo printings don't get a mark"
+		},
 		"rainbow": {
 			"title": "Rainbow Cards",
-			"body_1": "Some cards are printed in red, yellow and blue, and their numbers can differ by colour.",
-			"body_2": "Yellow on a number or pitch tile means your guess matches some of the answer's colours, not all of them. An arrow only appears when every colour of the answer is higher or lower than your guess.",
+			"body_1": "Some cards are printed in red, yellow and blue, and their numbers can differ per colour.",
+			"body_2": "Yellow on a Pitch, Power or Defense tile means your guess matches some of the answer's colours, but not all of them. An arrow only appears when every colour of the answer is higher or lower than your guess.",
 			"example_number": "Matches one of the answer's colours, not all of them",
 			"example_pitch_match": "Same colours as the answer",
 			"example_pitch_partial": "The answer has more colours than this"
@@ -157,8 +165,8 @@
 	},
 	"share": {
 		"button": "Share",
-		"unsupported": "Sharing isn't supported on this browser — try Export instead",
-		"failed": "Sharing failed — try Export instead",
+		"unsupported": "Sharing isn't supported on this browser. Try Export instead.",
+		"failed": "Sharing failed. Try Export instead.",
 		"export": "Export image",
 		"exported": "Saved!",
 		"copy_text": "Copy as text",
@@ -172,7 +180,7 @@
 	},
 	"errors": {
 		"load_failed": "Couldn't load today's puzzle",
-		"no_puzzle": "No puzzle is scheduled for today yet — check back soon."
+		"no_puzzle": "No puzzle is scheduled for today yet. Check back soon."
 	},
 	"common": {
 		"retry": "Retry",

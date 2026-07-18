@@ -14,6 +14,7 @@ import {
 	useFabbleStore,
 } from "@fabkit/apps/fabble/stores/fabble";
 import { snapdom } from "@zumer/snapdom";
+import { ClipboardCopy, ImageDown, Share2 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -153,23 +154,26 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 					type="button"
 					onClick={handleShare}
 					disabled={capturing}
-					className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+					className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 				>
+					<Share2 className="size-4" aria-hidden="true" />
 					{t("share.button")}
 				</button>
 				<button
 					type="button"
 					onClick={handleExport}
 					disabled={capturing}
-					className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+					className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 				>
+					<ImageDown className="size-4" aria-hidden="true" />
 					{t("share.export")}
 				</button>
 				<button
 					type="button"
 					onClick={handleCopyText}
-					className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+					className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 				>
+					<ClipboardCopy className="size-4" aria-hidden="true" />
 					{t("share.copy_text")}
 				</button>
 			</div>
