@@ -7,7 +7,7 @@
 			"play": "Play",
 			"standard": {
 				"name": "Standard",
-				"blurb": "A curated selection of popular cards from the current meta",
+				"blurb": "Popular cards from the current meta, with the occasional deep cut to keep you honest",
 				"meta": "8 guesses · 2 hints"
 			},
 			"chaos": {
