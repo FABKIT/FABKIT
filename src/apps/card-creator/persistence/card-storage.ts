@@ -7,6 +7,7 @@ import type { CardType } from "@fabkit/shared/config/cards/types.ts";
 import type { Content } from "@tiptap/react";
 import Dexie, { type Table } from "dexie";
 import semver from "semver";
+import { v4 as uuid } from "uuid";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
 import {
 	type CardCreatorState,
@@ -64,7 +65,30 @@ export interface StoredCard {
 	state: SerializedCardState;
 	/** App version that wrote this record. Absent on legacy records; treated as "0.0.0". */
 	schemaVersion?: string;
+	/** Folder this card lives in. Absent (not null, not a sentinel) means gallery root. */
+	folderId?: string;
 }
+
+/**
+ * A gallery folder. `id` is an internal UUID used as the adjacency-list primary key
+ * for efficient move/query — it is never exposed to the user or treated as identity
+ * for import/export reconciliation. The user-facing / reconciliation identity is the
+ * path, i.e. `(parentId, name)`; siblings (same parentId) must have unique names.
+ */
+export interface StoredFolder {
+	id: string;
+	name: string;
+	/** Parent folder id. Absent means this folder lives at gallery root. */
+	parentId?: string;
+	createdAt: number;
+	updatedAt: number;
+}
+
+/** Folder name constraints, shared by createFolder/renameFolder validation. */
+const FOLDER_NAME_MAX_LENGTH = 20;
+
+/** Maximum folder nesting depth (root's direct children are depth 1). */
+const MAX_FOLDER_DEPTH = 5;
 
 /** MeldHalf with CardArtwork serialized as a base64 data URL instead of a Blob. */
 export type SerializedMeldHalf = Omit<MeldHalf, "CardArtwork"> & {
@@ -156,6 +180,7 @@ export type GalleryImportResult = { imported: number; skipped: number };
 
 class FabkitDatabase extends Dexie {
 	cards!: Table<StoredCard, string>;
+	folders!: Table<StoredFolder, string>;
 
 	constructor() {
 		super("fabkit-cards");
@@ -166,8 +191,15 @@ class FabkitDatabase extends Dexie {
 			cards: "version, cardName, createdAt, updatedAt",
 		});
 
-		// Add new schema versions here, e.g.:
-		// this.version(2).stores({ ... }).upgrade(tx => { ... });
+		// Version 2: gallery folders. Purely additive — `folders` is a new table,
+		// and `folderId` on `cards` is optional (absent = gallery root on both old
+		// and new records), so no `.upgrade()` data transform is needed. This is a
+		// Dexie table/index schema change, distinct from the MIGRATIONS array above
+		// (which migrates SerializedCardState shape, not IndexedDB schema).
+		this.version(2).stores({
+			cards: "version, cardName, createdAt, updatedAt, folderId",
+			folders: "id, parentId, name, createdAt, updatedAt",
+		});
 	}
 }
 
@@ -308,6 +340,259 @@ export async function updateCard(
 export async function getCard(version: string): Promise<StoredCard | null> {
 	const card = await db.cards.get(version);
 	return card ? migrateCard(card) : null;
+}
+
+// ─── Folders ──────────────────────────────────────────────────────────────────
+
+/** In-memory folder tree node, assembled by getFolderTree(). */
+export interface FolderTreeNode extends StoredFolder {
+	children: FolderTreeNode[];
+}
+
+function assertValidFolderName(name: string): void {
+	if (!name.trim()) {
+		throw new Error("Folder name cannot be empty");
+	}
+	if (name.length > FOLDER_NAME_MAX_LENGTH) {
+		throw new Error(
+			`Folder name cannot exceed ${FOLDER_NAME_MAX_LENGTH} characters`,
+		);
+	}
+}
+
+async function assertUniqueSiblingName(
+	name: string,
+	parentId: string | undefined,
+	excludeId?: string,
+): Promise<void> {
+	const siblings = await db.folders
+		.filter((f) => f.parentId === parentId && f.id !== excludeId)
+		.toArray();
+	if (siblings.some((f) => f.name === name)) {
+		throw new Error(`A folder named "${name}" already exists here`);
+	}
+}
+
+/**
+ * Ancestor chain of a folder, from root down to and including `folderId` itself.
+ * Returns `[]` for root (`folderId` absent). Dangling/unresolved parent links
+ * terminate the walk early rather than throwing — treated as if that ancestor
+ * were root.
+ */
+export async function getAncestors(
+	folderId: string | undefined,
+): Promise<StoredFolder[]> {
+	const chain: StoredFolder[] = [];
+	let currentId = folderId;
+	const visited = new Set<string>();
+	while (currentId && !visited.has(currentId)) {
+		visited.add(currentId);
+		const folder = await db.folders.get(currentId);
+		if (!folder) break;
+		chain.unshift(folder);
+		currentId = folder.parentId;
+	}
+	return chain;
+}
+
+/** All descendant folder ids of `folderId` (not including itself), unordered. */
+export async function getDescendantFolderIds(
+	folderId: string,
+): Promise<string[]> {
+	const all = await db.folders.toArray();
+	const childrenByParent = new Map<string, string[]>();
+	for (const f of all) {
+		if (!f.parentId) continue;
+		const siblings = childrenByParent.get(f.parentId) ?? [];
+		siblings.push(f.id);
+		childrenByParent.set(f.parentId, siblings);
+	}
+
+	const result: string[] = [];
+	const visited = new Set<string>();
+	const stack = [...(childrenByParent.get(folderId) ?? [])];
+	while (stack.length > 0) {
+		// biome-ignore lint/style/noNonNullAssertion: stack.length > 0 guarantees pop() is defined
+		const current = stack.pop()!;
+		if (visited.has(current)) continue; // guard against corrupt cycles
+		visited.add(current);
+		result.push(current);
+		stack.push(...(childrenByParent.get(current) ?? []));
+	}
+	return result;
+}
+
+/** Height of the subtree rooted at `folderId`: 0 if it has no children, else
+ * the number of levels below it (longest child chain). Used to make sure
+ * moving a folder with descendants doesn't push them past MAX_FOLDER_DEPTH. */
+async function getSubtreeHeight(folderId: string): Promise<number> {
+	const all = await db.folders.toArray();
+	const childrenByParent = new Map<string, string[]>();
+	for (const f of all) {
+		if (!f.parentId) continue;
+		const siblings = childrenByParent.get(f.parentId) ?? [];
+		siblings.push(f.id);
+		childrenByParent.set(f.parentId, siblings);
+	}
+
+	function heightOf(id: string, visited: Set<string>): number {
+		if (visited.has(id)) return 0; // guard against corrupt cycles
+		visited.add(id);
+		const children = childrenByParent.get(id) ?? [];
+		if (children.length === 0) return 0;
+		return 1 + Math.max(...children.map((child) => heightOf(child, visited)));
+	}
+
+	return heightOf(folderId, new Set());
+}
+
+export async function createFolder(
+	name: string,
+	parentId?: string,
+): Promise<StoredFolder> {
+	assertValidFolderName(name);
+	const trimmedName = name.trim();
+	const parentAncestors = await getAncestors(parentId);
+	if (parentAncestors.length + 1 > MAX_FOLDER_DEPTH) {
+		throw new Error(
+			`Folders cannot be nested more than ${MAX_FOLDER_DEPTH} levels deep`,
+		);
+	}
+	await assertUniqueSiblingName(trimmedName, parentId);
+
+	const now = Date.now();
+	const folder: StoredFolder = {
+		id: uuid(),
+		name: trimmedName,
+		parentId,
+		createdAt: now,
+		updatedAt: now,
+	};
+	await db.folders.add(folder);
+	return folder;
+}
+
+export async function renameFolder(id: string, name: string): Promise<void> {
+	assertValidFolderName(name);
+	const trimmedName = name.trim();
+	const folder = await db.folders.get(id);
+	if (!folder) throw new Error("Folder not found");
+	await assertUniqueSiblingName(trimmedName, folder.parentId, id);
+	await db.folders.update(id, { name: trimmedName, updatedAt: Date.now() });
+}
+
+export async function moveFolder(
+	id: string,
+	newParentId?: string,
+): Promise<void> {
+	const folder = await db.folders.get(id);
+	if (!folder) throw new Error("Folder not found");
+
+	if (newParentId === id) {
+		throw new Error("A folder cannot be moved into itself");
+	}
+
+	if (newParentId) {
+		const destinationAncestors = await getAncestors(newParentId);
+		if (destinationAncestors.some((ancestor) => ancestor.id === id)) {
+			throw new Error(
+				"A folder cannot be moved into one of its own descendants",
+			);
+		}
+		const subtreeHeight = await getSubtreeHeight(id);
+		if (destinationAncestors.length + 1 + subtreeHeight > MAX_FOLDER_DEPTH) {
+			throw new Error(
+				`Folders cannot be nested more than ${MAX_FOLDER_DEPTH} levels deep`,
+			);
+		}
+	}
+
+	await assertUniqueSiblingName(folder.name, newParentId, id);
+	await db.folders.update(id, { parentId: newParentId, updatedAt: Date.now() });
+}
+
+/**
+ * Cascade-deletes a folder along with all descendant folders and all cards
+ * contained anywhere in that subtree, in a single transaction.
+ */
+export async function deleteFolder(id: string): Promise<void> {
+	const descendantIds = await getDescendantFolderIds(id);
+	const folderIds = [id, ...descendantIds];
+
+	await db.transaction("rw", db.folders, db.cards, async () => {
+		await db.cards.where("folderId").anyOf(folderIds).delete();
+		await db.folders.bulkDelete(folderIds);
+	});
+}
+
+export async function getAllFolders(): Promise<StoredFolder[]> {
+	return db.folders.toArray();
+}
+
+/**
+ * Assembles the flat folders table into a nested tree. Folders with a dangling/
+ * unresolved `parentId` (no matching row) are treated as roots rather than dropped.
+ */
+export async function getFolderTree(): Promise<FolderTreeNode[]> {
+	const all = await getAllFolders();
+	const byId = new Map<string, FolderTreeNode>();
+	for (const folder of all) {
+		byId.set(folder.id, { ...folder, children: [] });
+	}
+
+	const roots: FolderTreeNode[] = [];
+	for (const folder of all) {
+		// biome-ignore lint/style/noNonNullAssertion: node was just seeded above from the same list
+		const node = byId.get(folder.id)!;
+		const parent = folder.parentId ? byId.get(folder.parentId) : undefined;
+		if (parent) {
+			parent.children.push(node);
+		} else {
+			roots.push(node);
+		}
+	}
+	return roots;
+}
+
+/**
+ * Recursive count of descendant folders + cards contained in `id`'s subtree
+ * (including `id` itself), used for the cascade-delete confirmation prompt.
+ */
+export async function getFolderContentsCount(id: string): Promise<number> {
+	const descendantIds = await getDescendantFolderIds(id);
+	const folderIds = [id, ...descendantIds];
+	const cardCount = await db.cards.where("folderId").anyOf(folderIds).count();
+	return descendantIds.length + cardCount;
+}
+
+export async function moveCardToFolder(
+	version: string,
+	folderId?: string,
+): Promise<void> {
+	await db.cards.update(version, { folderId });
+}
+
+/**
+ * Cards directly within `folderId`. Root (`folderId` absent) can't be queried via
+ * an indexed `.equals()` in IndexedDB, so it's handled with a `.filter()` instead —
+ * the convention throughout this module is "absent", never `null` or a sentinel.
+ */
+export async function getCardsInFolder(
+	folderId?: string,
+): Promise<StoredCard[]> {
+	const cards = folderId
+		? await db.cards.where("folderId").equals(folderId).toArray()
+		: await db.cards.filter((card) => card.folderId == null).toArray();
+	return cards.map(migrateCard);
+}
+
+/** Cards + folders in one call, for gallery-view loaders. */
+export async function getAllCardsWithFolders(): Promise<{
+	cards: StoredCard[];
+	folders: StoredFolder[];
+}> {
+	const [cards, folders] = await Promise.all([getAllCards(), getAllFolders()]);
+	return { cards, folders };
 }
 
 export async function getAllCards(): Promise<StoredCard[]> {
