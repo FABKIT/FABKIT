@@ -1,3 +1,4 @@
+import TextInput from "@fabkit/platform/components/form/TextInput";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -72,14 +73,14 @@ export function FolderNameDialog({
 						)}
 					</DialogTitle>
 					<form onSubmit={handleSubmit} className="space-y-3">
-						<input
+						<TextInput
 							type="text"
 							autoFocus
 							value={name}
-							onChange={(e) => setName(e.currentTarget.value)}
+							onChange={(e) => setName(e)}
+							label={t("gallery.folders.folder_name_placeholder")}
 							placeholder={t("gallery.folders.folder_name_placeholder")}
 							maxLength={20}
-							className="w-full rounded-md border border-border-primary bg-surface px-3 py-2 text-sm text-body focus:outline-none focus:ring-2 focus:ring-primary"
 						/>
 						{error && <p className="text-sm text-heading">{error}</p>}
 						<div className="flex justify-end gap-3">
