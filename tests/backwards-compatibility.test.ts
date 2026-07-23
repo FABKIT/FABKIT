@@ -293,7 +293,10 @@ describe(".fabgallery folders", () => {
 
 		// Second merge-import of the same gallery: same card versions are skipped
 		// (already present), but folders should be reconciled by name, not duplicated.
-		const second = await importGalleryFromJSON(JSON.stringify(gallery), "merge");
+		const second = await importGalleryFromJSON(
+			JSON.stringify(gallery),
+			"merge",
+		);
 		expect(second.imported).toBe(0);
 		expect(second.skipped).toBe(3);
 		expect(second.foldersCreated).toBe(0);
@@ -303,7 +306,9 @@ describe(".fabgallery folders", () => {
 		expect(treeAfterSecond.length).toBe(1);
 		expect(treeAfterSecond[0]?.id).toBe(heroesIdAfterFirst as string);
 		expect(treeAfterSecond[0]?.children.length).toBe(1);
-		expect(treeAfterSecond[0]?.children[0]?.id).toBe(legendsIdAfterFirst as string);
+		expect(treeAfterSecond[0]?.children[0]?.id).toBe(
+			legendsIdAfterFirst as string,
+		);
 
 		// No duplicate folders were created by the second merge.
 		expect((await getAllFolders()).length).toBe(2);
@@ -318,7 +323,10 @@ describe(".fabgallery folders", () => {
 			readFixture("sample-with-folders.fabgallery"),
 		) as FabgalleryFile;
 
-		const result = await importGalleryFromJSON(JSON.stringify(gallery), "merge");
+		const result = await importGalleryFromJSON(
+			JSON.stringify(gallery),
+			"merge",
+		);
 
 		expect(result.foldersMerged).toBe(1); // reused existing "Heroes"
 		expect(result.foldersCreated).toBe(1); // created "Legends" under it

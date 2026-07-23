@@ -100,7 +100,7 @@ beforeEach(async () => {
 describe("getFolderTree", () => {
 	it("assembles multiple roots with nested children", async () => {
 		const rootA = await createFolder("Root A");
-		const rootB = await createFolder("Root B");
+		const _rootB = await createFolder("Root B");
 		await createFolder("Child of A", rootA.id);
 
 		const tree = await getFolderTree();
