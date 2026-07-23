@@ -1,10 +1,18 @@
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+	clearGallery,
+	createFolder,
 	deserializeCardState,
 	type FabgalleryFile,
 	type FabkitFile,
+	getAllCards,
+	getAllFolders,
+	getCard,
+	getFolderTree,
+	importCardFromJSON,
+	importGalleryFromJSON,
 	type SerializedCardState,
 } from "../src/apps/card-creator/persistence/card-storage.ts";
 
@@ -75,6 +83,23 @@ describe(".fabkit format", () => {
 		// The validation in importCardFromJSON checks for version, cardName, and state
 		const parsed = JSON.parse(incomplete);
 		expect(!parsed.version || !parsed.cardName || !parsed.state).toBe(true);
+	});
+
+	it("has no folderId field — legacy files predate folders", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+
+		expect((file as Record<string, unknown>).folderId).toBeUndefined();
+	});
+
+	it("imports to gallery root — cards with no folderId land at root", async () => {
+		await clearGallery();
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+
+		await importCardFromJSON(JSON.stringify(file));
+		const stored = await getCard(file.version);
+
+		expect(stored).not.toBeNull();
+		expect(stored?.folderId).toBeUndefined();
 	});
 });
 
@@ -175,5 +200,133 @@ describe(".fabreport format", () => {
 			expect(state.CardBack).not.toBeNull();
 			expect(state.CardType).toBeDefined();
 		}
+	});
+
+	it("imports the embedded gallery to gallery root — no folderId on legacy cards", async () => {
+		await clearGallery();
+		const report = JSON.parse(readFixture("sample.fabreport"));
+		const gallery = report.gallery as FabgalleryFile;
+		expect(gallery.format).toBe("fabgallery");
+		expect((gallery as Record<string, unknown>).folders).toBeUndefined();
+
+		await importGalleryFromJSON(JSON.stringify(gallery), "replace");
+		const stored = await getAllCards();
+
+		expect(stored.length).toBe(gallery.cards.length);
+		for (const card of stored) {
+			expect(card.folderId).toBeUndefined();
+		}
+	});
+});
+
+// ─── .fabgallery folders ───────────────────────────────────────────────────────
+
+describe(".fabgallery folders", () => {
+	beforeEach(async () => {
+		await clearGallery();
+	});
+
+	it("old-format .fabgallery with no folders key imports all cards to root", async () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const legacyGallery = {
+			format: "fabgallery",
+			formatVersion: "0.0.0-test",
+			exportedAt: new Date().toISOString(),
+			cardCount: 1,
+			cards: [{ ...file }],
+			// no `folders` key at all — pre-folders export
+		};
+		expect("folders" in legacyGallery).toBe(false);
+
+		const result = await importGalleryFromJSON(
+			JSON.stringify(legacyGallery),
+			"replace",
+		);
+
+		expect(result.imported).toBe(1);
+		expect(result.foldersCreated).toBe(0);
+		const cards = await getAllCards();
+		expect(cards.length).toBe(1);
+		expect(cards[0]?.folderId).toBeUndefined();
+		expect(await getAllFolders()).toEqual([]);
+	});
+
+	it("round-trips a folder tree through replace-mode import, preserving tree shape", async () => {
+		const gallery = JSON.parse(
+			readFixture("sample-with-folders.fabgallery"),
+		) as FabgalleryFile;
+
+		await importGalleryFromJSON(JSON.stringify(gallery), "replace");
+
+		const tree = await getFolderTree();
+		expect(tree.length).toBe(1);
+		expect(tree[0]?.name).toBe("Heroes");
+		expect(tree[0]?.children.length).toBe(1);
+		expect(tree[0]?.children[0]?.name).toBe("Legends");
+
+		const cards = await getAllCards();
+		expect(cards.length).toBe(3);
+		const byName = new Map(cards.map((c) => [c.cardName, c]));
+		expect(byName.get("Root Card")?.folderId).toBeUndefined();
+
+		const heroesId = tree[0]?.id;
+		const legendsId = tree[0]?.children[0]?.id;
+		expect(byName.get("Heroes Card")?.folderId).toBe(heroesId as string);
+		expect(byName.get("Legends Card")?.folderId).toBe(legendsId as string);
+	});
+
+	it("round-trips a folder tree through merge-mode import, reusing folders by (parentId, name)", async () => {
+		const gallery = JSON.parse(
+			readFixture("sample-with-folders.fabgallery"),
+		) as FabgalleryFile;
+
+		// First import establishes the local folder tree + cards.
+		const first = await importGalleryFromJSON(JSON.stringify(gallery), "merge");
+		expect(first.imported).toBe(3);
+		expect(first.foldersCreated).toBe(2);
+		expect(first.foldersMerged).toBe(0);
+
+		const treeAfterFirst = await getFolderTree();
+		expect(treeAfterFirst.length).toBe(1);
+		const heroesIdAfterFirst = treeAfterFirst[0]?.id;
+		const legendsIdAfterFirst = treeAfterFirst[0]?.children[0]?.id;
+
+		// Second merge-import of the same gallery: same card versions are skipped
+		// (already present), but folders should be reconciled by name, not duplicated.
+		const second = await importGalleryFromJSON(JSON.stringify(gallery), "merge");
+		expect(second.imported).toBe(0);
+		expect(second.skipped).toBe(3);
+		expect(second.foldersCreated).toBe(0);
+		expect(second.foldersMerged).toBe(2);
+
+		const treeAfterSecond = await getFolderTree();
+		expect(treeAfterSecond.length).toBe(1);
+		expect(treeAfterSecond[0]?.id).toBe(heroesIdAfterFirst as string);
+		expect(treeAfterSecond[0]?.children.length).toBe(1);
+		expect(treeAfterSecond[0]?.children[0]?.id).toBe(legendsIdAfterFirst as string);
+
+		// No duplicate folders were created by the second merge.
+		expect((await getAllFolders()).length).toBe(2);
+	});
+
+	it("merge-mode creates only the folders that don't already exist locally by name", async () => {
+		// Pre-seed a local "Heroes" root folder before merging in a gallery that
+		// also has a root "Heroes" folder plus a new "Legends" child.
+		const existingHeroes = await createFolder("Heroes");
+
+		const gallery = JSON.parse(
+			readFixture("sample-with-folders.fabgallery"),
+		) as FabgalleryFile;
+
+		const result = await importGalleryFromJSON(JSON.stringify(gallery), "merge");
+
+		expect(result.foldersMerged).toBe(1); // reused existing "Heroes"
+		expect(result.foldersCreated).toBe(1); // created "Legends" under it
+
+		const tree = await getFolderTree();
+		expect(tree.length).toBe(1);
+		expect(tree[0]?.id).toBe(existingHeroes.id);
+		expect(tree[0]?.children.length).toBe(1);
+		expect(tree[0]?.children[0]?.name).toBe("Legends");
 	});
 });
