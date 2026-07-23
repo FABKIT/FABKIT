@@ -1,26 +1,49 @@
 import { CardThumbnail } from "@fabkit/apps/card-creator/components/gallery/CardThumbnail";
+import { DeleteFolderConfirmDialog } from "@fabkit/apps/card-creator/components/gallery/DeleteFolderConfirmDialog";
 import { FileUploadButton } from "@fabkit/apps/card-creator/components/gallery/FileUploadButton.tsx";
+import { FolderBreadcrumbs } from "@fabkit/apps/card-creator/components/gallery/FolderBreadcrumbs";
+import { FolderNameDialog } from "@fabkit/apps/card-creator/components/gallery/FolderNameDialog";
+import { FolderTile } from "@fabkit/apps/card-creator/components/gallery/FolderTile";
 import {
+	createFolder,
+	deleteFolder,
 	exportGalleryToFile,
 	type GalleryImportMode,
-	getAllCards,
+	getAllCardsWithFolders,
+	getFolderContentsCount,
 	importCardFromJSON,
 	importGalleryFromJSON,
+	renameFolder,
+	type StoredFolder,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
 import { decompressFile } from "@fabkit/shared/compression";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Download, FolderSync, Loader2, RotateCcw } from "lucide-react";
+import {
+	Download,
+	FolderPlus,
+	FolderSync,
+	Loader2,
+	RotateCcw,
+} from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+interface GallerySearch {
+	folderId?: string;
+}
+
 export const Route = createFileRoute("/gallery")({
 	component: GalleryPage,
-	loader: async () => ({ cards: await getAllCards() }),
+	validateSearch: (search: Record<string, unknown>): GallerySearch => ({
+		folderId: typeof search.folderId === "string" ? search.folderId : undefined,
+	}),
+	loader: async () => getAllCardsWithFolders(),
 });
 
 function GalleryPage() {
 	const { t } = useTranslation("card-creator");
-	const { cards } = Route.useLoaderData();
+	const { cards, folders } = Route.useLoaderData();
+	const { folderId: currentFolderId } = Route.useSearch();
 	const router = useRouter();
 	const [isDragging, setIsDragging] = useState(false);
 	const [isImporting, setIsImporting] = useState(false);
@@ -28,6 +51,22 @@ function GalleryPage() {
 	const [pendingGalleryFile, setPendingGalleryFile] = useState<File | null>(
 		null,
 	);
+	const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+	const [renamingFolder, setRenamingFolder] = useState<StoredFolder | null>(
+		null,
+	);
+	const [deleteTarget, setDeleteTarget] = useState<{
+		folder: StoredFolder;
+		count: number;
+	} | null>(null);
+
+	const subfolders = folders.filter(
+		(folder) => folder.parentId === currentFolderId,
+	);
+	const cardsInLevel = cards.filter(
+		(card) => (card.folderId ?? undefined) === currentFolderId,
+	);
+	const isLevelEmpty = subfolders.length === 0 && cardsInLevel.length === 0;
 
 	const handleDragOver = (e: React.DragEvent) => {
 		e.preventDefault();
@@ -109,6 +148,31 @@ function GalleryPage() {
 		} finally {
 			setIsExporting(false);
 		}
+	};
+
+	const handleCreateFolder = async (name: string) => {
+		await createFolder(name, currentFolderId);
+		router.invalidate();
+		setIsCreatingFolder(false);
+	};
+
+	const handleRenameFolder = async (name: string) => {
+		if (!renamingFolder) return;
+		await renameFolder(renamingFolder.id, name);
+		router.invalidate();
+		setRenamingFolder(null);
+	};
+
+	const handleRequestDelete = async (folder: StoredFolder) => {
+		const count = await getFolderContentsCount(folder.id);
+		setDeleteTarget({ folder, count });
+	};
+
+	const handleConfirmDelete = async () => {
+		if (!deleteTarget) return;
+		await deleteFolder(deleteTarget.folder.id);
+		router.invalidate();
+		setDeleteTarget(null);
 	};
 
 	return (
@@ -227,26 +291,94 @@ function GalleryPage() {
 				</div>
 			</div>
 
+			{/* Folder navigation */}
+			<div className="flex items-center justify-between gap-4 border-b border-border-primary px-6 py-3">
+				<FolderBreadcrumbs
+					folders={folders}
+					currentFolderId={currentFolderId}
+				/>
+				<button
+					type="button"
+					onClick={() => setIsCreatingFolder(true)}
+					className="flex shrink-0 items-center gap-2 rounded-md border border-border-primary bg-surface px-3 py-1.5 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
+				>
+					<FolderPlus className="h-4 w-4" />
+					{t("gallery.folders.new_folder")}
+				</button>
+			</div>
+
 			{/* Content */}
 			<div className="flex-1 p-6">
-				{cards.length === 0 ? (
+				{isLevelEmpty ? (
 					<div className="flex flex-col items-center justify-center gap-4 py-16">
-						<p className="text-lg text-muted">{t("gallery.empty")}</p>
-						<Link
-							to="/card-creator"
-							className="rounded-lg bg-surface-active px-4 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
-						>
-							{t("gallery.create_first")}
-						</Link>
+						<p className="text-lg text-muted">
+							{currentFolderId
+								? t("gallery.folders.empty_folder")
+								: t("gallery.empty")}
+						</p>
+						{!currentFolderId && (
+							<Link
+								to="/card-creator"
+								className="rounded-lg bg-surface-active px-4 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
+							>
+								{t("gallery.create_first")}
+							</Link>
+						)}
 					</div>
 				) : (
-					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-						{cards.map((card) => (
-							<CardThumbnail key={card.version} card={card} />
-						))}
+					<div className="space-y-6">
+						{subfolders.length > 0 && (
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+								{subfolders.map((folder) => (
+									<FolderTile
+										key={folder.id}
+										folder={folder}
+										onRequestRename={setRenamingFolder}
+										onRequestDelete={handleRequestDelete}
+									/>
+								))}
+							</div>
+						)}
+						{cardsInLevel.length > 0 && (
+							<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+								{cardsInLevel.map((card) => (
+									<CardThumbnail
+										key={card.version}
+										card={card}
+										folders={folders}
+									/>
+								))}
+							</div>
+						)}
 					</div>
 				)}
 			</div>
+
+			<FolderNameDialog
+				key={
+					isCreatingFolder
+						? `create-${currentFolderId ?? "root"}`
+						: "create-closed"
+				}
+				mode="create"
+				open={isCreatingFolder}
+				onClose={() => setIsCreatingFolder(false)}
+				onSubmit={handleCreateFolder}
+			/>
+			<FolderNameDialog
+				key={renamingFolder ? `rename-${renamingFolder.id}` : "rename-closed"}
+				mode="rename"
+				open={renamingFolder !== null}
+				initialName={renamingFolder?.name}
+				onClose={() => setRenamingFolder(null)}
+				onSubmit={handleRenameFolder}
+			/>
+			<DeleteFolderConfirmDialog
+				folder={deleteTarget?.folder ?? null}
+				itemCount={deleteTarget?.count ?? 0}
+				onCancel={() => setDeleteTarget(null)}
+				onConfirm={handleConfirmDelete}
+			/>
 		</section>
 	);
 }

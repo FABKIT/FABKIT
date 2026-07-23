@@ -1,27 +1,32 @@
+import { MoveToFolderDialog } from "@fabkit/apps/card-creator/components/gallery/MoveToFolderDialog";
 import {
 	deleteCard,
 	deserializeCardState,
 	downloadCardJSON,
 	exportCardToJSON,
 	type StoredCard,
+	type StoredFolder,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
 import { rotateBlob } from "@fabkit/apps/card-creator/utils/export.ts";
-import { useNavigate } from "@tanstack/react-router";
-import { Download, Edit, RotateCcw, Trash2 } from "lucide-react";
+import { useNavigate, useRouter } from "@tanstack/react-router";
+import { Download, Edit, FolderInput, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface CardThumbnailProps {
 	card: StoredCard;
+	folders: StoredFolder[];
 }
 
-export function CardThumbnail({ card }: CardThumbnailProps) {
+export function CardThumbnail({ card, folders }: CardThumbnailProps) {
 	const { t } = useTranslation("card-creator");
 	const navigate = useNavigate();
+	const router = useRouter();
 	const [isExporting, setIsExporting] = useState(false);
 	const [isLandscape, setIsLandscape] = useState(false);
 	const [landscapeUrl, setLandscapeUrl] = useState<string | null>(null);
+	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
 	const isMeldCard = card.state.CardType === "meld";
 
 	// Create object URL for preview with cleanup
@@ -62,11 +67,10 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 
 		try {
 			await deleteCard(card.version);
-			// Reload the page to refresh the gallery
-			window.location.reload();
+			router.invalidate();
 		} catch (error) {
 			console.error("Failed to delete card:", error);
-			alert("Failed to delete card. Please try again.");
+			alert(t("gallery.delete_error"));
 		}
 	};
 
@@ -77,10 +81,15 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 			await downloadCardJSON(jsonString, card.cardName);
 		} catch (error) {
 			console.error("Failed to export card:", error);
-			alert("Failed to export card. Please try again.");
+			alert(t("gallery.export_error"));
 		} finally {
 			setIsExporting(false);
 		}
+	};
+
+	const handleMoved = () => {
+		setIsMoveDialogOpen(false);
+		router.invalidate();
 	};
 
 	const formatDate = (timestamp: number) => {
@@ -152,6 +161,14 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 				</button>
 				<button
 					type="button"
+					onClick={() => setIsMoveDialogOpen(true)}
+					className="flex items-center justify-center gap-2 rounded-md bg-surface-active px-3 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
+					title={t("gallery.folders.move_to")}
+				>
+					<FolderInput className="h-4 w-4" />
+				</button>
+				<button
+					type="button"
 					onClick={handleDelete}
 					className="flex items-center justify-center gap-2 rounded-md bg-surface-active px-3 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
 					title={t("gallery.delete")}
@@ -159,6 +176,16 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
 					<Trash2 className="h-4 w-4" />
 				</button>
 			</div>
+
+			{isMoveDialogOpen && (
+				<MoveToFolderDialog
+					key={card.version}
+					card={card}
+					folders={folders}
+					onClose={() => setIsMoveDialogOpen(false)}
+					onMoved={handleMoved}
+				/>
+			)}
 		</div>
 	);
 }
