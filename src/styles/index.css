@@ -49,6 +49,19 @@
 
 	/* Fonts */
 	--font-card-text: "palatino_lt_stdroman", serif;
+
+	/* Fabble feedback tiles (saturated game colors — same family in light and dark) */
+	--color-feedback-match: #2e9e53;
+	--color-feedback-partial: #c9b83a;
+	--color-feedback-miss: #c94046;
+	--color-feedback-on-tile: #1d1d1d;
+	--color-feedback-on-tile-inverted: #ffffff;
+
+	/* Fabble end panel */
+	--color-fabble-victory: #2e9e53;
+	--color-fabble-defeat: #c94046;
+	--color-fabble-glow: #d4af5a;
+	--color-fabble-glow-defeat: #a83a3e;
 }
 
 [data-theme="dark"] {
@@ -67,6 +80,18 @@
 
 	--color-border: #e5e7eb;
 	--color-border-primary: rgba(166, 134, 74, 0.2);
+
+	/* Fabble feedback tiles — saturated, sampled from the mocks */
+	--color-feedback-match: #3fae62;
+	--color-feedback-partial: #d3cc4a;
+	--color-feedback-miss: #d34b50;
+	--color-feedback-on-tile: #1d1d1d;
+	--color-feedback-on-tile-inverted: #ffffff;
+
+	--color-fabble-victory: #3fae62;
+	--color-fabble-defeat: #d34b50;
+	--color-fabble-glow: #d4af5a;
+	--color-fabble-glow-defeat: #a83a3e;
 }
 
 @keyframes fade-in-bottom {

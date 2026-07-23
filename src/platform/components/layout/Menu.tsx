@@ -11,7 +11,6 @@ import {
 	Bug,
 	Home,
 	Images,
-	LayoutGrid,
 	Map as MapIcon,
 	Menu as MenuIcon,
 	MessageCircle,
@@ -22,6 +21,7 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FabkitLogo from "../../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../../assets/Fabkitlogo_notext.svg";
+import { Fabble } from "../icons/Fabble.tsx";
 import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
@@ -55,7 +55,7 @@ const navigation: NavItem[] = [
 			{ nameKey: "nav.gallery", route: "/gallery", icon: Images },
 		],
 	},
-	{ nameKey: "nav.fabble", route: "/fabble", icon: LayoutGrid },
+	{ nameKey: "nav.fabble", route: "/fabble", icon: Fabble },
 	{ nameKey: "nav.roadmap", route: "/roadmap", icon: MapIcon },
 	{ nameKey: "nav.contact", route: "/contact", icon: MessageCircle },
 ];

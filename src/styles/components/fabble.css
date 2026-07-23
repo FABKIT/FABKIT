@@ -1,0 +1,121 @@
+.fabble-tile {
+	position: relative;
+	transform-style: preserve-3d;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.fabble-tile::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.1),
+		rgba(0, 0, 0, 0.14) 100%
+	);
+	pointer-events: none;
+}
+
+.fabble-tile--flip {
+	animation: fabble-flip 0.5s ease both;
+}
+
+@keyframes fabble-flip {
+	0% {
+		transform: rotateY(90deg);
+		opacity: 0;
+	}
+	100% {
+		transform: rotateY(0);
+		opacity: 1;
+	}
+}
+
+.fabble-fade-in {
+	animation: fabble-fade 0.3s ease both;
+}
+
+@keyframes fabble-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* The glow is a separate absolutely-positioned layer with a fixed box-shadow,
+   animated via opacity only — animating box-shadow's blur/spread directly
+   forces a paint every frame and reads as choppy. Opacity is compositor-only. */
+.fabble-glow-layer {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.fabble-glow-layer--victory {
+	box-shadow: 0 0 14px 2px var(--color-fabble-glow);
+	animation:
+		fabble-glow-fade-in 0.5s ease 0.7s both,
+		fabble-glow-pulse 3.2s ease-in-out 1.2s infinite;
+}
+
+.fabble-glow-layer--defeat {
+	box-shadow: 0 0 10px 1px var(--color-fabble-glow-defeat);
+	animation: fabble-glow-fade-in 0.5s ease 0.7s both;
+}
+
+@keyframes fabble-glow-fade-in {
+	to {
+		opacity: 0.5;
+	}
+}
+
+@keyframes fabble-glow-pulse {
+	0%,
+	100% {
+		opacity: 0.35;
+	}
+	50% {
+		opacity: 0.65;
+	}
+}
+
+.fabble-card-reveal {
+	animation: fabble-fade 0.6s ease both;
+}
+
+.fabble-heading-bounce {
+	animation: fabble-heading-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes fabble-heading-bounce {
+	0% {
+		transform: scale(0.4);
+		opacity: 0;
+	}
+	60% {
+		transform: scale(1.08);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fabble-tile--flip,
+	.fabble-fade-in,
+	.fabble-card-reveal,
+	.fabble-heading-bounce {
+		animation: none;
+	}
+	.fabble-glow-layer--victory,
+	.fabble-glow-layer--defeat {
+		animation: none;
+		opacity: 0.5;
+	}
+}
