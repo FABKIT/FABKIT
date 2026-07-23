@@ -128,8 +128,16 @@ function GalleryPage() {
 		setIsImporting(true);
 		try {
 			const text = await decompressFile(file);
-			await importGalleryFromJSON(text, mode);
+			const result = await importGalleryFromJSON(text, mode);
 			router.invalidate();
+			alert(
+				t("gallery.import_summary", {
+					imported: result.imported,
+					skipped: result.skipped,
+					foldersCreated: result.foldersCreated,
+					foldersMerged: result.foldersMerged,
+				}),
+			);
 		} catch (error) {
 			console.error("Failed to import gallery:", error);
 			alert(t("gallery.import_error"));
@@ -141,7 +149,7 @@ function GalleryPage() {
 	const handleExportGallery = async () => {
 		setIsExporting(true);
 		try {
-			await exportGalleryToFile(cards);
+			await exportGalleryToFile(cards, folders);
 		} catch (error) {
 			console.error("Failed to export gallery:", error);
 			alert(t("gallery.export_gallery_error"));

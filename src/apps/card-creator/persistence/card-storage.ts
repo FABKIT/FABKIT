@@ -164,17 +164,39 @@ export interface FabkitFile {
 	state: FabkitFileState;
 }
 
-/** Gallery export format — array of FabkitFile cards. */
+/**
+ * A card entry within a .fabgallery export: the same portable `.fabkit` shape,
+ * plus (optionally) the folder it lived in at export time — resolved against the
+ * gallery's `folders` array by id. Absent means gallery root, same convention as
+ * `StoredCard.folderId`. This field lives here, not on `FabkitFile` itself,
+ * because a standalone `.fabkit` never carries folder membership.
+ */
+export type FabgalleryCardEntry = FabkitFile & { folderId?: string };
+
+/** Gallery export format — array of card entries, plus the folder tree. */
 export interface FabgalleryFile {
 	format: "fabgallery";
 	formatVersion: string;
 	exportedAt: string;
 	cardCount: number;
-	cards: FabkitFile[];
+	cards: FabgalleryCardEntry[];
+	/**
+	 * Folder tree at export time. `id`/`parentId` are only meaningful as internal
+	 * linkage within this file (and as merge-import scratch state) — a folder's
+	 * real identity for reconciliation purposes is its `(parentId, name)` path.
+	 * Optional so older `.fabgallery` files (no folders concept yet) still import
+	 * cleanly — every card lands at root, unchanged from before this field existed.
+	 */
+	folders?: StoredFolder[];
 }
 
 export type GalleryImportMode = "replace" | "merge";
-export type GalleryImportResult = { imported: number; skipped: number };
+export type GalleryImportResult = {
+	imported: number;
+	skipped: number;
+	foldersCreated: number;
+	foldersMerged: number;
+};
 
 // ─── Database ─────────────────────────────────────────────────────────────────
 
@@ -605,7 +627,10 @@ export async function deleteCard(version: string): Promise<void> {
 }
 
 export async function clearGallery(): Promise<void> {
-	await db.cards.clear();
+	await db.transaction("rw", db.cards, db.folders, async () => {
+		await db.cards.clear();
+		await db.folders.clear();
+	});
 }
 
 // ─── Single-card export / import ─────────────────────────────────────────────
@@ -726,8 +751,16 @@ export async function downloadCardJSON(
 
 // ─── Gallery export / import ──────────────────────────────────────────────────
 
-export async function exportGalleryToFile(cards: StoredCard[]): Promise<void> {
-	const serialized = await Promise.all(cards.map(exportCardToObject));
+export async function exportGalleryToFile(
+	cards: StoredCard[],
+	folders: StoredFolder[],
+): Promise<void> {
+	const serialized: FabgalleryCardEntry[] = await Promise.all(
+		cards.map(async (card) => ({
+			...(await exportCardToObject(card)),
+			folderId: card.folderId,
+		})),
+	);
 
 	const gallery: FabgalleryFile = {
 		format: "fabgallery",
@@ -735,6 +768,7 @@ export async function exportGalleryToFile(cards: StoredCard[]): Promise<void> {
 		exportedAt: new Date().toISOString(),
 		cardCount: serialized.length,
 		cards: serialized,
+		folders,
 	};
 
 	const blob = await compressJSON(JSON.stringify(gallery));
@@ -748,6 +782,75 @@ export async function exportGalleryToFile(cards: StoredCard[]): Promise<void> {
 	URL.revokeObjectURL(url);
 }
 
+/**
+ * Merge-imports a raw folder array (as found in a `.fabgallery` file — carrying
+ * foreign ids that only mean something within that file) into the local folders
+ * table. Walks the imported tree top-down; at each level, a folder is matched
+ * against existing local folders by `(parentId, name)` — a match reuses the
+ * existing folder's real local id, a miss creates it via `createFolder` (subject
+ * to the same name/depth/uniqueness validation as manual creation).
+ *
+ * Returns a map from *imported* folder id to the *local* folder id it resolved
+ * to, plus counts for the import summary. A folder that fails validation (name
+ * too long, depth exceeded, etc.) is left unmapped, and its descendants are never
+ * visited — the whole unresolved subtree's cards fall back to gallery root, per
+ * the "cards whose folder can't be resolved land at root" contract.
+ */
+async function mergeFoldersByName(importedFolders: StoredFolder[]): Promise<{
+	idMap: Map<string, string>;
+	created: number;
+	merged: number;
+}> {
+	const byImportedParent = new Map<string | undefined, StoredFolder[]>();
+	for (const folder of importedFolders) {
+		const siblings = byImportedParent.get(folder.parentId) ?? [];
+		siblings.push(folder);
+		byImportedParent.set(folder.parentId, siblings);
+	}
+
+	const idMap = new Map<string, string>();
+	let created = 0;
+	let merged = 0;
+
+	async function resolveLevel(
+		importedParentId: string | undefined,
+		localParentId: string | undefined,
+	): Promise<void> {
+		const level = byImportedParent.get(importedParentId) ?? [];
+		for (const folder of level) {
+			const localSiblings = await db.folders
+				.filter((f) => f.parentId === localParentId)
+				.toArray();
+			const match = localSiblings.find((f) => f.name === folder.name);
+
+			let localId: string;
+			if (match) {
+				localId = match.id;
+				merged++;
+			} else {
+				try {
+					const createdFolder = await createFolder(folder.name, localParentId);
+					localId = createdFolder.id;
+					created++;
+				} catch (error) {
+					console.warn(
+						`Skipping folder "${folder.name}" during merge import:`,
+						error,
+					);
+					// Leave unmapped and don't descend — its subtree's cards land at root.
+					continue;
+				}
+			}
+
+			idMap.set(folder.id, localId);
+			await resolveLevel(folder.id, localId);
+		}
+	}
+
+	await resolveLevel(undefined, undefined);
+	return { idMap, created, merged };
+}
+
 export async function importGalleryFromJSON(
 	jsonString: string,
 	mode: GalleryImportMode,
@@ -759,14 +862,28 @@ export async function importGalleryFromJSON(
 	}
 
 	const gallery = data as FabgalleryFile;
+	const importedFolders = gallery.folders ?? [];
 
 	if (mode === "replace") {
 		await clearGallery();
+		if (importedFolders.length > 0) {
+			await db.folders.bulkAdd(importedFolders);
+		}
 		for (const card of gallery.cards) {
 			await importCardFromObject(card);
+			if (card.folderId) {
+				await moveCardToFolder(card.version, card.folderId);
+			}
 		}
-		return { imported: gallery.cards.length, skipped: 0 };
+		return {
+			imported: gallery.cards.length,
+			skipped: 0,
+			foldersCreated: importedFolders.length,
+			foldersMerged: 0,
+		};
 	}
+
+	const { idMap, created, merged } = await mergeFoldersByName(importedFolders);
 
 	let imported = 0;
 	let skipped = 0;
@@ -774,10 +891,14 @@ export async function importGalleryFromJSON(
 		const existing = await getCard(card.version);
 		if (existing) {
 			skipped++;
-		} else {
-			await importCardFromObject(card);
-			imported++;
+			continue;
 		}
+		await importCardFromObject(card);
+		const localFolderId = card.folderId ? idMap.get(card.folderId) : undefined;
+		if (localFolderId) {
+			await moveCardToFolder(card.version, localFolderId);
+		}
+		imported++;
 	}
-	return { imported, skipped };
+	return { imported, skipped, foldersCreated: created, foldersMerged: merged };
 }

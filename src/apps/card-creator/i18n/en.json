@@ -189,6 +189,7 @@
 		"import_replace": "Replace All",
 		"import_replace_description": "Delete your current gallery and replace it with the imported cards. This cannot be undone.",
 		"import_cancel": "Cancel",
+		"import_summary": "Imported {{imported}} card(s), skipped {{skipped}}. Folders: {{foldersCreated}} created, {{foldersMerged}} merged.",
 		"delete_error": "Failed to delete card. Please try again.",
 		"export_error": "Failed to export card. Please try again.",
 		"folders": {
