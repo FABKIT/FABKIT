@@ -41,8 +41,8 @@
 		"submit": "Submit Guess",
 		"twin_message": "Same properties, different card. This guess is free!",
 		"theme": {
-			"equipment_monday": "Equipment Monday: today's card is an Equipment",
-			"class_thursday": "Class Thursday: today's card is a {{className}}"
+			"equipment_monday": "Equipment Monday: today's card is a piece of Equipment",
+			"class_thursday": "Class Thursday: today's card belongs to the {{className}} class"
 		},
 		"rainbow_hint": {
 			"message": "Yellow on a Pitch, Power or Defense tile means your guess matches some of the answer's colours, but not all of them. Rainbow cards have different stats per colour.",
@@ -86,7 +86,7 @@
 			"set": "Set"
 		},
 		"none": "—",
-		"all_colors": "All colors",
+		"all_colors": "All colours",
 		"twin_badge": "✨ Twin",
 		"announce": "{{name}}: {{matches}} of {{total}} attributes matched",
 		"aria": {
@@ -149,6 +149,10 @@
 			"example_number": "Matches one of the answer's colours, not all of them",
 			"example_pitch_match": "Same colours as the answer",
 			"example_pitch_partial": "The answer has more colours than this"
+		},
+		"not_included": {
+			"title": "Which Cards Are Left Out",
+			"body": "Fabble only draws from real, deckable cards. Tokens, markers, card backs and non-deck pieces (mentors, resources, blocks, macros, companions and demi-heroes) are left out, along with Marvels. Banned cards are still fair game as guesses in both modes; they simply never turn up as the answer in Standard."
 		}
 	},
 	"end": {

@@ -7,7 +7,7 @@ import {
 	DialogPanel,
 	DialogTitle,
 } from "@headlessui/react";
-import { ArrowDown, ArrowUp, Check } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, X } from "lucide-react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -108,9 +108,19 @@ export function RulesDialog({ open, onClose }: RulesDialogProps) {
 			<DialogBackdrop className="fixed inset-0 bg-black/30" />
 			<div className="fixed inset-0 flex w-screen items-center justify-center p-4">
 				<DialogPanel className="max-h-[85vh] w-full max-w-105 overflow-y-auto space-y-5 rounded-lg border border-border-primary bg-surface p-6 shadow-xl">
-					<DialogTitle className="text-lg font-bold text-heading">
-						{t("rules.title")}
-					</DialogTitle>
+					<div className="flex items-start justify-between gap-4">
+						<DialogTitle className="text-lg font-bold text-heading">
+							{t("rules.title")}
+						</DialogTitle>
+						<button
+							type="button"
+							onClick={onClose}
+							aria-label={t("common.close")}
+							className="shrink-0 rounded-full p-1 text-muted transition-colors hover:text-feedback-miss"
+						>
+							<X className="h-5 w-5" />
+						</button>
+					</div>
 
 					<section className="space-y-1">
 						<h3 className="font-semibold text-body">
@@ -237,6 +247,13 @@ export function RulesDialog({ open, onClose }: RulesDialogProps) {
 							<strong>{t("home.modes.chaos.name")}:</strong>{" "}
 							{t("home.modes.chaos.blurb")}
 						</p>
+					</section>
+
+					<section className="space-y-1">
+						<h3 className="font-semibold text-body">
+							{t("rules.not_included.title")}
+						</h3>
+						<p className="text-sm text-muted">{t("rules.not_included.body")}</p>
 					</section>
 
 					<button

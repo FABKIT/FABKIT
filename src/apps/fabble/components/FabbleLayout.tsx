@@ -24,7 +24,7 @@ export function FabbleLayout({ children }: FabbleLayoutProps) {
 					<img
 						src="/img/fabble/FabbleLogo.svg"
 						alt={t("home.logo_alt")}
-						className="h-11 drop-shadow-[0_2px_3px_rgba(0,0,0,0.85)] sm:h-15"
+						className="fabble-logo h-11 sm:h-15"
 					/>
 				</div>
 			</div>
