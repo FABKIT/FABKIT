@@ -64,6 +64,25 @@ describe("buildShareText", () => {
 		);
 	});
 
+	it("separates the username with a middle dot, never an em-dash", () => {
+		const missRow: TileState[] = new Array(11).fill("miss");
+		const text = buildShareText({
+			username: "louis",
+			modeLabel: "Standard",
+			dateLabel: "05-07-26",
+			won: false,
+			guessCount: 1,
+			maxGuesses: 8,
+			hintsUsed: 0,
+			rows: [missRow],
+			link: "https://fabkit.io/fabble",
+		});
+		expect(text.startsWith("louis · Fabble Standard · 05-07-26 · X/8")).toBe(
+			true,
+		);
+		expect(text).not.toContain("—");
+	});
+
 	it("builds a defeat with hints used", () => {
 		const missRow: TileState[] = new Array(11).fill("miss");
 		const rows: TileState[][] = new Array(8).fill(missRow);

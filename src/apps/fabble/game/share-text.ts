@@ -21,7 +21,7 @@ export function buildShareText(args: {
 		? `${args.guessCount}/${args.maxGuesses}`
 		: `X/${args.maxGuesses}`;
 	const header = args.username
-		? `${args.username} — Fabble ${args.modeLabel} · ${args.dateLabel} · ${score}`
+		? `${args.username} · Fabble ${args.modeLabel} · ${args.dateLabel} · ${score}`
 		: `Fabble ${args.modeLabel} · ${args.dateLabel} · ${score}`;
 	const lines = [header];
 

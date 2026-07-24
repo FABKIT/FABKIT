@@ -11,6 +11,15 @@
 	position: relative;
 	transform-style: preserve-3d;
 	border: 1px solid rgba(255, 255, 255, 0.22);
+	container-type: inline-size;
+}
+
+/* Scales with the tile's own box width (via cqi), not the viewport — a narrow
+   3-column mobile tile and a wide 6-column desktop tile both fit long values
+   like "Mechanologist" without truncating. */
+.fabble-tile-value {
+	font-size: clamp(0.625rem, 0.55rem + 1.2cqi, 0.875rem);
+	overflow-wrap: anywhere;
 }
 
 .fabble-tile::before {

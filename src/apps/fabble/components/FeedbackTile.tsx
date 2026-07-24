@@ -64,13 +64,13 @@ export function FeedbackTile({ feedback, style, flip }: FeedbackTileProps) {
 					onExpand={() => setSetExpanded(true)}
 				/>
 			) : (
-				<span className="flex items-center gap-1 text-sm font-bold">
+				<span className="fabble-tile-value flex items-center gap-1 font-bold">
 					{value}
 					{feedback.direction === "higher" && (
-						<ArrowUp className="h-3.5 w-3.5" />
+						<ArrowUp className="h-3.5 w-3.5 shrink-0" />
 					)}
 					{feedback.direction === "lower" && (
-						<ArrowDown className="h-3.5 w-3.5" />
+						<ArrowDown className="h-3.5 w-3.5 shrink-0" />
 					)}
 				</span>
 			)}
