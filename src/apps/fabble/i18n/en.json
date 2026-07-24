@@ -14,6 +14,11 @@
 				"name": "Chaos",
 				"blurb": "Every printed card, including banned ones",
 				"meta": "12 guesses · No hints"
+			},
+			"endless": {
+				"name": "Endless",
+				"blurb": "Keep practicing with fresh puzzles from the Chaos pool, one after another",
+				"meta": "Unlimited guesses"
 			}
 		}
 	},
@@ -33,16 +38,21 @@
 		"menu_back": "← Menu",
 		"mode_badge_standard": "Standard mode",
 		"mode_badge_chaos": "Chaos mode",
+		"mode_badge_endless": "Endless mode",
 		"guess_counter": "Guess {{current}} of {{max}}",
 		"dev_reset": "Reset",
 		"guesses_remaining_one": "{{count}} guess remaining",
 		"guesses_remaining_other": "{{count}} guesses remaining",
+		"endless_guess_count_one": "{{count}} guess so far",
+		"endless_guess_count_other": "{{count}} guesses so far",
 		"input_placeholder": "Type a card name…",
 		"submit": "Submit Guess",
+		"give_up": "Give up",
 		"twin_message": "Same properties, different card. This guess is free!",
 		"theme": {
 			"equipment_monday": "Equipment Monday: today's card is a piece of Equipment",
-			"class_thursday": "Class Thursday: today's card belongs to the {{className}} class"
+			"class_thursday": "Class Thursday: today's card belongs to the {{className}} class",
+			"dismiss": "Dismiss"
 		},
 		"rainbow_hint": {
 			"message": "Yellow on a Pitch, Power or Defense tile means your guess matches some of the answer's colours, but not all of them. Rainbow cards have different stats per colour.",
@@ -152,7 +162,7 @@
 		},
 		"not_included": {
 			"title": "Which Cards Are Left Out",
-			"body": "Fabble only draws from real, deckable cards. Tokens, markers, card backs and non-deck pieces (mentors, resources, blocks, macros, companions and demi-heroes) are left out, along with Marvels. Banned cards are still fair game as guesses in both modes; they simply never turn up as the answer in Standard."
+			"body": "Fabble only draws from real, deckable cards. Tokens, markers, card backs and non-deck pieces (mentors, resources, blocks, macros, companions and demi-heroes) are left out, along with Marvels. Banned cards are still fair game as guesses in every mode; they simply never turn up as the answer in Standard."
 		}
 	},
 	"end": {
@@ -165,7 +175,16 @@
 		"streak_current": "Current streak",
 		"streak_best": "Best streak",
 		"next_puzzle": "Next puzzle in {{time}}",
-		"new_puzzle": "New puzzle available"
+		"new_puzzle": "New puzzle available",
+		"play_mode_button": "Play {{mode}} mode"
+	},
+	"endless": {
+		"gave_up": "🏳️ GAVE UP 🏳️",
+		"gave_up_reveal": "The answer was {{name}}.",
+		"next_puzzle": "Next puzzle",
+		"log_title": "This streak",
+		"log_entry_one": "#{{n}}: {{count}} guess",
+		"log_entry_other": "#{{n}}: {{count}} guesses"
 	},
 	"share": {
 		"button": "Share",

@@ -31,11 +31,20 @@ export interface FabbleSetPrinting {
 	/** Global release ordinal across ALL FAB sets: oldest = 0, strictly increasing by release
 	    date, identical for the same set on all cards. Drives Set-column arrows + Hint 2. */
 	order: number;
-	/** Promo printing. Promos are valid printings for matching, but regular set printings
-	    always take display priority: the end panel and Hint 2 use the earliest NON-promo
-	    printing, and in the Set tile promos are pinned to the top with a check mark when
-	    shared, otherwise no icon/arrow (never directional). */
+	/** Promo printing (e.g. Promos, GEM) — an ongoing product line whose chronological rank
+	    would mislead. Promos are valid printings for matching, but regular set printings
+	    always take display priority: the end panel and Hint 2 use the earliest NON-promo,
+	    NON-limitedPrint printing (see `limitedPrint`), and in the Set tile promos are pinned
+	    to the top with a check mark when shared, otherwise no icon/arrow (never directional,
+	    since a promo's release date isn't meaningful). */
 	promo?: boolean;
+	/** Limited-print set (e.g. a Blitz Deck or Commander/CC Deck reprint) — unlike `promo`,
+	    this DOES have a real, meaningful release date, so it still gets normal chronological
+	    Set-tile arrows. It's only deprioritised for *display* purposes: the end panel and
+	    Hint 2 prefer a main-set printing over a limited-print one when both exist, falling
+	    back to the limited-print printing only if the card has no main-set printing at all.
+	    See `earliestRegularPrinting` in game/compare.ts for the exact fallback order. */
+	limitedPrint?: boolean;
 }
 
 /**
@@ -149,4 +158,37 @@ export interface PersistedStreaks {
 	best: number;
 	lastResultDate: string | null;
 	lastResult: "won" | "lost" | null;
+}
+
+/** Endless's current in-progress puzzle. Deliberately NOT `PersistedSession` — that shape is
+    date-keyed (one puzzle per calendar day) and Endless has neither a date nor a guess cap.
+    Still honors the twin free-retry rule (an all-green wrong guess doesn't spend a guess),
+    same split as `PersistedSession.guesses`/`twinGuessIds`/`order`. */
+export interface PersistedEndlessSession {
+	schema: 1;
+	answerId: string;
+	datasetVersion: string;
+	guesses: string[];
+	twinGuessIds: string[];
+	order: string[];
+	status: "playing" | "won" | "gave_up";
+}
+
+/** One SOLVED puzzle in the current endless streak (win only — a give-up ends the streak,
+    it isn't logged here), oldest first. `answerId` doubles as the no-repeat exclusion list
+    for picking the next puzzle. */
+export interface EndlessLogEntry {
+	answerId: string;
+	guessCount: number;
+}
+
+/** Endless's streak. Deliberately NOT `PersistedStreaks` — that shape is date-keyed
+    (yesterday/today) and models "played every day", not "consecutive within a session".
+    `completedLog` is scoped to the CURRENT streak — it resets to `[]` alongside `current`
+    whenever a puzzle is given up on. */
+export interface PersistedEndlessStreak {
+	schema: 1;
+	current: number;
+	best: number;
+	completedLog: EndlessLogEntry[];
 }

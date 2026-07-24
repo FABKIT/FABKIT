@@ -247,6 +247,10 @@ export function RulesDialog({ open, onClose }: RulesDialogProps) {
 							<strong>{t("home.modes.chaos.name")}:</strong>{" "}
 							{t("home.modes.chaos.blurb")}
 						</p>
+						<p className="text-sm text-muted">
+							<strong>{t("home.modes.endless.name")}:</strong>{" "}
+							{t("home.modes.endless.blurb")}
+						</p>
 					</section>
 
 					<section className="space-y-1">
