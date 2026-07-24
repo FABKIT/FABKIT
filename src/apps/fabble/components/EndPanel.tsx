@@ -38,7 +38,7 @@ export function EndPanel({
 			<AnswerReveal
 				answer={answer}
 				won={won}
-				bottomContent={
+				sideContent={
 					<>
 						<span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white">
 							{t(`play.mode_badge_${mode}`)}
@@ -70,9 +70,11 @@ export function EndPanel({
 						</div>
 
 						<ShareBlock mode={mode} session={session} today={today} />
-
+					</>
+				}
+				belowCardContent={
+					<>
 						<Countdown onNewDay={onNewDay} />
-
 						<ModeSwitchButtons currentMode={mode} />
 					</>
 				}

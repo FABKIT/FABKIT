@@ -132,10 +132,10 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 	]);
 
 	return (
-		<div className="flex w-full max-w-140 flex-col items-center gap-3">
-			<div className="flex w-full flex-col items-center gap-1">
+		<div className="flex w-full flex-col items-start gap-2 sm:max-w-80">
+			<div className="flex w-full flex-wrap items-center gap-2">
 				<label htmlFor="fabble-username" className="text-xs text-muted">
-					{t("share.username_label")}
+					{t("share.username_label_inline")}
 				</label>
 				<input
 					id="fabble-username"
@@ -144,37 +144,40 @@ export function ShareBlock({ mode, session, today }: ShareBlockProps) {
 					maxLength={USERNAME_MAX_LENGTH}
 					onChange={(e) => setUsernameInput(e.target.value)}
 					onBlur={() => setUsername(usernameInput)}
-					className="w-full max-w-60 rounded-md border border-border-primary bg-surface px-3 py-1.5 text-center text-sm text-body focus:border-primary focus:outline-none"
+					title={t("share.username_hint")}
+					className="max-w-44 rounded-md border border-border-primary bg-surface px-2 py-1 text-sm text-body focus:border-primary focus:outline-none"
 				/>
-				<span className="text-xs text-faint">{t("share.username_hint")}</span>
 			</div>
 
-			<div className="flex flex-wrap justify-center gap-2">
+			<div className="flex flex-wrap gap-2">
 				<button
 					type="button"
 					onClick={handleShare}
 					disabled={capturing}
-					className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+					title={t("share.button")}
+					className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 				>
-					<Share2 className="size-4" aria-hidden="true" />
+					<Share2 className="size-3.5" aria-hidden="true" />
 					{t("share.button")}
 				</button>
 				<button
 					type="button"
 					onClick={handleExport}
 					disabled={capturing}
-					className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+					title={t("share.export")}
+					className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 				>
-					<ImageDown className="size-4" aria-hidden="true" />
-					{t("share.export")}
+					<ImageDown className="size-3.5" aria-hidden="true" />
+					{t("share.export_short")}
 				</button>
 				<button
 					type="button"
 					onClick={handleCopyText}
-					className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+					title={t("share.copy_text")}
+					className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
 				>
-					<ClipboardCopy className="size-4" aria-hidden="true" />
-					{t("share.copy_text")}
+					<ClipboardCopy className="size-3.5" aria-hidden="true" />
+					{t("share.copy_short")}
 				</button>
 			</div>
 

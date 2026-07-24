@@ -63,6 +63,19 @@
 	}
 }
 
+.fabble-fade-out {
+	animation: fabble-fade-out 0.2s ease both;
+}
+
+@keyframes fabble-fade-out {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
 /* The glow is a separate absolutely-positioned layer with a fixed box-shadow,
    animated via opacity only — animating box-shadow's blur/spread directly
    forces a paint every frame and reads as choppy. Opacity is compositor-only. */
@@ -106,6 +119,32 @@
 	animation: fabble-fade 0.6s ease both;
 }
 
+/* End-screen layout: image top-left, details+share to its right (top-aligned to bottom-
+   aligned via the flex wrapper each panel builds inside the "side" area), countdown/mode
+   buttons stacked directly under the image. Grid instead of flex so the image cell's height
+   is driven by the image alone — `items-stretch` previously stretched the image's wrapper to
+   match the (often taller) side column, which made the absolutely-positioned glow layer
+   (inset: 0) spill past the card's actual bottom edge. */
+.fabble-answer-grid {
+	display: grid;
+	gap: 1.5rem;
+	justify-items: center;
+	grid-template-areas: "image" "side" "below";
+}
+
+@media (min-width: 40rem) {
+	.fabble-answer-grid {
+		grid-template-columns: auto 1fr;
+		grid-template-rows: auto auto;
+		grid-template-areas:
+			"image side"
+			"below .";
+		column-gap: 2.5rem;
+		row-gap: 1rem;
+		justify-items: start;
+	}
+}
+
 .fabble-heading-bounce {
 	animation: fabble-heading-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -127,6 +166,7 @@
 @media (prefers-reduced-motion: reduce) {
 	.fabble-tile--flip,
 	.fabble-fade-in,
+	.fabble-fade-out,
 	.fabble-card-reveal,
 	.fabble-heading-bounce {
 		animation: none;

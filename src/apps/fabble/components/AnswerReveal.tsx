@@ -7,12 +7,15 @@ import { useTranslation } from "react-i18next";
 export interface AnswerRevealProps {
 	answer: FabbleCard;
 	won: boolean;
-	/** Everything that used to sit centered below the image/info split (mode badge,
-	 * solved-in-X text, streaks, share form, mode-switch buttons, countdown/next-puzzle).
-	 * On desktop it's bottom-aligned to the card image's bottom edge, in the same right-hand
-	 * column as the name/rarity/set/artist block above it. On mobile it stays in normal
-	 * document flow, unchanged from before. */
-	bottomContent: ReactNode;
+	/** Right-column group below the name/rarity/set/artist block (mode badge, solved-in-X
+	 * text, streaks, and for daily modes the share form). Bottom-aligned to the card image's
+	 * bottom edge on desktop, with whitespace separating it from the details above; stacks
+	 * in normal document flow on mobile. */
+	sideContent: ReactNode;
+	/** Stacked directly under the card image (countdown/next-puzzle button, then the
+	 * mode-switch buttons) — desktop-only distinction from `sideContent`; on mobile both
+	 * groups simply stack in document order. */
+	belowCardContent: ReactNode;
 }
 
 /** Card image + name/rarity/set/artist block shown on every end-of-puzzle panel
@@ -21,14 +24,15 @@ export interface AnswerRevealProps {
 export function AnswerReveal({
 	answer,
 	won,
-	bottomContent,
+	sideContent,
+	belowCardContent,
 }: AnswerRevealProps) {
 	const { t } = useTranslation("fabble");
 	const set = earliestRegularPrinting(answer);
 
 	return (
-		<div className="mt-6 flex w-full flex-col items-center gap-6 sm:flex-row sm:items-stretch sm:justify-center sm:gap-10">
-			<div className="relative w-64 shrink-0 rounded-lg sm:w-80">
+		<div className="fabble-answer-grid mt-6 w-full">
+			<div className="relative w-64 shrink-0 rounded-lg sm:w-80 [grid-area:image]">
 				<img
 					src={answer.imageUrl}
 					alt={answer.name}
@@ -39,7 +43,7 @@ export function AnswerReveal({
 					className={`fabble-glow-layer ${won ? "fabble-glow-layer--victory" : "fabble-glow-layer--defeat"}`}
 				/>
 			</div>
-			<div className="flex flex-col items-center gap-6 sm:items-start sm:justify-between">
+			<div className="flex h-full flex-col items-center gap-6 [grid-area:side] sm:items-start sm:justify-between">
 				<div className="fabble-card-reveal flex flex-col items-center gap-1 sm:items-start">
 					<span className="text-2xl font-bold text-heading">{answer.name}</span>
 					<span className="flex items-center gap-1.5 text-base text-body">
@@ -55,9 +59,12 @@ export function AnswerReveal({
 						{t("end.art_by", { artist: answer.artist })}
 					</span>
 				</div>
-				<div className="flex flex-col items-center gap-6 sm:items-start">
-					{bottomContent}
+				<div className="flex flex-col items-center gap-3 sm:items-start">
+					{sideContent}
 				</div>
+			</div>
+			<div className="flex w-64 flex-col items-center gap-3 [grid-area:below] sm:w-80 sm:items-start">
+				{belowCardContent}
 			</div>
 		</div>
 	);

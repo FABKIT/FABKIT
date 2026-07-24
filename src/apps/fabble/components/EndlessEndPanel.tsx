@@ -34,7 +34,7 @@ export function EndlessEndPanel({
 			<AnswerReveal
 				answer={answer}
 				won={won}
-				bottomContent={
+				sideContent={
 					<>
 						<span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white">
 							{t("play.mode_badge_endless")}
@@ -82,7 +82,10 @@ export function EndlessEndPanel({
 								</ul>
 							</div>
 						)}
-
+					</>
+				}
+				belowCardContent={
+					<>
 						<button
 							type="button"
 							onClick={onNext}
@@ -90,7 +93,6 @@ export function EndlessEndPanel({
 						>
 							{t("endless.next_puzzle")}
 						</button>
-
 						<ModeSwitchButtons currentMode="endless" />
 					</>
 				}
