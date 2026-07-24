@@ -63,7 +63,7 @@ export function AnswerReveal({
 					{sideContent}
 				</div>
 			</div>
-			<div className="flex w-64 flex-col items-center gap-3 [grid-area:below] sm:w-80 sm:items-start">
+			<div className="flex w-full flex-col items-center gap-3 [grid-area:below]">
 				{belowCardContent}
 			</div>
 		</div>

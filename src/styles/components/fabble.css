@@ -16,9 +16,12 @@
 
 /* Scales with the tile's own box width (via cqi), not the viewport — a narrow
    3-column mobile tile and a wide 6-column desktop tile both fit long values
-   like "Mechanologist" without truncating. */
+   like "Mechanologist" without truncating. Sized well above the column-label
+   text (text-[10px]) since this is the actual answer, not a caption — a long
+   value wrapping to a second line (overflow-wrap: anywhere, tile height is a
+   min not a max) is preferable to shrinking it down to label size. */
 .fabble-tile-value {
-	font-size: clamp(0.625rem, 0.55rem + 1.2cqi, 0.875rem);
+	font-size: clamp(0.75rem, 0.6rem + 1.6cqi, 0.9375rem);
 	overflow-wrap: anywhere;
 }
 
@@ -121,8 +124,9 @@
 
 /* End-screen layout: image top-left, details+share to its right (top-aligned to bottom-
    aligned via the flex wrapper each panel builds inside the "side" area), countdown/mode
-   buttons stacked directly under the image. Grid instead of flex so the image cell's height
-   is driven by the image alone — `items-stretch` previously stretched the image's wrapper to
+   buttons on their own full-width row below, horizontally centered across the whole panel
+   rather than tucked under the card. Grid instead of flex so the image cell's height is
+   driven by the image alone — `items-stretch` previously stretched the image's wrapper to
    match the (often taller) side column, which made the absolutely-positioned glow layer
    (inset: 0) spill past the card's actual bottom edge. */
 .fabble-answer-grid {
@@ -138,7 +142,7 @@
 		grid-template-rows: auto auto;
 		grid-template-areas:
 			"image side"
-			"below .";
+			"below below";
 		column-gap: 2.5rem;
 		row-gap: 1rem;
 		justify-items: start;

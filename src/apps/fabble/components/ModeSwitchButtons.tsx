@@ -18,7 +18,7 @@ export function ModeSwitchButtons({ currentMode }: ModeSwitchButtonsProps) {
 				<Link
 					key={mode}
 					to={MODE_ROUTES[mode]}
-					className="rounded-md border border-border-primary px-4 py-2 text-sm font-semibold text-body transition-colors hover:bg-surface-active"
+					className="rounded-md border border-border-primary px-3 py-1.5 text-xs font-semibold text-body transition-colors hover:bg-surface-active"
 				>
 					{t("end.play_mode_button", { mode: t(`home.modes.${mode}.name`) })}
 				</Link>
