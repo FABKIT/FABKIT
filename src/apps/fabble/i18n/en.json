@@ -198,7 +198,6 @@
 		"copy_text": "Copy as text",
 		"copy_short": "Copy",
 		"copied": "Copied!",
-		"username_label": "Add your name to the share card (optional)",
 		"username_label_inline": "Add your name",
 		"username_hint": "Saved for next time · not stored anywhere else",
 		"result_solved": "solved today's Fabble in {{score}}",
