@@ -46,6 +46,10 @@ export const MAX_SEARCH_RESULTS = 10;
 export const USERNAME_MAX_LENGTH = 20;
 export const SHARE_LINK = "https://fabkit.io/fabble";
 
+/** Endless's "Next puzzle" crossfade — how long the outgoing puzzle fades out before the
+    next one is picked and mounted. Must equal the fabble-fade-out duration in fabble.css. */
+export const ENDLESS_TRANSITION_MS = 200;
+
 /** Tile reveal timing — single source of truth shared by FeedbackBlock (per-tile
     animationDelay) and EndPanel (wait before fading in). Derived, never hardcoded:
     stays correct if COLUMNS or the stagger/flip durations ever change. */

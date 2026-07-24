@@ -5,7 +5,10 @@ import { EndlessStatusBar } from "@fabkit/apps/fabble/components/EndlessStatusBa
 import { RainbowHintToast } from "@fabkit/apps/fabble/components/RainbowHintToast";
 import { RulesDialog } from "@fabkit/apps/fabble/components/RulesDialog";
 import { TypeChipsRow } from "@fabkit/apps/fabble/components/TypeChipsRow";
-import { REVEAL_TOTAL_MS } from "@fabkit/apps/fabble/config";
+import {
+	ENDLESS_TRANSITION_MS,
+	REVEAL_TOTAL_MS,
+} from "@fabkit/apps/fabble/config";
 import { hasRainbowPartial } from "@fabkit/apps/fabble/game/rainbow-hint";
 import {
 	getOrderedEndlessResults,
@@ -33,6 +36,7 @@ export function EndlessPlayScreen() {
 
 	const [showEndPanel, setShowEndPanel] = useState(false);
 	const [rulesOpen, setRulesOpen] = useState(false);
+	const [transitioning, setTransitioning] = useState(false);
 
 	useEffect(() => {
 		ingestDataset(dataset);
@@ -60,13 +64,22 @@ export function EndlessPlayScreen() {
 		return () => clearTimeout(timer);
 	}, [session]);
 
+	useEffect(() => {
+		if (!transitioning) return;
+		const timer = setTimeout(() => {
+			nextEndlessPuzzle();
+			setTransitioning(false);
+		}, ENDLESS_TRANSITION_MS);
+		return () => clearTimeout(timer);
+	}, [transitioning, nextEndlessPuzzle]);
+
 	const handleGiveUp = useCallback(() => {
 		giveUpEndless();
 	}, [giveUpEndless]);
 
 	const handleNext = useCallback(() => {
-		nextEndlessPuzzle();
-	}, [nextEndlessPuzzle]);
+		setTransitioning(true);
+	}, []);
 
 	if (!cardsById) return null;
 
@@ -99,23 +112,30 @@ export function EndlessPlayScreen() {
 			<TypeChipsRow />
 			<EndlessStatusBar
 				guessCount={session.guesses.length}
+				currentStreak={streak.current}
+				bestStreak={streak.best}
 				isPlaying={session.status === "playing"}
 				onGiveUp={handleGiveUp}
 				onHelp={() => setRulesOpen(true)}
 			/>
-			{session.status === "playing" && <EndlessCardSearchInput />}
-			{rainbowHintTriggered && (
-				<RainbowHintToast onDismiss={markRainbowHintSeen} />
-			)}
-			{session.status !== "playing" && answer && showEndPanel && (
-				<EndlessEndPanel
-					session={session}
-					answer={answer}
-					streak={streak}
-					onNext={handleNext}
-				/>
-			)}
-			<EndlessGuessHistory />
+			<div
+				key={session.answerId}
+				className={`flex w-full flex-col items-center gap-3 fabble-fade-in ${transitioning ? "fabble-fade-out" : ""}`}
+			>
+				{session.status === "playing" && <EndlessCardSearchInput />}
+				{rainbowHintTriggered && (
+					<RainbowHintToast onDismiss={markRainbowHintSeen} />
+				)}
+				{session.status !== "playing" && answer && showEndPanel && (
+					<EndlessEndPanel
+						session={session}
+						answer={answer}
+						streak={streak}
+						onNext={handleNext}
+					/>
+				)}
+				<EndlessGuessHistory />
+			</div>
 			<RulesDialog open={rulesOpen} onClose={() => setRulesOpen(false)} />
 		</div>
 	);

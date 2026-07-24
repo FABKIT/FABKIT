@@ -48,6 +48,8 @@
 		"input_placeholder": "Type a card name…",
 		"submit": "Submit Guess",
 		"give_up": "Give up",
+		"streak_current": "{{count}} current",
+		"streak_best": "{{count}} best",
 		"twin_message": "Same properties, different card. This guess is free!",
 		"theme": {
 			"equipment_monday": "Equipment Monday: today's card is a piece of Equipment",
