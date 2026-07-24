@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { compareCards } from "../../src/apps/fabble/game/compare";
+import {
+	compareCards,
+	earliestRegularPrinting,
+} from "../../src/apps/fabble/game/compare";
 import type { ColumnFeedback } from "../../src/apps/fabble/types";
 import { fabbleDataset, makeCard } from "./fixtures/dataset";
 
@@ -515,5 +518,69 @@ describe("compareCards — twin", () => {
 		const result = compareCards(card, card);
 		expect(result.correct).toBe(true);
 		expect(result.isTwin).toBe(false);
+	});
+});
+
+describe("earliestRegularPrinting", () => {
+	it("prefers a main set over an earlier limited-print set", () => {
+		const card = makeCard({
+			id: "a",
+			sets: [
+				{
+					code: "UPR",
+					name: "Uprising Blitz Deck",
+					order: 0,
+					limitedPrint: true,
+				},
+				{ code: "MON", name: "Monarch", order: 3 },
+			],
+		});
+		expect(earliestRegularPrinting(card).code).toBe("MON");
+	});
+
+	it("prefers a main set over an earlier promo set", () => {
+		const card = makeCard({
+			id: "a",
+			sets: [
+				{ code: "PRM", name: "Promos", order: 0, promo: true },
+				{ code: "MON", name: "Monarch", order: 3 },
+			],
+		});
+		expect(earliestRegularPrinting(card).code).toBe("MON");
+	});
+
+	it("falls back to a limited-print set when there is no main set", () => {
+		const card = makeCard({
+			id: "a",
+			sets: [
+				{
+					code: "UPR",
+					name: "Uprising Blitz Deck",
+					order: 0,
+					limitedPrint: true,
+				},
+				{ code: "PRM", name: "Promos", order: 1, promo: true },
+			],
+		});
+		expect(earliestRegularPrinting(card).code).toBe("UPR");
+	});
+
+	it("falls back to a promo set when only promo printings exist", () => {
+		const card = makeCard({
+			id: "a",
+			sets: [{ code: "PRM", name: "Promos", order: 0, promo: true }],
+		});
+		expect(earliestRegularPrinting(card).code).toBe("PRM");
+	});
+
+	it("picks the earliest of multiple main sets, ignoring limitedPrint absence", () => {
+		const card = makeCard({
+			id: "a",
+			sets: [
+				{ code: "MON", name: "Monarch", order: 3 },
+				{ code: "WTR", name: "Welcome to Rathe", order: 0 },
+			],
+		});
+		expect(earliestRegularPrinting(card).code).toBe("WTR");
 	});
 });
