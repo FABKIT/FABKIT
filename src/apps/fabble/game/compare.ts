@@ -109,11 +109,17 @@ function compareSet(
 	return { state: "miss" };
 }
 
-/** Earliest non-promo printing, falling back to a promo if the card has none.
-    Single source of promo display priority — used by the end panel, Hint 2, and here. */
+/** Earliest main-set printing, preferred over limited-print (Blitz Deck / Commander/CC Deck)
+    and promo (Promos/GEM) printings in that order — a 3-tier fallback: main sets first, then
+    non-promo limited-print sets (for cards with no main-set printing at all), then anything
+    including promos as a last resort. Single source of display priority — used by the end
+    panel, Hint 2, and here. Cards without `limitedPrint` data (older/dev fixtures) fall
+    through the middle tier unaffected, so this collapses to the old 2-tier behavior. */
 export function earliestRegularPrinting(card: FabbleCard): FabbleSetPrinting {
-	const regular = card.sets.filter((s) => !s.promo);
-	const pool = regular.length > 0 ? regular : card.sets;
+	const mainSets = card.sets.filter((s) => !s.promo && !s.limitedPrint);
+	const nonPromo = card.sets.filter((s) => !s.promo);
+	const pool =
+		mainSets.length > 0 ? mainSets : nonPromo.length > 0 ? nonPromo : card.sets;
 	return pool.reduce((earliest, s) =>
 		s.order < earliest.order ? s : earliest,
 	);

@@ -56,6 +56,9 @@ export const safeStorage = {
 export const STORAGE_KEYS = {
 	session: (mode: FabbleMode) => `fabble:session:${mode}`,
 	streaks: (mode: FabbleMode) => `fabble:streaks:${mode}`,
+	dismissedTheme: (mode: FabbleMode) => `fabble:dismissed-theme:${mode}`,
+	endlessSession: "fabble:endless:session",
+	endlessStreak: "fabble:endless:streak",
 	username: "fabble:username",
 	seenRules: "fabble:seen-rules",
 	seenRainbowHint: "fabble:seen-rainbow-hint",

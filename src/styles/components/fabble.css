@@ -1,7 +1,28 @@
+.fabble-logo {
+	filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.85));
+}
+
+[data-theme="light"] .fabble-logo {
+	filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.85))
+		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
 .fabble-tile {
 	position: relative;
 	transform-style: preserve-3d;
 	border: 1px solid rgba(255, 255, 255, 0.22);
+	container-type: inline-size;
+}
+
+/* Scales with the tile's own box width (via cqi), not the viewport — a narrow
+   3-column mobile tile and a wide 6-column desktop tile both fit long values
+   like "Mechanologist" without truncating. Sized well above the column-label
+   text (text-[10px]) since this is the actual answer, not a caption — a long
+   value wrapping to a second line (overflow-wrap: anywhere, tile height is a
+   min not a max) is preferable to shrinking it down to label size. */
+.fabble-tile-value {
+	font-size: clamp(0.75rem, 0.6rem + 1.6cqi, 0.9375rem);
+	overflow-wrap: anywhere;
 }
 
 .fabble-tile::before {
@@ -42,6 +63,19 @@
 	}
 	to {
 		opacity: 1;
+	}
+}
+
+.fabble-fade-out {
+	animation: fabble-fade-out 0.2s ease both;
+}
+
+@keyframes fabble-fade-out {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
 	}
 }
 
@@ -88,6 +122,33 @@
 	animation: fabble-fade 0.6s ease both;
 }
 
+/* End-screen layout: image top-left, details+share to its right (top-aligned to bottom-
+   aligned via the flex wrapper each panel builds inside the "side" area), countdown/mode
+   buttons on their own full-width row below, horizontally centered across the whole panel
+   rather than tucked under the card. Grid instead of flex so the image cell's height is
+   driven by the image alone — `items-stretch` previously stretched the image's wrapper to
+   match the (often taller) side column, which made the absolutely-positioned glow layer
+   (inset: 0) spill past the card's actual bottom edge. */
+.fabble-answer-grid {
+	display: grid;
+	gap: 1.5rem;
+	justify-items: center;
+	grid-template-areas: "image" "side" "below";
+}
+
+@media (min-width: 40rem) {
+	.fabble-answer-grid {
+		grid-template-columns: auto 1fr;
+		grid-template-rows: auto auto;
+		grid-template-areas:
+			"image side"
+			"below below";
+		column-gap: 2.5rem;
+		row-gap: 1rem;
+		justify-items: start;
+	}
+}
+
 .fabble-heading-bounce {
 	animation: fabble-heading-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -109,6 +170,7 @@
 @media (prefers-reduced-motion: reduce) {
 	.fabble-tile--flip,
 	.fabble-fade-in,
+	.fabble-fade-out,
 	.fabble-card-reveal,
 	.fabble-heading-bounce {
 		animation: none;

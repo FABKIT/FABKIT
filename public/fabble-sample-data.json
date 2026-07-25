@@ -1946,6 +1946,12 @@
 					"order": 0
 				},
 				{
+					"code": "UPR",
+					"name": "Uprising Blitz Deck",
+					"order": -1,
+					"limitedPrint": true
+				},
+				{
 					"code": "PROMO",
 					"name": "Promo",
 					"order": 9,

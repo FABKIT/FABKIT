@@ -1,5 +1,5 @@
 import { RulesDialog } from "@fabkit/apps/fabble/components/RulesDialog";
-import { MODES } from "@fabkit/apps/fabble/config";
+import { ALL_MODES, MODE_ROUTES } from "@fabkit/apps/fabble/config";
 import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabble";
 import { Link } from "@tanstack/react-router";
 import { HelpCircle } from "lucide-react";
@@ -32,8 +32,8 @@ export function ModeSelect() {
 				<HelpCircle className="h-4 w-4" />
 				{t("home.how_to_play")}
 			</button>
-			<div className="flex w-full max-w-160 flex-col gap-6 sm:flex-row sm:justify-center">
-				{MODES.map((mode) => (
+			<div className="flex w-full max-w-240 flex-col gap-6 sm:flex-row sm:flex-wrap sm:justify-center">
+				{ALL_MODES.map((mode) => (
 					<div
 						key={mode}
 						className="flex w-full flex-col gap-3 rounded-lg border border-border-primary bg-surface p-5 sm:w-70"
@@ -49,7 +49,7 @@ export function ModeSelect() {
 								{t(`home.modes.${mode}.meta`)}
 							</p>
 							<Link
-								to={mode === "standard" ? "/fabble/standard" : "/fabble/chaos"}
+								to={MODE_ROUTES[mode]}
 								className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 							>
 								{t("home.modes.play")}

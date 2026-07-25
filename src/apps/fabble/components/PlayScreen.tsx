@@ -39,6 +39,8 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 	const cardsById = useFabbleStore((s) => s.cardsById);
 	const hasSeenRainbowHint = useFabbleStore((s) => s.hasSeenRainbowHint);
 	const markRainbowHintSeen = useFabbleStore((s) => s.markRainbowHintSeen);
+	const dismissedThemeDate = useFabbleStore((s) => s.dismissedThemeDate[mode]);
+	const dismissTheme = useFabbleStore((s) => s.dismissTheme);
 
 	const [showEndPanel, setShowEndPanel] = useState(false);
 	const [rulesOpen, setRulesOpen] = useState(false);
@@ -73,6 +75,11 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 		devReset(mode);
 		startOrRestoreSession(mode);
 	}, [devReset, mode, startOrRestoreSession]);
+
+	const handleDismissTheme = useCallback(() => {
+		if (!session) return;
+		dismissTheme(mode, session.date);
+	}, [dismissTheme, mode, session]);
 
 	if (!cardsById) return null;
 
@@ -110,7 +117,9 @@ export function PlayScreen({ mode }: PlayScreenProps) {
 				onReset={handleReset}
 				onHelp={() => setRulesOpen(true)}
 			/>
-			<ThemeBanner theme={session.theme} />
+			{session.theme && dismissedThemeDate !== session.date && (
+				<ThemeBanner theme={session.theme} onDismiss={handleDismissTheme} />
+			)}
 			{mode === "standard" && answer && (
 				<HintsRow
 					answer={answer}
