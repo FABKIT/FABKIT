@@ -1,10 +1,20 @@
 import { RulesDialog } from "@fabkit/apps/fabble/components/RulesDialog";
-import { ALL_MODES, MODE_ROUTES } from "@fabkit/apps/fabble/config";
+import {
+	ALL_MODES,
+	type AnyFabbleMode,
+	MODE_ROUTES,
+} from "@fabkit/apps/fabble/config";
 import { useFabbleStore } from "@fabkit/apps/fabble/stores/fabble";
 import { Link } from "@tanstack/react-router";
 import { HelpCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+const MODE_IMAGES: Record<AnyFabbleMode, string> = {
+	standard: "/img/fabble/standardmode.webp",
+	chaos: "/img/fabble/chaosmode.webp",
+	endless: "/img/fabble/endlessmode.webp",
+};
 
 export function ModeSelect() {
 	const { t } = useTranslation("fabble");
@@ -36,16 +46,22 @@ export function ModeSelect() {
 				{ALL_MODES.map((mode) => (
 					<div
 						key={mode}
-						className="flex w-full flex-col gap-3 rounded-lg border border-border-primary bg-surface p-5 sm:w-70"
+						className="relative flex w-full flex-col gap-3 overflow-hidden rounded-lg border border-border-primary p-5 sm:w-70"
 					>
-						<h2 className="text-lg font-bold text-heading">
+						<img
+							src={MODE_IMAGES[mode]}
+							alt=""
+							className="absolute inset-0 h-full w-full object-cover"
+						/>
+						<div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/35" />
+						<h2 className="relative text-lg font-bold text-on-image">
 							{t(`home.modes.${mode}.name`)}
 						</h2>
-						<p className="text-sm text-muted">
+						<p className="relative text-sm text-on-image-muted">
 							{t(`home.modes.${mode}.blurb`)}
 						</p>
-						<div className="mt-auto flex items-end justify-between">
-							<p className="text-xs text-muted">
+						<div className="relative mt-auto flex items-end justify-between">
+							<p className="text-xs text-on-image-muted">
 								{t(`home.modes.${mode}.meta`)}
 							</p>
 							<Link

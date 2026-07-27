@@ -146,7 +146,7 @@ export function RulesDialog({ open, onClose }: RulesDialogProps) {
 							{EXAMPLE_TILES.map(({ feedback, labelKey }) => (
 								<div
 									key={labelKey}
-									className="flex w-20 flex-col items-center gap-1"
+									className="flex w-20 flex-col items-stretch gap-1"
 								>
 									<FeedbackTile feedback={feedback} />
 									<span className="text-center text-[11px] text-muted">
@@ -191,7 +191,7 @@ export function RulesDialog({ open, onClose }: RulesDialogProps) {
 							{RAINBOW_EXAMPLE_TILES.map(({ feedback, labelKey }) => (
 								<div
 									key={labelKey}
-									className="flex w-20 flex-col items-center gap-1"
+									className="flex w-20 flex-col items-stretch gap-1"
 								>
 									<FeedbackTile feedback={feedback} />
 									<span className="text-center text-[11px] text-muted">

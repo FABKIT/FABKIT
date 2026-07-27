@@ -62,6 +62,10 @@
 	--color-fabble-defeat: #c94046;
 	--color-fabble-glow: #d4af5a;
 	--color-fabble-glow-defeat: #a83a3e;
+
+	/* Text over the mode-select cards' fixed dark image overlay — same in both themes */
+	--color-on-image: #ffffff;
+	--color-on-image-muted: rgba(255, 255, 255, 0.75);
 }
 
 [data-theme="dark"] {
@@ -92,6 +96,9 @@
 	--color-fabble-defeat: #d34b50;
 	--color-fabble-glow: #d4af5a;
 	--color-fabble-glow-defeat: #a83a3e;
+
+	--color-on-image: #ffffff;
+	--color-on-image-muted: rgba(255, 255, 255, 0.75);
 }
 
 @keyframes fade-in-bottom {
