@@ -1,4 +1,5 @@
 import type { ColumnFeedback } from "@fabkit/apps/fabble/types";
+import { Tooltip } from "@fabkit/platform/components/Tooltip";
 import { ArrowDown, ArrowUp, Ban, Check } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useState } from "react";
@@ -110,7 +111,9 @@ function SetTileBody({
 		<div className="flex flex-col gap-0.5 text-[11px] leading-tight font-medium">
 			{visible.map((s) => (
 				<span key={s.code} className="flex items-center justify-between gap-1">
-					<span className="truncate">{s.code}</span>
+					<Tooltip label={s.name}>
+						<span className="truncate">{s.code}</span>
+					</Tooltip>
 					{s.mark === "check" && <Check className="h-3 w-3 shrink-0" />}
 					{s.mark === "higher" && <ArrowUp className="h-3 w-3 shrink-0" />}
 					{s.mark === "lower" && <ArrowDown className="h-3 w-3 shrink-0" />}
