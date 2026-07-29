@@ -26,11 +26,11 @@ export function EndlessStatusBar({
 			<div className="flex flex-wrap items-center gap-2">
 				<Link
 					to="/fabble"
-					className="rounded-full border border-border-primary px-3 py-1 text-sm text-muted transition-colors hover:text-body"
+					className="rounded-md border border-border-primary px-3 py-1 text-sm text-muted transition-colors hover:text-body"
 				>
 					{t("play.menu_back")}
 				</Link>
-				<span className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-white">
+				<span className="rounded-md bg-primary px-3 py-1 text-sm font-medium text-white">
 					{t("play.mode_badge_endless")}
 				</span>
 				<span className="text-sm text-body">

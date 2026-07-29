@@ -28,9 +28,9 @@ export function EndPanel({
 	const won = session.status === "won";
 
 	return (
-		<div className="fabble-fade-in flex w-full max-w-180 flex-col items-center gap-3">
+		<div className="fabble-fade-in flex w-full max-w-160 flex-col items-center gap-3">
 			<h2
-				className={`fabble-heading-bounce mt-4 text-3xl font-extrabold uppercase tracking-wide ${won ? "text-fabble-victory" : "text-fabble-defeat"}`}
+				className={`fabble-heading-bounce mt-4 text-3xl font-bold uppercase tracking-wide ${won ? "text-fabble-victory" : "text-fabble-defeat"}`}
 			>
 				{won ? t("end.victory") : t("end.defeat")}
 			</h2>

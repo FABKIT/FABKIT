@@ -23,7 +23,7 @@ export function HintsRow({
 
 	return (
 		<div className="flex w-full max-w-160 flex-wrap items-center gap-2">
-			<span className="text-[11px] font-medium tracking-wide text-muted uppercase">
+			<span className="text-xs font-semibold tracking-wider text-subtle uppercase">
 				{t("hints.title")}
 			</span>
 			<div className="flex flex-nowrap gap-1.5">
@@ -76,7 +76,7 @@ function HintPill({
 
 	if (revealed) {
 		return (
-			<span className="flex items-center gap-1.5 rounded-full border border-primary bg-surface-active px-2.5 py-1 text-xs text-body">
+			<span className="flex items-center gap-1.5 rounded-md border border-primary bg-surface-active px-2.5 py-1 text-xs text-body">
 				{children}
 			</span>
 		);
@@ -87,7 +87,7 @@ function HintPill({
 			<button
 				type="button"
 				onClick={onReveal}
-				className="flex items-center gap-1.5 rounded-full border border-primary px-2.5 py-1 text-xs text-heading transition-colors hover:bg-surface-active"
+				className="flex items-center gap-1.5 rounded-md border border-primary px-2.5 py-1 text-xs text-heading transition-colors hover:bg-surface-active"
 			>
 				<LockOpen className="h-3 w-3" />
 				{label}
@@ -96,7 +96,7 @@ function HintPill({
 	}
 
 	return (
-		<span className="flex items-center gap-1.5 rounded-full border border-border-primary px-2.5 py-1 text-xs text-muted">
+		<span className="flex items-center gap-1.5 rounded-md border border-border-primary px-2.5 py-1 text-xs text-muted">
 			<Lock className="h-3 w-3" />
 			{t("hints.locked", { count: unlockAt })}
 		</span>
