@@ -123,6 +123,9 @@ export interface ColumnFeedback {
 	shared?: string[];
 	setDetails?: {
 		code: string;
+		/** Full set name, e.g. "Welcome to Rathe" — shown in the Set tile's hover tooltip,
+		    since the tile itself only has room for the abbreviation. */
+		name: string;
 		promo: boolean;
 		mark: "check" | "higher" | "lower" | null;
 	}[];

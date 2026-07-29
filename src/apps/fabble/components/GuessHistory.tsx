@@ -25,7 +25,7 @@ export function GuessHistory({ mode }: GuessHistoryProps) {
 	const results = [...getOrderedResults(session)].reverse();
 
 	return (
-		<div className="flex w-full max-w-180 flex-col gap-5">
+		<div className="flex w-full max-w-160 flex-col gap-5">
 			{results.map((result) => {
 				const card = cardsById.get(result.guessId);
 				if (!card) return null;

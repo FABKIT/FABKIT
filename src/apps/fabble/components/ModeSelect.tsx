@@ -37,7 +37,7 @@ export function ModeSelect() {
 			<button
 				type="button"
 				onClick={() => setRulesOpen(true)}
-				className="flex items-center gap-1.5 rounded-full border border-border-primary px-4 py-1.5 text-sm text-body transition-colors hover:bg-surface-active"
+				className="flex items-center gap-1.5 rounded-md border border-border-primary px-4 py-1.5 text-sm text-body transition-colors hover:bg-surface-active"
 			>
 				<HelpCircle className="h-4 w-4" />
 				{t("home.how_to_play")}
@@ -66,7 +66,7 @@ export function ModeSelect() {
 							</p>
 							<Link
 								to={MODE_ROUTES[mode]}
-								className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+								className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 							>
 								{t("home.modes.play")}
 							</Link>

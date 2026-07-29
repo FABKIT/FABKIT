@@ -149,17 +149,32 @@ function compareSetColumn(
 	const setDetails = ordered.map((s) => {
 		const shared = answerCodes.has(s.code);
 		if (shared)
-			return { code: s.code, promo: !!s.promo, mark: "check" as const };
+			return {
+				code: s.code,
+				name: s.name,
+				promo: !!s.promo,
+				mark: "check" as const,
+			};
 		if (s.promo || answerRegularMin === null || answerRegularMax === null) {
-			return { code: s.code, promo: !!s.promo, mark: null };
+			return { code: s.code, name: s.name, promo: !!s.promo, mark: null };
 		}
 		if (answerRegularMin > s.order) {
-			return { code: s.code, promo: false, mark: "higher" as const };
+			return {
+				code: s.code,
+				name: s.name,
+				promo: false,
+				mark: "higher" as const,
+			};
 		}
 		if (answerRegularMax < s.order) {
-			return { code: s.code, promo: false, mark: "lower" as const };
+			return {
+				code: s.code,
+				name: s.name,
+				promo: false,
+				mark: "lower" as const,
+			};
 		}
-		return { code: s.code, promo: false, mark: null };
+		return { code: s.code, name: s.name, promo: false, mark: null };
 	});
 
 	return { state: matched ? "match" : "miss", setDetails };

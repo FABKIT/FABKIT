@@ -14,7 +14,7 @@ export function Countdown({ onNewDay }: CountdownProps) {
 			<button
 				type="button"
 				onClick={onNewDay}
-				className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+				className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 			>
 				{t("end.new_puzzle")}
 			</button>

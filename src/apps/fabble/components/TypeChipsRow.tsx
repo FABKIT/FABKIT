@@ -6,7 +6,7 @@ export function TypeChipsRow() {
 
 	return (
 		<div className="flex w-full max-w-160 flex-col items-center gap-1.5">
-			<span className="text-[11px] font-medium tracking-wide text-muted uppercase">
+			<span className="text-xs font-semibold tracking-wider text-subtle uppercase">
 				{t("play.possible_types")}
 			</span>
 			<div className="flex flex-wrap justify-center gap-1.5">

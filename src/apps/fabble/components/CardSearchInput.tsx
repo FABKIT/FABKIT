@@ -95,7 +95,7 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 	const isPlaying = session.status === "playing";
 
 	return (
-		<div className="flex w-full max-w-100 flex-col items-center gap-2">
+		<div className="flex w-full max-w-160 flex-col items-center gap-2">
 			<Combobox value={null} onChange={handleSelect} disabled={!isPlaying}>
 				<div className="relative w-full">
 					<ComboboxInput

@@ -34,7 +34,7 @@ export function FeedbackBlock({
 	}, [alreadyAnimated, onAnimated, guessId]);
 
 	return (
-		<div className="w-full max-w-180 rounded-lg border border-border-primary bg-surface p-4">
+		<div className="w-full max-w-160 rounded-lg border border-border-primary bg-surface p-4">
 			<div className="mb-3 flex items-center gap-3">
 				<img
 					src={card.thumbnailUrl}

@@ -24,9 +24,9 @@ export function EndlessEndPanel({
 	const won = session.status === "won";
 
 	return (
-		<div className="fabble-fade-in flex w-full max-w-180 flex-col items-center gap-3">
+		<div className="fabble-fade-in flex w-full max-w-160 flex-col items-center gap-3">
 			<h2
-				className={`fabble-heading-bounce mt-4 text-3xl font-extrabold uppercase tracking-wide ${won ? "text-fabble-victory" : "text-fabble-defeat"}`}
+				className={`fabble-heading-bounce mt-4 text-3xl font-bold uppercase tracking-wide ${won ? "text-fabble-victory" : "text-fabble-defeat"}`}
 			>
 				{won ? t("end.victory") : t("endless.gave_up")}
 			</h2>
@@ -89,7 +89,7 @@ export function EndlessEndPanel({
 						<button
 							type="button"
 							onClick={onNext}
-							className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+							className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 						>
 							{t("endless.next_puzzle")}
 						</button>
