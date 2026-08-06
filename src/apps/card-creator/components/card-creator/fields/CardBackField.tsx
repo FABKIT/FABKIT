@@ -8,10 +8,14 @@ import { useCardCreator } from "../../../stores/card-creator.ts";
 
 // Shared between the single (non-hybrid) select and both halves of the hybrid
 // split, so the three can never visually drift apart from one another.
+// Fixed height (matching the arrow buttons' h-10) rather than vertical
+// padding — hybrid mode has no arrow buttons to set the row height, so
+// without a matching fixed height the whole control shrinks and everything
+// below it on the page jumps up when hybrid is toggled on.
 const SELECT_CLASS_NAME =
 	"col-start-1 row-start-1 w-full text-center font-bold bg-transparent text-sm focus:outline-none";
 const SELECT_BUTTON_CLASS_NAME =
-	"relative w-full py-1.5 rounded-md truncate text-body focus:outline-none focus:ring-none focus:border-none transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed";
+	"relative w-full h-10 leading-10 rounded-md truncate text-body focus:outline-none focus:ring-none focus:border-none transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed";
 
 export function CardBackField() {
 	const { t } = useTranslation("card-creator");

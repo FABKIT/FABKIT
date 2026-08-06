@@ -28,7 +28,10 @@ export function HybridCardBackField() {
 	const isHybrid = CardBackRight !== null;
 
 	return (
-		<TogglePill>
+		// Transparent shell while off — the button blends into the page instead of
+		// sitting on its own white pill. Filled shell (matching the style switch)
+		// once hybrid is active.
+		<TogglePill transparent={!isHybrid}>
 			<button
 				type="button"
 				onClick={toggleHybrid}
@@ -38,7 +41,7 @@ export function HybridCardBackField() {
 					flex items-center justify-center w-24 h-9 px-3 rounded-full text-xs font-bold
 					transition-colors duration-300 ease-in-out
 					disabled:opacity-50 disabled:cursor-not-allowed
-					${isHybrid ? "bg-primary text-white" : "border-2 border-primary text-primary"}
+					${isHybrid ? "bg-primary text-white" : "bg-transparent border-2 border-primary text-primary"}
 				`}
 			>
 				{t("card_creator.hybrid_toggle_label")}
