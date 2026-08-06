@@ -80,6 +80,10 @@ interface SelectProps<T extends string> {
 	className?: string;
 	/** Class names for custom button styling */
 	buttonClassName?: string;
+	/** Native tooltip text for the button, for cases where the label may be truncated */
+	title?: string;
+	/** Accessible name for the button, for cases where no visible <Label> is rendered (label=null) */
+	ariaLabel?: string;
 }
 
 /**
@@ -96,6 +100,8 @@ export default function Select<T extends string>({
 	placeholder,
 	className,
 	buttonClassName,
+	title,
+	ariaLabel,
 }: SelectProps<T>) {
 	const selectedOption = options.find((opt) => opt.value === value);
 
@@ -112,6 +118,8 @@ export default function Select<T extends string>({
 			)}
 			<Listbox value={value || undefined} onChange={onChange}>
 				<ListboxButton
+					title={title}
+					aria-label={ariaLabel}
 					className={
 						buttonClassName ??
 						"relative w-full px-3 py-1.5 bg-surface border border-border rounded-md text-left text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"

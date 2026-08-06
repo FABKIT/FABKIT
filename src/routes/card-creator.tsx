@@ -22,6 +22,7 @@ import { CardTalentField } from "@fabkit/apps/card-creator/components/card-creat
 import { CardTextField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardTextField.tsx";
 import { CardTypeField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardTypeField.tsx";
 import { CardWeaponField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardWeaponField.tsx";
+import { HybridCardBackField } from "@fabkit/apps/card-creator/components/card-creator/fields/HybridCardBackField.tsx";
 import { MeldHalfFields } from "@fabkit/apps/card-creator/components/card-creator/fields/MeldHalfFields.tsx";
 import { ResetButton } from "@fabkit/apps/card-creator/components/card-creator/fields/ResetButton.tsx";
 import { SaveButton } from "@fabkit/apps/card-creator/components/card-creator/fields/SaveButton.tsx";
@@ -152,9 +153,10 @@ function RouteComponent() {
 						{t("card_creator.background_label")}
 					</p>
 
-					{/* Style toggle */}
-					<div className="flex justify-center">
+					{/* Style + hybrid toggles */}
+					<div className="flex justify-center items-center gap-2">
 						<CardBackStyleField />
+						<HybridCardBackField />
 					</div>
 
 					{/* Cardback arrow selector */}

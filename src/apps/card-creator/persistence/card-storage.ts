@@ -105,6 +105,8 @@ export interface SerializedCardState {
 	__version: string;
 	CardType: CardType | null;
 	CardBack: number | null;
+	/** Right-half card back id for hybrid frames. Null (or absent, on older records) means not hybrid. */
+	CardBackRight: number | null;
 	CardBackStyle: CardStyle;
 	CardArtwork: Blob | null;
 	CardArtPosition: {
@@ -251,6 +253,7 @@ export function serializeCardState(
 		__version: state.__version,
 		CardType: state.CardType,
 		CardBack: state.CardBack?.id || null,
+		CardBackRight: state.CardBackRight?.id ?? null,
 		CardBackStyle: state.CardBackStyle,
 		CardArtwork: state.CardArtwork,
 		CardArtPosition: state.CardArtPosition,
@@ -288,6 +291,18 @@ export function deserializeCardState(
 		...stored,
 		CardBack: (CardBacks.find((back) => back.id === stored.CardBack) ||
 			CardBacks[0]) as CardCreatorCardBack,
+		// Deliberately no CardBacks[0] fallback here — unlike CardBack, an
+		// unresolved right half means "not hybrid", not "use the first frame".
+		// Copying the left half's fallback would turn every pre-existing card
+		// into a hybrid on load. Meld is also force-cleared: meld is excluded
+		// from hybrid entirely, and a hand-edited or stale record could
+		// otherwise render two meld frames spliced together.
+		CardBackRight:
+			stored.CardType === "meld"
+				? null
+				: ((CardBacks.find((back) => back.id === stored.CardBackRight) as
+						| CardCreatorCardBack
+						| undefined) ?? null),
 	};
 }
 

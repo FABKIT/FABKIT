@@ -119,6 +119,14 @@ export interface CardCreatorState extends FormFieldValues {
 	/** Currently selected card back configuration object */
 	CardBack: CardCreatorCardBack | null;
 
+	/**
+	 * Card back for the right half of a hybrid frame.
+	 * Null means the card is not hybrid — hybrid mode is derived from this field
+	 * rather than stored as a separate boolean, so "hybrid on with no right frame"
+	 * is unrepresentable.
+	 */
+	CardBackRight: CardCreatorCardBack | null;
+
 	/** Card back visual style variant - affects available card backs */
 	CardBackStyle: CardStyle;
 
@@ -227,6 +235,15 @@ export interface CardCreatorActions {
 
 	/** Sets the currently selected card back */
 	setCardBack: (cardBack: CardCreatorCardBack) => void;
+
+	/** Sets the card back used for the right half of a hybrid frame */
+	setCardBackRight: (cardBack: CardCreatorCardBack) => void;
+
+	/**
+	 * Toggles hybrid mode. Enabling picks the next card back in the current
+	 * type+style list as the right half; disabling discards it and keeps the left.
+	 */
+	toggleHybrid: () => void;
 
 	/**
 	 * Changes the card back style (flat/dented) and automatically
@@ -344,6 +361,7 @@ const initialState: CardCreatorState = {
 	__version: uuid(),
 	CardType: defaultCardType,
 	CardBack: defaultCardBack,
+	CardBackRight: null,
 	CardBackStyle: defaultCardStyle,
 	CardArtwork: null,
 	CardArtPosition: null,
@@ -419,11 +437,23 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					}
 				}
 
+				// Hybrid: re-match the right half to the new type/style list, same closest-name
+				// approach used for the left half. Hybrid survives a type change rather than
+				// silently switching itself off. Meld is excluded from hybrid entirely.
+				const cardBackRight =
+					cardType === "meld" || state.CardBackRight === null
+						? null
+						: (getSuggestedCardBack(
+								available,
+								state.CardBackRight,
+							) as CardCreatorCardBack | null);
+
 				// When we change the state some fields become invisible.
 				// All fields that are not visible for the new card type are set to null.
 				const result: Partial<CardCreatorState> = {
 					CardType: cardType,
 					CardBack: cardBack,
+					CardBackRight: cardBackRight,
 					CardBackStyle: cardStyle,
 				};
 
@@ -444,6 +474,29 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				return result;
 			}),
 		setCardBack: (cardBack: CardCreatorCardBack) => set({ CardBack: cardBack }),
+		setCardBackRight: (cardBack: CardCreatorCardBack) =>
+			set({ CardBackRight: cardBack }),
+		toggleHybrid: () =>
+			set((state) => {
+				// Already hybrid — turning off discards the right half and keeps the left.
+				if (state.CardBackRight !== null) return { CardBackRight: null };
+
+				// Turning on: right half starts as the next frame in the current
+				// type+style list (wraps around), so the split is immediately visible.
+				const available = getCardBacksForTypeAndStyle(
+					state.CardType,
+					state.CardBackStyle,
+				);
+				if (available.length < 2) return {};
+
+				const currentIndex = state.CardBack
+					? available.findIndex((b) => b.id === state.CardBack?.id)
+					: -1;
+				const nextIndex =
+					(currentIndex === -1 ? 0 : currentIndex + 1) % available.length;
+
+				return { CardBackRight: available[nextIndex] as CardCreatorCardBack };
+			}),
 		setCardBackStyle: (backType: CardStyle) =>
 			set((state) => {
 				// When changing card back style, we select the first available card back for that style.
@@ -452,8 +505,19 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					available,
 					state.CardBack,
 				) as CardCreatorCardBack | null;
+				const cardBackRight =
+					state.CardBackRight === null
+						? null
+						: (getSuggestedCardBack(
+								available,
+								state.CardBackRight,
+							) as CardCreatorCardBack | null);
 
-				return { CardBackStyle: backType, CardBack: cardBack };
+				return {
+					CardBackStyle: backType,
+					CardBack: cardBack,
+					CardBackRight: cardBackRight,
+				};
 			}),
 		setCardArtwork: async (artwork: Blob | null) => {
 			// If clearing artwork, reset both artwork and position

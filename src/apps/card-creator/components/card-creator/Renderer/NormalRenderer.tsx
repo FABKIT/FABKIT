@@ -56,6 +56,23 @@ export type NormalRendererProps = {
 };
 
 /**
+ * Resolves the card back PNG for a given pitch, falling back to the frame's
+ * first image. Image coverage varies per frame (hero frames have one image,
+ * general frames have three), so each half of a hybrid must resolve its own.
+ */
+function resolveCardBackImage(
+	cardBack:
+		| { images: { pitch: number; fileName: string }[] }
+		| null
+		| undefined,
+	pitch: number | null,
+): string | undefined {
+	const image =
+		cardBack?.images.find((img) => img.pitch === pitch) ?? cardBack?.images[0];
+	return image ? `/cardbacks/${image.fileName}` : undefined;
+}
+
+/**
  * Normal Card Renderer
  *
  * Main rendering component for standard TCG cards.
@@ -63,6 +80,7 @@ export type NormalRendererProps = {
  */
 export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	const CardBack = useCardCreator((state) => state.CardBack);
+	const CardBackRight = useCardCreator((state) => state.CardBackRight);
 	const CardPitch = useCardCreator((state) => state.CardPitch);
 	const CardName = useCardCreator((state) => state.CardName);
 	const CardResource = useCardCreator((state) => state.CardResource);
@@ -114,11 +132,15 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 
 	const artwork = useObjectURL(CardArtwork);
 	const overlay = useObjectURL(CardOverlay);
-	const cardBackImage = useMemo(
-		() =>
-			CardBack?.images.find((image) => image.pitch === CardPitch) ||
-			CardBack?.images[0],
-		[CardBack?.images, CardPitch],
+	const cardBackHref = useMemo(
+		() => resolveCardBackImage(CardBack, CardPitch),
+		[CardBack, CardPitch],
+	);
+	// Right half of a hybrid frame resolves its own pitch image independently —
+	// image coverage differs per frame, so it cannot reuse the left half's result.
+	const cardBackRightHref = useMemo(
+		() => resolveCardBackImage(CardBackRight, CardPitch),
+		[CardBackRight, CardPitch],
 	);
 
 	const cardBottomText = useCardBottomText();
@@ -166,6 +188,26 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				)}
 				<clipPath id="title-clip">{config.clips.Title}</clipPath>
 				<clipPath id="bottom-text-clip">{config.clips.BottomText}</clipPath>
+				{cardBackRightHref && (
+					<>
+						<clipPath id="cardback-clip-left">
+							<rect
+								x={0}
+								y={0}
+								width={config.viewBox.width / 2}
+								height={config.viewBox.height}
+							/>
+						</clipPath>
+						<clipPath id="cardback-clip-right">
+							<rect
+								x={config.viewBox.width / 2}
+								y={0}
+								width={config.viewBox.width / 2}
+								height={config.viewBox.height}
+							/>
+						</clipPath>
+					</>
+				)}
 			</defs>
 
 			{artwork && (
@@ -181,13 +223,26 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 			)}
 
 			<image
-				href={`/cardbacks/${cardBackImage?.fileName}`}
+				href={cardBackHref}
 				x="0"
 				y="0"
 				width={config.viewBox.width}
 				height={config.viewBox.height}
 				preserveAspectRatio="xMidYMid slice"
+				clipPath={cardBackRightHref ? "url(#cardback-clip-left)" : undefined}
 			/>
+
+			{cardBackRightHref && (
+				<image
+					href={cardBackRightHref}
+					x="0"
+					y="0"
+					width={config.viewBox.width}
+					height={config.viewBox.height}
+					preserveAspectRatio="xMidYMid slice"
+					clipPath="url(#cardback-clip-right)"
+				/>
+			)}
 
 			{/* Title bounds: x="86" y="40" width="278" height="30" */}
 			{CardName && (
