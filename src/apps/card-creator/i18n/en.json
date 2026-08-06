@@ -147,6 +147,7 @@
 		"hybrid_toggle_label": "HYBRID",
 		"hybrid_left_label": "Left frame",
 		"hybrid_right_label": "Right frame",
+		"hybrid_blend_label": "Seam softness",
 		"save": "Save Card",
 		"saving": "Saving...",
 		"save_success": "Card saved successfully!",

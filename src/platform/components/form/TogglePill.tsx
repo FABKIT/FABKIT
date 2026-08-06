@@ -24,9 +24,12 @@ interface TogglePillProps {
 }
 
 export function TogglePill({ children, transparent = false }: TogglePillProps) {
+	// No margin of its own — spacing is the parent row's job. The pill used to
+	// carry m-2.5, which cost 20px of vertical space in a column where the card
+	// preview needs every pixel to stay above the fold.
 	return (
 		<div
-			className={`h-9 m-2.5 rounded-full ${transparent ? "" : "shadow-2xl bg-white"}`}
+			className={`h-9 rounded-full ${transparent ? "" : "shadow-2xl bg-white"}`}
 		>
 			{children}
 		</div>

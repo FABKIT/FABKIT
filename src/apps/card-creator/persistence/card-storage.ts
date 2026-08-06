@@ -12,6 +12,8 @@ import type { CardCreatorCardBack } from "../config/rendering.ts";
 import {
 	type CardCreatorState,
 	defaultMeldHalf,
+	HYBRID_BLEND_DEFAULT,
+	HYBRID_SPLIT_DEFAULT,
 	type MeldHalf,
 } from "../stores/card-creator";
 import { meld_cards_migration } from "./migrations/0-1-0-meld-cards.ts";
@@ -107,6 +109,10 @@ export interface SerializedCardState {
 	CardBack: number | null;
 	/** Right-half card back id for hybrid frames. Null (or absent, on older records) means not hybrid. */
 	CardBackRight: number | null;
+	/** Hybrid seam position, fraction of card width. Absent on pre-seam records. */
+	CardBackSplit: number;
+	/** Hybrid seam softness, 0..1. Absent on pre-seam records. */
+	CardBackBlend: number;
 	CardBackStyle: CardStyle;
 	CardArtwork: Blob | null;
 	CardArtPosition: {
@@ -254,6 +260,8 @@ export function serializeCardState(
 		CardType: state.CardType,
 		CardBack: state.CardBack?.id || null,
 		CardBackRight: state.CardBackRight?.id ?? null,
+		CardBackSplit: state.CardBackSplit,
+		CardBackBlend: state.CardBackBlend,
 		CardBackStyle: state.CardBackStyle,
 		CardArtwork: state.CardArtwork,
 		CardArtPosition: state.CardArtPosition,
@@ -303,6 +311,11 @@ export function deserializeCardState(
 				: ((CardBacks.find((back) => back.id === stored.CardBackRight) as
 						| CardCreatorCardBack
 						| undefined) ?? null),
+		// Seam settings postdate the first hybrid release, so records written in
+		// between carry a right frame but no seam values. Fall back to the
+		// defaults rather than NaN-ing the gradient maths.
+		CardBackSplit: stored.CardBackSplit ?? HYBRID_SPLIT_DEFAULT,
+		CardBackBlend: stored.CardBackBlend ?? HYBRID_BLEND_DEFAULT,
 	};
 }
 

@@ -38,7 +38,10 @@ import type {
 	NormalDentedRenderConfig,
 	NormalFlatRenderConfig,
 } from "../../../config/rendering/types.ts";
-import { useCardCreator } from "../../../stores/card-creator.ts";
+import {
+	HYBRID_BLEND_MAX_WIDTH,
+	useCardCreator,
+} from "../../../stores/card-creator.ts";
 import { useCardBottomText } from "../hooks/useCardBottomText.ts";
 import { useCardFooterText } from "../hooks/useCardFooterText.ts";
 import {
@@ -81,6 +84,8 @@ function resolveCardBackImage(
 export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	const CardBack = useCardCreator((state) => state.CardBack);
 	const CardBackRight = useCardCreator((state) => state.CardBackRight);
+	const CardBackSplit = useCardCreator((state) => state.CardBackSplit);
+	const CardBackBlend = useCardCreator((state) => state.CardBackBlend);
 	const CardPitch = useCardCreator((state) => state.CardPitch);
 	const CardName = useCardCreator((state) => state.CardName);
 	const CardResource = useCardCreator((state) => state.CardResource);
@@ -143,6 +148,13 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 		[CardBackRight, CardPitch],
 	);
 
+	// Blend band bounds in SVG units. A truly zero-width gradient is degenerate,
+	// so a hard seam is expressed as a 1-unit band straddling the split instead.
+	const splitX = config.viewBox.width * CardBackSplit;
+	const blendWidth = CardBackBlend * HYBRID_BLEND_MAX_WIDTH;
+	const blendStartX = splitX - Math.max(blendWidth, 1) / 2;
+	const blendEndX = splitX + Math.max(blendWidth, 1) / 2;
+
 	const cardBottomText = useCardBottomText();
 	const footer = useCardFooterText();
 	// Scale the bottom text font size to fit its fixed-width box, same approach as card name.
@@ -190,22 +202,48 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				<clipPath id="bottom-text-clip">{config.clips.BottomText}</clipPath>
 				{cardBackRightHref && (
 					<>
+						{/*
+						 * The left frame is cut off at the END of the blend band, not at the
+						 * seam. Card frames have transparent regions (the art window), so a
+						 * full-width left frame would show through the right frame's
+						 * transparent areas. Cutting at the band's end instead of its middle
+						 * keeps the left frame fully present for the whole cross-fade, so
+						 * there is no washed-out gap where neither frame covers.
+						 */}
 						<clipPath id="cardback-clip-left">
 							<rect
 								x={0}
 								y={0}
-								width={config.viewBox.width / 2}
+								width={Math.max(blendEndX, 0)}
 								height={config.viewBox.height}
 							/>
 						</clipPath>
-						<clipPath id="cardback-clip-right">
+						{/*
+						 * The right frame is revealed by this gradient: black hides it, white
+						 * shows it. A zero-width band gives a hard butt joint, a wide one
+						 * feathers the two frames together. Verified to survive snapdom
+						 * rasterisation, so preview and export match.
+						 */}
+						<mask id="cardback-mask-right">
+							<linearGradient
+								id="cardback-blend-gradient"
+								gradientUnits="userSpaceOnUse"
+								x1={blendStartX}
+								y1={0}
+								x2={blendEndX}
+								y2={0}
+							>
+								<stop offset="0" stopColor="black" />
+								<stop offset="1" stopColor="white" />
+							</linearGradient>
 							<rect
-								x={config.viewBox.width / 2}
+								x={0}
 								y={0}
-								width={config.viewBox.width / 2}
+								width={config.viewBox.width}
 								height={config.viewBox.height}
+								fill="url(#cardback-blend-gradient)"
 							/>
-						</clipPath>
+						</mask>
 					</>
 				)}
 			</defs>
@@ -240,7 +278,7 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 					width={config.viewBox.width}
 					height={config.viewBox.height}
 					preserveAspectRatio="xMidYMid slice"
-					clipPath="url(#cardback-clip-right)"
+					mask="url(#cardback-mask-right)"
 				/>
 			)}
 

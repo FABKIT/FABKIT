@@ -16,7 +16,11 @@ import {
 	type SerializedCardState,
 	serializeCardState,
 } from "../src/apps/card-creator/persistence/card-storage.ts";
-import { useCardCreator } from "../src/apps/card-creator/stores/card-creator.ts";
+import {
+	HYBRID_BLEND_DEFAULT,
+	HYBRID_SPLIT_DEFAULT,
+	useCardCreator,
+} from "../src/apps/card-creator/stores/card-creator.ts";
 import { CardBacks } from "../src/shared/config/cards/card_backs.ts";
 
 const FIXTURES = join(import.meta.dir, "fixtures");
@@ -122,6 +126,35 @@ describe(".fabkit format", () => {
 
 		const deserialized = deserializeCardState(serialized);
 		expect(deserialized.CardBackRight).toBeNull();
+	});
+
+	it("falls back to default seam settings when a record predates them", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const legacyState = file.state as unknown as SerializedCardState;
+		expect("CardBackSplit" in legacyState).toBe(false);
+		expect("CardBackBlend" in legacyState).toBe(false);
+
+		const state = deserializeCardState(legacyState);
+
+		// Must be real numbers — undefined here would NaN the gradient maths
+		// and blank the card back entirely.
+		expect(state.CardBackSplit).toBe(HYBRID_SPLIT_DEFAULT);
+		expect(state.CardBackBlend).toBe(HYBRID_BLEND_DEFAULT);
+	});
+
+	it("round-trips custom seam position and softness", () => {
+		const state = {
+			...useCardCreator.getState(),
+			CardBackSplit: 0.37,
+			CardBackBlend: 0.62,
+		};
+		const serialized = serializeCardState(state);
+		expect(serialized.CardBackSplit).toBe(0.37);
+		expect(serialized.CardBackBlend).toBe(0.62);
+
+		const deserialized = deserializeCardState(serialized);
+		expect(deserialized.CardBackSplit).toBe(0.37);
+		expect(deserialized.CardBackBlend).toBe(0.62);
 	});
 
 	it("clears CardBackRight on load for meld cards, even if the record carries one", () => {
