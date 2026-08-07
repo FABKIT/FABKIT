@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../stores/card-creator.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 /**
  * Renders the card type field.

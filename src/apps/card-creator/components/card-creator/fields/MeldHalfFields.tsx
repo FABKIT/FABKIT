@@ -16,12 +16,12 @@ import {
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { EditorCustomEmojiRows } from "../../../config/editor.ts";
+import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
 import {
 	MELD_EXCLUDED_TYPES,
 	type MeldHalf,
 	useCardCreator,
-} from "../../../stores/card-creator.ts";
+} from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 type MeldHalfId = "A" | "B";
 

@@ -6,8 +6,8 @@ import {
 } from "@fabkit/shared/config/cards/talents.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
-import { useIsFieldVisible } from "../../utils.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
 
 export function CardTalentField() {
 	const { t } = useTranslation("card-creator");

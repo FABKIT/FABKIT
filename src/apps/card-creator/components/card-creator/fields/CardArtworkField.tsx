@@ -1,6 +1,6 @@
 import ImageUpload from "@fabkit/platform/components/form/ImageUpload";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 export function CardArtworkField() {
 	const { t } = useTranslation("card-creator");

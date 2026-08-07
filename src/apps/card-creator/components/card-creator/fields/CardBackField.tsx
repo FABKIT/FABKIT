@@ -3,8 +3,8 @@ import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_ba
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import type { CardCreatorCardBack } from "../../../config/rendering.ts";
-import { useCardCreator } from "../../../stores/card-creator.ts";
+import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rendering.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { HybridBlendField } from "./HybridBlendField.tsx";
 
 // Shared between the single (non-hybrid) select and both halves of the hybrid

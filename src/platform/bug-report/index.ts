@@ -3,7 +3,7 @@ import { compressJSON } from "@fabkit/shared/compression";
 import { snapdom } from "@zumer/snapdom";
 import i18n from "../../i18n";
 import { getLastBoundaryError } from "../error-context";
-import { router } from "../router";
+import { router } from "@fabkit/platform/router.tsx";
 import { getConsoleBuffer } from "./console-interceptor";
 import { collectAppData } from "./provider-registry";
 

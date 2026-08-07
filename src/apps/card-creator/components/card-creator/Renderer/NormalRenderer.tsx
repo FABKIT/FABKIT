@@ -30,20 +30,20 @@
  * - **Dented**: Footer uses single or stacked centered text
  */
 
+import { useCardBottomText } from "@fabkit/apps/card-creator/components/card-creator/hooks/useCardBottomText.ts";
+import { useCardFooterText } from "@fabkit/apps/card-creator/components/card-creator/hooks/useCardFooterText.ts";
+import type {
+	NormalDentedRenderConfig,
+	NormalFlatRenderConfig,
+} from "@fabkit/apps/card-creator/config/rendering/types.ts";
+import {
+	HYBRID_BLEND_MAX_WIDTH,
+	useCardCreator,
+} from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities.ts";
 import { type ReactNode, type Ref, useMemo } from "react";
 import { useDebounce } from "use-debounce";
 import useObjectURL from "use-object-url";
-import type {
-	NormalDentedRenderConfig,
-	NormalFlatRenderConfig,
-} from "../../../config/rendering/types.ts";
-import {
-	HYBRID_BLEND_MAX_WIDTH,
-	useCardCreator,
-} from "../../../stores/card-creator.ts";
-import { useCardBottomText } from "../hooks/useCardBottomText.ts";
-import { useCardFooterText } from "../hooks/useCardFooterText.ts";
 import {
 	useCardNameFontSize,
 	useCardTextFontSize,

@@ -19,7 +19,7 @@
  */
 
 import { useMemo } from "react";
-import { useCardCreator } from "../../../stores/card-creator.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 /**
  * Computes footer text based on card back style and custom fields.

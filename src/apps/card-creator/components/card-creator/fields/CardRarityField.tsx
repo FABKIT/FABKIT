@@ -4,8 +4,8 @@ import {
 } from "@fabkit/shared/config/cards/rarities.ts";
 import { Field, Label, Radio, RadioGroup } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
-import { useIsFieldVisible } from "../../utils.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
 
 export function CardRarityField() {
 	const { t } = useTranslation("card-creator");

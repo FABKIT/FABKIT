@@ -2,7 +2,7 @@ import Select from "@fabkit/platform/components/form/Select";
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 export function CardTypeField() {
 	const { t } = useTranslation("card-creator");

@@ -2,7 +2,7 @@ import { TogglePill } from "@fabkit/platform/components/form/TogglePill.tsx";
 import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_backs.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 /**
  * Activate/deactivate button for hybrid card frames.

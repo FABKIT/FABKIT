@@ -3,8 +3,8 @@ import type { SelectOption } from "@fabkit/platform/components/form/Select";
 import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
-import { useIsFieldVisible } from "../../utils.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
 
 export function CardSubTypeField() {
 	const { t } = useTranslation("card-creator");
