@@ -260,27 +260,36 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				/>
 			)}
 
-			<image
-				href={cardBackHref}
-				x="0"
-				y="0"
-				width={config.viewBox.width}
-				height={config.viewBox.height}
-				preserveAspectRatio="xMidYMid slice"
-				clipPath={cardBackRightHref ? "url(#cardback-clip-left)" : undefined}
-			/>
-
-			{cardBackRightHref && (
+			{/*
+			 * Card back layer. The hybrid halves are wrapped in their own <g> so the
+			 * blend mask is scoped to this group: when the export rasteriser
+			 * serialises the SVG it was applying the mask to following siblings too,
+			 * which wiped the left half of the card title out of the PNG while the
+			 * live preview looked correct. The group boundary contains it.
+			 */}
+			<g>
 				<image
-					href={cardBackRightHref}
+					href={cardBackHref}
 					x="0"
 					y="0"
 					width={config.viewBox.width}
 					height={config.viewBox.height}
 					preserveAspectRatio="xMidYMid slice"
-					mask="url(#cardback-mask-right)"
+					clipPath={cardBackRightHref ? "url(#cardback-clip-left)" : undefined}
 				/>
-			)}
+
+				{cardBackRightHref && (
+					<image
+						href={cardBackRightHref}
+						x="0"
+						y="0"
+						width={config.viewBox.width}
+						height={config.viewBox.height}
+						preserveAspectRatio="xMidYMid slice"
+						mask="url(#cardback-mask-right)"
+					/>
+				)}
+			</g>
 
 			{/* Title bounds: x="86" y="40" width="278" height="30" */}
 			{CardName && (
