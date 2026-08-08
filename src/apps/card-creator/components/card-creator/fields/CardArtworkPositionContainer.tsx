@@ -1,3 +1,4 @@
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import type * as React from "react";
 import {
 	type ReactNode,
@@ -6,7 +7,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 type DragZone = { x: number; y: number; width: number; height: number };
 

@@ -18,8 +18,8 @@
  * All FABKIT cards include "NOT LEGAL" text to indicate they're custom/unofficial.
  */
 
-import { useMemo } from "react";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { useMemo } from "react";
 
 /**
  * Computes footer text based on card back style and custom fields.

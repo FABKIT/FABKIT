@@ -1,3 +1,5 @@
+import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { Combobox } from "@fabkit/platform/components/form/Combobox";
 import type { SelectOption } from "@fabkit/platform/components/form/Select";
 import {
@@ -6,8 +8,6 @@ import {
 } from "@fabkit/shared/config/cards/talents.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
-import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
 
 export function CardTalentField() {
 	const { t } = useTranslation("card-creator");

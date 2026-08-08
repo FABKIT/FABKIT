@@ -1,7 +1,7 @@
+import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import Select from "@fabkit/platform/components/form/Select";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
-import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
 
 const pitchOptions = [
 	{ label: "1", value: "1" },

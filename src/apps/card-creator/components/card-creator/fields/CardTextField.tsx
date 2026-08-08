@@ -1,9 +1,9 @@
+import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
+import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import RichTextEditor from "@fabkit/platform/components/form/RichTextEditor";
 import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
-import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
-import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
-import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
 
 export function CardTextField(props: HTMLAttributes<HTMLDivElement>) {
 	const { t } = useTranslation("card-creator");

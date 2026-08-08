@@ -1,8 +1,8 @@
+import { featuredArtists } from "@fabkit/apps/card-creator/config/featured_artist.tsx";
 import Contact from "@fabkit/platform/config/contact.ts";
 import { ArrowRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { featuredArtists } from "@fabkit/apps/card-creator/config/featured_artist.tsx";
 
 export function FeaturedArtist() {
 	const { t } = useTranslation("card-creator");

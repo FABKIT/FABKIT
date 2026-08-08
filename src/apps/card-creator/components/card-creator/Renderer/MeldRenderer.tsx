@@ -14,6 +14,9 @@
  * The active half is highlighted with a dashed overlay.
  */
 
+import type { MeldCardRenderConfig } from "@fabkit/apps/card-creator/config/rendering/types.ts";
+import type { MeldHalf } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import {
 	type CardClass,
 	CardClasses,
@@ -29,9 +32,6 @@ import { type Ref, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 import useObjectURL from "use-object-url";
-import type { MeldCardRenderConfig } from "@fabkit/apps/card-creator/config/rendering/types.ts";
-import type { MeldHalf } from "@fabkit/apps/card-creator/stores/card-creator.ts";
-import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import {
 	useCardNameFontSize,
 	useCardTextFontSize,

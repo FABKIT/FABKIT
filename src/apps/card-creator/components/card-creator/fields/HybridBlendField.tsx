@@ -1,6 +1,6 @@
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import Slider from "@fabkit/platform/components/form/Slider";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 
 /**
  * Softness control for the hybrid seam.
