@@ -1,10 +1,10 @@
+import { MeldRenderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer/MeldRenderer.tsx";
+import { NormalRenderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer/NormalRenderer.tsx";
+import type { MeldCardRenderConfig } from "@fabkit/apps/card-creator/config/rendering/types.ts";
+import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import type { Ref } from "react";
 import { useTranslation } from "react-i18next";
-import type { MeldCardRenderConfig } from "../../config/rendering/types.ts";
-import { AllRenderConfigVariations } from "../../config/rendering.ts";
-import { useCardCreator } from "../../stores/card-creator.ts";
-import { MeldRenderer } from "./Renderer/MeldRenderer.tsx";
-import { NormalRenderer } from "./Renderer/NormalRenderer.tsx";
 
 export type RendererProps = {
 	ref?: Ref<SVGSVGElement>;

@@ -30,17 +30,20 @@
  * - **Dented**: Footer uses single or stacked centered text
  */
 
+import { useCardBottomText } from "@fabkit/apps/card-creator/components/card-creator/hooks/useCardBottomText.ts";
+import { useCardFooterText } from "@fabkit/apps/card-creator/components/card-creator/hooks/useCardFooterText.ts";
+import type {
+	NormalDentedRenderConfig,
+	NormalFlatRenderConfig,
+} from "@fabkit/apps/card-creator/config/rendering/types.ts";
+import {
+	HYBRID_BLEND_MAX_WIDTH,
+	useCardCreator,
+} from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities.ts";
 import { type ReactNode, type Ref, useMemo } from "react";
 import { useDebounce } from "use-debounce";
 import useObjectURL from "use-object-url";
-import type {
-	NormalDentedRenderConfig,
-	NormalFlatRenderConfig,
-} from "../../../config/rendering/types.ts";
-import { useCardCreator } from "../../../stores/card-creator.ts";
-import { useCardBottomText } from "../hooks/useCardBottomText.ts";
-import { useCardFooterText } from "../hooks/useCardFooterText.ts";
 import {
 	useCardNameFontSize,
 	useCardTextFontSize,
@@ -56,6 +59,23 @@ export type NormalRendererProps = {
 };
 
 /**
+ * Resolves the card back PNG for a given pitch, falling back to the frame's
+ * first image. Image coverage varies per frame (hero frames have one image,
+ * general frames have three), so each half of a hybrid must resolve its own.
+ */
+function resolveCardBackImage(
+	cardBack:
+		| { images: { pitch: number; fileName: string }[] }
+		| null
+		| undefined,
+	pitch: number | null,
+): string | undefined {
+	const image =
+		cardBack?.images.find((img) => img.pitch === pitch) ?? cardBack?.images[0];
+	return image ? `/cardbacks/${image.fileName}` : undefined;
+}
+
+/**
  * Normal Card Renderer
  *
  * Main rendering component for standard TCG cards.
@@ -63,6 +83,9 @@ export type NormalRendererProps = {
  */
 export function NormalRenderer({ config, ref }: NormalRendererProps) {
 	const CardBack = useCardCreator((state) => state.CardBack);
+	const CardBackRight = useCardCreator((state) => state.CardBackRight);
+	const CardBackSplit = useCardCreator((state) => state.CardBackSplit);
+	const CardBackBlend = useCardCreator((state) => state.CardBackBlend);
 	const CardPitch = useCardCreator((state) => state.CardPitch);
 	const CardName = useCardCreator((state) => state.CardName);
 	const CardResource = useCardCreator((state) => state.CardResource);
@@ -114,12 +137,23 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 
 	const artwork = useObjectURL(CardArtwork);
 	const overlay = useObjectURL(CardOverlay);
-	const cardBackImage = useMemo(
-		() =>
-			CardBack?.images.find((image) => image.pitch === CardPitch) ||
-			CardBack?.images[0],
-		[CardBack?.images, CardPitch],
+	const cardBackHref = useMemo(
+		() => resolveCardBackImage(CardBack, CardPitch),
+		[CardBack, CardPitch],
 	);
+	// Right half of a hybrid frame resolves its own pitch image independently —
+	// image coverage differs per frame, so it cannot reuse the left half's result.
+	const cardBackRightHref = useMemo(
+		() => resolveCardBackImage(CardBackRight, CardPitch),
+		[CardBackRight, CardPitch],
+	);
+
+	// Blend band bounds in SVG units. A truly zero-width gradient is degenerate,
+	// so a hard seam is expressed as a 1-unit band straddling the split instead.
+	const splitX = config.viewBox.width * CardBackSplit;
+	const blendWidth = CardBackBlend * HYBRID_BLEND_MAX_WIDTH;
+	const blendStartX = splitX - Math.max(blendWidth, 1) / 2;
+	const blendEndX = splitX + Math.max(blendWidth, 1) / 2;
 
 	const cardBottomText = useCardBottomText();
 	const footer = useCardFooterText();
@@ -166,6 +200,52 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				)}
 				<clipPath id="title-clip">{config.clips.Title}</clipPath>
 				<clipPath id="bottom-text-clip">{config.clips.BottomText}</clipPath>
+				{cardBackRightHref && (
+					<>
+						{/*
+						 * The left frame is cut off at the END of the blend band, not at the
+						 * seam. Card frames have transparent regions (the art window), so a
+						 * full-width left frame would show through the right frame's
+						 * transparent areas. Cutting at the band's end instead of its middle
+						 * keeps the left frame fully present for the whole cross-fade, so
+						 * there is no washed-out gap where neither frame covers.
+						 */}
+						<clipPath id="cardback-clip-left">
+							<rect
+								x={0}
+								y={0}
+								width={Math.max(blendEndX, 0)}
+								height={config.viewBox.height}
+							/>
+						</clipPath>
+						{/*
+						 * The right frame is revealed by this gradient: black hides it, white
+						 * shows it. A zero-width band gives a hard butt joint, a wide one
+						 * feathers the two frames together. Verified to survive snapdom
+						 * rasterisation, so preview and export match.
+						 */}
+						<mask id="cardback-mask-right">
+							<linearGradient
+								id="cardback-blend-gradient"
+								gradientUnits="userSpaceOnUse"
+								x1={blendStartX}
+								y1={0}
+								x2={blendEndX}
+								y2={0}
+							>
+								<stop offset="0" stopColor="black" />
+								<stop offset="1" stopColor="white" />
+							</linearGradient>
+							<rect
+								x={0}
+								y={0}
+								width={config.viewBox.width}
+								height={config.viewBox.height}
+								fill="url(#cardback-blend-gradient)"
+							/>
+						</mask>
+					</>
+				)}
 			</defs>
 
 			{artwork && (
@@ -180,14 +260,36 @@ export function NormalRenderer({ config, ref }: NormalRendererProps) {
 				/>
 			)}
 
-			<image
-				href={`/cardbacks/${cardBackImage?.fileName}`}
-				x="0"
-				y="0"
-				width={config.viewBox.width}
-				height={config.viewBox.height}
-				preserveAspectRatio="xMidYMid slice"
-			/>
+			{/*
+			 * Card back layer. The hybrid halves are wrapped in their own <g> so the
+			 * blend mask is scoped to this group: when the export rasteriser
+			 * serialises the SVG it was applying the mask to following siblings too,
+			 * which wiped the left half of the card title out of the PNG while the
+			 * live preview looked correct. The group boundary contains it.
+			 */}
+			<g>
+				<image
+					href={cardBackHref}
+					x="0"
+					y="0"
+					width={config.viewBox.width}
+					height={config.viewBox.height}
+					preserveAspectRatio="xMidYMid slice"
+					clipPath={cardBackRightHref ? "url(#cardback-clip-left)" : undefined}
+				/>
+
+				{cardBackRightHref && (
+					<image
+						href={cardBackRightHref}
+						x="0"
+						y="0"
+						width={config.viewBox.width}
+						height={config.viewBox.height}
+						preserveAspectRatio="xMidYMid slice"
+						mask="url(#cardback-mask-right)"
+					/>
+				)}
+			</g>
 
 			{/* Title bounds: x="86" y="40" width="278" height="30" */}
 			{CardName && (

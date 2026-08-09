@@ -23,6 +23,7 @@
  * All text is localized via i18next.
  */
 
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import {
 	type CardClass,
 	CardClasses,
@@ -35,7 +36,6 @@ import {
 import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
 
 /**
  * Computes the bottom center text for a card based on current state.

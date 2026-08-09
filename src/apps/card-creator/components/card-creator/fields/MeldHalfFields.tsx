@@ -1,3 +1,9 @@
+import { EditorCustomEmojiRows } from "@fabkit/apps/card-creator/config/editor.ts";
+import {
+	MELD_EXCLUDED_TYPES,
+	type MeldHalf,
+	useCardCreator,
+} from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { Combobox } from "@fabkit/platform/components/form/Combobox";
 import ImageUpload from "@fabkit/platform/components/form/ImageUpload";
 import RichTextEditor from "@fabkit/platform/components/form/RichTextEditor";
@@ -16,12 +22,6 @@ import {
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { EditorCustomEmojiRows } from "../../../config/editor.ts";
-import {
-	MELD_EXCLUDED_TYPES,
-	type MeldHalf,
-	useCardCreator,
-} from "../../../stores/card-creator.ts";
 
 type MeldHalfId = "A" | "B";
 

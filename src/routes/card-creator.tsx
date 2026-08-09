@@ -22,6 +22,7 @@ import { CardTalentField } from "@fabkit/apps/card-creator/components/card-creat
 import { CardTextField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardTextField.tsx";
 import { CardTypeField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardTypeField.tsx";
 import { CardWeaponField } from "@fabkit/apps/card-creator/components/card-creator/fields/CardWeaponField.tsx";
+import { HybridCardBackField } from "@fabkit/apps/card-creator/components/card-creator/fields/HybridCardBackField.tsx";
 import { MeldHalfFields } from "@fabkit/apps/card-creator/components/card-creator/fields/MeldHalfFields.tsx";
 import { ResetButton } from "@fabkit/apps/card-creator/components/card-creator/fields/ResetButton.tsx";
 import { SaveButton } from "@fabkit/apps/card-creator/components/card-creator/fields/SaveButton.tsx";
@@ -57,7 +58,10 @@ function RouteComponent() {
 		renderConfig?.renderer === "meld" ? renderConfig : null;
 
 	return (
-		<div className="flex flex-1 flex-col w-full px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8 gap-4 pt-6 sm:pt-8 lg:pt-10">
+		// Top padding and row gap are deliberately tighter on large screens than
+		// elsewhere on the site: the card preview is 628px tall and has to stay
+		// fully visible on a 1080p display without scrolling.
+		<div className="flex flex-1 flex-col w-full px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8 gap-4 lg:gap-3 pt-6 sm:pt-8 lg:pt-6">
 			{/* Card type selector — full width, above the rest.
 				On meld + <lg, sticks below the mobile top bar so it stays visible
 				with the preview while the form scrolls. */}
@@ -144,7 +148,7 @@ function RouteComponent() {
 					className={
 						currentCardType === "meld"
 							? "flex flex-col gap-1.5 items-center order-1 lg:order-2 lg:static sticky top-[7rem] z-20 bg-surface pt-2 pb-3 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:gap-2 shadow-sm lg:shadow-none"
-							: "flex flex-col gap-2 items-center"
+							: "flex flex-col gap-1.5 items-center"
 					}
 				>
 					{/* Background label */}
@@ -152,9 +156,10 @@ function RouteComponent() {
 						{t("card_creator.background_label")}
 					</p>
 
-					{/* Style toggle */}
-					<div className="flex justify-center">
+					{/* Style + hybrid toggles */}
+					<div className="flex justify-center items-center gap-3">
 						<CardBackStyleField />
+						<HybridCardBackField />
 					</div>
 
 					{/* Cardback arrow selector */}
@@ -165,7 +170,7 @@ function RouteComponent() {
 						className={
 							currentCardType === "meld"
 								? "w-full sm:max-w-[550px] lg:max-w-[628px] mt-1"
-								: "w-full max-w-[450px] mt-1"
+								: "w-full max-w-[450px]"
 						}
 					>
 						<CardArtworkPositionContainer

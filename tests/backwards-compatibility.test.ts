@@ -14,7 +14,14 @@ import {
 	importCardFromJSON,
 	importGalleryFromJSON,
 	type SerializedCardState,
+	serializeCardState,
 } from "../src/apps/card-creator/persistence/card-storage.ts";
+import {
+	HYBRID_BLEND_DEFAULT,
+	HYBRID_SPLIT_DEFAULT,
+	useCardCreator,
+} from "../src/apps/card-creator/stores/card-creator.ts";
+import { CardBacks } from "../src/shared/config/cards/card_backs.ts";
 
 const FIXTURES = join(import.meta.dir, "fixtures");
 
@@ -75,6 +82,93 @@ describe(".fabkit format", () => {
 
 		expect(state.CardBack).not.toBeNull();
 		expect(typeof state.CardBack?.id).toBe("number");
+	});
+
+	// ─── Hybrid frames ───────────────────────────────────────────────────────
+
+	it("loads an older card (no CardBackRight) as non-hybrid, not CardBacks[0]", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		// The fixture predates hybrid frames — CardBackRight is absent, not null.
+		const legacyState = file.state as unknown as SerializedCardState;
+		expect("CardBackRight" in legacyState).toBe(false);
+
+		const state = deserializeCardState(legacyState);
+
+		// Must be null, never CardBacks[0] — the fallback used for the left
+		// frame would silently turn every pre-existing card into a hybrid.
+		expect(state.CardBackRight).toBeNull();
+	});
+
+	it("round-trips a hybrid card's right frame through serialize/deserialize", () => {
+		const rightFrame = CardBacks.find(
+			(back) => back.type === "general" && back.dented,
+		);
+		expect(rightFrame).toBeDefined();
+
+		const state = {
+			...useCardCreator.getState(),
+			CardBackRight: rightFrame,
+		};
+		const serialized = serializeCardState(state);
+		expect(serialized.CardBackRight).toBe(rightFrame?.id ?? null);
+
+		const deserialized = deserializeCardState(serialized);
+		expect(deserialized.CardBackRight?.id).toBe(rightFrame?.id);
+	});
+
+	it("round-trips a non-hybrid card's null right frame", () => {
+		const state = {
+			...useCardCreator.getState(),
+			CardBackRight: null,
+		};
+		const serialized = serializeCardState(state);
+		expect(serialized.CardBackRight).toBeNull();
+
+		const deserialized = deserializeCardState(serialized);
+		expect(deserialized.CardBackRight).toBeNull();
+	});
+
+	it("falls back to default seam settings when a record predates them", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const legacyState = file.state as unknown as SerializedCardState;
+		expect("CardBackSplit" in legacyState).toBe(false);
+		expect("CardBackBlend" in legacyState).toBe(false);
+
+		const state = deserializeCardState(legacyState);
+
+		// Must be real numbers — undefined here would NaN the gradient maths
+		// and blank the card back entirely.
+		expect(state.CardBackSplit).toBe(HYBRID_SPLIT_DEFAULT);
+		expect(state.CardBackBlend).toBe(HYBRID_BLEND_DEFAULT);
+	});
+
+	it("round-trips custom seam position and softness", () => {
+		const state = {
+			...useCardCreator.getState(),
+			CardBackSplit: 0.37,
+			CardBackBlend: 0.62,
+		};
+		const serialized = serializeCardState(state);
+		expect(serialized.CardBackSplit).toBe(0.37);
+		expect(serialized.CardBackBlend).toBe(0.62);
+
+		const deserialized = deserializeCardState(serialized);
+		expect(deserialized.CardBackSplit).toBe(0.37);
+		expect(deserialized.CardBackBlend).toBe(0.62);
+	});
+
+	it("clears CardBackRight on load for meld cards, even if the record carries one", () => {
+		const rightFrame = CardBacks.find((back) => back.type === "general");
+		const staleMeldState = {
+			...(JSON.parse(readFixture("sample.fabkit"))
+				.state as SerializedCardState),
+			CardType: "meld" as const,
+			CardBackRight: rightFrame?.id ?? null,
+		};
+
+		const state = deserializeCardState(staleMeldState);
+
+		expect(state.CardBackRight).toBeNull();
 	});
 
 	it("rejects files missing required fields", () => {

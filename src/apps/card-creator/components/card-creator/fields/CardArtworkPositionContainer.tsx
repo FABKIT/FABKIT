@@ -1,6 +1,12 @@
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import type * as React from "react";
-import { type ReactNode, useCallback, useEffect, useRef } from "react";
-import { useCardCreator } from "../../../stores/card-creator";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 type DragZone = { x: number; y: number; width: number; height: number };
 
@@ -20,6 +26,15 @@ interface CardArtworkPositionContainerProps {
 }
 
 const DRAG_THRESHOLD = 8; // px movement before updating artwork position
+
+/**
+ * How close (screen px) a press must be to the hybrid seam to grab it rather
+ * than the artwork. Deliberately tight — the seam is grabbable along its whole
+ * length, including over the artwork, so it must not steal ordinary art drags.
+ * Touch gets a wider tolerance because fingers are less precise than cursors.
+ */
+const SEAM_GRAB_TOLERANCE = 8;
+const SEAM_GRAB_TOLERANCE_TOUCH = 14;
 
 const getTouchDistance = (touches: React.TouchList) => {
 	if (touches.length < 2) return null;
@@ -61,6 +76,20 @@ export function CardArtworkPositionContainer({
 	const setMeldHalfArtPosition = useCardCreator(
 		(state) => state.setMeldHalfArtPosition,
 	);
+
+	// Hybrid seam store reads
+	const CardBackRight = useCardCreator((state) => state.CardBackRight);
+	const CardBackSplit = useCardCreator((state) => state.CardBackSplit);
+	const setCardBackSplit = useCardCreator((state) => state.setCardBackSplit);
+
+	/** Meld has no hybrid seam. */
+	const hasSeam = !isMeldMode && CardBackRight !== null;
+	const [isSeamHovered, setIsSeamHovered] = useState(false);
+	const isDraggingSeam = useRef(false);
+	// Artwork dragging hides the guide entirely so it can't distract from, or be
+	// confused with, the art being positioned. State rather than a ref because
+	// the guide's visibility has to re-render.
+	const [isDraggingArtwork, setIsDraggingArtwork] = useState(false);
 
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -118,6 +147,36 @@ export function CardArtworkPositionContainer({
 	);
 
 	/**
+	 * True when a press should move the hybrid seam rather than the artwork.
+	 * The seam is grabbable along its full length — including across the artwork —
+	 * but only within a tight tolerance of the line itself, so ordinary artwork
+	 * drags anywhere else are unaffected.
+	 */
+	const isSeamGrab = useCallback(
+		(clientX: number, isTouch = false): boolean => {
+			if (!hasSeam) return false;
+			const rect = containerRef.current?.getBoundingClientRect();
+			if (!rect || rect.width === 0) return false;
+			const seamX = rect.left + rect.width * CardBackSplit;
+			const tolerance = isTouch
+				? SEAM_GRAB_TOLERANCE_TOUCH
+				: SEAM_GRAB_TOLERANCE;
+			return Math.abs(clientX - seamX) <= tolerance;
+		},
+		[hasSeam, CardBackSplit],
+	);
+
+	/** Moves the seam to the pointer. The store clamps and snaps to centre. */
+	const applySeamDrag = useCallback(
+		(clientX: number) => {
+			const rect = containerRef.current?.getBoundingClientRect();
+			if (!rect || rect.width === 0) return;
+			setCardBackSplit((clientX - rect.left) / rect.width);
+		},
+		[setCardBackSplit],
+	);
+
+	/**
 	 * In meld mode: detect which half's zone was touched.
 	 * Returns "A", "B", or null if neither zone was hit.
 	 */
@@ -157,6 +216,11 @@ export function CardArtworkPositionContainer({
 	const touchMoveHandlerRef = useRef<((e: TouchEvent) => void) | null>(null);
 	touchMoveHandlerRef.current = (e: TouchEvent) => {
 		if (e.touches.length === 1) {
+			if (isDraggingSeam.current) {
+				e.preventDefault();
+				applySeamDrag(e.touches[0].clientX);
+				return;
+			}
 			if (!isArtworkTouch.current) return;
 
 			// Touch started in artwork zone — always prevent scroll for this gesture.
@@ -167,6 +231,7 @@ export function CardArtworkPositionContainer({
 				const dy = e.touches[0].clientY - touchStartPos.current.y;
 				if (Math.sqrt(dx * dx + dy * dy) < DRAG_THRESHOLD) return;
 				isDragging.current = true;
+				setIsDraggingArtwork(true);
 			}
 
 			if (isMeldMode) {
@@ -254,6 +319,14 @@ export function CardArtworkPositionContainer({
 
 	const handleMouseDown = useCallback(
 		(e: React.MouseEvent) => {
+			// A press right on the seam grabs it; everything else falls through to
+			// the artwork, which keeps its whole zone.
+			if (isSeamGrab(e.clientX)) {
+				isDraggingSeam.current = true;
+				applySeamDrag(e.clientX);
+				return;
+			}
+			setIsDraggingArtwork(true);
 			if (isMeldMode) {
 				const half = getMeldDragHalf(e.clientX, e.clientY);
 				if (!half) return;
@@ -285,11 +358,25 @@ export function CardArtworkPositionContainer({
 			CardArtPosition?.x,
 			CardArtPosition?.y,
 			clientToSvg,
+			isSeamGrab,
+			applySeamDrag,
 		],
 	);
 
 	const handleMouseMove = useCallback(
 		(e: React.MouseEvent) => {
+			if (isDraggingSeam.current) {
+				applySeamDrag(e.clientX);
+				return;
+			}
+			// Cursor hint for the seam. Written straight to the node rather than
+			// held in state — this fires on every mouse move, and a re-render per
+			// pixel would be wasteful.
+			if (containerRef.current && !isDragging.current) {
+				containerRef.current.style.cursor = isSeamGrab(e.clientX)
+					? "ew-resize"
+					: "";
+			}
 			if (!isDragging.current) return;
 			if (isMeldMode) {
 				if (!meldDragHalf.current) return;
@@ -311,17 +398,24 @@ export function CardArtworkPositionContainer({
 			CardArtPosition,
 			setCardArtPosition,
 			clientToSvg,
+			applySeamDrag,
+			isSeamGrab,
 		],
 	);
 
 	const handleMouseUp = useCallback(() => {
 		isDragging.current = false;
+		isDraggingSeam.current = false;
 		meldDragHalf.current = null;
+		setIsDraggingArtwork(false);
 	}, []);
 
 	const handleMouseLeave = useCallback(() => {
 		isDragging.current = false;
+		isDraggingSeam.current = false;
 		meldDragHalf.current = null;
+		setIsSeamHovered(false);
+		setIsDraggingArtwork(false);
 	}, []);
 
 	// Keep a stable ref to the latest wheel logic so the native non-passive
@@ -377,6 +471,14 @@ export function CardArtworkPositionContainer({
 	const handleTouchStart = useCallback(
 		(e: React.TouchEvent) => {
 			if (e.touches.length === 1) {
+				// Tapping right on the seam grabs it. Revealing the guide on the same
+				// gesture means a single tap-and-drag works without a priming tap.
+				if (isSeamGrab(e.touches[0].clientX, true)) {
+					isDraggingSeam.current = true;
+					setIsSeamHovered(true);
+					applySeamDrag(e.touches[0].clientX);
+					return;
+				}
 				if (isMeldMode) {
 					const half = getMeldDragHalf(
 						e.touches[0].clientX,
@@ -436,28 +538,57 @@ export function CardArtworkPositionContainer({
 			CardArtPosition?.x,
 			CardArtPosition?.y,
 			clientToSvg,
+			isSeamGrab,
+			applySeamDrag,
 		],
 	);
 
 	const handleTouchEnd = useCallback(() => {
 		isArtworkTouch.current = false;
 		isDragging.current = false;
+		isDraggingSeam.current = false;
 		lastTouchDistance.current = null;
 		meldDragHalf.current = null;
+		setIsSeamHovered(false);
+		setIsDraggingArtwork(false);
 	}, []);
 
 	return (
 		<div
 			ref={containerRef}
 			role="application"
+			// select-none: without it, dragging on the preview drags a text
+			// selection across the rest of the page.
+			className={hasSeam ? "relative select-none" : "select-none"}
 			onMouseDown={handleMouseDown}
 			onMouseMove={handleMouseMove}
 			onMouseUp={handleMouseUp}
 			onMouseLeave={handleMouseLeave}
+			onMouseEnter={hasSeam ? () => setIsSeamHovered(true) : undefined}
 			onTouchStart={handleTouchStart}
 			onTouchEnd={handleTouchEnd}
 		>
 			{children}
+
+			{/*
+			 * Seam guide. Lives outside the SVG so it is never captured by the
+			 * exporter — snapdom serialises the SVG element only — and so it scales
+			 * with the container without needing viewBox maths. Hidden while the
+			 * artwork is being dragged so it never competes with that gesture.
+			 */}
+			{hasSeam && (
+				<div
+					className="pointer-events-none absolute inset-0 overflow-hidden"
+					aria-hidden="true"
+				>
+					<div
+						className={`absolute inset-y-0 w-px -translate-x-1/2 bg-white mix-blend-difference transition-opacity duration-150 ${
+							isSeamHovered && !isDraggingArtwork ? "opacity-90" : "opacity-0"
+						}`}
+						style={{ left: `${CardBackSplit * 100}%` }}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }

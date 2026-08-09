@@ -1,7 +1,7 @@
+import { useIsFieldVisible } from "@fabkit/apps/card-creator/components/utils.ts";
+import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import TextInput from "@fabkit/platform/components/form/TextInput";
 import { useTranslation } from "react-i18next";
-import { useCardCreator } from "../../../stores/card-creator.ts";
-import { useIsFieldVisible } from "../../utils.ts";
 
 export function CardLifeField() {
 	const { t } = useTranslation("card-creator");

@@ -29,6 +29,33 @@ import { isFieldVisible } from "../components/utils.ts";
 import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
 
+// ─── Hybrid frame seam ────────────────────────────────────────────────────────
+
+/**
+ * Seam position bounds, as a fraction of card width. Deliberately close to the
+ * edges: pushing the seam almost all the way across is a legitimate way to end
+ * up with what is effectively a single frame.
+ */
+export const HYBRID_SPLIT_MIN = 0.02;
+export const HYBRID_SPLIT_MAX = 0.98;
+
+/** Dead-centre default, and the magnet radius that makes it easy to return to. */
+export const HYBRID_SPLIT_DEFAULT = 0.5;
+export const HYBRID_SPLIT_SNAP = 0.02;
+
+/**
+ * Widest possible blend band, in SVG units (card is 450 wide). The stored
+ * CardBackBlend is a 0..1 fraction of this.
+ */
+export const HYBRID_BLEND_MAX_WIDTH = 200;
+
+/**
+ * Default softness for a new hybrid. Deliberately not 0 — a hard butt joint
+ * between two unrelated frames reads as a mistake, so new hybrids start with
+ * the seam already feathered and the user softens or sharpens from there.
+ */
+export const HYBRID_BLEND_DEFAULT = 0.4;
+
 /**
  * Card types that are not allowed on a meld half.
  * Equipment, hero, weapon, demi-hero, and weapon-equipment cannot be meld halves.
@@ -118,6 +145,28 @@ export interface CardCreatorState extends FormFieldValues {
 
 	/** Currently selected card back configuration object */
 	CardBack: CardCreatorCardBack | null;
+
+	/**
+	 * Card back for the right half of a hybrid frame.
+	 * Null means the card is not hybrid — hybrid mode is derived from this field
+	 * rather than stored as a separate boolean, so "hybrid on with no right frame"
+	 * is unrepresentable.
+	 */
+	CardBackRight: CardCreatorCardBack | null;
+
+	/**
+	 * Horizontal position of the hybrid seam, as a fraction of card width.
+	 * 0.5 is dead centre. Clamped to HYBRID_SPLIT_MIN..HYBRID_SPLIT_MAX so the
+	 * seam can never be pushed off the card entirely.
+	 */
+	CardBackSplit: number;
+
+	/**
+	 * Softness of the hybrid seam, 0..1, scaled to pixels by HYBRID_BLEND_MAX_WIDTH.
+	 * 0 is a hard butt joint; higher values feather the two frames into each other,
+	 * which is what stops mismatched frames reading as harshly spliced.
+	 */
+	CardBackBlend: number;
 
 	/** Card back visual style variant - affects available card backs */
 	CardBackStyle: CardStyle;
@@ -227,6 +276,25 @@ export interface CardCreatorActions {
 
 	/** Sets the currently selected card back */
 	setCardBack: (cardBack: CardCreatorCardBack) => void;
+
+	/** Sets the card back used for the right half of a hybrid frame */
+	setCardBackRight: (cardBack: CardCreatorCardBack) => void;
+
+	/**
+	 * Sets the hybrid seam position (fraction of card width). Clamped to the
+	 * allowed range, and magnetised to dead centre within HYBRID_SPLIT_SNAP so
+	 * an exact 50/50 split stays easy to hit while dragging.
+	 */
+	setCardBackSplit: (split: number) => void;
+
+	/** Sets the hybrid seam softness (0 = hard edge, 1 = widest blend) */
+	setCardBackBlend: (blend: number) => void;
+
+	/**
+	 * Toggles hybrid mode. Enabling picks the next card back in the current
+	 * type+style list as the right half; disabling discards it and keeps the left.
+	 */
+	toggleHybrid: () => void;
 
 	/**
 	 * Changes the card back style (flat/dented) and automatically
@@ -344,6 +412,9 @@ const initialState: CardCreatorState = {
 	__version: uuid(),
 	CardType: defaultCardType,
 	CardBack: defaultCardBack,
+	CardBackRight: null,
+	CardBackSplit: HYBRID_SPLIT_DEFAULT,
+	CardBackBlend: HYBRID_BLEND_DEFAULT,
 	CardBackStyle: defaultCardStyle,
 	CardArtwork: null,
 	CardArtPosition: null,
@@ -419,11 +490,23 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					}
 				}
 
+				// Hybrid: re-match the right half to the new type/style list, same closest-name
+				// approach used for the left half. Hybrid survives a type change rather than
+				// silently switching itself off. Meld is excluded from hybrid entirely.
+				const cardBackRight =
+					cardType === "meld" || state.CardBackRight === null
+						? null
+						: (getSuggestedCardBack(
+								available,
+								state.CardBackRight,
+							) as CardCreatorCardBack | null);
+
 				// When we change the state some fields become invisible.
 				// All fields that are not visible for the new card type are set to null.
 				const result: Partial<CardCreatorState> = {
 					CardType: cardType,
 					CardBack: cardBack,
+					CardBackRight: cardBackRight,
 					CardBackStyle: cardStyle,
 				};
 
@@ -444,6 +527,38 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				return result;
 			}),
 		setCardBack: (cardBack: CardCreatorCardBack) => set({ CardBack: cardBack }),
+		setCardBackRight: (cardBack: CardCreatorCardBack) =>
+			set({ CardBackRight: cardBack }),
+		setCardBackSplit: (split: number) =>
+			set({
+				CardBackSplit:
+					Math.abs(split - HYBRID_SPLIT_DEFAULT) < HYBRID_SPLIT_SNAP
+						? HYBRID_SPLIT_DEFAULT
+						: Math.max(HYBRID_SPLIT_MIN, Math.min(HYBRID_SPLIT_MAX, split)),
+			}),
+		setCardBackBlend: (blend: number) =>
+			set({ CardBackBlend: Math.max(0, Math.min(1, blend)) }),
+		toggleHybrid: () =>
+			set((state) => {
+				// Already hybrid — turning off discards the right half and keeps the left.
+				if (state.CardBackRight !== null) return { CardBackRight: null };
+
+				// Turning on: right half starts as the next frame in the current
+				// type+style list (wraps around), so the split is immediately visible.
+				const available = getCardBacksForTypeAndStyle(
+					state.CardType,
+					state.CardBackStyle,
+				);
+				if (available.length < 2) return {};
+
+				const currentIndex = state.CardBack
+					? available.findIndex((b) => b.id === state.CardBack?.id)
+					: -1;
+				const nextIndex =
+					(currentIndex === -1 ? 0 : currentIndex + 1) % available.length;
+
+				return { CardBackRight: available[nextIndex] as CardCreatorCardBack };
+			}),
 		setCardBackStyle: (backType: CardStyle) =>
 			set((state) => {
 				// When changing card back style, we select the first available card back for that style.
@@ -452,8 +567,19 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					available,
 					state.CardBack,
 				) as CardCreatorCardBack | null;
+				const cardBackRight =
+					state.CardBackRight === null
+						? null
+						: (getSuggestedCardBack(
+								available,
+								state.CardBackRight,
+							) as CardCreatorCardBack | null);
 
-				return { CardBackStyle: backType, CardBack: cardBack };
+				return {
+					CardBackStyle: backType,
+					CardBack: cardBack,
+					CardBackRight: cardBackRight,
+				};
 			}),
 		setCardArtwork: async (artwork: Blob | null) => {
 			// If clearing artwork, reset both artwork and position

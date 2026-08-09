@@ -36,8 +36,14 @@ import type { ChangeEvent, ComponentProps } from "react";
  */
 interface SliderProps
 	extends Omit<ComponentProps<"input">, "className" | "type" | "onChange"> {
-	/** Slider label text (always shown) */
+	/** Slider label text */
 	label: string;
+
+	/**
+	 * Renders the label for screen readers only. For compact placements where
+	 * surrounding context already makes the control's purpose obvious.
+	 */
+	hideLabel?: boolean;
 
 	/** Optional helper text shown below label */
 	description?: string;
@@ -70,6 +76,7 @@ interface SliderProps
  */
 export default function Slider({
 	label,
+	hideLabel = false,
 	description,
 	required,
 	value = 0,
@@ -81,8 +88,10 @@ export default function Slider({
 	...props
 }: SliderProps) {
 	return (
-		<Field className="space-y-1">
-			<div className="flex items-center justify-between">
+		<Field className={hideLabel ? undefined : "space-y-1"}>
+			<div
+				className={hideLabel ? "sr-only" : "flex items-center justify-between"}
+			>
 				<Label className="block text-sm font-medium text-muted">
 					{label}
 					{required && <span className="text-primary ml-1">*</span>}

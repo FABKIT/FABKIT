@@ -1,9 +1,9 @@
+import { router } from "@fabkit/platform/router.tsx";
 import { blobToBase64 } from "@fabkit/shared/blob";
 import { compressJSON } from "@fabkit/shared/compression";
 import { snapdom } from "@zumer/snapdom";
 import i18n from "../../i18n";
 import { getLastBoundaryError } from "../error-context";
-import { router } from "../router";
 import { getConsoleBuffer } from "./console-interceptor";
 import { collectAppData } from "./provider-registry";
 
