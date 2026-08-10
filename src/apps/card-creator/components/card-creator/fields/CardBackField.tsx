@@ -1,11 +1,17 @@
+import { CustomFrameDialog } from "@fabkit/apps/card-creator/components/custom-frames/CustomFrameDialog.tsx";
 import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rendering.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import Select from "@fabkit/platform/components/form/Select";
 import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_backs.ts";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo } from "react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HybridBlendField } from "./HybridBlendField.tsx";
+
+// Sentinel value for the "Add custom frame" row. Kept out of the card back
+// list itself so the arrow buttons can never land on it and the hybrid
+// toggle's "at least two frames" check stays honest.
+const ADD_CUSTOM_FRAME = "__add_custom_frame__";
 
 // Shared between the single (non-hybrid) select and both halves of the hybrid
 // split, so the three can never visually drift apart from one another.
@@ -35,6 +41,37 @@ export function CardBackField() {
 			) as CardCreatorCardBack[],
 		[CardBackStyle, CardType],
 	);
+
+	const [isCustomFrameDialogOpen, setIsCustomFrameDialogOpen] = useState(false);
+
+	// The card backs plus the action row, shared by the single select and both
+	// hybrid halves so the option list can't drift between the three.
+	const selectOptions = useMemo(
+		() => [
+			// First, not last: the list scrolls, so a row at the bottom would sit
+			// out of sight below dozens of frames.
+			{
+				value: ADD_CUSTOM_FRAME,
+				label: t("card_creator.custom_frame_action_label"),
+				variant: "action" as const,
+				icon: Plus,
+			},
+			...options.map((b) => ({ value: String(b.id), label: b.name })),
+		],
+		[options, t],
+	);
+
+	const handleSelect = (
+		value: string,
+		setter: (back: CardCreatorCardBack) => void,
+	) => {
+		if (value === ADD_CUSTOM_FRAME) {
+			setIsCustomFrameDialogOpen(true);
+			return;
+		}
+		const result = options.find((b) => b.id === parseInt(value, 10));
+		if (result) setter(result);
+	};
 
 	const isHybrid = CardBackRight !== null;
 
@@ -73,15 +110,8 @@ export function CardBackField() {
 						<div className="relative flex-1 grid grid-cols-1">
 							<Select
 								value={String(CardBack?.id ?? "")}
-								onChange={(value) => {
-									const id = parseInt(value, 10);
-									const result = options.find((b) => b.id === id);
-									if (result) setCardBack(result);
-								}}
-								options={options.map((b) => ({
-									value: String(b.id),
-									label: b.name,
-								}))}
+								onChange={(value) => handleSelect(value, setCardBack)}
+								options={selectOptions}
 								label={null}
 								title={CardBack?.name}
 								className={SELECT_CLASS_NAME}
@@ -95,15 +125,8 @@ export function CardBackField() {
 						<div className="relative flex-1 grid grid-cols-1">
 							<Select
 								value={String(CardBackRight?.id ?? "")}
-								onChange={(value) => {
-									const id = parseInt(value, 10);
-									const result = options.find((b) => b.id === id);
-									if (result) setCardBackRight(result);
-								}}
-								options={options.map((b) => ({
-									value: String(b.id),
-									label: b.name,
-								}))}
+								onChange={(value) => handleSelect(value, setCardBackRight)}
+								options={selectOptions}
 								label={null}
 								title={CardBackRight?.name}
 								className={SELECT_CLASS_NAME}
@@ -116,15 +139,8 @@ export function CardBackField() {
 					<div className="relative flex-1 grid grid-cols-1">
 						<Select
 							value={String(CardBack?.id ?? "")}
-							onChange={(value) => {
-								const id = parseInt(value, 10);
-								const result = options.find((b) => b.id === id);
-								if (result) setCardBack(result);
-							}}
-							options={options.map((b) => ({
-								value: String(b.id),
-								label: b.name,
-							}))}
+							onChange={(value) => handleSelect(value, setCardBack)}
+							options={selectOptions}
 							label={null}
 							className={SELECT_CLASS_NAME}
 							buttonClassName={SELECT_BUTTON_CLASS_NAME}
@@ -147,6 +163,12 @@ export function CardBackField() {
 			{/* Seam softness sits inside the picker's border — same control family,
 			    and it keeps the card preview from being pushed down the page. */}
 			<HybridBlendField />
+
+			<CustomFrameDialog
+				key={isCustomFrameDialogOpen ? "frame-open" : "frame-closed"}
+				open={isCustomFrameDialogOpen}
+				onClose={() => setIsCustomFrameDialogOpen(false)}
+			/>
 		</div>
 	);
 }

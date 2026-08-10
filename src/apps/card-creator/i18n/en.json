@@ -164,7 +164,8 @@
 		"meld_shared_fields_label": "Shared Fields",
 		"meld_band_keyword": "Meld ",
 		"meld_band_description": "(You may play 1 or both halves of this card. Each costs {{cost}}.)",
-		"meld_band_keyword_only": "(You may play 1 or both halves of this card.)"
+		"meld_band_keyword_only": "(You may play 1 or both halves of this card.)",
+		"custom_frame_action_label": "Add custom frame"
 	},
 	"gallery": {
 		"title": "Saved Cards",
@@ -222,6 +223,28 @@
 			"move_here": "Move here",
 			"move_error": "Failed to move card. Please try again.",
 			"no_subfolders": "No subfolders here"
+		}
+	},
+	"custom_frames": {
+		"title": "Custom Frames",
+		"subtitle": "Upload and manage your custom card frames",
+		"upload_label": "Upload frame",
+		"empty": "No custom frames yet",
+		"empty_hint": "Upload a frame image to use it as a background in the card creator.",
+		"delete": "Delete",
+		"cancel": "Cancel",
+		"delete_title": "Delete \"{{name}}\"?",
+		"delete_confirm": "This custom frame will be deleted permanently. This can't be undone.",
+		"preview_alt": "Preview of the custom frame {{name}}",
+		"dialog": {
+			"title": "Add a custom frame",
+			"description": "Upload your own frame image and give it a name. The name is how you will recognise it in the drop-down menu.",
+			"close": "Close",
+			"name_label": "Frame name",
+			"name_placeholder": "Your custom frame name...",
+			"image_label": "Frame image",
+			"cancel": "Cancel",
+			"save": "Add frame"
 		}
 	},
 	"export": {

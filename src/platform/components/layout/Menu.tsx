@@ -9,6 +9,7 @@ import type { FileRouteTypes } from "@tanstack/react-router";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
 	Bug,
+	Frame,
 	Home,
 	Images,
 	Map as MapIcon,
@@ -53,6 +54,7 @@ const navigation: NavItem[] = [
 		icon: Paintbrush,
 		visualChildren: [
 			{ nameKey: "nav.gallery", route: "/gallery", icon: Images },
+			{ nameKey: "nav.custom_frames", route: "/custom-frames", icon: Frame },
 		],
 	},
 	{ nameKey: "nav.fabble", route: "/fabble", icon: Fabble },
@@ -140,9 +142,11 @@ function SubNavLink({
 				].join(" ")}
 				aria-hidden="true"
 			/>
+			{/* Top padding balances the underline's bottom padding + border, so the
+			    label's text sits on the icon's centre line rather than above it. */}
 			<span
 				className={[
-					"border-b-2 pb-1 leading-tight",
+					"border-b-2 pt-1.5 pb-1 leading-tight",
 					isActive ? "border-primary" : "border-transparent",
 				].join(" ")}
 			>
@@ -161,8 +165,11 @@ function SubNavList({
 	currentPath: string;
 	onClick?: () => void;
 }) {
+	// No vertical spacing between the items: the L-connector's vertical rule runs
+	// edge to edge of each <li>, so any gap between them shows as a break in the
+	// line. The breathing room comes from padding inside each item instead.
 	return (
-		<ul className="mt-1.5 space-y-0.5">
+		<ul className="mt-1.5">
 			{items.map((child, idx) => {
 				const isLast = idx === items.length - 1;
 				return (

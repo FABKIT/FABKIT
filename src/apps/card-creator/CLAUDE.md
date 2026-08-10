@@ -10,6 +10,7 @@ renders them as SVG previews that can be exported as PNG.
 src/apps/card-creator/
   components/
     card-creator/      # Field components, renderer, hooks
+    custom-frames/     # Custom frame tiles and the upload dialog (shared with the picker)
     gallery/           # Gallery thumbnails and file upload
     home/              # Home page card-type picker and featured artist
     utils.ts           # Field visibility helpers (useIsFieldVisible, isFieldVisible)
@@ -33,6 +34,8 @@ src/apps/card-creator/
 
 - `CardType` — selected card type (`CardType | null`)
 - `CardBack` — selected card back config object (`CardBack | null`)
+- `CardBackRight` — right-half card back for hybrid frames (`CardBack | null`); non-null
+  is what makes a card hybrid, there is no separate boolean flag. Excluded for meld.
 - `CardBackStyle` — visual style variant (`CardStyle`)
 - `CardArtwork`, `CardArtPosition` — artwork blob and position/scale
 - `CardArtworkCredits`, `CardSetNumber` — text fields (uppercased)
