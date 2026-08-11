@@ -11,6 +11,32 @@ interface ImageUploadProps {
 	className?: string;
 }
 
+/** Friendly label for each MIME type this component is ever asked to accept.
+ * Keep in sync with any acceptedFormats list a caller passes — an unlisted
+ * MIME type falls back to its subtype (e.g. "image/avif" -> "AVIF") via
+ * mimeTypeToLabel below, so a new format never produces an empty label. */
+const MIME_TYPE_LABELS: Record<string, string> = {
+	"image/png": "PNG",
+	"image/jpeg": "JPG",
+	"image/gif": "GIF",
+	"image/webp": "WebP",
+};
+
+function mimeTypeToLabel(mimeType: string): string {
+	return MIME_TYPE_LABELS[mimeType] ?? mimeType.split("/")[1]?.toUpperCase();
+}
+
+/** Human-readable "X, Y, or Z" list of accepted formats, so the invalid-format
+ * error always reflects what THIS instance actually accepts — a caller
+ * restricting to PNG/WebP (e.g. custom card frames, which need alpha) must
+ * never be told JPG is fine, which the previous hardcoded message did. */
+function formatAcceptedFormatsList(mimeTypes: string[]): string {
+	const labels = mimeTypes.map(mimeTypeToLabel);
+	if (labels.length <= 1) return labels.join("");
+	if (labels.length === 2) return labels.join(" or ");
+	return `${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1]}`;
+}
+
 export default function ImageUpload({
 	onImageSelect,
 	onError,
@@ -32,7 +58,9 @@ export default function ImageUpload({
 
 			// Validate file type
 			if (!acceptedFormats.includes(file.type)) {
-				const errorMsg = t("components.image_upload.error_invalid_format");
+				const errorMsg = t("components.image_upload.error_invalid_format", {
+					formats: formatAcceptedFormatsList(acceptedFormats),
+				});
 				setError(errorMsg);
 				onError?.(errorMsg);
 				return;

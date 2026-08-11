@@ -160,7 +160,7 @@
 			"drop_here": "Release to upload your image",
 			"supported_formats": "PNG, JPG, or GIF",
 			"max_size": "Maximum file size: {{maxSizeInMb, number}}MB",
-			"error_invalid_format": "Invalid file format. Please use PNG, JPG, or GIF",
+			"error_invalid_format": "Invalid file format. Please use {{formats}}",
 			"error_too_large": "File is too large. Maximum size is {{maxSizeInMb, number}}MB",
 			"success": "Image loaded",
 			"remove": "Remove image",
