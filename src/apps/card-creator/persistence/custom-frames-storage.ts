@@ -1,4 +1,6 @@
+import { base64ToBlob, blobToBase64 } from "@fabkit/shared/blob";
 import type { RenderConfigVariation } from "../config/rendering.ts";
+import { sha256Hex } from "../utils/frame-image.ts";
 import { db } from "./db.ts";
 
 // ─── Stored types ──────────────────────────────────────────────────────────
@@ -100,6 +102,12 @@ export async function getAllFrameImages(): Promise<StoredFrameImage[]> {
 
 export async function getAllCustomFrames(): Promise<StoredCustomFrame[]> {
 	return db.customFrames.toArray();
+}
+
+export async function getCustomFrameRowById(
+	id: number,
+): Promise<StoredCustomFrame | undefined> {
+	return db.customFrames.get(id);
 }
 
 /** Mirror rows for one uploaded image. Used to grey out/exclude stock entries
@@ -251,4 +259,317 @@ export async function deleteCustomFrameImage(
 		await db.customFrames.where("payloadHash").equals(payloadHash).delete();
 		await db.frameImages.delete(payloadHash);
 	});
+}
+
+// ─── Portable export/import ─────────────────────────────────────────────────
+
+/**
+ * Frame metadata as embedded in a `.fabkit`/`.fabgallery` file, alongside
+ * `state` (same placement as `folders`) — never inside `SerializedCardState`,
+ * so it's untouched by MIGRATIONS. `id` and `payloadHash` are the
+ * EXPORTING device's values; neither is trusted on import (see
+ * reconcileImportedCustomFrames) — `payloadHash` here only links a meta to
+ * its image within the same file's `customFrameImages` array.
+ */
+export interface EmbeddedCustomFrameMeta {
+	id: number;
+	name: string;
+	type: string;
+	dented: boolean;
+	renderer: RenderConfigVariation;
+	mirrorsCardBackId: number;
+	payloadHash: string;
+}
+
+/**
+ * One distinct image, embedded once regardless of how many
+ * EmbeddedCustomFrameMeta entries (across however many cards, for a
+ * `.fabgallery`) reference it via `payloadHash` — this is the hoist+dedupe
+ * the plan calls for. `image` is the full 900×1256 asset and is OMITTED for
+ * a preview-only embed (currently: `.fabreport`, which never needs to
+ * reconstruct an actual renderable frame, only show a thumbnail).
+ */
+export interface EmbeddedCustomFrameImage {
+	payloadHash: string;
+	image?: string;
+	preview: string;
+	byteSize: number;
+	sourceHash: string;
+	normVersion: number;
+}
+
+/**
+ * Builds the embeddable (meta, image) pair for one card's referenced custom
+ * frames (its CardBack and/or CardBackRight, whichever are negative ids).
+ * Used both for a standalone `.fabkit` export and, per-card, to compute the
+ * hoisted set for a `.fabgallery` export (see embedCustomFramesForCards).
+ */
+export async function embedCustomFramesForCard(
+	cardBackId: number | null,
+	cardBackRightId: number | null,
+	includeFullResImages: boolean,
+): Promise<{
+	metas: EmbeddedCustomFrameMeta[];
+	images: EmbeddedCustomFrameImage[];
+} | null> {
+	const ids = [cardBackId, cardBackRightId].filter(
+		(id): id is number => id !== null && id < 0,
+	);
+	if (ids.length === 0) return null;
+
+	const metas: EmbeddedCustomFrameMeta[] = [];
+	const imagesByHash = new Map<string, EmbeddedCustomFrameImage>();
+	for (const id of ids) {
+		const row = await getCustomFrameRowById(id);
+		// Locally missing (deleted, or a stale reference) — simply not embedded.
+		// The card's own state.CardBack id is untouched by this, so on import
+		// it resolves through the exact same sign-discriminated missing-frame
+		// placeholder path as any other unresolvable custom-frame id.
+		if (!row) continue;
+		metas.push({
+			id: row.id,
+			name: row.name,
+			type: row.type,
+			dented: row.dented,
+			renderer: row.renderer,
+			mirrorsCardBackId: row.mirrorsCardBackId,
+			payloadHash: row.payloadHash,
+		});
+		if (!imagesByHash.has(row.payloadHash)) {
+			const imageRow = await getFrameImageByPayloadHash(row.payloadHash);
+			if (imageRow) {
+				imagesByHash.set(row.payloadHash, {
+					payloadHash: row.payloadHash,
+					image: includeFullResImages
+						? await blobToBase64(imageRow.image)
+						: undefined,
+					preview: await blobToBase64(imageRow.preview),
+					byteSize: imageRow.byteSize,
+					sourceHash: imageRow.sourceHash,
+					normVersion: imageRow.normVersion,
+				});
+			}
+		}
+	}
+	if (metas.length === 0) return null;
+	return { metas, images: Array.from(imagesByHash.values()) };
+}
+
+/**
+ * Hoisted, gallery-wide version of embedCustomFramesForCard: every mirror
+ * referenced by ANY of the given cards, and every distinct image those
+ * mirrors point to, each embedded exactly once — this is what keeps N cards
+ * sharing one custom frame from costing N copies of its (~500KB) image in
+ * the exported `.fabgallery`.
+ */
+export async function embedCustomFramesForCards(
+	cards: { CardBack: number | null; CardBackRight: number | null }[],
+	includeFullResImages: boolean,
+): Promise<{
+	metas: EmbeddedCustomFrameMeta[];
+	images: EmbeddedCustomFrameImage[];
+} | null> {
+	const metasById = new Map<number, EmbeddedCustomFrameMeta>();
+	const imagesByHash = new Map<string, EmbeddedCustomFrameImage>();
+
+	for (const card of cards) {
+		const embedded = await embedCustomFramesForCard(
+			card.CardBack,
+			card.CardBackRight,
+			includeFullResImages,
+		);
+		if (!embedded) continue;
+		for (const meta of embedded.metas) metasById.set(meta.id, meta);
+		for (const image of embedded.images) {
+			if (!imagesByHash.has(image.payloadHash)) {
+				imagesByHash.set(image.payloadHash, image);
+			}
+		}
+	}
+
+	if (metasById.size === 0) return null;
+	return {
+		metas: Array.from(metasById.values()),
+		images: Array.from(imagesByHash.values()),
+	};
+}
+
+/**
+ * Reconciles frames embedded in an imported `.fabkit`/`.fabgallery` file
+ * against local storage, returning a map from the file's (foreign) frame ids
+ * to the LOCAL ids they resolve to.
+ *
+ * SECURITY: a meta/image pair's claimed `payloadHash` is used only to link
+ * them to each other WITHIN this file — it is never trusted for storage or
+ * for matching against local data. Every image's real hash is recomputed
+ * here from the bytes actually received, and that recomputed hash is what
+ * gets stored and matched against. A crafted file that claims an existing
+ * local hash for different pixels is caught by this recompute; it can never
+ * silently repoint a local mirror at attacker-chosen image bytes.
+ *
+ * All base64 decoding and hashing happens BEFORE the one write transaction
+ * below — Dexie transactions do not survive an awaited non-Dexie promise
+ * (crypto.subtle.digest, fetch-based base64 decode) partway through them,
+ * and doing the writes in one transaction (rather than one per mirror, as
+ * the interactive upload dialog does) makes a mid-import failure leave no
+ * orphan frameImages rows.
+ *
+ * A meta with no matching image (e.g. `.fabreport`'s preview-only embeds,
+ * which never carry `image`) is simply left out of the returned map — the
+ * caller's id-remap step treats that exactly like any other unresolvable
+ * custom-frame id (missing-frame placeholder), which is the correct,
+ * data-preserving outcome.
+ */
+export async function reconcileImportedCustomFrames(
+	metas: EmbeddedCustomFrameMeta[] | undefined,
+	images: EmbeddedCustomFrameImage[] | undefined,
+): Promise<Map<number, number>> {
+	const idMap = new Map<number, number>();
+	if (!metas || metas.length === 0) return idMap;
+
+	const claimedToReal = new Map<
+		string,
+		{
+			hash: string;
+			image: Blob;
+			preview: Blob;
+			byteSize: number;
+			sourceHash: string;
+			normVersion: number;
+		}
+	>();
+	for (const img of images ?? []) {
+		if (!img.image) continue;
+		const imageBlob = await base64ToBlob(img.image);
+		const previewBlob = await base64ToBlob(img.preview);
+		const hash = await sha256Hex(await imageBlob.arrayBuffer());
+		claimedToReal.set(img.payloadHash, {
+			hash,
+			image: imageBlob,
+			preview: previewBlob,
+			byteSize: img.byteSize,
+			sourceHash: img.sourceHash,
+			normVersion: img.normVersion,
+		});
+	}
+
+	// Reads before the write transaction — see the doc comment above. Single-
+	// user local-only app, so a write racing between this read and the
+	// transaction below is not a realistic concern.
+	const toInsertImages: StoredFrameImage[] = [];
+	const seenHashes = new Set<string>();
+	for (const resolved of claimedToReal.values()) {
+		if (seenHashes.has(resolved.hash)) continue;
+		seenHashes.add(resolved.hash);
+		const existing = await db.frameImages.get(resolved.hash);
+		if (!existing) {
+			toInsertImages.push({
+				payloadHash: resolved.hash,
+				sourceHash: resolved.sourceHash,
+				normVersion: resolved.normVersion,
+				image: resolved.image,
+				preview: resolved.preview,
+				byteSize: resolved.byteSize,
+				createdAt: Date.now(),
+			});
+		}
+	}
+
+	const toInsertMirrors: { meta: EmbeddedCustomFrameMeta; realHash: string }[] =
+		[];
+	for (const meta of metas) {
+		const resolved = claimedToReal.get(meta.payloadHash);
+		if (!resolved) continue;
+		// Reuse an existing LOCAL mirror if one already matches this exact
+		// (image, stock-entry) pair — repeated imports of the same file don't
+		// pile up duplicate picker entries. clearGallery() (replace-mode
+		// import) deliberately does NOT clear frameImages/customFrames, so the
+		// local frame library survives a replace and this reuse check applies
+		// there too, not just in merge mode.
+		const localMatches = await db.customFrames
+			.where("payloadHash")
+			.equals(resolved.hash)
+			.toArray();
+		const existingMirror = localMatches.find(
+			(m) => m.mirrorsCardBackId === meta.mirrorsCardBackId,
+		);
+		if (existingMirror) {
+			idMap.set(meta.id, existingMirror.id);
+		} else {
+			toInsertMirrors.push({ meta, realHash: resolved.hash });
+		}
+	}
+
+	if (toInsertImages.length === 0 && toInsertMirrors.length === 0) {
+		return idMap;
+	}
+
+	await db.transaction("rw", db.frameImages, db.customFrames, async () => {
+		for (const image of toInsertImages) {
+			await db.frameImages.add(image);
+		}
+		if (toInsertMirrors.length > 0) {
+			const ids = await allocateCustomFrameIds(toInsertMirrors.length);
+			const now = Date.now();
+			for (let i = 0; i < toInsertMirrors.length; i++) {
+				const { meta, realHash } = toInsertMirrors[i];
+				const id = ids[i];
+				await db.customFrames.add({
+					id,
+					name: meta.name,
+					payloadHash: realHash,
+					type: meta.type,
+					dented: meta.dented,
+					renderer: meta.renderer,
+					mirrorsCardBackId: meta.mirrorsCardBackId,
+					createdAt: now,
+					updatedAt: now,
+					schemaVersion: __APP_VERSION__,
+				});
+				idMap.set(meta.id, id);
+			}
+		}
+	});
+
+	return idMap;
+}
+
+/**
+ * Reserved id used to remap a foreign (imported) negative frame id that
+ * collides with an UNRELATED local frame already using that literal number —
+ * two independently-allocated devices both start at -1, so a foreign -1 is
+ * quite likely to name a different local frame, not "the same frame, just
+ * not embedded". Keeping the foreign id as-is in that case would silently
+ * resolve to (and render) the wrong local frame's pixels.
+ *
+ * This value is NEVER written as a customFrames row — it only ever appears
+ * as a StoredCard.state.CardBack/CardBackRight number, where it's
+ * guaranteed to miss every lookup and fall through to the ordinary
+ * missing-frame placeholder path, same as any other unresolvable custom id.
+ * allocateCustomFrameIds only ever derives from EXISTING rows, so never
+ * inserting a row here means it can never be "reissued" to a real frame.
+ */
+export const UNRESOLVABLE_FOREIGN_FRAME_ID = -900_000_000;
+
+/**
+ * Remaps one CardBack/CardBackRight id through an id map produced by
+ * reconcileImportedCustomFrames. Positive ids (stock frames) and `null` pass
+ * through untouched — only the negative custom-frame id space is ever
+ * remapped. See UNRESOLVABLE_FOREIGN_FRAME_ID's doc comment for why an
+ * unmapped negative id can't simply be kept as-is.
+ */
+export async function remapCustomFrameId(
+	id: number | null | undefined,
+	idMap: Map<number, number>,
+): Promise<number | null> {
+	// `id` is typed as `number | null` at the call sites, but legacy/malformed
+	// fixtures can carry `undefined` (never explicitly `null`) — `undefined >=
+	// 0` is false, so without this explicit check it falls through to a Dexie
+	// `.get(undefined)` call, which throws rather than returning `undefined`.
+	if (id === null || id === undefined) return null;
+	if (id >= 0) return id;
+	const mapped = idMap.get(id);
+	if (mapped !== undefined) return mapped;
+	const localRow = await getCustomFrameRowById(id);
+	return localRow ? UNRESOLVABLE_FOREIGN_FRAME_ID : id;
 }

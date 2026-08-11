@@ -77,11 +77,14 @@ registerReportDataProvider("card-creator", async () => {
 	// Every card's images are embedded at preview resolution only
 	// (includeFullResImages: false) — this is what keeps a report bounded even
 	// before the size budget below kicks in; full-resolution artwork/overlay
-	// are omitted, not just deferred. Cards are processed in the newest-first
-	// order getAllCards() already returns, so once the budget is exceeded the
-	// loop STOPS (not just skips) — the remaining cards are never even
-	// exported, keeping report generation bounded in compute time, not just
-	// output size, on a gallery with hundreds of cards.
+	// are omitted, not just deferred. A card using a custom frame also carries
+	// that frame's small preview image (exportCardToObject embeds it whenever
+	// includeCustomFrames is left at its default) — the report-preview
+	// embedding this is for. Cards are processed in the newest-first order
+	// getAllCards() already returns, so once the budget is exceeded the loop
+	// STOPS (not just skips) — the remaining cards are never even exported,
+	// keeping report generation bounded in compute time, not just output
+	// size, on a gallery with hundreds of cards.
 	const serializedCards: FabgalleryCardEntry[] = [];
 	let accumulatedBytes = 0;
 	let processedCount = 0;
@@ -89,8 +92,17 @@ registerReportDataProvider("card-creator", async () => {
 		const exported = await exportCardToObject(card, {
 			includeFullResImages: false,
 		});
-		// base64 preview length is a fine proxy for byte size for budgeting purposes.
-		const approxBytes = exported.preview.length;
+		// base64 preview length is a fine proxy for byte size for budgeting
+		// purposes. Must include customFrameImages' preview bytes too — those
+		// are the same order of magnitude (15-30KB) as the card's own preview,
+		// and omitting them here would let the actual output silently drift
+		// past MAX_REPORT_CARD_BYTES for a gallery heavy on custom frames.
+		const approxBytes =
+			exported.preview.length +
+			(exported.customFrameImages ?? []).reduce(
+				(sum, img) => sum + (img.preview?.length ?? 0),
+				0,
+			);
 		if (accumulatedBytes + approxBytes > MAX_REPORT_CARD_BYTES) {
 			break;
 		}

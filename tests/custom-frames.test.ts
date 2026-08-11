@@ -4,10 +4,13 @@ import {
 	addFrameImageAndMirrors,
 	countCardsUsingFrame,
 	deleteCustomFrameMirror,
+	embedCustomFramesForCards,
 	getAllCustomFrames,
 	getAllFrameImages,
+	getCustomFrameRowById,
 	getFrameImageByPayloadHash,
 	getFrameImageBySourceHash,
+	reconcileImportedCustomFrames,
 } from "../src/apps/card-creator/persistence/custom-frames-storage.ts";
 import { db } from "../src/apps/card-creator/persistence/db.ts";
 import {
@@ -17,7 +20,13 @@ import {
 	getCustomFramesGroupedByImage,
 	reloadCustomFrames,
 } from "../src/apps/card-creator/stores/custom-frames.ts";
+import { sha256Hex } from "../src/apps/card-creator/utils/frame-image.ts";
+import { blobToBase64 } from "../src/shared/blob.ts";
 import { CardBacks } from "../src/shared/config/cards/card_backs.ts";
+
+async function sha256HexOfText(text: string): Promise<string> {
+	return sha256Hex(await new Blob([text]).arrayBuffer());
+}
 
 async function clearCustomFrames(): Promise<void> {
 	await db.transaction("rw", db.customFrames, db.frameImages, async () => {
@@ -29,6 +38,10 @@ async function clearCustomFrames(): Promise<void> {
 
 function blob(bytes: number): Blob {
 	return new Blob([new Uint8Array(bytes)], { type: "image/webp" });
+}
+
+function textBlob(text: string): Blob {
+	return new Blob([text], { type: "image/webp" });
 }
 
 describe("custom-frames-storage", () => {
@@ -436,5 +449,222 @@ describe("custom-frames registry", () => {
 		expect(available.length).toBe(stockCount + 1);
 		expect(available[0]?.source).toBeUndefined(); // stock frame first
 		expect(available[available.length - 1]?.source).toBe("custom");
+	});
+});
+
+describe("portable export/import", () => {
+	beforeEach(async () => {
+		await clearCustomFrames();
+	});
+
+	it("embedCustomFramesForCards hoists a frame shared by two cards to one embedded image", async () => {
+		const mirrors = await addFrameImageAndMirrors(
+			{
+				payloadHash: "shared-export-hash",
+				sourceHash: "shared-export-src",
+				normVersion: 1,
+				image: blob(500),
+				preview: blob(20),
+				byteSize: 500,
+			},
+			[
+				{
+					name: "Shared",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+				{
+					name: "Shared",
+					type: "resource",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 9,
+				},
+			],
+		);
+
+		// Two different cards, each using a DIFFERENT mirror of the SAME image
+		// (the hybrid-left/right-sharing-one-image scenario at gallery scale).
+		const result = await embedCustomFramesForCards(
+			[
+				{ CardBack: mirrors[0].id, CardBackRight: null },
+				{ CardBack: mirrors[1].id, CardBackRight: null },
+			],
+			true,
+		);
+
+		expect(result?.metas.length).toBe(2); // both distinct mirror rows embedded
+		expect(result?.images.length).toBe(1); // but only ONE copy of the image
+		expect(result?.images[0]?.payloadHash).toBe("shared-export-hash");
+		expect(result?.images[0]?.image).toBeDefined(); // full-res, since includeFullResImages=true
+	});
+
+	it("embedCustomFramesForCards omits full-res image bytes when not requested (report preview embedding)", async () => {
+		const [mirror] = await addFrameImageAndMirrors(
+			{
+				payloadHash: "preview-only-hash",
+				sourceHash: "preview-only-src",
+				normVersion: 1,
+				image: blob(500),
+				preview: blob(20),
+				byteSize: 500,
+			},
+			[
+				{
+					name: "PreviewOnly",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+
+		const result = await embedCustomFramesForCards(
+			[{ CardBack: mirror.id, CardBackRight: null }],
+			false,
+		);
+
+		expect(result?.images[0]?.image).toBeUndefined();
+		expect(result?.images[0]?.preview).toBeDefined();
+	});
+
+	it("import recomputes payloadHash locally and never trusts a forged claim", async () => {
+		// Local baseline: a real frame with known, real content.
+		const [localMirror] = await addFrameImageAndMirrors(
+			{
+				payloadHash: "real-hash",
+				sourceHash: "real-src",
+				normVersion: 1,
+				image: textBlob("real-pixels"),
+				preview: textBlob("real-preview"),
+				byteSize: 11,
+			},
+			[
+				{
+					name: "Real",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+
+		// A crafted import claims payloadHash "real-hash" (the REAL local
+		// frame's hash) but carries entirely different bytes — the attack this
+		// guards against is a forged file silently repointing a local mirror
+		// at different pixels while claiming to be an already-trusted hash.
+		const evilBlob = textBlob("evil-pixels-not-the-real-frame");
+		const evilBase64 = await blobToBase64(evilBlob);
+
+		const idMap = await reconcileImportedCustomFrames(
+			[
+				{
+					id: -55,
+					name: "Evil",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+					payloadHash: "real-hash",
+				},
+			],
+			[
+				{
+					payloadHash: "real-hash",
+					image: evilBase64,
+					preview: evilBase64,
+					byteSize: evilBlob.size,
+					sourceHash: "evil-src",
+					normVersion: 1,
+				},
+			],
+		);
+
+		// The local "real-hash" row must be completely untouched — the forged
+		// claim never got a chance to overwrite it, because reconciliation
+		// keys off the RECOMPUTED hash of the received bytes, not the claim.
+		const realRow = await getFrameImageByPayloadHash("real-hash");
+		expect(await realRow?.image.text()).toBe("real-pixels");
+
+		// The evil payload was still imported, but as its own, HONESTLY-hashed
+		// frame — never merged with, or mistaken for, the real one.
+		const resolvedId = idMap.get(-55);
+		expect(resolvedId).toBeDefined();
+		expect(resolvedId).not.toBe(localMirror.id);
+
+		const newRow = await getCustomFrameRowById(resolvedId as number);
+		expect(newRow?.payloadHash).not.toBe("real-hash");
+		const newImageRow = await getFrameImageByPayloadHash(
+			newRow?.payloadHash as string,
+		);
+		expect(await newImageRow?.image.text()).toBe(
+			"evil-pixels-not-the-real-frame",
+		);
+	});
+
+	it("import reuses an existing local mirror for the same (recomputed hash, stock entry) pair instead of duplicating it", async () => {
+		// reconcileImportedCustomFrames always keys reuse off the RECOMPUTED
+		// hash of the received bytes (never a claimed one, per the forged-hash
+		// test above) — so the existing local row must be seeded with the
+		// REAL hash of "reuse-pixels", not an arbitrary fixture string, or
+		// this test would be exercising the "no match" path instead.
+		const realHash = await sha256HexOfText("reuse-pixels");
+
+		const [existing] = await addFrameImageAndMirrors(
+			{
+				payloadHash: realHash,
+				sourceHash: "reuse-src",
+				normVersion: 1,
+				image: textBlob("reuse-pixels"),
+				preview: textBlob("reuse-preview"),
+				byteSize: 12,
+			},
+			[
+				{
+					name: "Reuse",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+
+		const image = textBlob("reuse-pixels");
+		const preview = textBlob("reuse-preview");
+		const idMap = await reconcileImportedCustomFrames(
+			[
+				{
+					id: -77,
+					name: "Reuse",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+					// A claimed hash need not even be correct — only the FILE's own
+					// meta/image pair need to agree so reconcile can link them; the
+					// actual reuse decision is keyed off the recomputed hash below.
+					payloadHash: "claimed-hash-doesnt-need-to-be-real",
+				},
+			],
+			[
+				{
+					payloadHash: "claimed-hash-doesnt-need-to-be-real",
+					image: await blobToBase64(image),
+					preview: await blobToBase64(preview),
+					byteSize: image.size,
+					sourceHash: "reuse-src",
+					normVersion: 1,
+				},
+			],
+		);
+
+		expect(idMap.get(-77)).toBe(existing.id);
+		expect((await getAllCustomFrames()).length).toBe(1); // no duplicate mirror
+		expect((await getAllFrameImages()).length).toBe(1); // no duplicate image
 	});
 });

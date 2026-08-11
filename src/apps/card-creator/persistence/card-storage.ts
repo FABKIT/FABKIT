@@ -1,4 +1,4 @@
-import { blobToBase64 } from "@fabkit/shared/blob";
+import { base64ToBlob, blobToBase64 } from "@fabkit/shared/blob";
 import { compressJSON } from "@fabkit/shared/compression";
 import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
@@ -16,7 +16,19 @@ import {
 	HYBRID_SPLIT_DEFAULT,
 	type MeldHalf,
 } from "../stores/card-creator";
-import { getCustomFrameById } from "../stores/custom-frames.ts";
+import {
+	broadcastCustomFramesChanged,
+	getCustomFrameById,
+	reloadCustomFrames,
+} from "../stores/custom-frames.ts";
+import {
+	type EmbeddedCustomFrameImage,
+	type EmbeddedCustomFrameMeta,
+	embedCustomFramesForCard,
+	embedCustomFramesForCards,
+	reconcileImportedCustomFrames,
+	remapCustomFrameId,
+} from "./custom-frames-storage.ts";
 import { db } from "./db.ts";
 import { meld_cards_migration } from "./migrations/0-1-0-meld-cards.ts";
 import type { Migration } from "./migrations.ts";
@@ -179,6 +191,19 @@ export interface FabkitFile {
 	 * was dropped without embedding the bytes themselves.
 	 */
 	imageStats?: Record<string, { byteSize: number; type: string } | null>;
+	/**
+	 * Custom (user-uploaded) frame metadata this card's CardBack/CardBackRight
+	 * reference, living BESIDE `state` (same placement as `folders` on
+	 * FabgalleryFile) — never inside `SerializedCardState`, so it's untouched
+	 * by MIGRATIONS. Absent on a standalone export that references no custom
+	 * frames. A `.fabgallery` populates this ONLY per-card when exported
+	 * standalone (exportCardToObject); exportGalleryToFile hoists this to the
+	 * gallery-level fields instead, so per-card entries within a gallery leave
+	 * these undefined — see FabgalleryFile's customFrames/customFrameImages.
+	 */
+	customFrames?: EmbeddedCustomFrameMeta[];
+	/** Distinct images referenced by `customFrames`, embedded once each. */
+	customFrameImages?: EmbeddedCustomFrameImage[];
 }
 
 /**
@@ -211,6 +236,15 @@ export interface FabgalleryFile {
 	 * Absent on a real `.fabgallery` export, which is always complete.
 	 */
 	truncated?: { omittedCards: number; reason: "size-budget" };
+	/**
+	 * Every custom frame mirror referenced by ANY card in `cards`, hoisted and
+	 * deduped here rather than repeated per-card entry — see
+	 * embedCustomFramesForCards. This is what keeps N cards sharing one custom
+	 * frame from costing N copies of its image in the exported file.
+	 */
+	customFrames?: EmbeddedCustomFrameMeta[];
+	/** Distinct images referenced by `customFrames`, embedded once each. */
+	customFrameImages?: EmbeddedCustomFrameImage[];
 }
 
 export type GalleryImportMode = "replace" | "merge";
@@ -375,12 +409,7 @@ export function deserializeCardState(
 
 // ─── Image conversion ─────────────────────────────────────────────────────────
 
-export { blobToBase64 } from "@fabkit/shared/blob";
-
-export async function base64ToBlob(base64: string): Promise<Blob> {
-	const response = await fetch(base64);
-	return response.blob();
-}
+export { base64ToBlob, blobToBase64 } from "@fabkit/shared/blob";
 
 async function serializeMeldHalf(
 	half: MeldHalf | undefined,
@@ -726,22 +755,40 @@ export async function clearGallery(): Promise<void> {
 
 export async function exportCardToObject(
 	card: StoredCard,
-	options: { includeFullResImages?: boolean } = {},
+	options: {
+		includeFullResImages?: boolean;
+		/**
+		 * false when called per-card from exportGalleryToFile, which hoists
+		 * custom-frame embedding to the gallery level instead (see
+		 * embedCustomFramesForCards) — must default true so a standalone
+		 * `.fabkit` export (the only other caller) is self-contained.
+		 */
+		includeCustomFrames?: boolean;
+	} = {},
 ): Promise<FabkitFile> {
 	const includeFullResImages = options.includeFullResImages ?? true;
+	const includeCustomFrames = options.includeCustomFrames ?? true;
 	const { CardArtwork, CardOverlay } = card.state;
 
-	const [preview, artwork, overlay, meldHalfA, meldHalfB] = await Promise.all([
-		blobToBase64(card.preview),
-		CardArtwork && includeFullResImages
-			? blobToBase64(CardArtwork)
-			: Promise.resolve(null),
-		CardOverlay && includeFullResImages
-			? blobToBase64(CardOverlay)
-			: Promise.resolve(null),
-		serializeMeldHalf(card.state.meldHalfA, includeFullResImages),
-		serializeMeldHalf(card.state.meldHalfB, includeFullResImages),
-	]);
+	const [preview, artwork, overlay, meldHalfA, meldHalfB, embeddedFrames] =
+		await Promise.all([
+			blobToBase64(card.preview),
+			CardArtwork && includeFullResImages
+				? blobToBase64(CardArtwork)
+				: Promise.resolve(null),
+			CardOverlay && includeFullResImages
+				? blobToBase64(CardOverlay)
+				: Promise.resolve(null),
+			serializeMeldHalf(card.state.meldHalfA, includeFullResImages),
+			serializeMeldHalf(card.state.meldHalfB, includeFullResImages),
+			includeCustomFrames
+				? embedCustomFramesForCard(
+						card.state.CardBack,
+						card.state.CardBackRight,
+						includeFullResImages,
+					)
+				: Promise.resolve(null),
+		]);
 
 	const file: FabkitFile = {
 		format: "fabkit",
@@ -775,6 +822,11 @@ export async function exportCardToObject(
 		};
 	}
 
+	if (embeddedFrames) {
+		file.customFrames = embeddedFrames.metas;
+		file.customFrameImages = embeddedFrames.images;
+	}
+
 	return file;
 }
 
@@ -782,7 +834,16 @@ export async function exportCardToJSON(card: StoredCard): Promise<string> {
 	return JSON.stringify(await exportCardToObject(card), null, 2);
 }
 
-export async function importCardFromObject(data: FabkitFile): Promise<void> {
+/**
+ * Shared body of importCardFromObject, parameterised on an already-resolved
+ * frame id map so importGalleryFromJSON can reconcile a gallery's hoisted
+ * customFrames/customFrameImages ONCE and reuse the same map across every
+ * card, rather than reconciling (and re-inserting images) per card.
+ */
+async function importCardFromObjectWithFrameMap(
+	data: FabkitFile,
+	frameIdMap: Map<number, number>,
+): Promise<void> {
 	const [preview, artwork, overlay, meldHalfAArtwork, meldHalfBArtwork] =
 		await Promise.all([
 			base64ToBlob(data.preview),
@@ -807,6 +868,16 @@ export async function importCardFromObject(data: FabkitFile): Promise<void> {
 		data.formatVersion ?? LEGACY_SCHEMA_VERSION,
 	);
 
+	// Custom-frame ids are local to the EXPORTING device and must never be
+	// trusted as-is — remapCustomFrameId resolves each through frameIdMap
+	// (built by reconcileImportedCustomFrames) and falls back to a reserved
+	// sentinel, never the raw foreign id, when it collides with an unrelated
+	// local frame. See UNRESOLVABLE_FOREIGN_FRAME_ID's doc comment.
+	const [remappedCardBack, remappedCardBackRight] = await Promise.all([
+		remapCustomFrameId(migratedState.CardBack, frameIdMap),
+		remapCustomFrameId(migratedState.CardBackRight, frameIdMap),
+	]);
+
 	const card: StoredCard = {
 		version: data.version,
 		cardName: data.cardName,
@@ -817,6 +888,8 @@ export async function importCardFromObject(data: FabkitFile): Promise<void> {
 			...(migratedState as unknown as SerializedCardState),
 			CardArtwork: artwork,
 			CardOverlay: overlay,
+			CardBack: remappedCardBack,
+			CardBackRight: remappedCardBackRight,
 			meldHalfA: {
 				...migratedState.meldHalfA,
 				CardArtwork: meldHalfAArtwork,
@@ -830,6 +903,18 @@ export async function importCardFromObject(data: FabkitFile): Promise<void> {
 	};
 
 	await db.cards.put(card);
+}
+
+export async function importCardFromObject(data: FabkitFile): Promise<void> {
+	const frameIdMap = await reconcileImportedCustomFrames(
+		data.customFrames,
+		data.customFrameImages,
+	);
+	await importCardFromObjectWithFrameMap(data, frameIdMap);
+	if (frameIdMap.size > 0) {
+		await reloadCustomFrames();
+		broadcastCustomFramesChanged();
+	}
 }
 
 export async function importCardFromJSON(jsonString: string): Promise<void> {
@@ -865,12 +950,23 @@ export async function exportGalleryToFile(
 	cards: StoredCard[],
 	folders: StoredFolder[],
 ): Promise<void> {
-	const serialized: FabgalleryCardEntry[] = await Promise.all(
-		cards.map(async (card) => ({
-			...(await exportCardToObject(card)),
-			folderId: card.folderId,
-		})),
-	);
+	const [serialized, hoistedFrames] = await Promise.all([
+		Promise.all(
+			cards.map(async (card) => ({
+				// includeCustomFrames: false — embedding happens once, hoisted,
+				// below, not duplicated per card. See embedCustomFramesForCards.
+				...(await exportCardToObject(card, { includeCustomFrames: false })),
+				folderId: card.folderId,
+			})),
+		),
+		embedCustomFramesForCards(
+			cards.map((card) => ({
+				CardBack: card.state.CardBack,
+				CardBackRight: card.state.CardBackRight,
+			})),
+			true,
+		),
+	]);
 
 	const gallery: FabgalleryFile = {
 		format: "fabgallery",
@@ -880,6 +976,10 @@ export async function exportGalleryToFile(
 		cards: serialized,
 		folders,
 	};
+	if (hoistedFrames) {
+		gallery.customFrames = hoistedFrames.metas;
+		gallery.customFrameImages = hoistedFrames.images;
+	}
 
 	const blob = await compressJSON(JSON.stringify(gallery));
 	const url = URL.createObjectURL(blob);
@@ -974,16 +1074,30 @@ export async function importGalleryFromJSON(
 	const gallery = data as FabgalleryFile;
 	const importedFolders = gallery.folders ?? [];
 
+	// Reconciled ONCE for the whole gallery (hoisted, per exportGalleryToFile)
+	// rather than per card — a card entry's own customFrames/customFrameImages
+	// are left undefined by the exporter, so per-card reconciliation here
+	// would find nothing to do anyway; this is also what keeps a shared
+	// image's decode+hash work from repeating once per card that uses it.
+	const frameIdMap = await reconcileImportedCustomFrames(
+		gallery.customFrames,
+		gallery.customFrameImages,
+	);
+
 	if (mode === "replace") {
 		await clearGallery();
 		if (importedFolders.length > 0) {
 			await db.folders.bulkAdd(importedFolders);
 		}
 		for (const card of gallery.cards) {
-			await importCardFromObject(card);
+			await importCardFromObjectWithFrameMap(card, frameIdMap);
 			if (card.folderId) {
 				await moveCardToFolder(card.version, card.folderId);
 			}
+		}
+		if (frameIdMap.size > 0) {
+			await reloadCustomFrames();
+			broadcastCustomFramesChanged();
 		}
 		return {
 			imported: gallery.cards.length,
@@ -1003,12 +1117,16 @@ export async function importGalleryFromJSON(
 			skipped++;
 			continue;
 		}
-		await importCardFromObject(card);
+		await importCardFromObjectWithFrameMap(card, frameIdMap);
 		const localFolderId = card.folderId ? idMap.get(card.folderId) : undefined;
 		if (localFolderId) {
 			await moveCardToFolder(card.version, localFolderId);
 		}
 		imported++;
+	}
+	if (frameIdMap.size > 0) {
+		await reloadCustomFrames();
+		broadcastCustomFramesChanged();
 	}
 	return { imported, skipped, foldersCreated: created, foldersMerged: merged };
 }

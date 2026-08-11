@@ -6,3 +6,8 @@ export function blobToBase64(blob: Blob): Promise<string> {
 		reader.readAsDataURL(blob);
 	});
 }
+
+export async function base64ToBlob(base64: string): Promise<Blob> {
+	const response = await fetch(base64);
+	return response.blob();
+}
