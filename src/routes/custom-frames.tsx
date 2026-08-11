@@ -1,46 +1,55 @@
 import { CustomFrameDialog } from "@fabkit/apps/card-creator/components/custom-frames/CustomFrameDialog.tsx";
-import { CustomFrameTile } from "@fabkit/apps/card-creator/components/custom-frames/CustomFrameTile.tsx";
-import { DeleteFrameConfirmDialog } from "@fabkit/apps/card-creator/components/custom-frames/DeleteFrameConfirmDialog.tsx";
 import {
-	MOCK_CUSTOM_FRAMES,
-	type MockCustomFrame,
-} from "@fabkit/apps/card-creator/components/custom-frames/mock-frames.ts";
+	CustomFrameTile,
+	type MirrorDeleteRequest,
+} from "@fabkit/apps/card-creator/components/custom-frames/CustomFrameTile.tsx";
+import {
+	DeleteFrameConfirmDialog,
+	type DeleteFrameTarget,
+} from "@fabkit/apps/card-creator/components/custom-frames/DeleteFrameConfirmDialog.tsx";
+import {
+	type CustomFrameGroup,
+	ensureCustomFramesLoaded,
+	getCustomFramesGroupedByImage,
+	useCustomFrames,
+} from "@fabkit/apps/card-creator/stores/custom-frames.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { Upload } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/custom-frames")({
 	component: CustomFramesPage,
+	loader: async () => {
+		await ensureCustomFramesLoaded();
+	},
 });
 
 function CustomFramesPage() {
 	const { t } = useTranslation("card-creator");
-	// Local state stands in for the storage layer, so delete and upload are
-	// visually interactive while the real persistence is still to be built.
-	const [frames, setFrames] = useState<MockCustomFrame[]>(MOCK_CUSTOM_FRAMES);
+
+	// Subscribes to the registry so the grid re-renders after an upload/delete
+	// (including a diffing reload triggered by another tab).
+	// getCustomFramesGroupedByImage reads the registry's singleton state
+	// directly rather than through the subscribed value, so `frames` is only
+	// referenced as a useMemo dependency (see useAvailableCardBacks.ts for the
+	// same pattern) — the grid's own unit is the uploaded image, not the row,
+	// see getCustomFramesGroupedByImage's doc comment.
+	const frames = useCustomFrames();
+	const groups = useMemo(() => {
+		void frames;
+		return getCustomFramesGroupedByImage();
+	}, [frames]);
+
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [deleteTarget, setDeleteTarget] = useState<MockCustomFrame | null>(
+	const [deleteTarget, setDeleteTarget] = useState<DeleteFrameTarget | null>(
 		null,
 	);
 
-	const handleConfirmDelete = () => {
-		if (!deleteTarget) return;
-		setFrames((current) => current.filter((f) => f.id !== deleteTarget.id));
-		setDeleteTarget(null);
-	};
-
-	const handleAdd = ({ name, file }: { name: string; file: File }) => {
-		setFrames((current) => [
-			...current,
-			{
-				id: `frame-${Date.now()}`,
-				name,
-				previewUrl: URL.createObjectURL(file),
-				createdAt: Date.now(),
-			},
-		]);
-	};
+	const requestDeleteMirror = ({ group, mirrorId }: MirrorDeleteRequest) =>
+		setDeleteTarget({ kind: "mirror", group, mirrorId });
+	const requestDeleteWhole = (group: CustomFrameGroup) =>
+		setDeleteTarget({ kind: "whole", group });
 
 	return (
 		<section
@@ -67,7 +76,7 @@ function CustomFramesPage() {
 
 			{/* Content */}
 			<div className="flex-1 p-6">
-				{frames.length === 0 ? (
+				{groups.length === 0 ? (
 					<div className="flex flex-col items-center justify-center gap-4 py-16">
 						<p className="text-lg text-muted">{t("custom_frames.empty")}</p>
 						<p className="max-w-md text-center text-sm text-subtle">
@@ -83,11 +92,12 @@ function CustomFramesPage() {
 					</div>
 				) : (
 					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-						{frames.map((frame) => (
+						{groups.map((group) => (
 							<CustomFrameTile
-								key={frame.id}
-								frame={frame}
-								onRequestDelete={setDeleteTarget}
+								key={group.payloadHash}
+								group={group}
+								onRequestDeleteMirror={requestDeleteMirror}
+								onRequestDeleteWhole={requestDeleteWhole}
 							/>
 						))}
 					</div>
@@ -98,12 +108,11 @@ function CustomFramesPage() {
 				key={isDialogOpen ? "upload-open" : "upload-closed"}
 				open={isDialogOpen}
 				onClose={() => setIsDialogOpen(false)}
-				onSubmit={handleAdd}
 			/>
 			<DeleteFrameConfirmDialog
-				frame={deleteTarget}
+				target={deleteTarget}
 				onCancel={() => setDeleteTarget(null)}
-				onConfirm={handleConfirmDelete}
+				onDeleted={() => setDeleteTarget(null)}
 			/>
 		</section>
 	);

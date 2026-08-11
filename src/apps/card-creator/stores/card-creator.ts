@@ -26,6 +26,10 @@ import { v4 as uuid } from "uuid";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { isFieldVisible } from "../components/utils.ts";
+import {
+	getAvailableCardBacks,
+	resolveCardBackKeepingMissing,
+} from "../config/card-backs.ts";
 import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
 
@@ -463,20 +467,31 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// When selecting a new card type, make sure that either:
 				// - the current card back is valid for that card type
 				// - we select the first available card back for that card type
-				let available = getCardBacksForTypeAndStyle(
-					cardType,
-					state.CardBackStyle,
-				);
+				//
+				// Order matters: a missing-frame placeholder (carryMissingFrame) is
+				// checked BEFORE the validity check, because its id is by definition
+				// absent from `available` — the frame isn't present locally, that's
+				// why it's a placeholder — so a plain validity check would evict it
+				// and the next save would silently destroy the reference.
+				let available = getAvailableCardBacks(cardType, state.CardBackStyle);
 				let cardStyle = state.CardBackStyle;
-				let cardBack: CardCreatorCardBack | null = state.CardBack;
-				if (state.CardBack === null || !available.includes(state.CardBack))
-					cardBack = getSuggestedCardBack(
-						available,
-					) as CardCreatorCardBack | null;
+				let cardBack: CardCreatorCardBack | null =
+					resolveCardBackKeepingMissing(
+						state.CardBack,
+						cardType,
+						cardStyle,
+						() =>
+							state.CardBack !== null &&
+							available.some((back) => back.id === state.CardBack?.id)
+								? state.CardBack
+								: (getSuggestedCardBack(
+										available,
+									) as CardCreatorCardBack | null),
+					);
 
 				if (null === cardBack) {
 					for (const style of CardStyles) {
-						available = getCardBacksForTypeAndStyle(cardType, style);
+						available = getAvailableCardBacks(cardType, style);
 
 						if (available.length > 0)
 							cardBack = getSuggestedCardBack(
@@ -494,12 +509,20 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// approach used for the left half. Hybrid survives a type change rather than
 				// silently switching itself off. Meld is excluded from hybrid entirely.
 				const cardBackRight =
-					cardType === "meld" || state.CardBackRight === null
+					cardType === "meld"
 						? null
-						: (getSuggestedCardBack(
-								available,
+						: resolveCardBackKeepingMissing(
 								state.CardBackRight,
-							) as CardCreatorCardBack | null);
+								cardType,
+								cardStyle,
+								() =>
+									state.CardBackRight === null
+										? null
+										: (getSuggestedCardBack(
+												available,
+												state.CardBackRight,
+											) as CardCreatorCardBack | null),
+							);
 
 				// When we change the state some fields become invisible.
 				// All fields that are not visible for the new card type are set to null.
@@ -540,12 +563,16 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			set({ CardBackBlend: Math.max(0, Math.min(1, blend)) }),
 		toggleHybrid: () =>
 			set((state) => {
-				// Already hybrid — turning off discards the right half and keeps the left.
+				// Already hybrid — turning off discards the right half and keeps the
+				// left. This is an explicit user action (the toggle button), so it's
+				// fine to discard a missing-frame placeholder here too — unlike the
+				// evictions carryMissingFrame guards against elsewhere, the user is
+				// the one asking for this frame to go away.
 				if (state.CardBackRight !== null) return { CardBackRight: null };
 
 				// Turning on: right half starts as the next frame in the current
 				// type+style list (wraps around), so the split is immediately visible.
-				const available = getCardBacksForTypeAndStyle(
+				const available = getAvailableCardBacks(
 					state.CardType,
 					state.CardBackStyle,
 				);
@@ -561,19 +588,42 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			}),
 		setCardBackStyle: (backType: CardStyle) =>
 			set((state) => {
-				// When changing card back style, we select the first available card back for that style.
-				const available = getCardBacksForTypeAndStyle(state.CardType, backType);
-				const cardBack = getSuggestedCardBack(
-					available,
+				// Unlike setCardType, this action used to replace CardBack
+				// UNCONDITIONALLY with no validity check at all — meaning toggling
+				// flat/dented always evicted a custom frame (and any missing-frame
+				// placeholder) even when the current selection was still fine. Now:
+				// carry a sticky placeholder forward first, then only re-suggest when
+				// the current selection isn't actually valid for the new style.
+				const available = getAvailableCardBacks(state.CardType, backType);
+
+				const cardBack = resolveCardBackKeepingMissing(
 					state.CardBack,
-				) as CardCreatorCardBack | null;
-				const cardBackRight =
-					state.CardBackRight === null
-						? null
-						: (getSuggestedCardBack(
-								available,
-								state.CardBackRight,
-							) as CardCreatorCardBack | null);
+					state.CardType,
+					backType,
+					() =>
+						state.CardBack !== null &&
+						available.some((back) => back.id === state.CardBack?.id)
+							? state.CardBack
+							: (getSuggestedCardBack(
+									available,
+									state.CardBack,
+								) as CardCreatorCardBack | null),
+				);
+
+				const cardBackRight = resolveCardBackKeepingMissing(
+					state.CardBackRight,
+					state.CardType,
+					backType,
+					() =>
+						state.CardBackRight === null
+							? null
+							: available.some((back) => back.id === state.CardBackRight?.id)
+								? state.CardBackRight
+								: (getSuggestedCardBack(
+										available,
+										state.CardBackRight,
+									) as CardCreatorCardBack | null),
+				);
 
 				return {
 					CardBackStyle: backType,

@@ -8,6 +8,7 @@ import {
 	type StoredFolder,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
+import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames";
 import { rotateBlob } from "@fabkit/apps/card-creator/utils/export.ts";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { Download, Edit, FolderInput, RotateCcw, Trash2 } from "lucide-react";
@@ -57,6 +58,10 @@ export function CardThumbnail({ card, folders }: CardThumbnailProps) {
 	const handleEdit = async () => {
 		if (!confirm(t("gallery.edit_warning"))) return;
 
+		// deserializeCardState resolves a stored custom-frame id synchronously
+		// against the registry — it must already be hydrated, or a card with a
+		// real custom frame would incorrectly resolve as "missing" here.
+		await ensureCustomFramesLoaded();
 		const state = deserializeCardState(card.state);
 		useCardCreator.getState().loadCard(state);
 		navigate({ to: "/card-creator" });

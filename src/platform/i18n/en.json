@@ -74,8 +74,12 @@
 		"rendering_unresolved": "Unresolved — renderer key is invalid",
 		"section_store": "Store State",
 		"restore_store": "Restore store",
+		"restore_store_warning": "This report only includes preview-resolution images. Restoring will replace your current card, and any full-resolution artwork or overlay it had will be lost. Continue?",
 		"section_gallery": "Gallery",
+		"gallery_truncated_one": "{{count}} card was omitted from this report to keep it under the size budget.",
+		"gallery_truncated_other": "{{count}} cards were omitted from this report to keep it under the size budget.",
 		"restore_gallery": "Restore gallery",
+		"restore_gallery_warning": "This report only includes preview-resolution images. Restoring will REPLACE your entire local gallery with the cards from this report, and any full-resolution artwork or overlay they had will be lost. This cannot be undone. Continue?",
 		"version_mismatch": "This report was created with a different major version of FABKIT. Some data may not be compatible with the current version."
 	},
 	"contact": {

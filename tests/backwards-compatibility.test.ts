@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { derivePlaceholderPresentation } from "../src/apps/card-creator/config/card-backs.ts";
+import { AllRenderConfigVariations } from "../src/apps/card-creator/config/rendering.ts";
 import {
 	clearGallery,
 	createFolder,
@@ -22,6 +24,8 @@ import {
 	useCardCreator,
 } from "../src/apps/card-creator/stores/card-creator.ts";
 import { CardBacks } from "../src/shared/config/cards/card_backs.ts";
+import { CardStyles } from "../src/shared/config/cards/card_styles.ts";
+import { CardTypes } from "../src/shared/config/cards/types.ts";
 
 const FIXTURES = join(import.meta.dir, "fixtures");
 
@@ -430,5 +434,130 @@ describe(".fabgallery folders", () => {
 		expect(tree[0]?.id).toBe(existingHeroes.id);
 		expect(tree[0]?.children.length).toBe(1);
 		expect(tree[0]?.children[0]?.name).toBe("Legends");
+	});
+});
+
+// ─── Custom-frame missing-frame placeholder ────────────────────────────────
+//
+// Custom (user-uploaded) frames are represented as CardBacks with negative
+// ids. When a negative id can't be resolved locally (frame deleted, not yet
+// imported, cross-tab race), deserializeCardState must NOT fall back to
+// CardBacks[0] the way it does for an unresolvable positive id — a save
+// writes `state.CardBack?.id` straight back to storage, so that fallback
+// would permanently destroy the reference on the very next save. Instead it
+// produces a `missing: true` placeholder that preserves the original id.
+
+describe("custom-frame missing-frame placeholder", () => {
+	it("still resolves an unknown POSITIVE CardBack id to CardBacks[0] (unchanged by sign discrimination)", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const state = deserializeCardState({
+			...(file.state as unknown as SerializedCardState),
+			CardBack: 999_999,
+		});
+
+		expect(state.CardBack?.id).toBe(CardBacks[0].id);
+		expect(state.CardBack?.missing).toBeUndefined();
+	});
+
+	it("resolves an unresolvable NEGATIVE CardBack id to a missing placeholder, preserving the id", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const state = deserializeCardState({
+			...(file.state as unknown as SerializedCardState),
+			CardBack: -3,
+		});
+
+		expect(state.CardBack?.id).toBe(-3);
+		expect(state.CardBack?.missing).toBe(true);
+	});
+
+	it("round-trips a missing-frame placeholder through serialize/deserialize with the id unchanged", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const deserialized = deserializeCardState({
+			...(file.state as unknown as SerializedCardState),
+			CardBack: -3,
+		});
+
+		const serialized = serializeCardState({
+			...useCardCreator.getState(),
+			...deserialized,
+		});
+		// Must round-trip untouched — this is the core fix: a routine save can
+		// no longer clobber the reference with a stock frame id.
+		expect(serialized.CardBack).toBe(-3);
+
+		const reDeserialized = deserializeCardState(serialized);
+		expect(reDeserialized.CardBack?.id).toBe(-3);
+		expect(reDeserialized.CardBack?.missing).toBe(true);
+	});
+
+	it("resolves an unresolvable NEGATIVE CardBackRight id to a missing placeholder, keeping the card hybrid", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const state = deserializeCardState({
+			...(file.state as unknown as SerializedCardState),
+			CardType: "action",
+			CardBackRight: -7,
+		});
+
+		expect(state.CardBackRight?.id).toBe(-7);
+		expect(state.CardBackRight?.missing).toBe(true);
+	});
+
+	it("still clears CardBackRight on load for meld cards, even when it's an unresolved custom id", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const state = deserializeCardState({
+			...(file.state as unknown as SerializedCardState),
+			CardType: "meld",
+			CardBackRight: -7,
+		});
+
+		expect(state.CardBackRight).toBeNull();
+	});
+
+	it("derives a resolvable renderer for the placeholder across every card type and style", () => {
+		// getCardBacksForTypeAndStyle returns an empty list for event/dented,
+		// event/flat, weapon/flat and weapon_equipment/flat — derivation must
+		// hard-default rather than leave the renderer unset, or the card would
+		// render nothing at all instead of the placeholder image.
+		for (const cardType of Object.keys(
+			CardTypes,
+		) as (keyof typeof CardTypes)[]) {
+			for (const style of CardStyles) {
+				const { renderer } = derivePlaceholderPresentation(cardType, style);
+				expect(AllRenderConfigVariations[renderer]).toBeDefined();
+			}
+		}
+	});
+
+	it("setCardType preserves a missing CardBack placeholder's id across a type change", () => {
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const deserialized = deserializeCardState({
+			...(file.state as unknown as SerializedCardState),
+			CardBack: -3,
+		});
+		useCardCreator.setState({ ...useCardCreator.getState(), ...deserialized });
+		expect(useCardCreator.getState().CardBack?.id).toBe(-3);
+
+		useCardCreator.getState().setCardType("hero");
+
+		expect(useCardCreator.getState().CardBack?.id).toBe(-3);
+		expect(useCardCreator.getState().CardBack?.missing).toBe(true);
+	});
+
+	it("setCardBackStyle preserves a missing CardBack placeholder's id across a style change", () => {
+		// setCardBackStyle used to have NO validity check at all and
+		// unconditionally replaced CardBack — the highest-risk site for this bug.
+		const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+		const deserialized = deserializeCardState({
+			...(file.state as unknown as SerializedCardState),
+			CardBack: -3,
+			CardBackStyle: "dented" as const,
+		});
+		useCardCreator.setState({ ...useCardCreator.getState(), ...deserialized });
+		expect(useCardCreator.getState().CardBack?.id).toBe(-3);
+
+		useCardCreator.getState().setCardBackStyle("flat");
+
+		expect(useCardCreator.getState().CardBack?.id).toBe(-3);
+		expect(useCardCreator.getState().CardBack?.missing).toBe(true);
 	});
 });

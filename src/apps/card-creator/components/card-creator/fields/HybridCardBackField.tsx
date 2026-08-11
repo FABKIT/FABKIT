@@ -1,8 +1,7 @@
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { TogglePill } from "@fabkit/platform/components/form/TogglePill.tsx";
-import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_backs.ts";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useAvailableCardBacks } from "../hooks/useAvailableCardBacks.ts";
 
 /**
  * Activate/deactivate button for hybrid card frames.
@@ -18,10 +17,7 @@ export function HybridCardBackField() {
 	const CardBackRight = useCardCreator((state) => state.CardBackRight);
 	const toggleHybrid = useCardCreator((state) => state.toggleHybrid);
 
-	const available = useMemo(
-		() => getCardBacksForTypeAndStyle(CardType, CardBackStyle),
-		[CardType, CardBackStyle],
-	);
+	const available = useAvailableCardBacks(CardType, CardBackStyle);
 
 	if (CardType === "meld") return null;
 

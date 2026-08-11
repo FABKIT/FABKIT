@@ -165,7 +165,9 @@
 		"meld_band_keyword": "Meld ",
 		"meld_band_description": "(You may play 1 or both halves of this card. Each costs {{cost}}.)",
 		"meld_band_keyword_only": "(You may play 1 or both halves of this card.)",
-		"custom_frame_action_label": "Add custom frame"
+		"custom_frame_action_label": "Add custom frame",
+		"missing_frame_label": "Missing custom frame",
+		"missing_frame_warning": "This card uses a custom frame that isn't available on this device. It will still save correctly — re-add the frame later to restore it."
 	},
 	"gallery": {
 		"title": "Saved Cards",
@@ -233,9 +235,21 @@
 		"empty_hint": "Upload a frame image to use it as a background in the card creator.",
 		"delete": "Delete",
 		"cancel": "Cancel",
-		"delete_title": "Delete \"{{name}}\"?",
-		"delete_confirm": "This custom frame will be deleted permanently. This can't be undone.",
 		"preview_alt": "Preview of the custom frame {{name}}",
+		"mirror_usage_count_one": "Used on {{count}} card",
+		"mirror_usage_count_other": "Used on {{count}} cards",
+		"mirror_usage_none": "Not used on any card",
+		"remove_mirror": "Remove from {{style}}",
+		"delete_whole_frame": "Delete entire frame",
+		"delete_mirror_title": "Remove \"{{name}}\" from {{style}}?",
+		"delete_mirror_confirm": "This removes the {{style}} version of this frame. Other versions of \"{{name}}\" are kept.",
+		"delete_mirror_confirm_in_use_one": "This removes the {{style}} version of this frame. {{count}} card currently uses it and will show a placeholder until this frame is re-added.",
+		"delete_mirror_confirm_in_use_other": "This removes the {{style}} version of this frame. {{count}} cards currently use it and will show a placeholder until this frame is re-added.",
+		"delete_whole_title": "Delete \"{{name}}\" entirely?",
+		"delete_whole_confirm": "This deletes every version of \"{{name}}\" and the underlying image. This can't be undone.",
+		"delete_whole_confirm_in_use_one": "This deletes every version of \"{{name}}\" and the underlying image. {{count}} card currently uses it and will show a placeholder until this frame is re-added.",
+		"delete_whole_confirm_in_use_other": "This deletes every version of \"{{name}}\" and the underlying image. {{count}} cards currently use it and will show a placeholder until this frame is re-added.",
+		"confirm_delete": "Delete",
 		"dialog": {
 			"title": "Add a custom frame",
 			"description": "Upload your own frame image and give it a name. The name is how you will recognise it in the drop-down menu.",
@@ -244,7 +258,22 @@
 			"name_placeholder": "Your custom frame name...",
 			"image_label": "Frame image",
 			"cancel": "Cancel",
-			"save": "Add frame"
+			"save": "Add frame",
+			"next": "Next",
+			"back": "Back",
+			"processing": "Processing image...",
+			"saving": "Saving...",
+			"mirror_title": "Where should this frame be available?",
+			"mirror_description": "Pick every card type/style this frame should be selectable for. It will be copied onto each one you choose.",
+			"mirror_none_left": "This image has already been added for every card type and style.",
+			"mirror_style_flat": "Flat",
+			"mirror_style_dented": "Dented",
+			"error_file_too_large": "That image is too large. Please choose a file under 8MB.",
+			"error_unrecognized_format": "Unrecognized image format — only PNG and WebP are supported.",
+			"error_unreadable": "Couldn't read this image. Please try a different file.",
+			"error_dimensions_too_large": "This image's dimensions are too large.",
+			"error_quota_exceeded": "Not enough storage space available for this image.",
+			"error_unknown": "Something went wrong processing this image. Please try again."
 		}
 	},
 	"export": {

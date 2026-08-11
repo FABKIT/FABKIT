@@ -29,6 +29,7 @@ import { SaveButton } from "@fabkit/apps/card-creator/components/card-creator/fi
 import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
 import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -42,6 +43,12 @@ import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/card-creator")({
 	component: RouteComponent,
+	// The renderer can already have a custom-frame CardBack in the store
+	// (loaded from gallery/session) by the time this route mounts — the
+	// registry must be hydrated before that first render, not after.
+	loader: async () => {
+		await ensureCustomFramesLoaded();
+	},
 });
 
 function RouteComponent() {

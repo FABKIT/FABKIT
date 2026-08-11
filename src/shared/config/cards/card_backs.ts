@@ -3,21 +3,75 @@ import _CardBacks from "../../../../public/cardbacks/cardbacks.json";
 import type { CardStyle } from "./card_styles.ts";
 import type { CardType } from "./types.ts";
 
-// Typing of the auto-generated `cardbacks.json` file.
+export type CardBackImage = {
+	id: number;
+	pitch: number;
+	/** Static path under /cardbacks/. Empty for custom (uploaded) frames. */
+	fileName: string;
+	/**
+	 * blob: URL for a user-uploaded frame image, created eagerly and owned by
+	 * the custom-frames registry (src/apps/card-creator/stores/custom-frames.ts).
+	 * Absent on stock (manifest) frames, which resolve via `fileName` instead.
+	 * Takes precedence over `fileName` when present.
+	 */
+	objectUrl?: string;
+};
+
+// Typing of the auto-generated `cardbacks.json` file, widened to also cover
+// user-uploaded custom frames (see card-creator's config/rendering.ts for the
+// card-creator-specific CardCreatorCardBack extension).
 export type CardBack = {
 	id: number;
 	name: string;
 	type: string;
 	dented: boolean;
-	images: {
-		id: number;
-		pitch: number;
-		fileName: string;
-	}[];
+	/** Absent on stock (manifest) frames. Discriminates user-uploaded frames. */
+	source?: "custom";
+	/**
+	 * Set only on the placeholder produced when a custom frame's id can't be
+	 * resolved locally (deleted, not yet imported, etc). This flag is STICKY —
+	 * every store action that would replace CardBack must preserve the id and
+	 * only re-derive presentation, so a routine save can never clobber the
+	 * reference with a stock frame id. See card-storage.ts's
+	 * makeMissingFramePlaceholder and card-creator.ts's carryMissingFrame.
+	 */
+	missing?: true;
+	images: CardBackImage[];
 };
+
+export function isCustomCardBack(back: CardBack | null | undefined): boolean {
+	return back?.source === "custom";
+}
 
 // Auto-generated list of cardbacks.
 export const CardBacks: CardBack[] = _CardBacks;
+
+/**
+ * Maps a CardType to the CardBack.type value(s) that are compatible with it.
+ * This mapping is NOT the identity function (e.g. "action" maps to
+ * ["general"], "ally" maps to ["token", "hero"]) — any code that needs to
+ * find CardBacks (stock OR custom) for a given card type must go through
+ * this, not compare `back.type` against the CardType directly, or it will
+ * silently find nothing for every type except the handful whose CardType
+ * string happens to equal its CardBack.type string.
+ */
+export function getCardBackTypesForCardType(type: CardType): string[] {
+	if (type === "ally") {
+		return ["token", "hero"];
+	}
+	if (
+		["equipment", "hero", "weapon", "token", "resource", "event"].includes(type)
+	) {
+		return [type];
+	}
+	if (type === "demi_hero") {
+		return ["hero"];
+	}
+	if (type === "weapon_equipment") {
+		return ["weapon"];
+	}
+	return ["general"];
+}
 
 export function getCardBacksForTypeAndStyle(
 	type: CardType | null,
@@ -33,27 +87,7 @@ export function getCardBacksForTypeAndStyle(
 	}
 
 	const isDented = style === "dented";
-	let types = ["general"];
-	if (type === "ally") {
-		types = ["token", "hero"];
-	} else if (
-		type !== null &&
-		[
-			"equipment",
-			"hero",
-			"equipment",
-			"weapon",
-			"token",
-			"resource",
-			"event",
-		].includes(type)
-	) {
-		types = [type];
-	} else if (type === "demi_hero") {
-		types = ["hero"];
-	} else if (type === "weapon_equipment") {
-		types = ["weapon"];
-	}
+	const types = getCardBackTypesForCardType(type);
 
 	return CardBacks.filter(
 		(back) => types.includes(back.type) && back.dented === isDented,

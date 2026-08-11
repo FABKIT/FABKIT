@@ -5,9 +5,9 @@ import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
 import type { CardFormFieldValue } from "@fabkit/shared/config/cards/form_fields.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
 import type { Content } from "@tiptap/react";
-import Dexie, { type Table } from "dexie";
 import semver from "semver";
 import { v4 as uuid } from "uuid";
+import { makeMissingFramePlaceholder } from "../config/card-backs.ts";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
 import {
 	type CardCreatorState,
@@ -16,6 +16,8 @@ import {
 	HYBRID_SPLIT_DEFAULT,
 	type MeldHalf,
 } from "../stores/card-creator";
+import { getCustomFrameById } from "../stores/custom-frames.ts";
+import { db } from "./db.ts";
 import { meld_cards_migration } from "./migrations/0-1-0-meld-cards.ts";
 import type { Migration } from "./migrations.ts";
 
@@ -170,6 +172,13 @@ export interface FabkitFile {
 	updatedAt: number;
 	preview: string;
 	state: FabkitFileState;
+	/**
+	 * Present only when exported with `includeFullResImages: false` (the
+	 * `.fabreport` path). Describes the images that were omitted from `state`
+	 * (serialized as `null` there) so a diagnostic viewer can still show what
+	 * was dropped without embedding the bytes themselves.
+	 */
+	imageStats?: Record<string, { byteSize: number; type: string } | null>;
 }
 
 /**
@@ -196,6 +205,12 @@ export interface FabgalleryFile {
 	 * cleanly — every card lands at root, unchanged from before this field existed.
 	 */
 	folders?: StoredFolder[];
+	/**
+	 * Present only when a producer (currently: the `.fabreport` provider)
+	 * stopped short of embedding every card to stay under a size budget.
+	 * Absent on a real `.fabgallery` export, which is always complete.
+	 */
+	truncated?: { omittedCards: number; reason: "size-budget" };
 }
 
 export type GalleryImportMode = "replace" | "merge";
@@ -205,35 +220,6 @@ export type GalleryImportResult = {
 	foldersCreated: number;
 	foldersMerged: number;
 };
-
-// ─── Database ─────────────────────────────────────────────────────────────────
-
-class FabkitDatabase extends Dexie {
-	cards!: Table<StoredCard, string>;
-	folders!: Table<StoredFolder, string>;
-
-	constructor() {
-		super("fabkit-cards");
-
-		// Version 1: initial schema — matches the live IndexedDB exactly.
-		// IMPORTANT: Never modify this block. Add new version() calls below it.
-		this.version(1).stores({
-			cards: "version, cardName, createdAt, updatedAt",
-		});
-
-		// Version 2: gallery folders. Purely additive — `folders` is a new table,
-		// and `folderId` on `cards` is optional (absent = gallery root on both old
-		// and new records), so no `.upgrade()` data transform is needed. This is a
-		// Dexie table/index schema change, distinct from the MIGRATIONS array above
-		// (which migrates SerializedCardState shape, not IndexedDB schema).
-		this.version(2).stores({
-			cards: "version, cardName, createdAt, updatedAt, folderId",
-			folders: "id, parentId, name, createdAt, updatedAt",
-		});
-	}
-}
-
-const db = new FabkitDatabase();
 
 // ─── Migration helpers ────────────────────────────────────────────────────────
 
@@ -292,13 +278,79 @@ export function serializeCardState(
 	};
 }
 
+/**
+ * Resolves a negative (custom-frame) id to a renderable frame — either the
+ * real frame from the registry, or a missing-frame placeholder that
+ * preserves the original id. Shared by both resolveStoredCardBack and
+ * resolveStoredCardBackRight, since this half of the resolution is identical
+ * for both; only the positive-id fallback differs between them.
+ */
+function resolveCustomFrameOrPlaceholder(
+	id: number,
+	cardType: CardType | null,
+	style: CardStyle,
+): CardCreatorCardBack {
+	return (
+		getCustomFrameById(id) ?? makeMissingFramePlaceholder(id, cardType, style)
+	);
+}
+
+/**
+ * Resolves a stored CardBack id to a renderable frame, discriminating on
+ * sign. Positive ids are the (unchanged, pre-existing) stock manifest path.
+ * Negative ids are the custom-frame id space (see config/card-backs.ts) and
+ * MUST NEVER fall through to CardBacks[0] on a miss — a card save writes
+ * `state.CardBack?.id` straight back to storage, so silently substituting a
+ * stock frame here would get permanently baked in on the very next save. The
+ * missing-frame placeholder preserves the original id instead, so a save is
+ * always a no-op for an unresolvable custom frame reference.
+ */
+export function resolveStoredCardBack(
+	id: number | null,
+	cardType: CardType | null,
+	style: CardStyle,
+): CardCreatorCardBack {
+	if (id !== null && id < 0) {
+		return resolveCustomFrameOrPlaceholder(id, cardType, style);
+	}
+	return (CardBacks.find((back) => back.id === id) ||
+		CardBacks[0]) as CardCreatorCardBack;
+}
+
+/**
+ * Right-half equivalent of resolveStoredCardBack. Unlike the left half, an
+ * unresolved POSITIVE id means "not hybrid" (null), never "use the first
+ * frame" — see the comment on the CardBackRight branch in
+ * deserializeCardState below. An unresolved NEGATIVE (custom-frame) id is
+ * different: it still returns a non-null missing-frame placeholder (never
+ * null), the same as the left half, so the card stays hybrid and the
+ * reference is preserved rather than silently turning hybrid off.
+ */
+export function resolveStoredCardBackRight(
+	id: number | null,
+	cardType: CardType | null,
+	style: CardStyle,
+): CardCreatorCardBack | null {
+	if (id !== null && id < 0) {
+		return resolveCustomFrameOrPlaceholder(id, cardType, style);
+	}
+	return (
+		(CardBacks.find((back) => back.id === id) as
+			| CardCreatorCardBack
+			| undefined) ?? null
+	);
+}
+
 export function deserializeCardState(
 	stored: SerializedCardState,
 ): Partial<CardCreatorState> {
 	return {
 		...stored,
-		CardBack: (CardBacks.find((back) => back.id === stored.CardBack) ||
-			CardBacks[0]) as CardCreatorCardBack,
+		CardBack: resolveStoredCardBack(
+			stored.CardBack,
+			stored.CardType,
+			stored.CardBackStyle,
+		),
 		// Deliberately no CardBacks[0] fallback here — unlike CardBack, an
 		// unresolved right half means "not hybrid", not "use the first frame".
 		// Copying the left half's fallback would turn every pre-existing card
@@ -308,9 +360,11 @@ export function deserializeCardState(
 		CardBackRight:
 			stored.CardType === "meld"
 				? null
-				: ((CardBacks.find((back) => back.id === stored.CardBackRight) as
-						| CardCreatorCardBack
-						| undefined) ?? null),
+				: resolveStoredCardBackRight(
+						stored.CardBackRight,
+						stored.CardType,
+						stored.CardBackStyle,
+					),
 		// Seam settings postdate the first hybrid release, so records written in
 		// between carry a right frame but no seam values. Fall back to the
 		// defaults rather than NaN-ing the gradient maths.
@@ -330,13 +384,20 @@ export async function base64ToBlob(base64: string): Promise<Blob> {
 
 async function serializeMeldHalf(
 	half: MeldHalf | undefined,
-): Promise<SerializedMeldHalf> {
+	includeFullResImages: boolean,
+): Promise<{
+	serialized: SerializedMeldHalf;
+	imageStats: { byteSize: number; type: string } | null;
+}> {
 	const resolvedHalf = half ?? defaultMeldHalf;
+	const artwork = resolvedHalf.CardArtwork;
 	return {
-		...resolvedHalf,
-		CardArtwork: resolvedHalf.CardArtwork
-			? await blobToBase64(resolvedHalf.CardArtwork)
-			: null,
+		serialized: {
+			...resolvedHalf,
+			CardArtwork:
+				artwork && includeFullResImages ? await blobToBase64(artwork) : null,
+		},
+		imageStats: artwork ? { byteSize: artwork.size, type: artwork.type } : null,
 	};
 }
 
@@ -665,20 +726,24 @@ export async function clearGallery(): Promise<void> {
 
 export async function exportCardToObject(
 	card: StoredCard,
+	options: { includeFullResImages?: boolean } = {},
 ): Promise<FabkitFile> {
+	const includeFullResImages = options.includeFullResImages ?? true;
+	const { CardArtwork, CardOverlay } = card.state;
+
 	const [preview, artwork, overlay, meldHalfA, meldHalfB] = await Promise.all([
 		blobToBase64(card.preview),
-		card.state.CardArtwork
-			? blobToBase64(card.state.CardArtwork)
+		CardArtwork && includeFullResImages
+			? blobToBase64(CardArtwork)
 			: Promise.resolve(null),
-		card.state.CardOverlay
-			? blobToBase64(card.state.CardOverlay)
+		CardOverlay && includeFullResImages
+			? blobToBase64(CardOverlay)
 			: Promise.resolve(null),
-		serializeMeldHalf(card.state.meldHalfA),
-		serializeMeldHalf(card.state.meldHalfB),
+		serializeMeldHalf(card.state.meldHalfA, includeFullResImages),
+		serializeMeldHalf(card.state.meldHalfB, includeFullResImages),
 	]);
 
-	return {
+	const file: FabkitFile = {
 		format: "fabkit",
 		formatVersion: __APP_VERSION__,
 		version: card.version,
@@ -690,10 +755,27 @@ export async function exportCardToObject(
 			...(card.state as unknown as FabkitFileState),
 			CardArtwork: artwork,
 			CardOverlay: overlay,
-			meldHalfA,
-			meldHalfB,
+			meldHalfA: meldHalfA.serialized,
+			meldHalfB: meldHalfB.serialized,
 		},
 	};
+
+	// Only attach imageStats when something was actually omitted — keeps the
+	// default (lossless) export path byte-identical to before this option existed.
+	if (!includeFullResImages) {
+		file.imageStats = {
+			CardArtwork: CardArtwork
+				? { byteSize: CardArtwork.size, type: CardArtwork.type }
+				: null,
+			CardOverlay: CardOverlay
+				? { byteSize: CardOverlay.size, type: CardOverlay.type }
+				: null,
+			meldHalfA: meldHalfA.imageStats,
+			meldHalfB: meldHalfB.imageStats,
+		};
+	}
+
+	return file;
 }
 
 export async function exportCardToJSON(card: StoredCard): Promise<string> {

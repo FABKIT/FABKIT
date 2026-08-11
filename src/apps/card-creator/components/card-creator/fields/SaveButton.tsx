@@ -5,7 +5,7 @@ import {
 } from "@fabkit/apps/card-creator/persistence/card-storage";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
 import { convertToImage } from "@fabkit/apps/card-creator/utils/export.ts";
-import { Save } from "lucide-react";
+import { AlertTriangle, Save } from "lucide-react";
 import type { RefObject } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,6 +18,12 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 	const { t } = useTranslation("card-creator");
 	const [isSaving, setIsSaving] = useState(false);
 	const state = useCardCreator();
+
+	// Non-blocking: the missing-frame placeholder preserves the original id
+	// (see config/card-backs.ts), so saving is always safe — this is purely
+	// informational, not a gate.
+	const hasMissingFrame =
+		state.CardBack?.missing === true || state.CardBackRight?.missing === true;
 
 	const effectiveName =
 		state.CardType === "meld"
@@ -70,14 +76,22 @@ export function SaveButton({ previewRef }: SaveButtonProps) {
 	};
 
 	return (
-		<button
-			type="button"
-			onClick={handleSave}
-			disabled={isSaving || !effectiveName}
-			className="inline-flex items-center justify-center gap-x-1.5 bg-primary text-sm font-semibold text-white rounded-md px-3.5 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-		>
-			<Save className="h-4 w-4" />
-			{isSaving ? t("card_creator.saving") : t("card_creator.save")}
-		</button>
+		<div className="flex flex-col items-end gap-2">
+			{hasMissingFrame && (
+				<div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-500">
+					<AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+					{t("card_creator.missing_frame_warning")}
+				</div>
+			)}
+			<button
+				type="button"
+				onClick={handleSave}
+				disabled={isSaving || !effectiveName}
+				className="inline-flex items-center justify-center gap-x-1.5 bg-primary text-sm font-semibold text-white rounded-md px-3.5 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+			>
+				<Save className="h-4 w-4" />
+				{isSaving ? t("card_creator.saving") : t("card_creator.save")}
+			</button>
+		</div>
 	);
 }

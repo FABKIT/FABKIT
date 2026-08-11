@@ -2,10 +2,10 @@ import { CustomFrameDialog } from "@fabkit/apps/card-creator/components/custom-f
 import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rendering.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import Select from "@fabkit/platform/components/form/Select";
-import { getCardBacksForTypeAndStyle } from "@fabkit/shared/config/cards/card_backs.ts";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAvailableCardBacks } from "../hooks/useAvailableCardBacks.ts";
 import { HybridBlendField } from "./HybridBlendField.tsx";
 
 // Sentinel value for the "Add custom frame" row. Kept out of the card back
@@ -26,6 +26,13 @@ const SELECT_BUTTON_CLASS_NAME =
 
 export function CardBackField() {
 	const { t } = useTranslation("card-creator");
+
+	// A missing-frame placeholder's `name` is an internal technical identifier,
+	// not user-facing prose (see config/card-backs.ts's MISSING_FRAME_NAME) —
+	// it must always be translated at the point of display, never read raw.
+	const displayName = (back: CardCreatorCardBack | null) =>
+		back?.missing ? t("card_creator.missing_frame_label") : back?.name;
+
 	const CardType = useCardCreator((state) => state.CardType);
 	const CardBack = useCardCreator((state) => state.CardBack);
 	const CardBackRight = useCardCreator((state) => state.CardBackRight);
@@ -33,14 +40,7 @@ export function CardBackField() {
 	const setCardBack = useCardCreator((state) => state.setCardBack);
 	const setCardBackRight = useCardCreator((state) => state.setCardBackRight);
 
-	const options = useMemo(
-		() =>
-			getCardBacksForTypeAndStyle(
-				CardType,
-				CardBackStyle,
-			) as CardCreatorCardBack[],
-		[CardBackStyle, CardType],
-	);
+	const options = useAvailableCardBacks(CardType, CardBackStyle);
 
 	const [isCustomFrameDialogOpen, setIsCustomFrameDialogOpen] = useState(false);
 
@@ -75,15 +75,20 @@ export function CardBackField() {
 
 	const isHybrid = CardBackRight !== null;
 
-	let currentIndex =
-		CardBack === null ? 0 : options.findIndex((b) => b.id === CardBack?.id);
-
-	if (currentIndex === -1) {
-		currentIndex = 0;
-	}
+	// -1 (not clamped to 0) when CardBack isn't in `options` — reachable via a
+	// missing-frame placeholder, whose id is by definition absent from
+	// getAvailableCardBacks. navigate() below handles -1 explicitly so "next"
+	// and "prev" land symmetrically on the first/last option respectively,
+	// rather than clamping to 0 and making "next" skip options[0].
+	const currentIndex =
+		CardBack === null ? -1 : options.findIndex((b) => b.id === CardBack?.id);
 
 	const navigate = (dir: "prev" | "next") => {
 		if (options.length === 0) return;
+		if (currentIndex === -1) {
+			setCardBack(options[dir === "next" ? 0 : options.length - 1]);
+			return;
+		}
 		const next =
 			dir === "prev"
 				? (currentIndex - 1 + options.length) % options.length
@@ -113,7 +118,19 @@ export function CardBackField() {
 								onChange={(value) => handleSelect(value, setCardBack)}
 								options={selectOptions}
 								label={null}
-								title={CardBack?.name}
+								title={displayName(CardBack)}
+								// A missing-frame placeholder's id is never in `options` (the
+								// frame isn't present locally — that's why it's a
+								// placeholder), so Select's own option lookup can't find a
+								// label for it and would otherwise silently fall back to a
+								// generic "Select an option" — indistinguishable from no
+								// selection at all, inviting an uninformed arrow-click that
+								// discards the preserved reference. `placeholder` is shown
+								// exactly when Select can't resolve a label from `options`,
+								// so this makes the missing state visible instead of silent.
+								placeholder={
+									CardBack?.missing ? displayName(CardBack) : undefined
+								}
 								className={SELECT_CLASS_NAME}
 								buttonClassName={SELECT_BUTTON_CLASS_NAME}
 								ariaLabel={t("card_creator.hybrid_left_label")}
@@ -128,7 +145,12 @@ export function CardBackField() {
 								onChange={(value) => handleSelect(value, setCardBackRight)}
 								options={selectOptions}
 								label={null}
-								title={CardBackRight?.name}
+								title={displayName(CardBackRight)}
+								placeholder={
+									CardBackRight?.missing
+										? displayName(CardBackRight)
+										: undefined
+								}
 								className={SELECT_CLASS_NAME}
 								buttonClassName={SELECT_BUTTON_CLASS_NAME}
 								ariaLabel={t("card_creator.hybrid_right_label")}
@@ -142,6 +164,10 @@ export function CardBackField() {
 							onChange={(value) => handleSelect(value, setCardBack)}
 							options={selectOptions}
 							label={null}
+							title={displayName(CardBack)}
+							placeholder={
+								CardBack?.missing ? displayName(CardBack) : undefined
+							}
 							className={SELECT_CLASS_NAME}
 							buttonClassName={SELECT_BUTTON_CLASS_NAME}
 						/>
