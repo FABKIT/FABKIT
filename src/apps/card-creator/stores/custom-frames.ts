@@ -129,10 +129,32 @@ export function ensureCustomFramesLoaded(): Promise<void> {
 }
 
 /**
+ * Notified with the set of frame ids that existed before a reload and don't
+ * anymore (deleted locally, or deleted in another tab and picked up via
+ * BroadcastChannel). useCardCreator subscribes so a card with that frame
+ * open — CardBack or CardBackRight — gets swapped to a `missing: true`
+ * placeholder instead of continuing to reference a dead objectUrl (its
+ * StoredCustomFrame row is gone, so getCustomFrameById would just silently
+ * stop resolving it, leaving the store pointed at a frame the renderer can
+ * no longer find). Deliberately a callback registry, not a direct import of
+ * useCardCreator: card-creator.ts already imports FROM this module (for
+ * getCustomFramesSnapshot), so the reverse import would cycle.
+ */
+const removalListeners = new Set<(removedIds: ReadonlySet<number>) => void>();
+
+export function onCustomFramesRemoved(
+	listener: (removedIds: ReadonlySet<number>) => void,
+): () => void {
+	removalListeners.add(listener);
+	return () => removalListeners.delete(listener);
+}
+
+/**
  * Reloads from IndexedDB and diffs against the current in-memory state — see
  * the module doc comment for why this must never be a blind rebuild.
  */
 export async function reloadCustomFrames(): Promise<void> {
+	const previousIds = new Set(frameCache.keys());
 	const [rows, images] = await Promise.all([
 		getAllCustomFrames(),
 		getAllFrameImages(),
@@ -165,6 +187,13 @@ export async function reloadCustomFrames(): Promise<void> {
 	for (const [id, entry] of nextCache) frameCache.set(id, entry);
 
 	useCustomFramesStore.setState({ frames: nextFrames, loaded: true });
+
+	const removedIds = new Set(
+		Array.from(previousIds).filter((id) => !nextCache.has(id)),
+	);
+	if (removedIds.size > 0) {
+		for (const listener of removalListeners) listener(removedIds);
+	}
 
 	// Only hashes that no longer belong to ANY row are actually gone. Defer
 	// revocation off the current tick — a synchronous revoke here could still

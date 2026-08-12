@@ -19,6 +19,7 @@ import {
 	getCustomFramesForTypeAndStyle,
 	getCustomFramesGroupedByImage,
 	getCustomFramesSnapshot,
+	onCustomFramesRemoved,
 	reloadCustomFrames,
 } from "../src/apps/card-creator/stores/custom-frames.ts";
 import { sha256Hex } from "../src/apps/card-creator/utils/frame-image.ts";
@@ -207,6 +208,61 @@ describe("custom-frames-storage", () => {
 		expect((await getAllCustomFrames()).length).toBe(0);
 	});
 
+	it("never reissues a deleted frame's id to a later, unrelated upload", async () => {
+		// A card that still references a deleted frame's id round-trips it as a
+		// `missing: true` placeholder (see card-storage.ts). That guarantee only
+		// holds if the id can never be reallocated — otherwise a later upload
+		// silently repoints the placeholder at unrelated pixels the moment it's
+		// re-resolved, defeating the whole point of preserving the id.
+		const [deleted] = await addFrameImageAndMirrors(
+			{
+				payloadHash: "reuse-hash-a",
+				sourceHash: "reuse-src-a",
+				normVersion: 1,
+				image: blob(10),
+				preview: blob(2),
+				byteSize: 10,
+			},
+			[
+				{
+					name: "Deleted",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+		const deletedId = deleted.id;
+
+		// Deleting every mirror also cascade-deletes the frameImages row, so
+		// nothing about "deleted" is left behind except its id having been used.
+		await deleteCustomFrameMirror(deletedId);
+		expect(await getCustomFrameRowById(deletedId)).toBeUndefined();
+
+		const [unrelated] = await addFrameImageAndMirrors(
+			{
+				payloadHash: "reuse-hash-b",
+				sourceHash: "reuse-src-b",
+				normVersion: 1,
+				image: blob(10),
+				preview: blob(2),
+				byteSize: 10,
+			},
+			[
+				{
+					name: "Unrelated",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+
+		expect(unrelated.id).not.toBe(deletedId);
+	});
+
 	it("finds a frameImages row by sourceHash (the upload-time dedup identity)", async () => {
 		await addFrameImageAndMirrors(
 			{
@@ -303,6 +359,78 @@ describe("custom-frames registry", () => {
 		expect(resolved?.id).toBe(mirror.id);
 		expect(resolved?.source).toBe("custom");
 		expect(resolved?.images[0]?.objectUrl).toBeDefined();
+	});
+
+	it("notifies onCustomFramesRemoved with exactly the ids a reload dropped", async () => {
+		const [mirror] = await addFrameImageAndMirrors(
+			{
+				payloadHash: "removed-hash",
+				sourceHash: "removed-src",
+				normVersion: 1,
+				image: blob(50),
+				preview: blob(10),
+				byteSize: 50,
+			},
+			[
+				{
+					name: "Removed",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+		await reloadCustomFrames();
+		expect(getCustomFrameById(mirror.id)).toBeDefined();
+
+		const seen: Set<number>[] = [];
+		const unsubscribe = onCustomFramesRemoved((removedIds) => {
+			seen.push(new Set(removedIds));
+		});
+		try {
+			await deleteCustomFrameMirror(mirror.id);
+			await reloadCustomFrames();
+		} finally {
+			unsubscribe();
+		}
+
+		expect(seen.length).toBe(1);
+		expect(Array.from(seen[0])).toEqual([mirror.id]);
+		expect(getCustomFrameById(mirror.id)).toBeUndefined();
+	});
+
+	it("does not fire onCustomFramesRemoved when nothing was removed", async () => {
+		const seen: Set<number>[] = [];
+		const unsubscribe = onCustomFramesRemoved((removedIds) => {
+			seen.push(new Set(removedIds));
+		});
+		try {
+			await addFrameImageAndMirrors(
+				{
+					payloadHash: "no-removal-hash",
+					sourceHash: "no-removal-src",
+					normVersion: 1,
+					image: blob(50),
+					preview: blob(10),
+					byteSize: 50,
+				},
+				[
+					{
+						name: "Added",
+						type: "general",
+						dented: true,
+						renderer: "normal_dented",
+						mirrorsCardBackId: 1,
+					},
+				],
+			);
+			await reloadCustomFrames();
+		} finally {
+			unsubscribe();
+		}
+
+		expect(seen.length).toBe(0);
 	});
 
 	it("filters by type and style, and excludes meld entirely", async () => {

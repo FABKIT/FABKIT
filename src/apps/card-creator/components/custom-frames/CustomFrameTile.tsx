@@ -1,4 +1,7 @@
-import { countCardsUsingFrame } from "@fabkit/apps/card-creator/persistence/custom-frames-storage.ts";
+import {
+	countCardsUsingFrame,
+	getFrameImageByPayloadHash,
+} from "@fabkit/apps/card-creator/persistence/custom-frames-storage.ts";
 import type { CustomFrameGroup } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
 import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,11 +31,29 @@ export function CustomFrameTile({
 }: CustomFrameTileProps) {
 	const { t } = useTranslation("card-creator");
 
-	// The registry's objectUrl is what's actually rendered on cards, but the
-	// grid wants the smaller preview blob — resolved separately here rather
-	// than reusing the registry's URL, since this tile doesn't need the
-	// registry to have hydrated the full-res image at all.
-	const previewUrl = group.mirrors[0]?.images[0]?.objectUrl;
+	// The registry's objectUrl points at the full 900×1256 render asset — fine
+	// for a card face, wasteful for a grid of thumbnails. The 225×314 preview
+	// blob exists in frameImages specifically for this (and .fabreport), but
+	// isn't part of the registry's CardCreatorCardBack shape, so it's fetched
+	// and turned into its own, component-owned object URL here rather than
+	// reusing the registry's. Local effect + revoke-on-cleanup is the right
+	// pattern for this blob (unlike the card-back render layer — see
+	// stores/custom-frames.ts's module doc comment) since nothing else needs
+	// this URL to exist before first paint.
+	const [previewUrl, setPreviewUrl] = useState<string | undefined>();
+	useEffect(() => {
+		let url: string | undefined;
+		let cancelled = false;
+		getFrameImageByPayloadHash(group.payloadHash).then((image) => {
+			if (cancelled || !image) return;
+			url = URL.createObjectURL(image.preview);
+			setPreviewUrl(url);
+		});
+		return () => {
+			cancelled = true;
+			if (url) URL.revokeObjectURL(url);
+		};
+	}, [group.payloadHash]);
 
 	const formatDate = (timestamp: number) =>
 		new Date(timestamp).toLocaleDateString(undefined, {

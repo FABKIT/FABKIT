@@ -11,11 +11,20 @@ import type {
  * card-storage.ts itself — that would create a cycle, since card-storage.ts
  * needs to depend on the custom-frames registry to resolve stored frame ids.
  */
+/**
+ * Single-row table holding the next custom-frame id to allocate. Persisted
+ * (not derived from `customFrames`' current rows) so a deleted frame's
+ * negative id can never be reissued to a later, unrelated upload — see
+ * allocateCustomFrameIds in custom-frames-storage.ts.
+ */
+export type FrameIdCounterRow = { id: 0; next: number };
+
 class FabkitDatabase extends Dexie {
 	cards!: Table<StoredCard, string>;
 	folders!: Table<StoredFolder, string>;
 	frameImages!: Table<StoredFrameImage, string>;
 	customFrames!: Table<StoredCustomFrame, number>;
+	frameIdCounter!: Table<FrameIdCounterRow, number>;
 
 	constructor() {
 		super("fabkit-cards");
@@ -51,6 +60,22 @@ class FabkitDatabase extends Dexie {
 			folders: "id, parentId, name, createdAt, updatedAt",
 			frameImages: "payloadHash, sourceHash, createdAt",
 			customFrames: "id, payloadHash, name, type, createdAt, updatedAt",
+		});
+
+		// Version 4: persisted custom-frame id counter. Purely additive — one
+		// new single-row table, no change to existing tables, no .upgrade()
+		// transform needed. Fixes a data-loss bug: allocateCustomFrameIds used
+		// to derive the next id from customFrames' current minimum id, so
+		// deleting every row for an id and later uploading a new frame could
+		// reissue that same negative id — silently repointing any card that
+		// held a `missing: true` placeholder for the deleted frame at the new,
+		// unrelated image.
+		this.version(4).stores({
+			cards: "version, cardName, createdAt, updatedAt, folderId",
+			folders: "id, parentId, name, createdAt, updatedAt",
+			frameImages: "payloadHash, sourceHash, createdAt",
+			customFrames: "id, payloadHash, name, type, createdAt, updatedAt",
+			frameIdCounter: "id",
 		});
 	}
 }

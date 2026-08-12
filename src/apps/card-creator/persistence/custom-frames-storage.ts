@@ -60,23 +60,41 @@ export interface StoredCustomFrame {
 
 // ─── ID allocation ─────────────────────────────────────────────────────────
 
+const FRAME_ID_COUNTER_ROW_ID = 0;
+
 /**
- * Allocates `count` new custom-frame ids inside the given transaction, via a
- * single query rather than one per id (a multi-mirror upload allocates
- * several at once — see addFrameImageAndMirrors). Ids are negative and
- * strictly decreasing so they can never collide with a positive stock
- * manifest id, and 0 is never allocated — `state.CardBack?.id || null` in
- * card-storage.ts uses `||`, not `??`, so an id of 0 would serialize to
- * `null` and silently lose the reference.
+ * Allocates `count` new custom-frame ids inside the given transaction (which
+ * must include `db.frameIdCounter`), via a single query rather than one per
+ * id (a multi-mirror upload allocates several at once — see
+ * addFrameImageAndMirrors). Ids are negative and strictly decreasing so they
+ * can never collide with a positive stock manifest id, and 0 is never
+ * allocated — `state.CardBack?.id || null` in card-storage.ts uses `||`, not
+ * `??`, so an id of 0 would serialize to `null` and silently lose the
+ * reference.
+ *
+ * The next id is read from a PERSISTED counter, not derived from
+ * `customFrames`' current rows: deriving it from current rows means deleting
+ * every mirror of a frame frees its id for reuse, so a later, unrelated
+ * upload could be allocated that same negative id — silently repointing any
+ * card still holding a `missing: true` placeholder for the deleted frame at
+ * the new image. The counter only ever decreases, even across deletions.
  */
 async function allocateCustomFrameIds(count: number): Promise<number[]> {
-	const lowest = await db.customFrames.orderBy("id").first();
-	let next = Math.min(lowest?.id ?? 0, 0);
+	const counter = await db.frameIdCounter.get(FRAME_ID_COUNTER_ROW_ID);
+	let next = counter?.next;
+	if (next === undefined) {
+		// First allocation ever for this database. Seed from any pre-existing
+		// customFrames rows so an upgrade from schema v3 (where the counter
+		// table didn't exist) can't reissue an id that's already in use.
+		const lowest = await db.customFrames.orderBy("id").first();
+		next = Math.min(lowest?.id ?? 0, 0);
+	}
 	const ids: number[] = [];
 	for (let i = 0; i < count; i++) {
 		next -= 1;
 		ids.push(next);
 	}
+	await db.frameIdCounter.put({ id: FRAME_ID_COUNTER_ROW_ID, next });
 	return ids;
 }
 
@@ -137,7 +155,7 @@ export async function addCustomFrameMirror(
 	payloadHash: string,
 	input: AddCustomFrameInput,
 ): Promise<StoredCustomFrame> {
-	return db.transaction("rw", db.customFrames, async () => {
+	return db.transaction("rw", db.customFrames, db.frameIdCounter, async () => {
 		const [id] = await allocateCustomFrameIds(1);
 		const now = Date.now();
 		const row: StoredCustomFrame = {
@@ -166,35 +184,41 @@ export async function addFrameImageAndMirrors(
 	image: Omit<StoredFrameImage, "createdAt">,
 	mirrors: AddCustomFrameInput[],
 ): Promise<StoredCustomFrame[]> {
-	return db.transaction("rw", db.frameImages, db.customFrames, async () => {
-		const existing = await db.frameImages.get(image.payloadHash);
-		if (!existing) {
-			await db.frameImages.add({ ...image, createdAt: Date.now() });
-		}
+	return db.transaction(
+		"rw",
+		db.frameImages,
+		db.customFrames,
+		db.frameIdCounter,
+		async () => {
+			const existing = await db.frameImages.get(image.payloadHash);
+			if (!existing) {
+				await db.frameImages.add({ ...image, createdAt: Date.now() });
+			}
 
-		const ids = await allocateCustomFrameIds(mirrors.length);
-		const rows: StoredCustomFrame[] = [];
-		for (let i = 0; i < mirrors.length; i++) {
-			const mirror = mirrors[i];
-			const id = ids[i];
-			const now = Date.now();
-			const row: StoredCustomFrame = {
-				id,
-				name: mirror.name,
-				payloadHash: image.payloadHash,
-				type: mirror.type,
-				dented: mirror.dented,
-				renderer: mirror.renderer,
-				mirrorsCardBackId: mirror.mirrorsCardBackId,
-				createdAt: now,
-				updatedAt: now,
-				schemaVersion: __APP_VERSION__,
-			};
-			await db.customFrames.add(row);
-			rows.push(row);
-		}
-		return rows;
-	});
+			const ids = await allocateCustomFrameIds(mirrors.length);
+			const rows: StoredCustomFrame[] = [];
+			for (let i = 0; i < mirrors.length; i++) {
+				const mirror = mirrors[i];
+				const id = ids[i];
+				const now = Date.now();
+				const row: StoredCustomFrame = {
+					id,
+					name: mirror.name,
+					payloadHash: image.payloadHash,
+					type: mirror.type,
+					dented: mirror.dented,
+					renderer: mirror.renderer,
+					mirrorsCardBackId: mirror.mirrorsCardBackId,
+					createdAt: now,
+					updatedAt: now,
+					schemaVersion: __APP_VERSION__,
+				};
+				await db.customFrames.add(row);
+				rows.push(row);
+			}
+			return rows;
+		},
+	);
 }
 
 /**
@@ -504,32 +528,38 @@ export async function reconcileImportedCustomFrames(
 		return idMap;
 	}
 
-	await db.transaction("rw", db.frameImages, db.customFrames, async () => {
-		for (const image of toInsertImages) {
-			await db.frameImages.add(image);
-		}
-		if (toInsertMirrors.length > 0) {
-			const ids = await allocateCustomFrameIds(toInsertMirrors.length);
-			const now = Date.now();
-			for (let i = 0; i < toInsertMirrors.length; i++) {
-				const { meta, realHash } = toInsertMirrors[i];
-				const id = ids[i];
-				await db.customFrames.add({
-					id,
-					name: meta.name,
-					payloadHash: realHash,
-					type: meta.type,
-					dented: meta.dented,
-					renderer: meta.renderer,
-					mirrorsCardBackId: meta.mirrorsCardBackId,
-					createdAt: now,
-					updatedAt: now,
-					schemaVersion: __APP_VERSION__,
-				});
-				idMap.set(meta.id, id);
+	await db.transaction(
+		"rw",
+		db.frameImages,
+		db.customFrames,
+		db.frameIdCounter,
+		async () => {
+			for (const image of toInsertImages) {
+				await db.frameImages.add(image);
 			}
-		}
-	});
+			if (toInsertMirrors.length > 0) {
+				const ids = await allocateCustomFrameIds(toInsertMirrors.length);
+				const now = Date.now();
+				for (let i = 0; i < toInsertMirrors.length; i++) {
+					const { meta, realHash } = toInsertMirrors[i];
+					const id = ids[i];
+					await db.customFrames.add({
+						id,
+						name: meta.name,
+						payloadHash: realHash,
+						type: meta.type,
+						dented: meta.dented,
+						renderer: meta.renderer,
+						mirrorsCardBackId: meta.mirrorsCardBackId,
+						createdAt: now,
+						updatedAt: now,
+						schemaVersion: __APP_VERSION__,
+					});
+					idMap.set(meta.id, id);
+				}
+			}
+		},
+	);
 
 	return idMap;
 }

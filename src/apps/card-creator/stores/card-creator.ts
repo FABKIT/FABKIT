@@ -28,11 +28,15 @@ import { devtools } from "zustand/middleware";
 import { isFieldVisible } from "../components/utils.ts";
 import {
 	getAvailableCardBacks,
+	makeMissingFramePlaceholder,
 	resolveCardBackKeepingMissing,
 } from "../config/card-backs.ts";
 import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
-import { getCustomFramesSnapshot } from "./custom-frames.ts";
+import {
+	getCustomFramesSnapshot,
+	onCustomFramesRemoved,
+} from "./custom-frames.ts";
 
 // ─── Hybrid frame seam ────────────────────────────────────────────────────────
 
@@ -851,3 +855,42 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			})),
 	})),
 );
+
+/**
+ * Reconciles the open card if the custom-frames registry drops a frame it's
+ * currently using — deletion (locally, or in another tab via
+ * BroadcastChannel) doesn't touch useCardCreator's state on its own, so
+ * without this the store would keep pointing CardBack/CardBackRight at a row
+ * that no longer exists: no `missing: true`, no revoked-URL warning, just a
+ * stale reference the renderer silently can't resolve. Swapping in the same
+ * sticky placeholder used everywhere else keeps this path consistent with
+ * every other "frame reference outlived its row" case (see
+ * makeMissingFramePlaceholder).
+ */
+onCustomFramesRemoved((removedIds) => {
+	const state = useCardCreator.getState();
+	const patch: Partial<CardCreatorState> = {};
+	if (
+		state.CardBack &&
+		!state.CardBack.missing &&
+		removedIds.has(state.CardBack.id)
+	) {
+		patch.CardBack = makeMissingFramePlaceholder(
+			state.CardBack.id,
+			state.CardType,
+			state.CardBackStyle,
+		);
+	}
+	if (
+		state.CardBackRight &&
+		!state.CardBackRight.missing &&
+		removedIds.has(state.CardBackRight.id)
+	) {
+		patch.CardBackRight = makeMissingFramePlaceholder(
+			state.CardBackRight.id,
+			state.CardType,
+			state.CardBackStyle,
+		);
+	}
+	if (Object.keys(patch).length > 0) useCardCreator.setState(patch);
+});
