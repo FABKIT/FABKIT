@@ -32,6 +32,7 @@ import {
 } from "../config/card-backs.ts";
 import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
+import { getCustomFramesSnapshot } from "./custom-frames.ts";
 
 // ─── Hybrid frame seam ────────────────────────────────────────────────────────
 
@@ -473,7 +474,12 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// absent from `available` — the frame isn't present locally, that's
 				// why it's a placeholder — so a plain validity check would evict it
 				// and the next save would silently destroy the reference.
-				let available = getAvailableCardBacks(cardType, state.CardBackStyle);
+				const customFrames = getCustomFramesSnapshot();
+				let available = getAvailableCardBacks(
+					customFrames,
+					cardType,
+					state.CardBackStyle,
+				);
 				let cardStyle = state.CardBackStyle;
 				let cardBack: CardCreatorCardBack | null =
 					resolveCardBackKeepingMissing(
@@ -491,7 +497,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 
 				if (null === cardBack) {
 					for (const style of CardStyles) {
-						available = getAvailableCardBacks(cardType, style);
+						available = getAvailableCardBacks(customFrames, cardType, style);
 
 						if (available.length > 0)
 							cardBack = getSuggestedCardBack(
@@ -573,6 +579,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// Turning on: right half starts as the next frame in the current
 				// type+style list (wraps around), so the split is immediately visible.
 				const available = getAvailableCardBacks(
+					getCustomFramesSnapshot(),
 					state.CardType,
 					state.CardBackStyle,
 				);
@@ -594,7 +601,11 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// placeholder) even when the current selection was still fine. Now:
 				// carry a sticky placeholder forward first, then only re-suggest when
 				// the current selection isn't actually valid for the new style.
-				const available = getAvailableCardBacks(state.CardType, backType);
+				const available = getAvailableCardBacks(
+					getCustomFramesSnapshot(),
+					state.CardType,
+					backType,
+				);
 
 				const cardBack = resolveCardBackKeepingMissing(
 					state.CardBack,

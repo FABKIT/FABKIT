@@ -29,17 +29,12 @@ function CustomFramesPage() {
 	const { t } = useTranslation("card-creator");
 
 	// Subscribes to the registry so the grid re-renders after an upload/delete
-	// (including a diffing reload triggered by another tab).
-	// getCustomFramesGroupedByImage reads the registry's singleton state
-	// directly rather than through the subscribed value, so `frames` is only
-	// referenced as a useMemo dependency (see useAvailableCardBacks.ts for the
-	// same pattern) — the grid's own unit is the uploaded image, not the row,
-	// see getCustomFramesGroupedByImage's doc comment.
+	// (including a diffing reload triggered by another tab). `frames` is
+	// passed into getCustomFramesGroupedByImage explicitly rather than having
+	// it read the registry internally — the grid's own unit is the uploaded
+	// image, not the row, see getCustomFramesGroupedByImage's doc comment.
 	const frames = useCustomFrames();
-	const groups = useMemo(() => {
-		void frames;
-		return getCustomFramesGroupedByImage();
-	}, [frames]);
+	const groups = useMemo(() => getCustomFramesGroupedByImage(frames), [frames]);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [deleteTarget, setDeleteTarget] = useState<DeleteFrameTarget | null>(

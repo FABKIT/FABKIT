@@ -230,7 +230,20 @@ export function getCustomFrameById(
 	return useCustomFramesStore.getState().frames.find((f) => f.id === id);
 }
 
+/**
+ * Pure filter over an explicit `frames` snapshot — deliberately NOT reading
+ * `useCustomFramesStore.getState()` internally. A zero-argument call reading
+ * external mutable state looks referentially transparent to React Compiler's
+ * auto-memoization (same "arguments", so it's free to skip re-invoking the
+ * function on later renders) — that's what silently broke live updates on
+ * the /custom-frames page and, potentially, the card-back picker. Passing
+ * `frames` in makes the real dependency visible, both to the compiler and to
+ * a human reading the call site. Callers inside a React render/useMemo
+ * should pass the array from `useCustomFrames()`; non-React callers (the
+ * card-creator store) should pass `getCustomFramesSnapshot()`.
+ */
 export function getCustomFramesForTypeAndStyle(
+	frames: CardCreatorCardBack[],
 	type: CardType | null,
 	style: CardStyle,
 ): CardCreatorCardBack[] {
@@ -245,11 +258,9 @@ export function getCustomFramesForTypeAndStyle(
 	// type whose CardType string doesn't happen to equal its CardBack.type.
 	const compatibleTypes = getCardBackTypesForCardType(type);
 	const dented = style === "dented";
-	return useCustomFramesStore
-		.getState()
-		.frames.filter(
-			(f) => compatibleTypes.includes(f.type) && f.dented === dented,
-		);
+	return frames.filter(
+		(f) => compatibleTypes.includes(f.type) && f.dented === dented,
+	);
 }
 
 export interface CustomFrameGroup {
@@ -266,10 +277,20 @@ export interface CustomFrameGroup {
  * unit is the uploaded image, not the row — one upload can be mirrored onto
  * several stock entries and must render as a single tile with mirror chips,
  * not one indistinguishable tile per mirror.
+ *
+ * Takes `frames` explicitly rather than reading the store internally — see
+ * getCustomFramesForTypeAndStyle's doc comment for why a zero-argument read
+ * of external mutable state breaks under React Compiler's auto-memoization.
+ * `frameCache` is still read internally (not passed in): it's a plain
+ * synchronous lookup Map, always repopulated in lockstep with `frames`
+ * inside reloadCustomFrames, so it can never be stale relative to whatever
+ * `frames` snapshot is passed here.
  */
-export function getCustomFramesGroupedByImage(): CustomFrameGroup[] {
+export function getCustomFramesGroupedByImage(
+	frames: CardCreatorCardBack[],
+): CustomFrameGroup[] {
 	const byHash = new Map<string, CardCreatorCardBack[]>();
-	for (const frame of useCustomFramesStore.getState().frames) {
+	for (const frame of frames) {
 		const hash = frameCache.get(frame.id)?.row.payloadHash;
 		if (!hash) continue;
 		const list = byHash.get(hash) ?? [];
@@ -287,4 +308,15 @@ export function getCustomFramesGroupedByImage(): CustomFrameGroup[] {
 /** React hook for components that need to re-render when the registry changes. */
 export function useCustomFrames(): CardCreatorCardBack[] {
 	return useCustomFramesStore((s) => s.frames);
+}
+
+/**
+ * Synchronous snapshot for non-React callers (the card-creator Zustand
+ * store's own actions, which run outside any component render and so are
+ * never subject to React Compiler memoization — safe to read imperatively).
+ * React code should use the `useCustomFrames()` hook instead, so it
+ * re-renders on change.
+ */
+export function getCustomFramesSnapshot(): CardCreatorCardBack[] {
+	return useCustomFramesStore.getState().frames;
 }

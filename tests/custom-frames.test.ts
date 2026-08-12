@@ -18,6 +18,7 @@ import {
 	getCustomFrameById,
 	getCustomFramesForTypeAndStyle,
 	getCustomFramesGroupedByImage,
+	getCustomFramesSnapshot,
 	reloadCustomFrames,
 } from "../src/apps/card-creator/stores/custom-frames.ts";
 import { sha256Hex } from "../src/apps/card-creator/utils/frame-image.ts";
@@ -325,11 +326,20 @@ describe("custom-frames registry", () => {
 			],
 		);
 		await reloadCustomFrames();
+		const frames = getCustomFramesSnapshot();
 
-		expect(getCustomFramesForTypeAndStyle("resource", "dented").length).toBe(1);
-		expect(getCustomFramesForTypeAndStyle("resource", "flat").length).toBe(0);
-		expect(getCustomFramesForTypeAndStyle("general", "dented").length).toBe(0);
-		expect(getCustomFramesForTypeAndStyle("meld", "dented").length).toBe(0);
+		expect(
+			getCustomFramesForTypeAndStyle(frames, "resource", "dented").length,
+		).toBe(1);
+		expect(
+			getCustomFramesForTypeAndStyle(frames, "resource", "flat").length,
+		).toBe(0);
+		expect(
+			getCustomFramesForTypeAndStyle(frames, "general", "dented").length,
+		).toBe(0);
+		expect(
+			getCustomFramesForTypeAndStyle(frames, "meld", "dented").length,
+		).toBe(0);
 	});
 
 	it("groups mirrors of the same upload into one CustomFrameGroup", async () => {
@@ -361,7 +371,7 @@ describe("custom-frames registry", () => {
 		);
 		await reloadCustomFrames();
 
-		const groups = getCustomFramesGroupedByImage();
+		const groups = getCustomFramesGroupedByImage(getCustomFramesSnapshot());
 		expect(groups.length).toBe(1);
 		expect(groups[0].mirrors.length).toBe(2);
 	});
@@ -442,7 +452,11 @@ describe("custom-frames registry", () => {
 		);
 		await reloadCustomFrames();
 
-		const available = getAvailableCardBacks("action", "dented");
+		const available = getAvailableCardBacks(
+			getCustomFramesSnapshot(),
+			"action",
+			"dented",
+		);
 		const stockCount = CardBacks.filter(
 			(b) => b.type === "general" && b.dented,
 		).length;

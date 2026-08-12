@@ -24,14 +24,22 @@ import type { CardCreatorCardBack } from "./rendering.ts";
  * Stock-then-custom merged list of card backs available for a given card
  * type + style. Stock first, so getSuggestedCardBack's `available[0]`
  * fallback default stays a stock frame rather than an arbitrary custom one.
+ *
+ * Takes `customFrames` explicitly (not read internally from the registry) —
+ * see getCustomFramesForTypeAndStyle's doc comment for why: a zero-argument
+ * call reading external mutable state looks pure to React Compiler's
+ * auto-memoization and can get silently frozen across renders. Callers
+ * inside React should pass `useCustomFrames()`; the card-creator store's own
+ * actions (outside React) should pass `getCustomFramesSnapshot()`.
  */
 export function getAvailableCardBacks(
+	customFrames: CardCreatorCardBack[],
 	type: CardType | null,
 	style: CardStyle,
 ): CardCreatorCardBack[] {
 	return [
 		...(getCardBacksForTypeAndStyle(type, style) as CardCreatorCardBack[]),
-		...getCustomFramesForTypeAndStyle(type, style),
+		...getCustomFramesForTypeAndStyle(customFrames, type, style),
 	];
 }
 

@@ -10,18 +10,20 @@ import { useMemo } from "react";
  * whenever the custom-frames registry changes (a new upload, or the registry
  * finishing its initial hydrate) — not just when type/style change.
  *
- * getAvailableCardBacks reads the registry's singleton state directly rather
- * than through the subscribed value, so `customFrames` is only referenced as
- * a useMemo dependency (the `void` is there purely to make that dependency
- * honest to the exhaustive-deps lint rule, which can't see the indirection).
+ * `customFrames` is passed into getAvailableCardBacks explicitly, rather
+ * than having it read the registry internally, so the real dependency is
+ * visible to both the useMemo deps array and React Compiler's
+ * auto-memoization — a zero-argument call reading external mutable state
+ * looks pure to the compiler and can get silently frozen across renders,
+ * which is exactly what broke live updates before this was fixed.
  */
 export function useAvailableCardBacks(
 	type: CardType | null,
 	style: CardStyle,
 ): CardCreatorCardBack[] {
 	const customFrames = useCustomFrames();
-	return useMemo(() => {
-		void customFrames;
-		return getAvailableCardBacks(type, style);
-	}, [type, style, customFrames]);
+	return useMemo(
+		() => getAvailableCardBacks(customFrames, type, style),
+		[type, style, customFrames],
+	);
 }
