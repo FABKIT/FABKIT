@@ -2,6 +2,7 @@ import { CustomFrameDialog } from "@fabkit/apps/card-creator/components/custom-f
 import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rendering.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import Select from "@fabkit/platform/components/form/Select";
+import { isCustomCardBack } from "@fabkit/shared/config/cards/card_backs.ts";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,7 +57,13 @@ export function CardBackField() {
 				variant: "action" as const,
 				icon: Plus,
 			},
-			...options.map((b) => ({ value: String(b.id), label: b.name })),
+			...options.map((b) => ({
+				value: String(b.id),
+				label: b.name,
+				badge: isCustomCardBack(b)
+					? t("card_creator.custom_frame_badge")
+					: undefined,
+			})),
 		],
 		[options, t],
 	);

@@ -21,9 +21,11 @@ export const FRAME_PREVIEW_HEIGHT = 314;
  * frameImages row so old rows remain identifiable without being invalidated. */
 export const FRAME_NORM_VERSION = 1;
 
-const MAX_SOURCE_BYTES = 8 * 1024 * 1024;
+// Exported so FrameGuidelines.tsx can render these limits without restating
+// them — the copy can never drift from the actual validation.
+export const MAX_SOURCE_BYTES = 8 * 1024 * 1024;
 const MAX_SOURCE_MEGAPIXELS = 50_000_000;
-const MAX_SOURCE_DIMENSION = 12000;
+export const MAX_SOURCE_DIMENSION = 12000;
 const IMAGE_QUALITY = 0.92;
 const PREVIEW_QUALITY = 0.8;
 

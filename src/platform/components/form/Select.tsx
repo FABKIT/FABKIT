@@ -59,6 +59,9 @@ export interface SelectOption<T extends string> {
 
 	/** Optional leading icon, mainly for action options */
 	icon?: React.ElementType;
+
+	/** Small trailing pill, for marking an option's provenance (e.g. "custom"). */
+	badge?: string;
 }
 
 /**
@@ -138,6 +141,11 @@ export default function Select<T extends string>({
 				>
 					<span className={selectedOption ? "text-body" : "text-faint"}>
 						{selectedOption?.label || placeholder || "Select an option"}
+						{selectedOption?.badge && (
+							<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
+								{selectedOption.badge}
+							</span>
+						)}
 					</span>
 					<ChevronDown
 						className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none"
@@ -174,6 +182,11 @@ export default function Select<T extends string>({
 											>
 												{option.label}
 											</span>
+											{option.badge && (
+												<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
+													{option.badge}
+												</span>
+											)}
 											{selected && (
 												<Check
 													className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary"

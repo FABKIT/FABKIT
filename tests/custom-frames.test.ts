@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import { getAvailableCardBacks } from "../src/apps/card-creator/config/card-backs.ts";
 import {
+	FrameBuckets,
+	getBucketKeyForFrame,
+	getCardTypesForFamily,
+} from "../src/apps/card-creator/config/frame-buckets.ts";
+import {
+	addCustomFrameMirror,
 	addFrameImageAndMirrors,
 	countCardsUsingFrame,
 	deleteCustomFrameMirror,
@@ -808,5 +814,216 @@ describe("portable export/import", () => {
 		expect(idMap.get(-77)).toBe(existing.id);
 		expect((await getAllCustomFrames()).length).toBe(1); // no duplicate mirror
 		expect((await getAllFrameImages()).length).toBe(1); // no duplicate image
+	});
+
+	it("import reuses a local mirror matched by BUCKET (type + dented), even when mirrorsCardBackId differs", async () => {
+		// A pre-bucket-model export can carry a mirrorsCardBackId naming whatever
+		// stock entry the uploader happened to tick, not this bucket's
+		// representative. Reconciliation must still recognise it occupies the
+		// same (type, dented) bucket as the local row and reuse it — this is the
+		// fix that keeps bucket-model reimports from creating duplicate rows in
+		// an already-occupied bucket.
+		const realHash = await sha256HexOfText("bucket-match-pixels");
+
+		const [existing] = await addFrameImageAndMirrors(
+			{
+				payloadHash: realHash,
+				sourceHash: "bucket-match-src",
+				normVersion: 1,
+				image: textBlob("bucket-match-pixels"),
+				preview: textBlob("bucket-match-preview"),
+				byteSize: 12,
+			},
+			[
+				{
+					name: "BucketMatch",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					// Representative stock entry for general/dented.
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+
+		const image = textBlob("bucket-match-pixels");
+		const preview = textBlob("bucket-match-preview");
+		const idMap = await reconcileImportedCustomFrames(
+			[
+				{
+					id: -88,
+					name: "BucketMatch",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					// A DIFFERENT stock entry than the local row's, same bucket.
+					mirrorsCardBackId: 42,
+					payloadHash: "claimed-hash-irrelevant",
+				},
+			],
+			[
+				{
+					payloadHash: "claimed-hash-irrelevant",
+					image: await blobToBase64(image),
+					preview: await blobToBase64(preview),
+					byteSize: image.size,
+					sourceHash: "bucket-match-src",
+					normVersion: 1,
+				},
+			],
+		);
+
+		expect(idMap.get(-88)).toBe(existing.id);
+		expect((await getAllCustomFrames()).length).toBe(1); // no duplicate mirror
+	});
+
+	it("reimporting the same frame twice never creates a second row in an already-occupied bucket", async () => {
+		const realHash = await sha256HexOfText("twice-pixels");
+		const image = textBlob("twice-pixels");
+		const preview = textBlob("twice-preview");
+		const meta = [
+			{
+				id: -99,
+				name: "Twice",
+				type: "general",
+				dented: true,
+				renderer: "normal_dented" as const,
+				mirrorsCardBackId: 1,
+				payloadHash: realHash,
+			},
+		];
+		const images = [
+			{
+				payloadHash: realHash,
+				image: await blobToBase64(image),
+				preview: await blobToBase64(preview),
+				byteSize: image.size,
+				sourceHash: "twice-src",
+				normVersion: 1,
+			},
+		];
+
+		await reconcileImportedCustomFrames(meta, images);
+		await reconcileImportedCustomFrames(meta, images);
+
+		expect((await getAllCustomFrames()).length).toBe(1);
+		expect((await getAllFrameImages()).length).toBe(1);
+	});
+});
+
+describe("frame buckets", () => {
+	it("derives exactly one bucket per (type, dented) pair in the manifest, excluding meld", () => {
+		const keys = new Set(FrameBuckets.map((b) => b.key));
+		expect(keys.size).toBe(FrameBuckets.length); // no duplicate keys
+		expect(FrameBuckets.some((b) => b.type === "meld")).toBe(false);
+	});
+
+	it("getBucketKeyForFrame agrees with getFrameBucketKey for both styles", () => {
+		expect(getBucketKeyForFrame({ type: "general", dented: true })).toBe(
+			"general|dented",
+		);
+		expect(getBucketKeyForFrame({ type: "general", dented: false })).toBe(
+			"general|flat",
+		);
+	});
+
+	it("getCardTypesForFamily never includes meld, and general covers action-family types", () => {
+		const generalTypes = getCardTypesForFamily("general");
+		expect(generalTypes).not.toContain("meld");
+		expect(generalTypes).toContain("action");
+		expect(generalTypes).toContain("attack_reaction");
+	});
+
+	it("ally resolves through both the token and hero families", () => {
+		expect(getCardTypesForFamily("token")).toContain("ally");
+		expect(getCardTypesForFamily("hero")).toContain("ally");
+	});
+});
+
+describe("edit-availability diff (storage layer)", () => {
+	beforeEach(async () => {
+		await clearCustomFrames();
+	});
+
+	it("adding a bucket via addCustomFrameMirror and removing another leaves exactly the expected mirrors", async () => {
+		const [initial] = await addFrameImageAndMirrors(
+			{
+				payloadHash: "diff-hash",
+				sourceHash: "diff-src",
+				normVersion: 1,
+				image: blob(50),
+				preview: blob(10),
+				byteSize: 50,
+			},
+			[
+				{
+					name: "Diff",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+
+		// Simulate the edit dialog's "add" side of the diff.
+		await addCustomFrameMirror("diff-hash", {
+			name: "Diff",
+			type: "hero",
+			dented: false,
+			renderer: "normal_flat_hero",
+			mirrorsCardBackId: 2,
+		});
+		// And its "remove" side.
+		await deleteCustomFrameMirror(initial.id);
+
+		const remaining = await getAllCustomFrames();
+		expect(remaining.length).toBe(1);
+		expect(remaining[0]?.type).toBe("hero");
+	});
+
+	it("removing every mirror sharing one bucket key deletes all of them, not just the first", async () => {
+		// Two rows can occupy the same bucket (e.g. after an import that
+		// predates the bucket-key reuse fix) — the edit dialog's removal step
+		// must delete every mirror at a key, not assume there's only one.
+		const mirrors = await addFrameImageAndMirrors(
+			{
+				payloadHash: "multi-mirror-hash",
+				sourceHash: "multi-mirror-src",
+				normVersion: 1,
+				image: blob(50),
+				preview: blob(10),
+				byteSize: 50,
+			},
+			[
+				{
+					name: "MultiMirror",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 1,
+				},
+				{
+					name: "MultiMirror",
+					type: "general",
+					dented: true,
+					renderer: "normal_dented",
+					mirrorsCardBackId: 42, // different stock entry, SAME bucket
+				},
+			],
+		);
+
+		expect(getBucketKeyForFrame(mirrors[0])).toBe(
+			getBucketKeyForFrame(mirrors[1]),
+		);
+
+		for (const mirror of mirrors) {
+			await deleteCustomFrameMirror(mirror.id);
+		}
+
+		expect((await getAllCustomFrames()).length).toBe(0);
+		expect(
+			await getFrameImageByPayloadHash("multi-mirror-hash"),
+		).toBeUndefined();
 	});
 });

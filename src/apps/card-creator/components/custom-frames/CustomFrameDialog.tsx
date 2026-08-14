@@ -1,4 +1,7 @@
-import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rendering.ts";
+import {
+	FrameBuckets,
+	getBucketKeyForFrame,
+} from "@fabkit/apps/card-creator/config/frame-buckets.ts";
 import {
 	type AddCustomFrameInput,
 	addCustomFrameMirror,
@@ -19,28 +22,22 @@ import {
 } from "@fabkit/apps/card-creator/utils/frame-image.ts";
 import ImageUpload from "@fabkit/platform/components/form/ImageUpload";
 import TextInput from "@fabkit/platform/components/form/TextInput";
-import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
 import {
 	Dialog,
 	DialogBackdrop,
 	DialogPanel,
 	DialogTitle,
 } from "@headlessui/react";
-import { Check, ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FrameAvailabilityPicker } from "./FrameAvailabilityPicker.tsx";
+import { FrameGuidelines } from "./FrameGuidelines.tsx";
 
 interface CustomFrameDialogProps {
 	open: boolean;
 	onClose: () => void;
 }
-
-// Meld has no blob-href path in MeldRenderer.tsx yet, so custom frames can't
-// be mirrored onto it — see stores/custom-frames.ts's
-// getCustomFramesForTypeAndStyle, which excludes it the same way.
-const MIRRORABLE_STOCK_BACKS = (CardBacks as CardCreatorCardBack[]).filter(
-	(back) => back.type !== "meld",
-);
 
 const ERROR_CODE_TO_I18N_KEY: Record<FrameImageErrorCode, string> = {
 	"file-too-large": "custom_frames.dialog.error_file_too_large",
@@ -56,18 +53,18 @@ const ERROR_CODE_TO_I18N_KEY: Record<FrameImageErrorCode, string> = {
  * drift apart.
  *
  * Two steps: (1) name + image, normalised via normaliseFrameImage on submit;
- * (2) a mirror picker — the user explicitly chooses which stock manifest
- * entries (card type/style combos) this image should be selectable for,
- * since a CardBack's `type` can't be derived from its renderer (see the
- * plan's design overview). Stock entries this exact image is already
- * mirrored onto (by payloadHash) are excluded from the picker, enforcing the
- * (payloadHash, mirrorsCardBackId) uniqueness the plan calls for.
+ * (2) an availability picker — the user chooses which frame buckets (frame
+ * family x style, see config/frame-buckets.ts) this image should be
+ * selectable for. Buckets this exact image is already available for (by
+ * payloadHash) are shown ticked and disabled rather than hidden, so the
+ * picker stays honest about what's already there without letting a
+ * re-confirm recreate a duplicate row for it.
  */
 export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 	const { t } = useTranslation("card-creator");
 	const [name, setName] = useState("");
 	const [file, setFile] = useState<File | null>(null);
-	const [step, setStep] = useState<"form" | "mirrors">("form");
+	const [step, setStep] = useState<"form" | "availability">("form");
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -76,10 +73,8 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 		null,
 	);
 	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-	const [alreadyMirroredIds, setAlreadyMirroredIds] = useState<Set<number>>(
-		new Set(),
-	);
-	const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+	const [lockedKeys, setLockedKeys] = useState<Set<string>>(new Set());
+	const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
 	// Revoke the local preview URL on unmount/replacement — this one is owned
 	// by this component (not the registry), so it's fine to use the normal
@@ -90,10 +85,9 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 		};
 	}, [previewUrl]);
 
-	const availableMirrors = useMemo(
-		() =>
-			MIRRORABLE_STOCK_BACKS.filter((back) => !alreadyMirroredIds.has(back.id)),
-		[alreadyMirroredIds],
+	const allBucketsLocked = useMemo(
+		() => FrameBuckets.every((bucket) => lockedKeys.has(bucket.key)),
+		[lockedKeys],
 	);
 
 	const handleFormSubmit = async (e: FormEvent) => {
@@ -108,12 +102,10 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 				result.payloadHash,
 			);
 			setNormalised(result);
-			setAlreadyMirroredIds(
-				new Set(existingMirrors.map((m) => m.mirrorsCardBackId)),
-			);
-			setSelectedIds(new Set());
+			setLockedKeys(new Set(existingMirrors.map(getBucketKeyForFrame)));
+			setSelectedKeys(new Set());
 			setPreviewUrl(URL.createObjectURL(result.preview));
-			setStep("mirrors");
+			setStep("availability");
 		} catch (err) {
 			const key =
 				err instanceof FrameImageError
@@ -125,29 +117,30 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 		}
 	};
 
-	const toggleMirror = (id: number) => {
-		setSelectedIds((current) => {
+	const toggleBucket = (key: string) => {
+		if (lockedKeys.has(key)) return;
+		setSelectedKeys((current) => {
 			const next = new Set(current);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
+			if (next.has(key)) next.delete(key);
+			else next.add(key);
 			return next;
 		});
 	};
 
-	const handleConfirmMirrors = async () => {
-		if (!normalised || selectedIds.size === 0) return;
+	const handleConfirmAvailability = async () => {
+		if (!normalised || selectedKeys.size === 0) return;
 
 		setError(null);
 		setIsSaving(true);
 		try {
-			const mirrors: AddCustomFrameInput[] = MIRRORABLE_STOCK_BACKS.filter(
-				(back) => selectedIds.has(back.id),
-			).map((back) => ({
+			const mirrors: AddCustomFrameInput[] = FrameBuckets.filter((bucket) =>
+				selectedKeys.has(bucket.key),
+			).map((bucket) => ({
 				name: name.trim(),
-				type: back.type,
-				dented: back.dented,
-				renderer: back.renderer,
-				mirrorsCardBackId: back.id,
+				type: bucket.type,
+				dented: bucket.style === "dented",
+				renderer: bucket.renderer,
+				mirrorsCardBackId: bucket.representativeCardBackId,
 			}));
 
 			const existingImage = await getFrameImageByPayloadHash(
@@ -196,8 +189,8 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 		setNormalised(null);
 		if (previewUrl) URL.revokeObjectURL(previewUrl);
 		setPreviewUrl(null);
-		setAlreadyMirroredIds(new Set());
-		setSelectedIds(new Set());
+		setLockedKeys(new Set());
+		setSelectedKeys(new Set());
 		onClose();
 	};
 
@@ -247,6 +240,7 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 										acceptedFormats={["image/png", "image/webp"]}
 										onImageSelect={setFile}
 									/>
+									<FrameGuidelines />
 								</div>
 
 								{error && <p className="text-sm text-red-500">{error}</p>}
@@ -293,37 +287,17 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 									</div>
 								)}
 
-								<div className="max-h-64 flex-1 space-y-1 overflow-y-auto pr-1">
-									{availableMirrors.length === 0 ? (
+								<div className="max-h-72 flex-1 overflow-y-auto pr-1">
+									{allBucketsLocked ? (
 										<p className="text-sm text-subtle">
 											{t("custom_frames.dialog.mirror_none_left")}
 										</p>
 									) : (
-										availableMirrors.map((back) => {
-											const checked = selectedIds.has(back.id);
-											return (
-												<label
-													key={back.id}
-													className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-body transition-colors hover:bg-surface-muted"
-												>
-													<input
-														type="checkbox"
-														checked={checked}
-														onChange={() => toggleMirror(back.id)}
-														className="h-4 w-4 accent-primary"
-													/>
-													<span className="flex-1">
-														{back.name} —{" "}
-														{back.dented
-															? t("custom_frames.dialog.mirror_style_dented")
-															: t("custom_frames.dialog.mirror_style_flat")}
-													</span>
-													{checked && (
-														<Check className="h-4 w-4 shrink-0 text-primary" />
-													)}
-												</label>
-											);
-										})
+										<FrameAvailabilityPicker
+											selectedKeys={selectedKeys}
+											onToggle={toggleBucket}
+											lockedKeys={lockedKeys}
+										/>
 									)}
 								</div>
 							</div>
@@ -341,8 +315,8 @@ export function CustomFrameDialog({ open, onClose }: CustomFrameDialogProps) {
 								</button>
 								<button
 									type="button"
-									onClick={handleConfirmMirrors}
-									disabled={selectedIds.size === 0 || isSaving}
+									onClick={handleConfirmAvailability}
+									disabled={selectedKeys.size === 0 || isSaving}
 									className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									{isSaving

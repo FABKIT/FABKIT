@@ -3,30 +3,28 @@ import {
 	getFrameImageByPayloadHash,
 } from "@fabkit/apps/card-creator/persistence/custom-frames-storage.ts";
 import type { CustomFrameGroup } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
-import { Trash2 } from "lucide-react";
+import { SlidersHorizontal, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-export interface MirrorDeleteRequest {
-	group: CustomFrameGroup;
-	mirrorId: number;
-}
-
 interface CustomFrameTileProps {
 	group: CustomFrameGroup;
-	onRequestDeleteMirror: (request: MirrorDeleteRequest) => void;
+	onRequestEditAvailability: (group: CustomFrameGroup) => void;
 	onRequestDeleteWhole: (group: CustomFrameGroup) => void;
 }
 
 /**
- * One tile per UPLOADED IMAGE, not per (image, stock entry) mirror row — a
- * single upload can be mirrored onto several card type/style combos, and
- * showing one indistinguishable tile per mirror would make the grid look
- * duplicated. Each mirror is instead a removable chip within the tile.
+ * One tile per UPLOADED IMAGE, not per (image, bucket) mirror row — a single
+ * upload can be available on several frame buckets, and showing one
+ * indistinguishable tile per mirror would make the grid look duplicated.
+ * Each mirror is instead a read-only chip within the tile; availability is
+ * changed as a whole via "Edit availability", not per chip, since
+ * deleteCustomFrameMirror cascade-deletes the underlying image once its last
+ * mirror goes and a stray click on a chip is an easy way to lose an upload.
  */
 export function CustomFrameTile({
 	group,
-	onRequestDeleteMirror,
+	onRequestEditAvailability,
 	onRequestDeleteWhole,
 }: CustomFrameTileProps) {
 	const { t } = useTranslation("card-creator");
@@ -83,39 +81,43 @@ export function CustomFrameTile({
 
 			<div className="flex flex-wrap gap-1.5">
 				{group.mirrors.map((mirror) => (
-					<MirrorChip
-						key={mirror.id}
-						mirror={mirror}
-						onRequestDelete={() =>
-							onRequestDeleteMirror({ group, mirrorId: mirror.id })
-						}
-					/>
+					<MirrorChip key={mirror.id} mirror={mirror} />
 				))}
 			</div>
 
-			<button
-				type="button"
-				onClick={() => onRequestDeleteWhole(group)}
-				className="flex items-center justify-center gap-2 rounded-md bg-surface-active px-3 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
-			>
-				<Trash2 className="h-4 w-4" />
-				{t("custom_frames.delete_whole_frame")}
-			</button>
+			<div className="flex gap-2">
+				<button
+					type="button"
+					onClick={() => onRequestEditAvailability(group)}
+					className="flex flex-1 items-center justify-center gap-2 rounded-md bg-surface-active px-3 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
+				>
+					<SlidersHorizontal className="h-4 w-4" />
+					{t("custom_frames.edit_availability")}
+				</button>
+				<button
+					type="button"
+					onClick={() => onRequestDeleteWhole(group)}
+					className="flex items-center justify-center rounded-md bg-surface-active px-3 py-2 text-sm font-medium text-heading transition-colors hover:bg-surface-muted"
+					aria-label={t("custom_frames.delete_whole_frame")}
+					title={t("custom_frames.delete_whole_frame")}
+				>
+					<Trash2 className="h-4 w-4" />
+				</button>
+			</div>
 		</div>
 	);
 }
 
 function MirrorChip({
 	mirror,
-	onRequestDelete,
 }: {
 	mirror: CustomFrameGroup["mirrors"][number];
-	onRequestDelete: () => void;
 }) {
 	const { t } = useTranslation("card-creator");
-	const styleLabel = mirror.dented
-		? t("custom_frames.dialog.mirror_style_dented")
-		: t("custom_frames.dialog.mirror_style_flat");
+	const familyLabel = t(`custom_frames.family.${mirror.type}`);
+	const styleLabel = t(
+		`custom_frames.style.${mirror.dented ? "dented" : "flat"}`,
+	);
 
 	// Per-mirror usage count, fetched once per chip — cheap (a full-table
 	// filter over `cards`, see countCardsUsingFrame) and only runs for the
@@ -131,31 +133,23 @@ function MirrorChip({
 		};
 	}, [mirror.id]);
 
-	const usageLabel =
-		usageCount === null
-			? null
-			: usageCount === 0
-				? t("custom_frames.mirror_usage_none")
-				: t("custom_frames.mirror_usage_count", { count: usageCount });
-
 	return (
-		<button
-			type="button"
-			onClick={onRequestDelete}
+		<span
 			title={
-				usageLabel
-					? `${t("custom_frames.remove_mirror", { style: styleLabel })} — ${usageLabel}`
-					: t("custom_frames.remove_mirror", { style: styleLabel })
+				usageCount !== null
+					? usageCount === 0
+						? t("custom_frames.mirror_usage_none")
+						: t("custom_frames.mirror_usage_count", { count: usageCount })
+					: undefined
 			}
-			className="group flex items-center gap-1 rounded-full border border-border-primary bg-surface-muted px-2.5 py-1 text-xs text-muted transition-colors hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-500"
+			className="flex items-center gap-1 rounded-full border border-border-primary bg-surface-muted px-2.5 py-1 text-xs text-muted"
 		>
-			{styleLabel}
+			{familyLabel} · {styleLabel}
 			{usageCount !== null && usageCount > 0 && (
 				<span className="rounded-full bg-surface-active px-1.5 text-[10px] text-subtle">
 					{usageCount}
 				</span>
 			)}
-			<Trash2 className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-		</button>
+		</span>
 	);
 }

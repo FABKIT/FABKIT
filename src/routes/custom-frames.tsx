@@ -1,12 +1,10 @@
 import { CustomFrameDialog } from "@fabkit/apps/card-creator/components/custom-frames/CustomFrameDialog.tsx";
-import {
-	CustomFrameTile,
-	type MirrorDeleteRequest,
-} from "@fabkit/apps/card-creator/components/custom-frames/CustomFrameTile.tsx";
+import { CustomFrameTile } from "@fabkit/apps/card-creator/components/custom-frames/CustomFrameTile.tsx";
 import {
 	DeleteFrameConfirmDialog,
 	type DeleteFrameTarget,
 } from "@fabkit/apps/card-creator/components/custom-frames/DeleteFrameConfirmDialog.tsx";
+import { EditFrameAvailabilityDialog } from "@fabkit/apps/card-creator/components/custom-frames/EditFrameAvailabilityDialog.tsx";
 import {
 	type CustomFrameGroup,
 	ensureCustomFramesLoaded,
@@ -40,9 +38,10 @@ function CustomFramesPage() {
 	const [deleteTarget, setDeleteTarget] = useState<DeleteFrameTarget | null>(
 		null,
 	);
+	const [editTarget, setEditTarget] = useState<CustomFrameGroup | null>(null);
 
-	const requestDeleteMirror = ({ group, mirrorId }: MirrorDeleteRequest) =>
-		setDeleteTarget({ kind: "mirror", group, mirrorId });
+	const requestEditAvailability = (group: CustomFrameGroup) =>
+		setEditTarget(group);
 	const requestDeleteWhole = (group: CustomFrameGroup) =>
 		setDeleteTarget({ kind: "whole", group });
 
@@ -91,7 +90,7 @@ function CustomFramesPage() {
 							<CustomFrameTile
 								key={group.payloadHash}
 								group={group}
-								onRequestDeleteMirror={requestDeleteMirror}
+								onRequestEditAvailability={requestEditAvailability}
 								onRequestDeleteWhole={requestDeleteWhole}
 							/>
 						))}
@@ -108,6 +107,11 @@ function CustomFramesPage() {
 				target={deleteTarget}
 				onCancel={() => setDeleteTarget(null)}
 				onDeleted={() => setDeleteTarget(null)}
+			/>
+			<EditFrameAvailabilityDialog
+				group={editTarget}
+				onClose={() => setEditTarget(null)}
+				onSaved={() => setEditTarget(null)}
 			/>
 		</section>
 	);

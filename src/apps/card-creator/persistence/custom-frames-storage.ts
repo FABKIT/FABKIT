@@ -1,4 +1,5 @@
 import { base64ToBlob, blobToBase64 } from "@fabkit/shared/blob";
+import { getBucketKeyForFrame } from "../config/frame-buckets.ts";
 import type { RenderConfigVariation } from "../config/rendering.ts";
 import { sha256Hex } from "../utils/frame-image.ts";
 import { db } from "./db.ts";
@@ -504,18 +505,25 @@ export async function reconcileImportedCustomFrames(
 	for (const meta of metas) {
 		const resolved = claimedToReal.get(meta.payloadHash);
 		if (!resolved) continue;
-		// Reuse an existing LOCAL mirror if one already matches this exact
-		// (image, stock-entry) pair — repeated imports of the same file don't
+		// Reuse an existing LOCAL mirror if one already occupies this exact
+		// (image, frame bucket) pair — repeated imports of the same file don't
 		// pile up duplicate picker entries. clearGallery() (replace-mode
 		// import) deliberately does NOT clear frameImages/customFrames, so the
 		// local frame library survives a replace and this reuse check applies
 		// there too, not just in merge mode.
+		//
+		// Matched on the bucket key (type + dented), not mirrorsCardBackId: a
+		// pre-bucket-model export can carry a mirrorsCardBackId that isn't this
+		// bucket's representative stock entry (it names whichever stock frame
+		// the uploader happened to tick), and under the bucket model two rows
+		// with the same (type, dented) pair are functionally identical anyway
+		// — see config/frame-buckets.ts.
 		const localMatches = await db.customFrames
 			.where("payloadHash")
 			.equals(resolved.hash)
 			.toArray();
 		const existingMirror = localMatches.find(
-			(m) => m.mirrorsCardBackId === meta.mirrorsCardBackId,
+			(m) => getBucketKeyForFrame(m) === getBucketKeyForFrame(meta),
 		);
 		if (existingMirror) {
 			idMap.set(meta.id, existingMirror.id);
