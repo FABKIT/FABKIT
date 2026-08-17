@@ -25,6 +25,51 @@
 
 import { type BlobType, snapdom } from "@zumer/snapdom";
 
+/**
+ * Resolves once every image referenced by the SVG's <image> elements has
+ * decoded, so snapdom never captures a blank frame from a freshly-created
+ * (not-yet-loaded) blob: URL — a real, if unlikely, race on a fast save today,
+ * and one about to get materially more likely once custom cardback images
+ * (also blob: URLs) enter this same renderer.
+ *
+ * SVGImageElement has neither `.complete` nor `.decode()` (unlike
+ * HTMLImageElement), so the SVG's own <image> nodes can't be probed directly.
+ * Instead, their resolved hrefs are re-decoded via detached HTMLImageElements
+ * — browsers serve this from cache, so it's a decode-state probe, not a
+ * re-download. Bounded by a timeout so one broken href can never hang export.
+ */
+async function waitForImages(
+	svg: SVGSVGElement,
+	timeoutMs = 5000,
+): Promise<void> {
+	const hrefs = Array.from(svg.querySelectorAll<SVGImageElement>("image"))
+		.map(
+			(el) =>
+				el.href?.baseVal ||
+				el.getAttribute("href") ||
+				el.getAttribute("xlink:href"),
+		)
+		.filter((href): href is string => !!href);
+
+	const probes = hrefs.map(
+		(src) =>
+			new Promise<void>((resolve) => {
+				const img = new Image();
+				// Never reject — a broken href must not block export, only the
+				// timeout below should ever cause snapdom to proceed prematurely.
+				img.onload = () => resolve();
+				img.onerror = () => resolve();
+				img.src = src;
+				if (img.decode) img.decode().then(resolve, resolve);
+			}),
+	);
+
+	await Promise.race([
+		Promise.all(probes),
+		new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+	]);
+}
+
 /** Rotates an image Blob 90° CW or CCW via canvas. */
 export async function rotateBlob(blob: Blob, degrees: -90 | 90): Promise<Blob> {
 	const bitmap = await createImageBitmap(blob);
@@ -58,6 +103,8 @@ export async function convertToImage(
 	type: BlobType = "png",
 	rotatePortrait = false,
 ): Promise<Blob> {
+	await waitForImages(svg);
+
 	// Elements marked [data-export-hide] are UI affordances (e.g. the meld
 	// active-half overlay) that must not appear in the exported image.
 	const hidden = svg.querySelectorAll<SVGElement>("[data-export-hide]");

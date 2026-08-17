@@ -1,5 +1,6 @@
 import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
 import {
 	convertToImage,
 	rotateBlob,
@@ -11,6 +12,12 @@ import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/export")({
 	component: RouteComponent,
+	// Same reasoning as /card-creator's loader: the card being exported may
+	// already reference a custom frame, and the renderer must never mount
+	// against an empty registry.
+	loader: async () => {
+		await ensureCustomFramesLoaded();
+	},
 });
 
 function RouteComponent() {

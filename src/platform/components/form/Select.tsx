@@ -48,6 +48,20 @@ export interface SelectOption<T extends string> {
 
 	/** Display label shown to user */
 	label: string;
+
+	/**
+	 * Renders the option as a call to action rather than a value: accented,
+	 * separated from the values below it, and never shown with a check mark.
+	 * Callers own what selecting it means. List action options first — the
+	 * options list scrolls, so anything at the bottom is easy to miss.
+	 */
+	variant?: "action";
+
+	/** Optional leading icon, mainly for action options */
+	icon?: React.ElementType;
+
+	/** Small trailing pill, for marking an option's provenance (e.g. "custom"). */
+	badge?: string;
 }
 
 /**
@@ -127,6 +141,11 @@ export default function Select<T extends string>({
 				>
 					<span className={selectedOption ? "text-body" : "text-faint"}>
 						{selectedOption?.label || placeholder || "Select an option"}
+						{selectedOption?.badge && (
+							<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
+								{selectedOption.badge}
+							</span>
+						)}
 					</span>
 					<ChevronDown
 						className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none"
@@ -137,27 +156,49 @@ export default function Select<T extends string>({
 					anchor="bottom"
 					className="mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-50 max-h-60 overflow-auto"
 				>
-					{options.map((option) => (
-						<ListboxOption
-							key={option.value}
-							value={option.value}
-							className="relative px-3 py-2 cursor-pointer select-none text-body data-focus:bg-surface-muted data-selected:bg-primary/5 transition-colors"
-						>
-							{({ selected }) => (
-								<>
-									<span className={selected ? "font-medium" : "font-normal"}>
-										{option.label}
-									</span>
-									{selected && (
-										<Check
-											className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary"
-											strokeWidth={2.5}
-										/>
-									)}
-								</>
-							)}
-						</ListboxOption>
-					))}
+					{options.map((option) => {
+						const isAction = option.variant === "action";
+						const Icon = option.icon;
+						return (
+							<ListboxOption
+								key={option.value}
+								value={option.value}
+								className={
+									isAction
+										? "relative flex items-center gap-2 mb-1 px-3 py-2 cursor-pointer select-none border-b border-border-primary bg-primary/10 text-primary font-semibold leading-snug data-focus:bg-primary/20 transition-colors"
+										: "relative px-3 py-2 cursor-pointer select-none text-body data-focus:bg-surface-muted data-selected:bg-primary/5 transition-colors"
+								}
+							>
+								{({ selected }) =>
+									isAction ? (
+										<>
+											{Icon && <Icon className="w-4 h-4 shrink-0" />}
+											<span>{option.label}</span>
+										</>
+									) : (
+										<>
+											<span
+												className={selected ? "font-medium" : "font-normal"}
+											>
+												{option.label}
+											</span>
+											{option.badge && (
+												<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
+													{option.badge}
+												</span>
+											)}
+											{selected && (
+												<Check
+													className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary"
+													strokeWidth={2.5}
+												/>
+											)}
+										</>
+									)
+								}
+							</ListboxOption>
+						);
+					})}
 				</ListboxOptions>
 			</Listbox>
 		</Field>

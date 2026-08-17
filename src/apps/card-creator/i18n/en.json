@@ -164,7 +164,11 @@
 		"meld_shared_fields_label": "Shared Fields",
 		"meld_band_keyword": "Meld ",
 		"meld_band_description": "(You may play 1 or both halves of this card. Each costs {{cost}}.)",
-		"meld_band_keyword_only": "(You may play 1 or both halves of this card.)"
+		"meld_band_keyword_only": "(You may play 1 or both halves of this card.)",
+		"custom_frame_action_label": "Add custom frame",
+		"custom_frame_badge": "custom",
+		"missing_frame_label": "Missing custom frame",
+		"missing_frame_warning": "This card uses a custom frame that isn't available on this device. It will still save correctly — re-add the frame later to restore it."
 	},
 	"gallery": {
 		"title": "Saved Cards",
@@ -222,6 +226,86 @@
 			"move_here": "Move here",
 			"move_error": "Failed to move card. Please try again.",
 			"no_subfolders": "No subfolders here"
+		}
+	},
+	"custom_frames": {
+		"title": "Custom Frames",
+		"subtitle": "Upload and manage your custom card frames",
+		"upload_label": "Upload frame",
+		"empty": "No custom frames yet",
+		"empty_hint": "Upload a frame image to use it as a background in the card creator.",
+		"delete": "Delete",
+		"cancel": "Cancel",
+		"preview_alt": "Preview of the custom frame {{name}}",
+		"mirror_usage_count_one": "Used on {{count}} card",
+		"mirror_usage_count_other": "Used on {{count}} cards",
+		"mirror_usage_none": "Not used on any card",
+		"edit_availability": "Edit availability",
+		"delete_whole_frame": "Delete entire frame",
+		"delete_whole_title": "Delete \"{{name}}\" entirely?",
+		"delete_whole_confirm": "This deletes every version of \"{{name}}\" and the underlying image. This can't be undone.",
+		"delete_whole_confirm_in_use_one": "This deletes every version of \"{{name}}\" and the underlying image. {{count}} card currently uses it and will show a placeholder until this frame is re-added.",
+		"delete_whole_confirm_in_use_other": "This deletes every version of \"{{name}}\" and the underlying image. {{count}} cards currently use it and will show a placeholder until this frame is re-added.",
+		"confirm_delete": "Delete",
+		"style": {
+			"dented": "Old style",
+			"flat": "New style"
+		},
+		"family": {
+			"general": "Action",
+			"hero": "Hero",
+			"equipment": "Equipment",
+			"weapon": "Weapon",
+			"token": "Token",
+			"resource": "Resource",
+			"event": "Event"
+		},
+		"guidelines": {
+			"trigger": "What makes a good frame image?",
+			"size_label": "Size",
+			"size_value": "{{width}} x {{height}} px is ideal. Any image with the same 450:628 card shape works.",
+			"formats_label": "Formats",
+			"formats_value": "PNG or WebP. Transparency is kept, so cut-out frames work.",
+			"limits_label": "Limits",
+			"limits_value": "Up to {{maxSizeMb}} MB, and no more than {{maxDimension}} px on either side.",
+			"cropping_label": "Cropping",
+			"cropping_value": "Other shapes are centre-cropped to fit the card."
+		},
+		"edit_dialog": {
+			"title": "Edit availability for \"{{name}}\"",
+			"description": "Choose which frame sets this frame should be available for.",
+			"empty_hint": "Every frame set is unchecked. To remove this frame entirely, use \"Delete entire frame\" instead.",
+			"cancel": "Cancel",
+			"save": "Save changes",
+			"saving": "Saving...",
+			"confirm_title": "Some cards use this frame",
+			"confirm_description_one": "{{count}} card currently uses a frame set you're removing, and will show a placeholder until this frame is added back.",
+			"confirm_description_other": "{{count}} cards currently use a frame set you're removing, and will show a placeholder until this frame is added back.",
+			"confirm_back": "Back",
+			"confirm_save": "Save anyway"
+		},
+		"dialog": {
+			"title": "Add a custom frame",
+			"description": "Upload your own frame image and give it a name. The name is how you will recognise it in the drop-down menu.",
+			"close": "Close",
+			"name_label": "Frame name",
+			"name_placeholder": "Your custom frame name...",
+			"image_label": "Frame image",
+			"cancel": "Cancel",
+			"save": "Add frame",
+			"next": "Next",
+			"back": "Back",
+			"processing": "Processing image...",
+			"saving": "Saving...",
+			"mirror_title": "For which frame sets should this frame be available?",
+			"mirror_description": "Pick every frame set this image should be selectable for. It will be added to each one you choose.",
+			"mirror_none_left": "This image is already available for every frame set.",
+			"error_file_too_large": "That image is too large. Please choose a file under 8MB.",
+			"error_unrecognized_format": "Unrecognized image format. Only PNG and WebP are supported.",
+			"error_unreadable": "Couldn't read this image. Please try a different file.",
+			"error_dimensions_too_large": "This image's dimensions are too large.",
+			"error_quota_exceeded": "Not enough storage space available for this image.",
+			"error_unknown": "Something went wrong processing this image. Please try again."
 		}
 	},
 	"export": {

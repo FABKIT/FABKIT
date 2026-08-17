@@ -26,8 +26,17 @@ import { v4 as uuid } from "uuid";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { isFieldVisible } from "../components/utils.ts";
+import {
+	getAvailableCardBacks,
+	makeMissingFramePlaceholder,
+	resolveCardBackKeepingMissing,
+} from "../config/card-backs.ts";
 import { MeldFlatRenderConfigPreset } from "../config/rendering/meld_preset.tsx";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
+import {
+	getCustomFramesSnapshot,
+	onCustomFramesRemoved,
+} from "./custom-frames.ts";
 
 // ─── Hybrid frame seam ────────────────────────────────────────────────────────
 
@@ -463,20 +472,36 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// When selecting a new card type, make sure that either:
 				// - the current card back is valid for that card type
 				// - we select the first available card back for that card type
-				let available = getCardBacksForTypeAndStyle(
+				//
+				// Order matters: a missing-frame placeholder (carryMissingFrame) is
+				// checked BEFORE the validity check, because its id is by definition
+				// absent from `available` — the frame isn't present locally, that's
+				// why it's a placeholder — so a plain validity check would evict it
+				// and the next save would silently destroy the reference.
+				const customFrames = getCustomFramesSnapshot();
+				let available = getAvailableCardBacks(
+					customFrames,
 					cardType,
 					state.CardBackStyle,
 				);
 				let cardStyle = state.CardBackStyle;
-				let cardBack: CardCreatorCardBack | null = state.CardBack;
-				if (state.CardBack === null || !available.includes(state.CardBack))
-					cardBack = getSuggestedCardBack(
-						available,
-					) as CardCreatorCardBack | null;
+				let cardBack: CardCreatorCardBack | null =
+					resolveCardBackKeepingMissing(
+						state.CardBack,
+						cardType,
+						cardStyle,
+						() =>
+							state.CardBack !== null &&
+							available.some((back) => back.id === state.CardBack?.id)
+								? state.CardBack
+								: (getSuggestedCardBack(
+										available,
+									) as CardCreatorCardBack | null),
+					);
 
 				if (null === cardBack) {
 					for (const style of CardStyles) {
-						available = getCardBacksForTypeAndStyle(cardType, style);
+						available = getAvailableCardBacks(customFrames, cardType, style);
 
 						if (available.length > 0)
 							cardBack = getSuggestedCardBack(
@@ -494,12 +519,20 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// approach used for the left half. Hybrid survives a type change rather than
 				// silently switching itself off. Meld is excluded from hybrid entirely.
 				const cardBackRight =
-					cardType === "meld" || state.CardBackRight === null
+					cardType === "meld"
 						? null
-						: (getSuggestedCardBack(
-								available,
+						: resolveCardBackKeepingMissing(
 								state.CardBackRight,
-							) as CardCreatorCardBack | null);
+								cardType,
+								cardStyle,
+								() =>
+									state.CardBackRight === null
+										? null
+										: (getSuggestedCardBack(
+												available,
+												state.CardBackRight,
+											) as CardCreatorCardBack | null),
+							);
 
 				// When we change the state some fields become invisible.
 				// All fields that are not visible for the new card type are set to null.
@@ -540,12 +573,17 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			set({ CardBackBlend: Math.max(0, Math.min(1, blend)) }),
 		toggleHybrid: () =>
 			set((state) => {
-				// Already hybrid — turning off discards the right half and keeps the left.
+				// Already hybrid — turning off discards the right half and keeps the
+				// left. This is an explicit user action (the toggle button), so it's
+				// fine to discard a missing-frame placeholder here too — unlike the
+				// evictions carryMissingFrame guards against elsewhere, the user is
+				// the one asking for this frame to go away.
 				if (state.CardBackRight !== null) return { CardBackRight: null };
 
 				// Turning on: right half starts as the next frame in the current
 				// type+style list (wraps around), so the split is immediately visible.
-				const available = getCardBacksForTypeAndStyle(
+				const available = getAvailableCardBacks(
+					getCustomFramesSnapshot(),
 					state.CardType,
 					state.CardBackStyle,
 				);
@@ -561,19 +599,46 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			}),
 		setCardBackStyle: (backType: CardStyle) =>
 			set((state) => {
-				// When changing card back style, we select the first available card back for that style.
-				const available = getCardBacksForTypeAndStyle(state.CardType, backType);
-				const cardBack = getSuggestedCardBack(
-					available,
+				// Unlike setCardType, this action used to replace CardBack
+				// UNCONDITIONALLY with no validity check at all — meaning toggling
+				// flat/dented always evicted a custom frame (and any missing-frame
+				// placeholder) even when the current selection was still fine. Now:
+				// carry a sticky placeholder forward first, then only re-suggest when
+				// the current selection isn't actually valid for the new style.
+				const available = getAvailableCardBacks(
+					getCustomFramesSnapshot(),
+					state.CardType,
+					backType,
+				);
+
+				const cardBack = resolveCardBackKeepingMissing(
 					state.CardBack,
-				) as CardCreatorCardBack | null;
-				const cardBackRight =
-					state.CardBackRight === null
-						? null
-						: (getSuggestedCardBack(
-								available,
-								state.CardBackRight,
-							) as CardCreatorCardBack | null);
+					state.CardType,
+					backType,
+					() =>
+						state.CardBack !== null &&
+						available.some((back) => back.id === state.CardBack?.id)
+							? state.CardBack
+							: (getSuggestedCardBack(
+									available,
+									state.CardBack,
+								) as CardCreatorCardBack | null),
+				);
+
+				const cardBackRight = resolveCardBackKeepingMissing(
+					state.CardBackRight,
+					state.CardType,
+					backType,
+					() =>
+						state.CardBackRight === null
+							? null
+							: available.some((back) => back.id === state.CardBackRight?.id)
+								? state.CardBackRight
+								: (getSuggestedCardBack(
+										available,
+										state.CardBackRight,
+									) as CardCreatorCardBack | null),
+				);
 
 				return {
 					CardBackStyle: backType,
@@ -790,3 +855,42 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			})),
 	})),
 );
+
+/**
+ * Reconciles the open card if the custom-frames registry drops a frame it's
+ * currently using — deletion (locally, or in another tab via
+ * BroadcastChannel) doesn't touch useCardCreator's state on its own, so
+ * without this the store would keep pointing CardBack/CardBackRight at a row
+ * that no longer exists: no `missing: true`, no revoked-URL warning, just a
+ * stale reference the renderer silently can't resolve. Swapping in the same
+ * sticky placeholder used everywhere else keeps this path consistent with
+ * every other "frame reference outlived its row" case (see
+ * makeMissingFramePlaceholder).
+ */
+onCustomFramesRemoved((removedIds) => {
+	const state = useCardCreator.getState();
+	const patch: Partial<CardCreatorState> = {};
+	if (
+		state.CardBack &&
+		!state.CardBack.missing &&
+		removedIds.has(state.CardBack.id)
+	) {
+		patch.CardBack = makeMissingFramePlaceholder(
+			state.CardBack.id,
+			state.CardType,
+			state.CardBackStyle,
+		);
+	}
+	if (
+		state.CardBackRight &&
+		!state.CardBackRight.missing &&
+		removedIds.has(state.CardBackRight.id)
+	) {
+		patch.CardBackRight = makeMissingFramePlaceholder(
+			state.CardBackRight.id,
+			state.CardType,
+			state.CardBackStyle,
+		);
+	}
+	if (Object.keys(patch).length > 0) useCardCreator.setState(patch);
+});

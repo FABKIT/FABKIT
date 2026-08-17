@@ -16,6 +16,7 @@ import {
 	renameFolder,
 	type StoredFolder,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
+import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames";
 import { decompressFile } from "@fabkit/shared/compression";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import {
@@ -37,7 +38,13 @@ export const Route = createFileRoute("/gallery")({
 	validateSearch: (search: Record<string, unknown>): GallerySearch => ({
 		folderId: typeof search.folderId === "string" ? search.folderId : undefined,
 	}),
-	loader: async () => getAllCardsWithFolders(),
+	loader: async () => {
+		const [result] = await Promise.all([
+			getAllCardsWithFolders(),
+			ensureCustomFramesLoaded(),
+		]);
+		return result;
+	},
 });
 
 function GalleryPage() {

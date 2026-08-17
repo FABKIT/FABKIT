@@ -1,13 +1,15 @@
-import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rendering";
 import {
 	base64ToBlob,
 	clearGallery,
 	type FabgalleryFile,
 	type FabkitFile,
 	importCardFromObject,
+	resolveStoredCardBack,
+	resolveStoredCardBackRight,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
 import type { CardCreatorState } from "@fabkit/apps/card-creator/stores/card-creator";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator";
+import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames";
 import {
 	CollapsibleJsonSection,
 	ConsoleLogEntry,
@@ -17,7 +19,8 @@ import {
 	UserField,
 } from "@fabkit/platform/components/bug-report-viewer";
 import { decompressFile } from "@fabkit/shared/compression";
-import { CardBacks } from "@fabkit/shared/config/cards/card_backs";
+import type { CardStyle } from "@fabkit/shared/config/cards/card_styles";
+import type { CardType } from "@fabkit/shared/config/cards/types";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertTriangle,
@@ -145,6 +148,12 @@ function getGalleryCards(
 async function restoreStore(raw: unknown): Promise<void> {
 	const s = raw as Record<string, unknown>;
 
+	// resolveStoredCardBack(Right) below resolve custom-frame ids synchronously
+	// against the registry, same as deserializeCardState — it must be hydrated
+	// first, or a report captured with a real custom frame would incorrectly
+	// resolve as "missing" here.
+	await ensureCustomFramesLoaded();
+
 	const [artwork, overlay, meldHalfAArtwork, meldHalfBArtwork] =
 		await Promise.all([
 			typeof s.CardArtwork === "string"
@@ -163,18 +172,39 @@ async function restoreStore(raw: unknown): Promise<void> {
 				: Promise.resolve(null),
 		]);
 
-	// serializeValue preserves the CardBack object; resolve to the real config object by id.
+	const cardType = (s.CardType as CardType | undefined) ?? null;
+	const cardBackStyle = (s.CardBackStyle as CardStyle | undefined) ?? "dented";
+
+	// describeCardBackForReport (index.ts) serializes CardBack/CardBackRight
+	// down to {id, name, type, dented, renderer, missing} — no `images` array.
+	// Resolving through the SAME sign-discriminated logic deserializeCardState
+	// uses (rather than a stock-only CardBacks.find, and rather than trusting
+	// the report's own object shape) is required for two reasons: it rebuilds
+	// a full CardCreatorCardBack (with `images`) so the renderer doesn't crash
+	// on a missing `images` array, and it correctly turns an unresolvable
+	// negative (custom-frame) id into a missing-frame placeholder instead of
+	// silently substituting a stock frame — the same data-loss bug this
+	// resolver was built elsewhere in the app to prevent.
 	const cardBackRaw = s.CardBack as { id: number } | null;
+	const cardBackRightRaw = s.CardBackRight as { id: number } | null;
 	const cardBack = cardBackRaw
-		? ((CardBacks.find((b) => b.id === cardBackRaw.id) ??
-				CardBacks[0]) as CardCreatorCardBack)
+		? resolveStoredCardBack(cardBackRaw.id, cardType, cardBackStyle)
 		: null;
+	const cardBackRight =
+		cardType === "meld" || !cardBackRightRaw
+			? null
+			: resolveStoredCardBackRight(
+					cardBackRightRaw.id,
+					cardType,
+					cardBackStyle,
+				);
 
 	useCardCreator.getState().loadCard({
 		...(s as Partial<CardCreatorState>),
 		CardArtwork: artwork,
 		CardOverlay: overlay,
 		CardBack: cardBack,
+		CardBackRight: cardBackRight,
 		meldHalfA:
 			s.meldHalfA && typeof s.meldHalfA === "object"
 				? {
@@ -327,6 +357,11 @@ function BugReportViewer() {
 
 	const handleRestoreStore = async () => {
 		if (!report) return;
+		// Reports embed images at preview resolution only (see
+		// exportCardToObject's includeFullResImages) — restoring can never bring
+		// back full-resolution artwork/overlay, so this must be explicit rather
+		// than a silent downgrade.
+		if (!confirm(t("bug_report_viewer.restore_store_warning"))) return;
 		setRestoringStore(true);
 		try {
 			await restoreStore(ccData.store);
@@ -337,6 +372,10 @@ function BugReportViewer() {
 
 	const handleRestoreGallery = async () => {
 		if (!report) return;
+		// Same image-loss caveat as restore_store, PLUS this replaces the local
+		// gallery entirely (restoreGallery calls clearGallery() first) — both
+		// need to be explicit before an irreversible action.
+		if (!confirm(t("bug_report_viewer.restore_gallery_warning"))) return;
 		setRestoringGallery(true);
 		try {
 			await restoreGallery(ccData.gallery);
@@ -727,22 +766,32 @@ function BugReportViewer() {
 				/>
 
 				{/* Gallery */}
-				<CollapsibleJsonSection
-					title={t("bug_report_viewer.section_gallery")}
-					icon={<Images className="h-5 w-5 text-heading" />}
-					data={ccData.gallery}
-					expanded={galleryExpanded}
-					onToggle={() => setGalleryExpanded((v) => !v)}
-					count={galleryCards.length}
-					itemsLabel={t("bug_report_viewer.items")}
-					action={
-						<RestoreButton
-							label={t("bug_report_viewer.restore_gallery")}
-							loading={restoringGallery}
-							onClick={handleRestoreGallery}
-						/>
-					}
-				/>
+				<div className="space-y-2">
+					{!Array.isArray(ccData.gallery) && ccData.gallery.truncated && (
+						<div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-500">
+							<AlertTriangle className="h-4 w-4 flex-shrink-0" />
+							{t("bug_report_viewer.gallery_truncated", {
+								count: ccData.gallery.truncated.omittedCards,
+							})}
+						</div>
+					)}
+					<CollapsibleJsonSection
+						title={t("bug_report_viewer.section_gallery")}
+						icon={<Images className="h-5 w-5 text-heading" />}
+						data={ccData.gallery}
+						expanded={galleryExpanded}
+						onToggle={() => setGalleryExpanded((v) => !v)}
+						count={galleryCards.length}
+						itemsLabel={t("bug_report_viewer.items")}
+						action={
+							<RestoreButton
+								label={t("bug_report_viewer.restore_gallery")}
+								loading={restoringGallery}
+								onClick={handleRestoreGallery}
+							/>
+						}
+					/>
+				</div>
 			</div>
 		</div>
 	);

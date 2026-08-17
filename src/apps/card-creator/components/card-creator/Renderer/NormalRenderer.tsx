@@ -59,20 +59,40 @@ export type NormalRendererProps = {
 };
 
 /**
- * Resolves the card back PNG for a given pitch, falling back to the frame's
- * first image. Image coverage varies per frame (hero frames have one image,
- * general frames have three), so each half of a hybrid must resolve its own.
+ * Resolves the card back image URL for a given pitch, falling back to the
+ * frame's first image. Image coverage varies per frame (hero frames have one
+ * image, general frames have three), so each half of a hybrid must resolve
+ * its own.
+ *
+ * Custom (user-uploaded) frames carry a registry-owned `blob:` URL on their
+ * single image entry instead of a static fileName (see
+ * stores/custom-frames.ts) — `objectUrl` takes precedence when present. This
+ * single returned string is used BOTH as the `href` and, via its truthiness
+ * on the right half, as the hybrid gate (see the caller below) — they must
+ * never diverge, or a custom right-half would silently degrade hybrid to a
+ * plain single frame.
  */
 function resolveCardBackImage(
 	cardBack:
-		| { images: { pitch: number; fileName: string }[] }
+		| {
+				images: { pitch: number; fileName: string; objectUrl?: string }[];
+		  }
 		| null
 		| undefined,
 	pitch: number | null,
 ): string | undefined {
 	const image =
 		cardBack?.images.find((img) => img.pitch === pitch) ?? cardBack?.images[0];
-	return image ? `/cardbacks/${image.fileName}` : undefined;
+	if (!image) return undefined;
+	if (image.objectUrl) return image.objectUrl;
+	// A custom frame whose registry-owned Blob failed to resolve (e.g. an
+	// interrupted transaction left a customFrames row with no matching
+	// frameImages row) has neither an objectUrl nor a real fileName — must
+	// resolve to undefined, not the truthy-but-broken `/cardbacks/` that
+	// `/cardbacks/${""}` would silently produce. A truthy-but-broken href on
+	// the right half would keep the hybrid gate active with a 404 image
+	// instead of gracefully degrading to a single left-only frame.
+	return image.fileName ? `/cardbacks/${image.fileName}` : undefined;
 }
 
 /**
