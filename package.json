@@ -18,6 +18,7 @@
 		"@tanstack/react-router-devtools": "^1.166.13",
 		"@tiptap/extension-bold": "^3.22.5",
 		"@tiptap/extension-document": "^3.22.5",
+		"@tiptap/extension-hard-break": "^3.22.5",
 		"@tiptap/extension-italic": "^3.22.5",
 		"@tiptap/extension-list": "^3.22.5",
 		"@tiptap/extension-paragraph": "^3.22.5",
@@ -25,6 +26,7 @@
 		"@tiptap/extension-text": "^3.22.5",
 		"@tiptap/extension-text-align": "^3.22.5",
 		"@tiptap/extension-underline": "^3.22.5",
+		"@tiptap/html": "^3.22.5",
 		"@tiptap/react": "^3.22.5",
 		"@tiptap/starter-kit": "^3.22.5",
 		"@zumer/snapdom": "^2.9.0",
@@ -44,6 +46,7 @@
 		"use-debounce": "^10.1.1",
 		"use-object-url": "^1.0.0",
 		"uuid": "14.0.0",
+		"valibot": "^1.4.2",
 		"zustand": "^5.0.12"
 	},
 	"devDependencies": {
@@ -60,6 +63,7 @@
 		"babel-plugin-react-compiler": "^1.0.0",
 		"fake-indexeddb": "^6.2.5",
 		"globals": "^17.5.0",
+		"happy-dom": "^20.11.6",
 		"rollup-plugin-visualizer": "^7.0.1",
 		"typescript": "~6.0.3",
 		"vite": "npm:rolldown-vite@7.2.5",

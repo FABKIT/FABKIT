@@ -26,8 +26,14 @@ import { HybridCardBackField } from "@fabkit/apps/card-creator/components/card-c
 import { MeldHalfFields } from "@fabkit/apps/card-creator/components/card-creator/fields/MeldHalfFields.tsx";
 import { ResetButton } from "@fabkit/apps/card-creator/components/card-creator/fields/ResetButton.tsx";
 import { SaveButton } from "@fabkit/apps/card-creator/components/card-creator/fields/SaveButton.tsx";
+import { ShareButton } from "@fabkit/apps/card-creator/components/card-creator/fields/ShareButton.tsx";
+import { ShareLinkDialog } from "@fabkit/apps/card-creator/components/card-creator/fields/ShareLinkDialog.tsx";
 import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
 import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering.ts";
+import {
+	buildPresetLinkUrl,
+	hasUnshareableCardBack,
+} from "@fabkit/apps/card-creator/preset-link/build-preset-link.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
 import {
@@ -44,8 +50,9 @@ import { useTranslation } from "react-i18next";
 export const Route = createFileRoute("/card-creator")({
 	component: RouteComponent,
 	// The renderer can already have a custom-frame CardBack in the store
-	// (loaded from gallery/session) by the time this route mounts — the
-	// registry must be hydrated before that first render, not after.
+	// (loaded from gallery/session, or from /preset just before landing here)
+	// by the time this route mounts — the registry must be hydrated before
+	// that first render, not after.
 	loader: async () => {
 		await ensureCustomFramesLoaded();
 	},
@@ -55,10 +62,21 @@ function RouteComponent() {
 	const previewRef = useRef<SVGSVGElement>(null);
 	const { t } = useTranslation("card-creator");
 	const [showResetDialog, setShowResetDialog] = useState(false);
+	const [showShareDialog, setShowShareDialog] = useState(false);
+	const [shareUrl, setShareUrl] = useState("");
+	const [shareHasUnshareableCardBack, setShareHasUnshareableCardBack] =
+		useState(false);
 	const reset = useCardCreator((state) => state.reset);
 	const setCardType = useCardCreator((state) => state.setCardType);
 	const currentCardType = useCardCreator((state) => state.CardType);
 	const CardBack = useCardCreator((state) => state.CardBack);
+
+	const handleShareClick = () => {
+		const state = useCardCreator.getState();
+		setShareUrl(buildPresetLinkUrl(state));
+		setShareHasUnshareableCardBack(hasUnshareableCardBack(state));
+		setShowShareDialog(true);
+	};
 	const renderConfig =
 		AllRenderConfigVariations[CardBack?.renderer || ""] ?? null;
 	const meldRenderConfig =
@@ -214,6 +232,7 @@ function RouteComponent() {
 
 						<SaveButton previewRef={previewRef} />
 						<ResetButton onClick={() => setShowResetDialog(true)} />
+						<ShareButton onClick={handleShareClick} />
 					</div>
 				</section>
 			</div>
@@ -259,6 +278,13 @@ function RouteComponent() {
 					</DialogPanel>
 				</div>
 			</Dialog>
+
+			<ShareLinkDialog
+				open={showShareDialog}
+				onClose={() => setShowShareDialog(false)}
+				url={shareUrl}
+				hasUnshareableCardBack={shareHasUnshareableCardBack}
+			/>
 		</div>
 	);
 }

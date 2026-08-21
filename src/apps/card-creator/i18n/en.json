@@ -142,6 +142,7 @@
 		"set_number_label": "Set Number",
 		"text_label": "Card text",
 		"reset_label": "Reset",
+		"share_label": "Share",
 		"card_back_style_dented_label": "OLD STYLE",
 		"card_back_style_flat_label": "NEW STYLE",
 		"hybrid_toggle_label": "HYBRID",
@@ -317,6 +318,9 @@
 		"rotate_portrait": "Show vertical",
 		"card_alt": "Rendered card"
 	},
+	"preset_link": {
+		"resolving_label": "Opening your preset card..."
+	},
 	"components": {
 		"featured_artist": {
 			"label": "Featured Artist",
@@ -335,6 +339,14 @@
 			"prompt": "Are you sure you want to reset the form? This can not be undone.",
 			"yes": "Yes, reset the form",
 			"cancel": "Cancel"
+		},
+		"share-link": {
+			"title": "Share this card",
+			"prompt": "Anyone who opens this link gets a new card pre-filled with what's currently in the form.",
+			"custom_frame_warning": "This card uses a custom frame, which can't be included in a preset link — it'll open without one.",
+			"copy": "Copy",
+			"copied": "Copied",
+			"close": "Close"
 		}
 	},
 	"index": {

@@ -23,6 +23,10 @@ src/apps/card-creator/
     card-storage.ts    # Dexie IndexedDB storage; CRUD, serialize/deserialize, import/export
     migrations.ts      # Migration interface
     migrations/        # Per-version data migrations
+  preset-link/
+    preset-link.ts      # Parses/validates a preset-link payload, applies it via loadCard
+    build-preset-link.ts# Reverse direction — current form state -> preset-link payload/URL
+    resolve.ts          # Looks up a preset link's stock CardBack reference by id
   stores/
     card-creator.ts    # Zustand store (useCardCreator)
   index.ts             # App entry — registers bug-report data provider
