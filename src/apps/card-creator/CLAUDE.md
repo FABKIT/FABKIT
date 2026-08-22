@@ -25,6 +25,7 @@ src/apps/card-creator/
     migrations/        # Per-version data migrations
   stores/
     card-creator.ts    # Zustand store (useCardCreator)
+  url-params/          # Prefill links: the public param vocabulary and how a link becomes card state
   index.ts             # App entry — registers bug-report data provider
 ```
 

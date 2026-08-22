@@ -168,7 +168,20 @@
 		"custom_frame_action_label": "Add custom frame",
 		"custom_frame_badge": "custom",
 		"missing_frame_label": "Missing custom frame",
-		"missing_frame_warning": "This card uses a custom frame that isn't available on this device. It will still save correctly — re-add the frame later to restore it."
+		"missing_frame_warning": "This card uses a custom frame that isn't available on this device. It will still save correctly — re-add the frame later to restore it.",
+		"prefill": {
+			"title": "Some parts of this link were skipped",
+			"dismiss": "Dismiss",
+			"ignored": {
+				"unknown_param": "{{param}}: not a parameter the card creator recognises",
+				"invalid_value": "{{param}}: that value isn't accepted",
+				"not_on_card_type": "{{param}}: this card type doesn't have that field",
+				"needs_second_frame": "{{param}}: only applies when the link also sets frame2",
+				"unknown_frame": "{{param}}: no frame with that name for this card type and style",
+				"style_unavailable": "{{param}}: this card type has no frames in that style, so the other one was used",
+				"artwork_unavailable": "{{param}}: the image couldn't be loaded from that address"
+			}
+		}
 	},
 	"gallery": {
 		"title": "Saved Cards",

@@ -26,28 +26,50 @@ import { HybridCardBackField } from "@fabkit/apps/card-creator/components/card-c
 import { MeldHalfFields } from "@fabkit/apps/card-creator/components/card-creator/fields/MeldHalfFields.tsx";
 import { ResetButton } from "@fabkit/apps/card-creator/components/card-creator/fields/ResetButton.tsx";
 import { SaveButton } from "@fabkit/apps/card-creator/components/card-creator/fields/SaveButton.tsx";
+import { PrefillNotice } from "@fabkit/apps/card-creator/components/card-creator/PrefillNotice.tsx";
 import { Renderer } from "@fabkit/apps/card-creator/components/card-creator/Renderer.tsx";
 import { AllRenderConfigVariations } from "@fabkit/apps/card-creator/config/rendering.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
+import {
+	applyPrefillParams,
+	dismissStalePrefillNotice,
+} from "@fabkit/apps/card-creator/url-params";
 import {
 	Dialog,
 	DialogBackdrop,
 	DialogPanel,
 	DialogTitle,
 } from "@headlessui/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/card-creator")({
 	component: RouteComponent,
+	// A prefill link's params are whatever an external app put in the URL, so
+	// nothing is rejected here. Parsing and reporting is applyPrefillParams's
+	// job, and it needs to see the params it can't use in order to say so.
+	validateSearch: (search: Record<string, unknown>) => search,
+	loaderDeps: ({ search }) => search,
 	// The renderer can already have a custom-frame CardBack in the store
 	// (loaded from gallery/session) by the time this route mounts — the
 	// registry must be hydrated before that first render, not after.
-	loader: async () => {
+	loader: async ({ deps, abortController }) => {
 		await ensureCustomFramesLoaded();
+
+		// Applying here rather than in an effect means the card is complete on
+		// first paint, with no flash of an empty form. Stripping the params
+		// afterwards is what keeps it one-shot: this loader runs again on every
+		// invalidation, and params still in the URL would be re-applied over
+		// whatever the user had changed since.
+		if (Object.keys(deps).length > 0) {
+			await applyPrefillParams(deps, abortController.signal);
+			throw redirect({ to: "/card-creator", search: {}, replace: true });
+		} else {
+			dismissStalePrefillNotice();
+		}
 	},
 });
 
@@ -69,6 +91,8 @@ function RouteComponent() {
 		// elsewhere on the site: the card preview is 628px tall and has to stay
 		// fully visible on a 1080p display without scrolling.
 		<div className="flex flex-1 flex-col w-full px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8 gap-4 lg:gap-3 pt-6 sm:pt-8 lg:pt-6">
+			<PrefillNotice />
+
 			{/* Card type selector — full width, above the rest.
 				On meld + <lg, sticks below the mobile top bar so it stays visible
 				with the preview while the form scrolls. */}

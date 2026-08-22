@@ -1,14 +1,9 @@
-import Bold from "@tiptap/extension-bold";
-import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
-import TextAlign from "@tiptap/extension-text-align";
-import Underline from "@tiptap/extension-underline";
 import {
 	type Content,
 	EditorContent,
 	useEditor,
 	useEditorState,
 } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import {
 	AlignCenter as AlignCenterIcon,
 	AlignLeft as AlignLeftIcon,
@@ -20,8 +15,8 @@ import {
 	Underline as UnderlineIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Emoji, type EmojiItem } from "./extensions/Emoji.ts";
-import { FabDash } from "./extensions/FabDash.ts";
+import type { EmojiItem } from "./extensions/Emoji.ts";
+import { getRichTextExtensions } from "./rich-text-extensions.ts";
 import "../../../styles/components/rich-text-editor.css";
 
 export type { EmojiItem };
@@ -41,37 +36,7 @@ export default function RichTextEditor({
 	const customEmojisRow1 = customEmojis[0] ?? [];
 	const customEmojisRow2 = customEmojis[1] ?? [];
 	const editor = useEditor({
-		extensions: [
-			StarterKit.configure({
-				bold: false,
-				listItem: false,
-				orderedList: false,
-				bulletList: false,
-			}),
-			Bold,
-			Underline,
-			ListItem,
-			BulletList.configure({
-				HTMLAttributes: {
-					class: "list-disc ml-2",
-				},
-			}),
-			OrderedList.configure({
-				HTMLAttributes: {
-					class: "list-decimal ml-2",
-				},
-			}),
-			TextAlign.configure({
-				types: ["heading", "paragraph"],
-			}),
-			Emoji.configure({
-				HTMLAttributes: {
-					class: "fab-icon",
-				},
-				emojis: customEmojis.flat(),
-			}),
-			FabDash,
-		],
+		extensions: getRichTextExtensions(customEmojis.flat()),
 		content: content,
 		onUpdate: ({ editor }) => {
 			if (onChange) {
