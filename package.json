@@ -43,11 +43,11 @@
 		"tailwindcss": "^4.2.4",
 		"use-debounce": "^10.1.1",
 		"use-object-url": "^1.0.0",
-		"uuid": "14.0.0",
+		"uuid": "14.0.2",
 		"zustand": "^5.0.12"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.13",
+		"@biomejs/biome": "2.5.9",
 		"@rolldown/plugin-babel": "^0.2.3",
 		"@tailwindcss/vite": "^4.2.4",
 		"@tanstack/router-plugin": "^1.167.31",
