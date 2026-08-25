@@ -51,7 +51,7 @@ export function CardSearchInput({ mode }: CardSearchInputProps) {
 
 	const submitCard = useCallback(
 		(card: FabbleCard) => {
-			if (!session || session.status !== "playing") return;
+			if (session?.status !== "playing") return;
 			setError(null);
 			submitGuess(mode, card.id);
 			setQuery("");
