@@ -108,6 +108,7 @@
  * interactively in the editor after opening the preset.
  */
 
+import { trackEvent } from "@fabkit/platform/analytics";
 import { CardStyles } from "@fabkit/shared/config/cards/card_styles.ts";
 import {
 	type CardClass,
@@ -321,5 +322,12 @@ export async function loadPresetLink(
 				error,
 			);
 		}
+	}
+
+	if (partial.CardType) {
+		trackEvent({
+			name: "preset_link_opened",
+			data: { cardType: partial.CardType },
+		});
 	}
 }
