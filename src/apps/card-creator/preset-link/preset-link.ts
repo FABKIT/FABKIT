@@ -97,10 +97,9 @@
  *
  * `CardArtwork` is a URL here rather than the image itself, and it is the
  * only artwork field: `CardArtPosition` is out of scope (the fetched image
- * is placed at its natural size, the same as an interactive upload, and
- * dragged into place in the editor), as is a meld half's own artwork — a
- * meld card takes its art per half, so `CardArtwork` is dropped rather than
- * fetched for one. `CardOverlay`/`CardOverlayOpacity` are out of
+ * is fitted to the frame's open area, see artwork-fit.ts, and dragged from
+ * there in the editor), as is a meld half's own artwork — a meld card takes
+ * its art per half, so `CardArtwork` is dropped rather than fetched for one. `CardOverlay`/`CardOverlayOpacity` are out of
  * scope too — they're a dev-only debug overlay (gated behind
  * `import.meta.env.DEV` in the editor itself), never a real card-creation
  * field. Custom card backs are likewise out: `CardBack`/`CardBackRight`
@@ -132,6 +131,7 @@ import {
 } from "../stores/card-creator.ts";
 import { parsePresetText } from "../utils/preset-text.ts";
 import { getPresetArtwork } from "./artwork.ts";
+import { getPresetArtworkRect } from "./artwork-fit.ts";
 import { resolveCardBack } from "./resolve.ts";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -316,6 +316,7 @@ export async function loadPresetLink(
 	if (artwork && !signal?.aborted) {
 		try {
 			await useCardCreator.getState().setCardArtwork(artwork);
+			await fitArtworkToFrame(signal);
 		} catch (error) {
 			console.error(
 				"[preset-link] CardArtwork: the fetched image couldn't be decoded. Opening the card without artwork.",
@@ -329,5 +330,23 @@ export async function loadPresetLink(
 			name: "preset_link_opened",
 			data: { cardType: partial.CardType },
 		});
+	}
+}
+
+/**
+ * Replaces the store's natural-size placement with one that fills the frame
+ * (see artwork-fit.ts). Reads the artwork's measured size back out of
+ * `CardArtPosition`, which `setCardArtwork` has just filled in, rather than
+ * decoding the image a second time.
+ */
+async function fitArtworkToFrame(
+	signal: AbortSignal | undefined,
+): Promise<void> {
+	const card = useCardCreator.getState();
+	if (!card.CardArtPosition) return;
+
+	const rect = await getPresetArtworkRect(card, card.CardArtPosition);
+	if (rect && !signal?.aborted) {
+		useCardCreator.getState().setCardArtPosition(rect);
 	}
 }

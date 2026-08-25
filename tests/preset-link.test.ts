@@ -17,6 +17,9 @@ import { CardBacks } from "../src/shared/config/cards/card_backs.ts";
 const ARTWORK_WIDTH = 900;
 const ARTWORK_HEIGHT = 1256;
 
+/** The artwork clip region every normal render config declares. */
+const CLIP = { x: 10, y: 10, width: 430, height: 608 };
+
 const originalFetch = globalThis.fetch;
 
 /** Flipped by the decode-failure test; reset before each one. */
@@ -53,6 +56,10 @@ beforeAll(() => {
 afterAll(() => {
 	globals.Image = originalImage;
 	urlStatics.revokeObjectURL = originalRevokeObjectURL;
+	// The store outlives this file: `bun test` shares one process, and a later
+	// file that reads live state (backwards-compatibility.test.ts spreads it)
+	// would otherwise inherit whichever card the last test here left open.
+	useCardCreator.getState().reset();
 });
 
 beforeEach(() => {
@@ -175,13 +182,27 @@ describe("loadPresetLink", () => {
 		const state = useCardCreator.getState();
 		expect(state.CardName).toBe("Painted Card");
 		expect(state.CardArtwork?.size).toBe(artwork.size);
-		// Natural size at the origin, exactly where an interactive upload lands it.
-		expect(state.CardArtPosition).toEqual({
-			x: 0,
-			y: 0,
-			width: ARTWORK_WIDTH,
-			height: ARTWORK_HEIGHT,
-		});
+
+		// Fitted to the frame rather than left at natural size against the
+		// origin. Measuring the frame's aperture needs a canvas, so under Bun
+		// the fit falls back to the config's clip region — covering it, centred
+		// on it, and keeping the artwork's aspect ratio.
+		const position = state.CardArtPosition;
+		expect(position).not.toBeNull();
+		expect(position?.width).toBeGreaterThanOrEqual(CLIP.width);
+		expect(position?.height).toBeGreaterThanOrEqual(CLIP.height);
+		expect((position?.x ?? 0) + (position?.width ?? 0) / 2).toBeCloseTo(
+			CLIP.x + CLIP.width / 2,
+			5,
+		);
+		expect((position?.y ?? 0) + (position?.height ?? 0) / 2).toBeCloseTo(
+			CLIP.y + CLIP.height / 2,
+			5,
+		);
+		expect((position?.width ?? 0) / (position?.height ?? 1)).toBeCloseTo(
+			ARTWORK_WIDTH / ARTWORK_HEIGHT,
+			5,
+		);
 	});
 
 	it("applies every other field synchronously, before the artwork fetch resolves", () => {

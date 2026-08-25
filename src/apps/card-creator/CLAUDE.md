@@ -28,6 +28,7 @@ src/apps/card-creator/
     build-preset-link.ts# Reverse direction — current form state -> preset-link payload/URL
     resolve.ts          # Looks up a preset link's stock CardBack reference by id
     artwork.ts          # Fetches a preset link's CardArtwork URL, under its network guards
+    artwork-fit.ts      # Fits that artwork to the frame's open area (measured from the frame image)
   stores/
     card-creator.ts    # Zustand store (useCardCreator)
   index.ts             # App entry — registers bug-report data provider
