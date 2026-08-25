@@ -5,6 +5,7 @@ import {
 	convertToImage,
 	rotateBlob,
 } from "@fabkit/apps/card-creator/utils/export.ts";
+import { trackEvent } from "@fabkit/platform/analytics";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -28,7 +29,8 @@ function RouteComponent() {
 	const [landscapeCard, setLandscapeCard] = useState<Blob | null>(null);
 	const [isLandscape, setIsLandscape] = useState(false);
 	const [isExporting, setIsExporting] = useState(true);
-	const isMeldCard = useCardCreator((state) => state.CardType === "meld");
+	const cardType = useCardCreator((state) => state.CardType);
+	const isMeldCard = cardType === "meld";
 	const cardFilename = useCardCreator((state) => {
 		if (state.CardType === "meld") {
 			const parts = [
@@ -99,6 +101,16 @@ function RouteComponent() {
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
+
+		if (cardType) {
+			trackEvent({
+				name: "card_exported",
+				data: {
+					cardType,
+					orientation: isMeldCard && isLandscape ? "landscape" : "portrait",
+				},
+			});
+		}
 	};
 
 	const toggleOrientation = async () => {

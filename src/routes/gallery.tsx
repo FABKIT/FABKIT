@@ -17,6 +17,7 @@ import {
 	type StoredFolder,
 } from "@fabkit/apps/card-creator/persistence/card-storage";
 import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames";
+import { trackEvent } from "@fabkit/platform/analytics";
 import { decompressFile } from "@fabkit/shared/compression";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import {
@@ -157,6 +158,7 @@ function GalleryPage() {
 		setIsExporting(true);
 		try {
 			await exportGalleryToFile(cards, folders);
+			trackEvent({ name: "gallery_exported" });
 		} catch (error) {
 			console.error("Failed to export gallery:", error);
 			alert(t("gallery.export_gallery_error"));
@@ -169,6 +171,7 @@ function GalleryPage() {
 		await createFolder(name, currentFolderId);
 		router.invalidate();
 		setIsCreatingFolder(false);
+		trackEvent({ name: "gallery_folder_created" });
 	};
 
 	const handleRenameFolder = async (name: string) => {

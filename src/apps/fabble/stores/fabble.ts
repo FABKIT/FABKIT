@@ -32,6 +32,7 @@ import type {
 	PersistedSession,
 	PersistedStreaks,
 } from "@fabkit/apps/fabble/types";
+import { trackEvent } from "@fabkit/platform/analytics";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -307,6 +308,7 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 					animatedGuessIds: [],
 				};
 				persistSession(mode, session);
+				trackEvent({ name: "fabble_puzzle_started", data: { mode } });
 			}
 
 			const streaks =
@@ -398,6 +400,25 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 				undefined,
 				"fabble/submitGuess",
 			);
+
+			if (!result.isTwin) {
+				const guessNumber = session.guesses.length + 1;
+				trackEvent({
+					name: "fabble_guess_submitted",
+					data: { mode, guessNumber, correct: result.correct },
+				});
+				if (result.correct) {
+					trackEvent({
+						name: "fabble_puzzle_completed",
+						data: { mode, result: "won", guessCount: guessNumber },
+					});
+				} else if (guessNumber >= MAX_GUESSES[mode]) {
+					trackEvent({
+						name: "fabble_puzzle_completed",
+						data: { mode, result: "lost", guessCount: guessNumber },
+					});
+				}
+			}
 		},
 
 		revealHint: (mode, hintIndex) => {
@@ -416,6 +437,10 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 					hintsRevealed[hintIndex] = true;
 					const next: ModeSession = { ...current, hintsRevealed };
 					persistSession(mode, next);
+					trackEvent({
+						name: "fabble_hint_revealed",
+						data: { mode, hintIndex },
+					});
 
 					return { sessions: { ...state.sessions, [mode]: next } };
 				},
@@ -480,6 +505,10 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 				);
 				session = freshEndlessSession(dataset, excludeIds);
 				persistEndlessSession(session);
+				trackEvent({
+					name: "fabble_puzzle_started",
+					data: { mode: "endless" },
+				});
 			}
 
 			set(
@@ -554,6 +583,20 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 				undefined,
 				"fabble/submitEndlessGuess",
 			);
+
+			if (!result.isTwin) {
+				const guessNumber = endlessSession.guesses.length + 1;
+				trackEvent({
+					name: "fabble_endless_guess_submitted",
+					data: { guessNumber, correct: result.correct },
+				});
+				if (result.correct) {
+					trackEvent({
+						name: "fabble_endless_completed",
+						data: { result: "won", guessCount: guessNumber },
+					});
+				}
+			}
 		},
 
 		markEndlessGuessAnimated: (guessId) => {
@@ -585,6 +628,10 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 
 					const nextStreak = resetEndlessStreak(state.endlessStreak);
 					safeStorage.set(STORAGE_KEYS.endlessStreak, nextStreak);
+					trackEvent({
+						name: "fabble_endless_completed",
+						data: { result: "gave_up", guessCount: current.guesses.length },
+					});
 
 					return { endlessSession: next, endlessStreak: nextStreak };
 				},
