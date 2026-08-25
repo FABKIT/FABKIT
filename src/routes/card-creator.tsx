@@ -36,6 +36,7 @@ import {
 } from "@fabkit/apps/card-creator/preset-link/build-preset-link.ts";
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { ensureCustomFramesLoaded } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
+import { trackEvent } from "@fabkit/platform/analytics";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -76,6 +77,12 @@ function RouteComponent() {
 		setShareUrl(buildPresetLinkUrl(state));
 		setShareHasUnshareableCardBack(hasUnshareableCardBack(state));
 		setShowShareDialog(true);
+		if (state.CardType) {
+			trackEvent({
+				name: "preset_link_created",
+				data: { cardType: state.CardType },
+			});
+		}
 	};
 	const renderConfig =
 		AllRenderConfigVariations[CardBack?.renderer || ""] ?? null;

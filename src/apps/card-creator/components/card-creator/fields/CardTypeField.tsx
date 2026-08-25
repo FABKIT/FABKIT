@@ -1,4 +1,5 @@
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
+import { trackEvent } from "@fabkit/platform/analytics";
 import Select from "@fabkit/platform/components/form/Select";
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
@@ -18,11 +19,16 @@ export function CardTypeField() {
 		[t],
 	);
 
+	const handleChange = (value: CardType) => {
+		setCardType(value);
+		trackEvent({ name: "card_type_selected", data: { cardType: value } });
+	};
+
 	return (
 		<Select
 			label={t("card_creator.type_label")}
 			value={CardType}
-			onChange={setCardType}
+			onChange={handleChange}
 			options={options}
 		/>
 	);

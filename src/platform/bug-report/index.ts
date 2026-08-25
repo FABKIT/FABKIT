@@ -1,3 +1,4 @@
+import { trackEvent } from "@fabkit/platform/analytics";
 import { router } from "@fabkit/platform/router.tsx";
 import { blobToBase64 } from "@fabkit/shared/blob";
 import { compressJSON } from "@fabkit/shared/compression";
@@ -117,6 +118,7 @@ export async function generateBugReport(): Promise<void> {
 	a.click();
 	document.body.removeChild(a);
 	URL.revokeObjectURL(url);
+	trackEvent({ name: "bug_report_submitted" });
 }
 
 // ─── React Hook ───────────────────────────────────────────────────────────────
