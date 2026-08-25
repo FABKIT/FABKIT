@@ -19,10 +19,11 @@ interface PresetSearch {
  * `@fabkit/apps/card-creator/preset-link/preset-link.ts` for the payload
  * contract. Kept separate from `/card-creator` so this route's only job is
  * "parse the link, apply it, hand off"; `/card-creator` itself stays a
- * plain form route with no preset-link concerns at all. `loadPresetLink` is
- * synchronous (nothing in a preset link requires a network fetch), so this
- * resolves essentially instantly — the `pendingComponent` below is a
- * safety net for a slow route-chunk load, not a real "fetching" wait.
+ * plain form route with no preset-link concerns at all. The card's fields
+ * apply instantly; the wait the `pendingComponent` below covers is the
+ * `CardArtwork` image, the one field a preset link fetches (artwork.ts) —
+ * awaited here so the editor opens on a finished card rather than popping
+ * the artwork in afterwards.
  */
 export const Route = createFileRoute("/preset")({
 	component: () => null,
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/preset")({
 	loaderDeps: ({ search }) => ({ link: search.link }),
 	pendingComponent: ResolvingPresetScreen,
 	pendingMs: 0,
-	loader: ({ deps }) => {
+	loader: async ({ deps, abortController }) => {
 		// Either an already-parsed object (the common case — see the
 		// PresetSearch comment above) or a raw string (malformed JSON, left
 		// un-parsed by the router). loadPresetLink validates the shape itself
@@ -51,7 +52,10 @@ export const Route = createFileRoute("/preset")({
 		}
 
 		if (payload !== undefined) {
-			loadPresetLink(payload);
+			// The router aborts this controller when the navigation is
+			// interrupted, which is what stops a slow artwork fetch from
+			// landing on whatever card the user opened instead.
+			await loadPresetLink(payload, abortController.signal);
 		}
 		throw redirect({ to: "/card-creator", replace: true });
 	},
