@@ -621,7 +621,7 @@ export const useFabbleStore = create<FabbleState & FabbleActions>()(
 			set(
 				(state) => {
 					const current = state.endlessSession;
-					if (!current || current.status !== "playing") return state;
+					if (current?.status !== "playing") return state;
 
 					const next: EndlessSession = { ...current, status: "gave_up" };
 					persistEndlessSession(next);

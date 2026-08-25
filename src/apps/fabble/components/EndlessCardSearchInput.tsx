@@ -47,7 +47,7 @@ export function EndlessCardSearchInput() {
 
 	const submitCard = useCallback(
 		(card: FabbleCard) => {
-			if (!session || session.status !== "playing") return;
+			if (session?.status !== "playing") return;
 			setError(null);
 			submitEndlessGuess(card.id);
 			setQuery("");
