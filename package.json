@@ -55,7 +55,7 @@
 		"@tailwindcss/vite": "^4.2.4",
 		"@tanstack/router-plugin": "^1.167.31",
 		"@types/bun": "^1.3.13",
-		"@types/node": "^25.6.0",
+		"@types/node": "^26.2.0",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"@types/semver": "^7.7.1",
