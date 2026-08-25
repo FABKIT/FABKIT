@@ -9,9 +9,12 @@
  * beats no link at all.
  *
  * Two things can't round-trip and are silently dropped here:
- *   - CardArtwork/CardArtPosition, CardOverlay/CardOverlayOpacity, and a
- *     custom (non-stock) CardBack/CardBackRight — all out of scope for the
- *     wire format itself, see preset-link.ts's module doc.
+ *   - The artwork, CardOverlay/CardOverlayOpacity, and a custom (non-stock)
+ *     CardBack/CardBackRight. The overlay and custom frames are out of
+ *     scope for the wire format itself (see preset-link.ts's module doc);
+ *     artwork is in it, but only as a URL — a card whose art was uploaded
+ *     here holds a Blob with no address to hand a recipient, so a shared
+ *     link opens without it.
  *   - Rich-text formatting the restricted markup can't express (italic,
  *     strike, lists, text alignment, the fabDash character). The *text* of
  *     such content is still included — see `markupFromContent` — only the

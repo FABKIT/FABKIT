@@ -17,11 +17,13 @@
  *
  * Design constraints (see the plan this was built from for the full
  * rationale):
- *   - Self-contained: the whole payload lives in the URL, no backend — and
- *     no network fetch of any kind either; `CardBack`/`CardBackRight` only
- *     resolve against the static, checked-in stock manifest (resolve.ts).
- *     Custom (image-URL-based) card backs are out of scope for preset
- *     links — use the interactive upload dialog in the editor instead.
+ *   - Self-contained: the whole payload lives in the URL, no backend.
+ *     `CardBack`/`CardBackRight` only resolve against the static,
+ *     checked-in stock manifest (resolve.ts) — custom (image-URL-based)
+ *     card backs are out of scope for preset links, use the interactive
+ *     upload dialog in the editor instead. `CardArtwork` is the single
+ *     exception to "no network fetch": it names an image the card creator
+ *     downloads on open, under the guards in artwork.ts.
  *   - CardText is restricted markup (see utils/preset-text.ts), not HTML or
  *     Tiptap JSON — an integrator never needs to know FABKIT's editor
  *     internals to write rules text.
@@ -52,7 +54,8 @@
  *   "CardTalent": "lightning",
  *   "CardRarity": "rare",
  *   "CardText": "Whenever you hit a hero with an arrow attack action card this turn, they get **Dominate**.\n\n:power: Go again.",
- *   "CardBack": { "id": 12 }
+ *   "CardBack": { "id": 12 },
+ *   "CardArtwork": "https://fabkit.io/img/fabble/standardmode.webp"
  * }
  * ```
  * URL: `/#/preset?link=` + `encodeURIComponent(JSON.stringify(payload))`
@@ -79,6 +82,8 @@
  *   CardWeapon          "(1H)" | "(2H)"
  *   CardMacroGroup      string
  *   CardSetNumber       string
+ *   CardArtwork         https URL to the card's artwork — fetched on
+ *                       open, see artwork.ts
  *   CardArtworkCredits  string
  *   CardBackStyle       "dented" | "flat"
  *   CardBackSplit       number, 0.02..0.98 (hybrid seam position)
@@ -90,12 +95,15 @@
  *                         CardSubType, CardTalent, CardText, CardMacroGroup,
  *                         CardWeapon }
  *
- * Card artwork itself (`CardArtwork`/`CardArtPosition`, including per meld
- * half) is out of scope for preset links — set it interactively in the
- * editor after opening the preset. Same for `CardOverlay`/`CardOverlayOpacity`
- * — they're a dev-only debug overlay (gated behind `import.meta.env.DEV` in
- * the editor itself), never a real card-creation field. Custom card backs
- * are out of scope too, for the same reason: `CardBack`/`CardBackRight`
+ * `CardArtwork` is a URL here rather than the image itself, and it is the
+ * only artwork field: `CardArtPosition` is out of scope (the fetched image
+ * is placed at its natural size, the same as an interactive upload, and
+ * dragged into place in the editor), as is a meld half's own artwork — a
+ * meld card takes its art per half, so `CardArtwork` is dropped rather than
+ * fetched for one. `CardOverlay`/`CardOverlayOpacity` are out of
+ * scope too — they're a dev-only debug overlay (gated behind
+ * `import.meta.env.DEV` in the editor itself), never a real card-creation
+ * field. Custom card backs are likewise out: `CardBack`/`CardBackRight`
  * only accept a stock id (see resolve.ts) — set a custom frame
  * interactively in the editor after opening the preset.
  */
@@ -122,6 +130,7 @@ import {
 	useCardCreator,
 } from "../stores/card-creator.ts";
 import { parsePresetText } from "../utils/preset-text.ts";
+import { getPresetArtwork } from "./artwork.ts";
 import { resolveCardBack } from "./resolve.ts";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -235,10 +244,20 @@ function buildMeldHalf(
  * `link` search param on `/preset`) to the card-creator store, opening a
  * brand-new card. Never throws — an invalid payload is a silent no-op, and
  * an invalid individual field is simply omitted, per the feature's
- * best-effort error handling. Synchronous — nothing in a preset link
- * requires a network fetch (see the module doc).
+ * best-effort error handling.
+ *
+ * The card itself is applied synchronously, before this ever awaits; the
+ * returned promise only covers `CardArtwork`, whose image has to be
+ * fetched (see artwork.ts). A caller that awaits it hands the editor a card
+ * complete with artwork; one that doesn't still gets every other field
+ * immediately. `signal` is how a caller that stops waiting — the route's
+ * own abort controller, when the user navigates away mid-fetch — keeps a
+ * late-arriving image off whatever card they opened instead.
  */
-export function loadPresetLink(raw: unknown): void {
+export async function loadPresetLink(
+	raw: unknown,
+	signal?: AbortSignal,
+): Promise<void> {
 	if (!isRecord(raw)) {
 		console.error(
 			"[preset-link] Ignoring preset link: payload is not a JSON object.",
@@ -275,7 +294,15 @@ export function loadPresetLink(raw: unknown): void {
 		partial.meldHalfB = { ...defaultMeldHalf, ...meldHalfB };
 	}
 
-	if (Object.keys(partial).length === 0) {
+	// A meld card's art belongs to its halves, which the wire format doesn't
+	// carry: fetching here would spend the wait on an image no meld field
+	// shows and no meld control can clear.
+	const artworkUrl =
+		partial.CardType === "meld"
+			? undefined
+			: v.parse(optionalString(), raw.CardArtwork);
+
+	if (Object.keys(partial).length === 0 && artworkUrl === undefined) {
 		console.error(
 			"[preset-link] Preset payload parsed, but none of its fields were recognized/valid — opening a default card. Sent keys:",
 			Object.keys(raw),
@@ -283,4 +310,16 @@ export function loadPresetLink(raw: unknown): void {
 	}
 
 	useCardCreator.getState().loadCard(partial);
+
+	const artwork = await getPresetArtwork(artworkUrl, signal);
+	if (artwork && !signal?.aborted) {
+		try {
+			await useCardCreator.getState().setCardArtwork(artwork);
+		} catch (error) {
+			console.error(
+				"[preset-link] CardArtwork: the fetched image couldn't be decoded. Opening the card without artwork.",
+				error,
+			);
+		}
+	}
 }

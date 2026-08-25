@@ -27,6 +27,7 @@ src/apps/card-creator/
     preset-link.ts      # Parses/validates a preset-link payload, applies it via loadCard
     build-preset-link.ts# Reverse direction — current form state -> preset-link payload/URL
     resolve.ts          # Looks up a preset link's stock CardBack reference by id
+    artwork.ts          # Fetches a preset link's CardArtwork URL, under its network guards
   stores/
     card-creator.ts    # Zustand store (useCardCreator)
   index.ts             # App entry — registers bug-report data provider
