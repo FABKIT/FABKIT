@@ -1,7 +1,6 @@
 import Bold from "@tiptap/extension-bold";
 import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
 import TextAlign from "@tiptap/extension-text-align";
-import Underline from "@tiptap/extension-underline";
 import {
 	type Content,
 	EditorContent,
@@ -49,7 +48,6 @@ export default function RichTextEditor({
 				bulletList: false,
 			}),
 			Bold,
-			Underline,
 			ListItem,
 			BulletList.configure({
 				HTMLAttributes: {
