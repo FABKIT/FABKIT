@@ -41,23 +41,23 @@ const ARTWORK_PROTOCOL = "https:";
 
 /** `null` for anything that isn't an absolute https URL. */
 function getArtworkUrl(raw: string): URL | null {
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    console.error(
-      "[preset-link] CardArtwork: not an absolute URL. Dropping this field.",
-      raw,
-    );
-    return null;
-  }
-  if (url.protocol !== ARTWORK_PROTOCOL) {
-    console.error(
-      `[preset-link] CardArtwork: ${url.protocol} URLs are not fetched — only https. Dropping this field.`,
-    );
-    return null;
-  }
-  return url;
+	let url: URL;
+	try {
+		url = new URL(raw);
+	} catch {
+		console.error(
+			"[preset-link] CardArtwork: not an absolute URL. Dropping this field.",
+			raw,
+		);
+		return null;
+	}
+	if (url.protocol !== ARTWORK_PROTOCOL) {
+		console.error(
+			`[preset-link] CardArtwork: ${url.protocol} URLs are not fetched — only https. Dropping this field.`,
+		);
+		return null;
+	}
+	return url;
 }
 
 /** True for any bitmap type the browser might decode. That is wider than the
@@ -65,8 +65,8 @@ function getArtworkUrl(raw: string): URL | null {
  * the real constraint, and a sender already hosting its art shouldn't have to
  * transcode it. SVG is excluded — see the module doc. */
 function isRenderableImageType(contentType: string): boolean {
-  const mimeType = contentType.split(";")[0].trim().toLowerCase();
-  return mimeType.startsWith("image/") && mimeType !== "image/svg+xml";
+	const mimeType = contentType.split(";")[0].trim().toLowerCase();
+	return mimeType.startsWith("image/") && mimeType !== "image/svg+xml";
 }
 
 /**
@@ -77,69 +77,69 @@ function isRenderableImageType(contentType: string): boolean {
  * `signal` aborts because the caller has stopped caring.
  */
 export async function getPresetArtwork(
-  raw: string | undefined,
-  signal?: AbortSignal,
+	raw: string | undefined,
+	signal?: AbortSignal,
 ): Promise<Blob | null> {
-  if (raw === undefined) return null;
+	if (raw === undefined) return null;
 
-  const url = getArtworkUrl(raw);
-  if (!url) return null;
+	const url = getArtworkUrl(raw);
+	if (!url) return null;
 
-  try {
-    const response = await fetch(url, {
-      // The art host is a third party the visitor never chose: no cookies,
-      // no referrer, and CORS enforced (a host that hasn't opted in with
-      // `access-control-allow-origin` simply doesn't serve art here).
-      mode: "cors",
-      credentials: "omit",
-      referrerPolicy: "no-referrer",
-      signal: signal
-        ? AbortSignal.any([
-            signal,
-            AbortSignal.timeout(ARTWORK_FETCH_TIMEOUT_MS),
-          ])
-        : AbortSignal.timeout(ARTWORK_FETCH_TIMEOUT_MS),
-    });
+	try {
+		const response = await fetch(url, {
+			// The art host is a third party the visitor never chose: no cookies,
+			// no referrer, and CORS enforced (a host that hasn't opted in with
+			// `access-control-allow-origin` simply doesn't serve art here).
+			mode: "cors",
+			credentials: "omit",
+			referrerPolicy: "no-referrer",
+			signal: signal
+				? AbortSignal.any([
+						signal,
+						AbortSignal.timeout(ARTWORK_FETCH_TIMEOUT_MS),
+					])
+				: AbortSignal.timeout(ARTWORK_FETCH_TIMEOUT_MS),
+		});
 
-    if (!response.ok) {
-      console.error(
-        `[preset-link] CardArtwork: ${url.href} responded ${response.status}. Dropping this field.`,
-      );
-      return null;
-    }
+		if (!response.ok) {
+			console.error(
+				`[preset-link] CardArtwork: ${url.href} responded ${response.status}. Dropping this field.`,
+			);
+			return null;
+		}
 
-    const contentType = response.headers.get("content-type") ?? "";
-    if (!isRenderableImageType(contentType)) {
-      console.error(
-        `[preset-link] CardArtwork: ${url.href} is "${contentType}", not a bitmap image. Dropping this field.`,
-      );
-      return null;
-    }
+		const contentType = response.headers.get("content-type") ?? "";
+		if (!isRenderableImageType(contentType)) {
+			console.error(
+				`[preset-link] CardArtwork: ${url.href} is "${contentType}", not a bitmap image. Dropping this field.`,
+			);
+			return null;
+		}
 
-    // Declared length rejects an oversized body before it's downloaded; the
-    // blob's own size is still checked, since a chunked response declares none.
-    const declaredLength = Number(response.headers.get("content-length"));
-    if (declaredLength > MAX_ARTWORK_BYTES) {
-      console.error(
-        `[preset-link] CardArtwork: ${url.href} declares ${declaredLength} bytes, over the limit. Dropping this field.`,
-      );
-      return null;
-    }
+		// Declared length rejects an oversized body before it's downloaded; the
+		// blob's own size is still checked, since a chunked response declares none.
+		const declaredLength = Number(response.headers.get("content-length"));
+		if (declaredLength > MAX_ARTWORK_BYTES) {
+			console.error(
+				`[preset-link] CardArtwork: ${url.href} declares ${declaredLength} bytes, over the limit. Dropping this field.`,
+			);
+			return null;
+		}
 
-    const blob = await response.blob();
-    if (blob.size > MAX_ARTWORK_BYTES) {
-      console.error(
-        `[preset-link] CardArtwork: ${url.href} is ${blob.size} bytes, over the limit. Dropping this field.`,
-      );
-      return null;
-    }
+		const blob = await response.blob();
+		if (blob.size > MAX_ARTWORK_BYTES) {
+			console.error(
+				`[preset-link] CardArtwork: ${url.href} is ${blob.size} bytes, over the limit. Dropping this field.`,
+			);
+			return null;
+		}
 
-    return blob;
-  } catch (error) {
-    console.error(
-      `[preset-link] CardArtwork: couldn't fetch ${url.href} (unreachable, CORS-blocked, cancelled, or timed out). Dropping this field.`,
-      error,
-    );
-    return null;
-  }
+		return blob;
+	} catch (error) {
+		console.error(
+			`[preset-link] CardArtwork: couldn't fetch ${url.href} (unreachable, CORS-blocked, cancelled, or timed out). Dropping this field.`,
+			error,
+		);
+		return null;
+	}
 }
