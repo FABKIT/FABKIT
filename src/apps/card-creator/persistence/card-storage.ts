@@ -1067,7 +1067,7 @@ export async function importGalleryFromJSON(
 ): Promise<GalleryImportResult> {
 	const data = JSON.parse(jsonString);
 
-	if (!data || data.format !== "fabgallery" || !Array.isArray(data.cards)) {
+	if (data?.format !== "fabgallery" || !Array.isArray(data.cards)) {
 		throw new Error("Invalid gallery file format");
 	}
 
