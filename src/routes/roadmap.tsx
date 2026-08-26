@@ -33,7 +33,7 @@ function RoadmapPage() {
 			<div className="relative w-full overflow-hidden bg-surface-muted">
 				<div className="mx-auto max-w-[1600px] px-4 py-2 sm:px-6 lg:px-8">
 					<div className="flex h-30 w-full items-center justify-center overflow-hidden py-8">
-						<div className="relative h-20 w-[90%] max-w-[800px]">
+						<div className="relative h-20 w-[90%] max-w-200">
 							<svg
 								className="absolute inset-0 h-full w-full"
 								viewBox="0 0 800 80"
@@ -66,7 +66,7 @@ function RoadmapPage() {
 			{/* Main Content */}
 			<div className="mx-auto max-w-[1600px] space-y-8 px-4 py-12 sm:px-6 lg:px-8">
 				{/* Roadmap Board */}
-				<div className="mx-auto max-w-[1100px] rounded-lg border-2 border-border-primary bg-surface p-2 shadow-lg">
+				<div className="mx-auto max-w-275 rounded-lg border-2 border-border-primary bg-surface p-2 shadow-lg">
 					<iframe
 						src={FEATUREBASE_ROADMAP_URL}
 						style={{ border: "none", width: "100%" }}
@@ -76,7 +76,7 @@ function RoadmapPage() {
 				</div>
 
 				{/* Discord + Ko-fi */}
-				<div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 lg:grid-cols-2">
+				<div className="mx-auto grid max-w-275 grid-cols-1 gap-8 lg:grid-cols-2">
 					{/* Discord Section */}
 					<div className="rounded-lg border border-border-primary bg-primary/10 p-6">
 						<h3 className="mb-2 flex items-center gap-2 text-lg font-semibold text-heading">
