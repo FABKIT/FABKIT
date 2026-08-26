@@ -1,71 +1,16 @@
-import { currentWorkItems, futurePlans } from "@fabkit/platform/config/roadmap";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Lightbulb } from "lucide-react";
+import Contact from "@fabkit/platform/config/contact";
+import { createFileRoute } from "@tanstack/react-router";
+import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import "@fabkit/platform/components/roadmap.css";
-import type * as React from "react";
+import { Discord } from "@fabkit/platform/components/icons/Discord.tsx";
 
 export const Route = createFileRoute("/roadmap")({
 	component: RoadmapPage,
 });
 
-type Priority = "high" | "medium" | "low";
-type Status = "completed" | "in-progress" | "planned" | "idea";
-
-interface RoadmapItem {
-	title: string;
-	description: string;
-	status: Status;
-	priority: Priority;
-	icon: React.ComponentType<{ className?: string }>;
-}
-
-function sortByPriorityAndTitle(items: RoadmapItem[]): RoadmapItem[] {
-	const priorityOrder: Record<Priority, number> = {
-		high: 1,
-		medium: 2,
-		low: 3,
-	};
-
-	return [...items].sort((a, b) => {
-		const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-		if (priorityDiff !== 0) return priorityDiff;
-		return a.title.localeCompare(b.title);
-	});
-}
-
-function getStatusColor(status: Status): string {
-	switch (status) {
-		case "completed":
-			return "text-heading bg-primary border-primary";
-		case "in-progress":
-			return "text-heading bg-secondary border-secondary";
-		case "planned":
-			return "text-heading bg-tertiary border-tertiary";
-		case "idea":
-			return "text-idea bg-idea-light border-idea-light";
-		default:
-			return "text-heading bg-primary border-primary";
-	}
-}
-
-function getPriorityColor(priority: Priority): string {
-	switch (priority) {
-		case "high":
-			return "bg-secondary-dark text-secondary-light border-secondary-light";
-		case "medium":
-			return "bg-tertiary-dark text-tertiary-light border-tertiary-light";
-		case "low":
-			return "bg-primary-dark text-primary-light border-primary-light";
-		default:
-			return "bg-primary-dark text-primary-light border-primary-light";
-	}
-}
-
-const sortedCurrentWorkItems = sortByPriorityAndTitle(
-	currentWorkItems as RoadmapItem[],
-);
-const sortedFuturePlans = sortByPriorityAndTitle(futurePlans as RoadmapItem[]);
+const FEATUREBASE_ROADMAP_URL =
+	"https://fabkit.featurebase.app/roadmap?hideMenu=true&hideLogo=true";
 
 function RoadmapPage() {
 	const { t } = useTranslation("platform");
@@ -74,7 +19,7 @@ function RoadmapPage() {
 		<>
 			{/* Header */}
 			<div className="border-b border-border-primary bg-surface">
-				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
 					<div className="py-8">
 						<h1 className="text-3xl font-bold text-heading">
 							{t("roadmap.title")}
@@ -86,7 +31,7 @@ function RoadmapPage() {
 
 			{/* Timeline Animation */}
 			<div className="relative w-full overflow-hidden bg-surface-muted">
-				<div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+				<div className="mx-auto max-w-[1600px] px-4 py-2 sm:px-6 lg:px-8">
 					<div className="flex h-30 w-full items-center justify-center overflow-hidden py-8">
 						<div className="relative h-20 w-[90%] max-w-[800px]">
 							<svg
@@ -119,106 +64,37 @@ function RoadmapPage() {
 			</div>
 
 			{/* Main Content */}
-			<div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-				{/* Top row: Two main boards */}
-				<div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-					{/* Currently Working On Board */}
-					<div className="rounded-lg border-2 border-border-primary bg-surface shadow-lg">
-						<div className="border-b border-border-primary bg-surface-muted px-6 py-4">
-							<h2 className="flex items-center gap-2 text-xl font-semibold text-heading">
-								<Clock className="h-5 w-5" />
-								{t("roadmap.current_work_title")}
-							</h2>
-							<p className="mt-1 text-sm text-muted">
-								{t("roadmap.current_work_description")}
-							</p>
-						</div>
-						<div className="space-y-4 p-6">
-							{sortedCurrentWorkItems.map((item) => (
-								<div
-									key={item.title}
-									className="rounded-lg border border-border-primary bg-surface p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-md"
-								>
-									<div className="flex items-start justify-between">
-										<div className="flex-1">
-											<div className="mb-2 flex items-center gap-2">
-												<item.icon className="h-4 w-4 text-primary" />
-												<h3 className="font-medium text-heading">
-													{item.title}
-												</h3>
-											</div>
-											<p className="mb-3 text-sm text-body">
-												{item.description}
-											</p>
-											<div className="flex items-center gap-2">
-												<span
-													className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(item.status)}`}
-												>
-													{item.status.replace("-", " ")}
-												</span>
-												<span
-													className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${getPriorityColor(item.priority)}`}
-												>
-													{item.priority} {t("roadmap.priority")}
-												</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-
-					{/* Future Plans Board */}
-					<div className="rounded-lg border-2 border-border-primary bg-surface shadow-lg">
-						<div className="border-b border-border-primary bg-surface-muted px-6 py-4">
-							<h2 className="flex items-center gap-2 text-xl font-semibold text-heading">
-								<Lightbulb className="h-5 w-5" />
-								{t("roadmap.future_plans_title")}
-							</h2>
-							<p className="mt-1 text-sm text-muted">
-								{t("roadmap.future_plans_description")}
-							</p>
-						</div>
-						<div className="space-y-4 p-6">
-							{sortedFuturePlans.map((item) => (
-								<div
-									key={item.title}
-									className="rounded-lg border border-border-primary bg-surface p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-md"
-								>
-									<div className="flex items-start justify-between">
-										<div className="flex-1">
-											<div className="mb-2 flex items-center gap-2">
-												<item.icon className="h-4 w-4 text-primary" />
-												<h3 className="font-medium text-heading">
-													{item.title}
-												</h3>
-											</div>
-											<p className="mb-3 text-sm text-body">
-												{item.description}
-											</p>
-											<div className="flex items-center gap-2">
-												<span
-													className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(item.status)}`}
-												>
-													{item.status}
-												</span>
-												<span
-													className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${getPriorityColor(item.priority)}`}
-												>
-													{item.priority} {t("roadmap.priority")}
-												</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
+			<div className="mx-auto max-w-[1600px] space-y-8 px-4 py-12 sm:px-6 lg:px-8">
+				{/* Roadmap Board */}
+				<div className="mx-auto max-w-[1100px] rounded-lg border-2 border-border-primary bg-surface p-2 shadow-lg">
+					<iframe
+						src={FEATUREBASE_ROADMAP_URL}
+						style={{ border: "none", width: "100%" }}
+						height="680"
+						title="FABKIT Roadmap"
+					/>
 				</div>
 
-				{/* Bottom row: Support sections */}
-				<div className="space-y-8">
+				{/* Discord + Ko-fi */}
+				<div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 lg:grid-cols-2">
+					{/* Discord Section */}
+					<div className="rounded-lg border border-border-primary bg-primary/10 p-6">
+						<h3 className="mb-2 flex items-center gap-2 text-lg font-semibold text-heading">
+							<MessageCircle className="h-5 w-5" />
+							{t("roadmap.discord_title")}
+						</h3>
+						<p className="mb-4 text-muted">{t("roadmap.discord_text")}</p>
+						<a
+							href={Contact.DiscordInvite}
+							target="_blank"
+							rel="noreferrer"
+							className="inline-flex items-center gap-2 rounded-md border-2 border-primary bg-primary px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-primary/90"
+						>
+							<Discord className="h-4 w-4" />
+							{t("roadmap.join_discord")}
+						</a>
+					</div>
+
 					{/* Ko-fi Section */}
 					<div className="rounded-lg border-2 border-border-primary bg-surface shadow-lg">
 						<div className="border-b border-border-primary bg-surface-muted px-6 py-4">
@@ -243,20 +119,6 @@ function RoadmapPage() {
 								title="fabkit"
 							/>
 						</div>
-					</div>
-
-					{/* Suggestions Section */}
-					<div className="rounded-lg border border-border-primary bg-primary/10 p-6">
-						<h3 className="mb-2 text-lg font-semibold text-heading">
-							{t("roadmap.suggestions_title")}
-						</h3>
-						<p className="mb-4 text-muted">{t("roadmap.suggestions_text")}</p>
-						<Link
-							to="/contact"
-							className="inline-flex items-center rounded-md border-2 border-primary bg-primary px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-primary/90"
-						>
-							{t("roadmap.get_in_touch")}
-						</Link>
 					</div>
 				</div>
 			</div>

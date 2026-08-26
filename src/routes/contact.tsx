@@ -68,12 +68,17 @@ const specialMentions = [
 		description: "Beta tester in the early stages of FABKIT",
 	},
 	{
-		name: "DaLekXIV",
+		name: "RaphaelDDL",
 		description: "Feature contributor in FABKIT V1",
+	},
+	{
+		name: "Philip (FaBrary)",
+		description:
+			"For letting us do an awesome collaboration with him for the spoiler for Usurp the Shadow Throne",
 	},
 ];
 
-const supporters = ["SalisburyBavo"];
+const supporters = ["SalisburyBavo", "hiunknown", "FaBrary"];
 
 function ContactPage() {
 	const { t } = useTranslation("platform");
