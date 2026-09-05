@@ -7,6 +7,7 @@ import "./i18n.ts";
 
 import "./apps/card-creator/index";
 import "./apps/fabble/index";
+import "./apps/pack-opener/index";
 import { initAnalytics } from "@fabkit/platform/analytics";
 import { startConsoleInterceptor } from "@fabkit/platform/bug-report";
 import { router } from "@fabkit/platform/router";

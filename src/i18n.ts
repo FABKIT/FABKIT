@@ -3,6 +3,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 import cardCreatorEn from "./apps/card-creator/i18n/en.json";
 import fabbleEn from "./apps/fabble/i18n/en.json";
+import packOpenerEn from "./apps/pack-opener/i18n/en.json";
 import platformEn from "./platform/i18n/en.json";
 
 const resources = {
@@ -10,6 +11,7 @@ const resources = {
 		platform: platformEn,
 		"card-creator": cardCreatorEn,
 		fabble: fabbleEn,
+		"pack-opener": packOpenerEn,
 	},
 };
 
