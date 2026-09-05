@@ -1,0 +1,26 @@
+{
+	"page": {
+		"title": "Pack Opener",
+		"tap_to_tear": "Tap the pack to tear it open",
+		"tap_to_reveal": "Tap to reveal the next card",
+		"open_another": "Open Another Pack",
+		"summary_title": "Your Pull",
+		"packs_opened_session": "Packs opened this session: {{count}}",
+		"foil_badge": "Foil",
+		"marvel_badge": "Marvel"
+	},
+	"card": {
+		"rarity": {
+			"basic": "Basic",
+			"common": "Common",
+			"rare": "Rare",
+			"superrare": "Super Rare",
+			"majestic": "Majestic",
+			"legendary": "Legendary",
+			"fabled": "Fabled",
+			"token": "Token",
+			"promo": "Promo",
+			"marvel": "Marvel"
+		}
+	}
+}

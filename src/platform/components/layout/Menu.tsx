@@ -15,6 +15,7 @@ import {
 	Map as MapIcon,
 	Menu as MenuIcon,
 	MessageCircle,
+	PackageOpen,
 	Paintbrush,
 	X,
 } from "lucide-react";
@@ -58,6 +59,7 @@ const navigation: NavItem[] = [
 		],
 	},
 	{ nameKey: "nav.fabble", route: "/fabble", icon: Fabble },
+	{ nameKey: "nav.pack_opener", route: "/pack-opener", icon: PackageOpen },
 	{ nameKey: "nav.roadmap", route: "/roadmap", icon: MapIcon },
 	{ nameKey: "nav.contact", route: "/contact", icon: MessageCircle },
 ];

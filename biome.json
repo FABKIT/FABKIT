@@ -22,6 +22,18 @@
 			}
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["src/apps/pack-opener/components/scene/**"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"noStaticElementInteractions": "off"
+					}
+				}
+			}
+		}
+	],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
