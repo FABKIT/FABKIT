@@ -66,6 +66,14 @@
 	/* Text over the mode-select cards' fixed dark image overlay — same in both themes */
 	--color-on-image: #ffffff;
 	--color-on-image-muted: rgba(255, 255, 255, 0.75);
+
+	/* Pack opener treatment badges — saturated accent colors, same family
+	   in light and dark (like Fabble's --color-feedback-*), since these
+	   read as game accents rather than page chrome. */
+	--color-pack-foil: #38bdf8;
+	--color-pack-foil-subtle: rgba(56, 189, 248, 0.2);
+	--color-pack-marvel: #e879f9;
+	--color-pack-marvel-subtle: rgba(232, 121, 249, 0.2);
 }
 
 [data-theme="dark"] {
