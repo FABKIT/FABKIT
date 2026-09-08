@@ -30,7 +30,7 @@ import { ThemeToggle } from "./ThemeToggle.tsx";
 type NavChild = {
 	nameKey: string;
 	route: FileRouteTypes["to"];
-	icon: React.ElementType;
+	icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
 type NavItem = NavChild & {
