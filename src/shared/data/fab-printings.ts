@@ -1,3 +1,4 @@
+import { CardClasses } from "@fabkit/shared/config/cards/classes";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 
 /**
@@ -48,6 +49,12 @@ export interface FabPrinting {
 	cost: number | null;
 	power: number | null;
 	defense: number | null;
+	/** Raw card types from the source data (e.g. ["Brute", "Equipment",
+	 * "Chest"] or ["Action"]) — verbatim, not normalised. Some early sets'
+	 * official pack structures name a type directly (an "Equipment" slot,
+	 * a generic-vs-class split on commons — see pack/set-configs.ts), which
+	 * rarity alone can't express. */
+	types: string[];
 }
 
 export interface FabSetPrintings {
@@ -121,4 +128,28 @@ export function getSetPrintingsByRarity(
 /** Expansion-slot printings within a set, regardless of rarity. */
 export function getSetExpansionSlotPrintings(setCode: string): FabPrinting[] {
 	return getSetPrintings(setCode).filter((printing) => printing.expansionSlot);
+}
+
+const CLASS_TYPE_NAMES = new Set(
+	Object.keys(CardClasses)
+		.filter((key) => key !== "none" && key !== "generic")
+		.map((key) => key.toLowerCase()),
+);
+
+/** True when a printing's types include a hero class (Brute, Guardian,
+ * Ninja, ...) — i.e. it's a class-restricted card, not a generic one.
+ * Used to tell WTR/ARC's "4 Generic Commons" apart from their "7 Class
+ * Commons" (see pack/set-configs.ts) — the-fab-cube's data has no
+ * generic/class flag of its own, only the raw types array. */
+export function isClassCard(printing: FabPrinting): boolean {
+	return printing.types.some((type) =>
+		CLASS_TYPE_NAMES.has(type.toLowerCase()),
+	);
+}
+
+/** True when a printing's types include the given type name
+ * (case-insensitive) — e.g. hasType(p, "Equipment"). */
+export function hasType(printing: FabPrinting, type: string): boolean {
+	const needle = type.toLowerCase();
+	return printing.types.some((t) => t.toLowerCase() === needle);
 }

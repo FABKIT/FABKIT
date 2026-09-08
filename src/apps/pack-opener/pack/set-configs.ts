@@ -112,14 +112,24 @@ const EVERFEST: PackConfig = {
 // The page doesn't state what Cold Foil replaces (unlike the newer sets'
 // "(replaces a token)" wording) — targeting the Token slot is an inference
 // by analogy with every later set that does state it, not sourced text.
+//
+// The named pair ("1 Rare + 1 Rare/Majestic") already accounts for this
+// set's Rare and Majestic pulls on its own; giving the separate Premium
+// Foil slot the same weighted table on top would double-count them (this
+// is exactly the bug the Welcome to Rathe/Crucible of War/Monarch/Tales
+// of Aria configs' calibration tests caught — see set-configs.ts's WTR
+// comment). There's no published aggregate rate for this set to calibrate
+// against, but the same reasoning still applies: Premium Foil is modelled
+// as Common-primary instead, keeping only a population-weighted sliver of
+// Legendary so that rarity stays reachable (it has no other channel in
+// this set, unlike sets with a dedicated wildcard/Equipment slot).
 // ---------------------------------------------------------------------------
 const uprRareOrMajesticTable = [
 	{ rarity: "rare" as const, weight: 51 },
 	{ rarity: "majestic" as const, weight: 27 },
 ];
 const uprPremiumTable = [
-	{ rarity: "rare" as const, weight: 51 },
-	{ rarity: "majestic" as const, weight: 27 },
+	{ rarity: "common" as const, weight: 127 },
 	{ rarity: "legendary" as const, weight: 6 },
 ];
 
@@ -161,14 +171,16 @@ const UPRISING: PackConfig = {
 // Real population: rare 81, majestic 51, legendary 5, marvel 14. Legendary
 // folded into the premium slot; Marvel applied via marvelChance there too
 // (page is silent on both, same reasoning as Uprising above).
+// Premium Foil modelled as Common-primary with a population-weighted
+// sliver of Legendary, not a reuse of the named pair's own table — same
+// double-counting fix as Uprising above.
 // ---------------------------------------------------------------------------
 const dynRareOrMajesticTable = [
 	{ rarity: "rare" as const, weight: 81 },
 	{ rarity: "majestic" as const, weight: 51 },
 ];
 const dynPremiumTable = [
-	{ rarity: "rare" as const, weight: 81 },
-	{ rarity: "majestic" as const, weight: 51 },
+	{ rarity: "common" as const, weight: 109 },
 	{ rarity: "legendary" as const, weight: 5 },
 ];
 
@@ -206,14 +218,16 @@ const DYNASTY: PackConfig = {
 // pack (1 Rare + 1 Rare or Majestic); Common - 7 per pack." Sum: 1 + 2 + 7
 // = 10 (Rainbow Foil is separate here too — see file comment).
 // Real population: rare 77, majestic 56, legendary 8, marvel 10.
+// Premium Foil modelled as Common-primary with a population-weighted
+// sliver of Legendary, not a reuse of the named pair's own table — same
+// double-counting fix as Uprising/Dynasty above.
 // ---------------------------------------------------------------------------
 const dtdRareOrMajesticTable = [
 	{ rarity: "rare" as const, weight: 77 },
 	{ rarity: "majestic" as const, weight: 56 },
 ];
 const dtdPremiumTable = [
-	{ rarity: "rare" as const, weight: 77 },
-	{ rarity: "majestic" as const, weight: 56 },
+	{ rarity: "common" as const, weight: 94 },
 	{ rarity: "legendary" as const, weight: 8 },
 ];
 
@@ -376,18 +390,18 @@ const THE_HUNTED = buildHvyFamilyConfig("HNT", {
 // Real population: rare 40, superrare 40, majestic 14, legendary 2, basic
 // 9, marvel 8 (marvel/legendary counts exclude their own expansion-slot
 // printings, consistent with every other config here).
+// Premium Foil modelled as Common only, not a reuse of the named pair's
+// own table — the same double-counting fix as Uprising/Dynasty/Dusk till
+// Dawn above, except here Legendary already has its own channel (the
+// wildcard slot below), so there's no need to keep a sliver of it in
+// Premium Foil too.
 // ---------------------------------------------------------------------------
 const supRareOrHigherTable = [
 	{ rarity: "rare" as const, weight: 40 },
 	{ rarity: "superrare" as const, weight: 40 },
 	{ rarity: "majestic" as const, weight: 14 },
 ];
-const supPremiumTable = [
-	{ rarity: "rare" as const, weight: 40 },
-	{ rarity: "superrare" as const, weight: 40 },
-	{ rarity: "majestic" as const, weight: 14 },
-	{ rarity: "legendary" as const, weight: 2 },
-];
+const supPremiumTable = [{ rarity: "common" as const, weight: 1 }];
 
 const SUPER_SLAM: PackConfig = {
 	id: "SUP",
@@ -436,16 +450,14 @@ const SUPER_SLAM: PackConfig = {
 // Real population: rare 60, majestic 15, legendary 4, basic 14, marvel 9,
 // fabled 1 (this is the one set here whose page explicitly lists Fabled as
 // a reachable outcome, and it does have exactly one real Fabled printing).
+// Premium Foil modelled as Common only — same reasoning as Super Slam
+// above (Legendary already has its own channel, the wildcard slot below).
 // ---------------------------------------------------------------------------
 const omnRareOrMajesticTable = [
 	{ rarity: "rare" as const, weight: 60 },
 	{ rarity: "majestic" as const, weight: 15 },
 ];
-const omnPremiumTable = [
-	{ rarity: "rare" as const, weight: 60 },
-	{ rarity: "majestic" as const, weight: 15 },
-	{ rarity: "legendary" as const, weight: 4 },
-];
+const omnPremiumTable = [{ rarity: "common" as const, weight: 1 }];
 
 const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 	id: "OMN",
@@ -485,6 +497,383 @@ const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 	coldFoilReplaces: "basic",
 	marvelChance: 0,
 };
+// ---------------------------------------------------------------------------
+// Welcome to Rathe (WTR) — 16 cards.
+// fabtcg.com/products/booster-set/welcome-to-rathe/ (the-fab-cube's own
+// product_page URL for this set 404s — this is the live page, found by
+// correcting the slug). Verbatim: "A booster pack contains 16 cards,
+// being: 1 Token per pack; 4 Generic Commons; 7 Class Commons (a mix of
+// Brute, Guardian, Ninja, Warrior); 1 Rare; 1 Rare / Super Rare / Majestic;
+// 1 Equipment; 1 Premium Foil (can be from any non-token rarity)."
+// Sum: 1 + 4 + 7 + 1 + 1 + 1 + 1 = 16.
+//
+// Legendary is notably absent from every named slot above. Checked against
+// the real data: all 5 of this set's real Legendary printings are
+// Equipment-type cards, and nothing else in the set is. The collectors-
+// centre page (fabtcg.com/collectors-centre/welcome-to-rathe/) states
+// Legendary at "1 per 96 packs" — since Equipment is the only channel that
+// reaches Legendary at all, that published rate IS the Equipment slot's
+// legendary weight: 1/96, with the remaining 95/96 landing on the set's 12
+// Equipment-type Commons. This reproduces the published rate exactly
+// rather than approximating it, and is checked by this set's calibration
+// test.
+//
+// The "1 Rare / Super Rare / Majestic" slot is the *only* thing standing
+// between the guaranteed pure Rare and the published aggregate rates
+// (Rare 1.75/pack, Super Rare 1/6, Majestic 1/12) — 1(pure) + this slot's
+// own rate must equal each of those. Working backwards: this slot's own
+// rate needs to be Rare 0.75, Super Rare 1/6, Majestic 1/12, which sums to
+// exactly 1 — confirmation this slot alone explains the whole published
+// spread, with nothing left over for the Premium Foil slot to add.
+// Weighted to whole numbers (x12): Rare 9, Super Rare 2, Majestic 1.
+//
+// That leaves the Premium Foil slot itself: "(can be from any non-token
+// rarity)" reads like it could also be Rare/Super Rare/Majestic, but
+// giving it any material chance of those would push the aggregate rate
+// past what's published (checked directly — an earlier version of this
+// config did exactly that, reusing this same table for Premium Foil, and
+// its own calibration test caught the resulting ~1.5x overshoot). So
+// Premium Foil is modelled as landing on Common in practice — still a
+// non-token rarity, still meaningfully different from an ordinary common
+// pull since it's guaranteed Rainbow Foil, just not itself a source of
+// extra Rare/Super Rare/Majestic pulls on top of the two slots above.
+//
+// Cold Foil: collectors-centre states "1 per pack, with Alpha Print
+// containing 1 Cold Foil every 24 packs" — modelled as a straight 1/24
+// upgrade on the Premium Foil slot (the app doesn't distinguish Alpha
+// from Unlimited print runs, so this technically over-applies to
+// Unlimited packs too — a real simplification, not a sourced choice).
+// ---------------------------------------------------------------------------
+const wtrRareOrHigherTable = [
+	{ rarity: "rare" as const, weight: 9 },
+	{ rarity: "superrare" as const, weight: 2 },
+	{ rarity: "majestic" as const, weight: 1 },
+];
+const wtrPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+const wtrEquipmentTable = [
+	{ rarity: "legendary" as const, weight: 1, requiresType: "Equipment" },
+	{ rarity: "common" as const, weight: 95, requiresType: "Equipment" },
+];
+
+const WELCOME_TO_RATHE: PackConfig = {
+	id: "WTR",
+	cardsPerPack: 16,
+	slots: [
+		{ kind: "token", count: 1, rarityTable: [{ rarity: "token", weight: 1 }] },
+		{
+			kind: "generic-common",
+			count: 4,
+			rarityTable: [{ rarity: "common", weight: 1, classRestricted: false }],
+		},
+		{
+			kind: "class-common",
+			count: 7,
+			rarityTable: [{ rarity: "common", weight: 1, classRestricted: true }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-super-rare-plus",
+			count: 1,
+			rarityTable: wtrRareOrHigherTable,
+		},
+		{ kind: "equipment", count: 1, rarityTable: wtrEquipmentTable },
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: wtrPremiumTable,
+		},
+	],
+	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilReplaces: "premium-foil",
+	marvelChance: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Arcane Rising (ARC) — 16 cards. Identical published structure to Welcome
+// to Rathe, including the same "1 per 96 packs" Legendary rate and the
+// same all-Legendary-is-Equipment fact in the real data (verified
+// separately for this set). fabtcg.com/products/booster-set/arcane-rising/.
+// Cold Foil: "First Edition containing 1 Cold Foil every 24 packs."
+// Real population: common 126, rare 48, super rare 15, majestic 10,
+// legendary 5 (all Equipment), token 14. Same reasoning as Welcome to
+// Rathe applies to the split between the "1 Rare/Super Rare/Majestic"
+// slot and the Premium Foil slot — see that set's comment above.
+// ---------------------------------------------------------------------------
+const arcRareOrHigherTable = [
+	{ rarity: "rare" as const, weight: 9 },
+	{ rarity: "superrare" as const, weight: 2 },
+	{ rarity: "majestic" as const, weight: 1 },
+];
+const arcPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+const arcEquipmentTable = [
+	{ rarity: "legendary" as const, weight: 1, requiresType: "Equipment" },
+	{ rarity: "common" as const, weight: 95, requiresType: "Equipment" },
+];
+
+const ARCANE_RISING: PackConfig = {
+	id: "ARC",
+	cardsPerPack: 16,
+	slots: [
+		{ kind: "token", count: 1, rarityTable: [{ rarity: "token", weight: 1 }] },
+		{
+			kind: "generic-common",
+			count: 4,
+			rarityTable: [{ rarity: "common", weight: 1, classRestricted: false }],
+		},
+		{
+			kind: "class-common",
+			count: 7,
+			rarityTable: [{ rarity: "common", weight: 1, classRestricted: true }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-super-rare-plus",
+			count: 1,
+			rarityTable: arcRareOrHigherTable,
+		},
+		{ kind: "equipment", count: 1, rarityTable: arcEquipmentTable },
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: arcPremiumTable,
+		},
+	],
+	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilReplaces: "premium-foil",
+	marvelChance: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Crucible of War (CRU) — 10 cards.
+// fabtcg.com/products/booster-set/crucible-of-war/. Verbatim: "A booster
+// pack contains 10 cards, being: 7 Commons; 1 Rare; 1 Rare / Majestic /
+// Legendary; 1 Premium Foil." Sum: 7 + 1 + 1 + 1 = 10. No Token slot at
+// all for this set (confirmed — the real data has no Token printings for
+// CRU either), and no Equipment slot (Equipment-type cards exist in the
+// set but aren't a named slot here, unlike Welcome to Rathe/Arcane Rising).
+//
+// Unlike those two, Legendary IS named directly in a slot here ("Rare /
+// Majestic / Legendary"), so the section 5.2.1 four-step method applies:
+// collectors-centre states Rare 1.75/pack, Majestic 1/4 (0.25/pack),
+// Legendary 1/240 (0.0041667/pack). Sum = 2.0042 -> 2 slots (1 pure Rare +
+// 1 Rare/Majestic/Legendary), matching the published structure.
+//
+// The guaranteed pure Rare already contributes 1.0 of the 1.75 Rare
+// total, so the "Rare/Majestic/Legendary" slot's own rate needs to be
+// Rare 0.75, Majestic 0.25, Legendary 1/240 — which is (almost exactly)
+// the whole published amount on its own. Scaled to whole numbers (x240):
+// Rare 180, Majestic 60, Legendary 1 (of 241).
+//
+// That leaves nothing of substance for the Premium Foil slot to add
+// without pushing the aggregate past what's published (verified directly
+// — reusing the same table for Premium Foil, as an earlier version of
+// this config did, overshoots Rare by roughly 1.5x once simulated; see
+// the calibration test). Premium Foil is modelled as Common instead —
+// still meaningfully different from an ordinary common pull since it's
+// guaranteed foil, just not an extra source of Rare/Majestic/Legendary.
+// Cold Foil: "First Edition containing 1 Cold Foil every 22 packs" —
+// attached to the Premium Foil line, so coldFoilReplaces targets it, by
+// the same inference used for Welcome to Rathe's Alpha cold foil.
+// ---------------------------------------------------------------------------
+const cruRareOrHigherTable = [
+	{ rarity: "rare" as const, weight: 180 },
+	{ rarity: "majestic" as const, weight: 60 },
+	{ rarity: "legendary" as const, weight: 1 },
+];
+const cruPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+
+const CRUCIBLE_OF_WAR: PackConfig = {
+	id: "CRU",
+	cardsPerPack: 10,
+	slots: [
+		{
+			kind: "common",
+			count: 7,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: cruRareOrHigherTable,
+		},
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: cruPremiumTable,
+		},
+	],
+	coldFoilChance: 1 / 22,
+	coldFoilReplaces: "premium-foil",
+	marvelChance: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Monarch (MON) — 16 cards.
+// fabtcg.com/products/booster-set/monarch-unlimited/ (the First Edition
+// slug redirects to a Blitz Deck page — this Unlimited URL has the real
+// booster product). Verbatim: "Token - 1 per pack; Premium Foil - 1 per
+// pack (Rainbow Foil); Rare or higher - 1 + 1 per pack (1 Rare + 1 Rare/
+// Majestic); Equipment - 1 per pack; Common - 11 per pack." Sum:
+// 1 + 1 + 2 + 1 + 11 = 16. No Super Rare here (retired by this set — the
+// real data confirms zero Super Rare printings for Monarch) and, like
+// Welcome to Rathe/Arcane Rising, Legendary isn't named in "Rare or
+// higher" at all.
+//
+// Checked against real data: 4 of this set's 6 real Legendary printings
+// are Equipment-type (the other 2 aren't reachable in a normal pack, same
+// as the unreachable ones on every set here — not every printed card is
+// necessarily a booster pull). Collectors-centre states Legendary at
+// "1 per 96 packs", same rate as Welcome to Rathe/Arcane Rising, and the
+// same reasoning applies: that rate is modelled directly as the
+// Equipment slot's weight (1/96 Legendary, 95/96 Common), and Legendary
+// is excluded from "Rare or higher" to avoid double-counting it.
+// With Legendary excluded, "Rare or higher"'s own rates (1.75 Rare, 0.25
+// Majestic per pack) sum to exactly 2 — confirmation the 2-slot, no-
+// Legendary reading is right. The guaranteed pure Rare already accounts
+// for 1.0 of that 1.75, so the "Rare/Majestic" slot's own rate needs to
+// be Rare 0.75, Majestic 0.25 (sum 1.0 exactly) — scaled to whole numbers
+// (x4): Rare 3, Majestic 1. That leaves nothing for the separate Premium
+// Foil (Rainbow Foil) slot to add without overshooting the published
+// rate, so it's modelled as Common — same reasoning as Welcome to
+// Rathe/Crucible of War above.
+// Cold Foil: "First Edition containing 1 Cold Foil every 22 packs",
+// attached to the Premium Foil slot as with Crucible of War.
+// ---------------------------------------------------------------------------
+const monRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: 3 },
+	{ rarity: "majestic" as const, weight: 1 },
+];
+const monPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+const monEquipmentTable = [
+	{ rarity: "legendary" as const, weight: 1, requiresType: "Equipment" },
+	{ rarity: "common" as const, weight: 95, requiresType: "Equipment" },
+];
+
+const MONARCH: PackConfig = {
+	id: "MON",
+	cardsPerPack: 16,
+	slots: [
+		{ kind: "token", count: 1, rarityTable: [{ rarity: "token", weight: 1 }] },
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: monPremiumTable,
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: monRareOrMajesticTable,
+		},
+		{ kind: "equipment", count: 1, rarityTable: monEquipmentTable },
+		{
+			kind: "common",
+			count: 11,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+	],
+	coldFoilChance: 1 / 22,
+	coldFoilReplaces: "premium-foil",
+	marvelChance: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Tales of Aria (ELE) — 16 cards.
+// fabtcg.com/products/booster-set/tales-of-aria/. Verbatim: "Premium Foil
+// - 1 per pack (Rainbow Foil or Cold Foil); Rare or higher - 1 + 1 per
+// pack (1 Rare + 1 Rare/Majestic); Common - 12 per pack; Token - 1 per
+// pack." Sum: 1 + 2 + 12 + 1 = 16. No Equipment slot for this set (real
+// Equipment-type cards exist, same as every set here, but aren't their
+// own named slot).
+//
+// Unlike Welcome to Rathe/Arcane Rising/Monarch, this set has no Equipment
+// slot to explain where Legendary comes from, so it must be reachable via
+// "Rare or higher" or Premium Foil. The named pair is explicitly "1 Rare +
+// 1 Rare/Majestic" (2 options, no Legendary), so Legendary is folded into
+// the Premium Foil slot instead — the same reasoning as every set here,
+// applied to whichever slot's text doesn't foreclose it.
+//
+// The guaranteed pure Rare already accounts for 1.0 of the published 1.75
+// Rare/pack, so the "Rare/Majestic" pair slot's own rate needs to be Rare
+// 0.75, Majestic 0.25 (sum 1.0 exactly) — scaled to whole numbers (x4):
+// Rare 3, Majestic 1. That fully explains the published Rare and Majestic
+// rates on its own, so — same reasoning as every other set in this file —
+// the Premium Foil slot doesn't add more Rare/Majestic on top of it, and
+// instead carries the entire published Legendary rate (1/88), with the
+// remainder landing on Common: Legendary 1, Common 87 (of 88).
+// Cold Foil: "First Edition also containing 1 Cold Foil every 20 packs" -
+// attached to the Premium Foil slot, same pattern as every set here.
+// ---------------------------------------------------------------------------
+const eleRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: 3 },
+	{ rarity: "majestic" as const, weight: 1 },
+];
+const elePremiumTable = [
+	{ rarity: "legendary" as const, weight: 1 },
+	{ rarity: "common" as const, weight: 87 },
+];
+
+const TALES_OF_ARIA: PackConfig = {
+	id: "ELE",
+	cardsPerPack: 16,
+	slots: [
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: elePremiumTable,
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: eleRareOrMajesticTable,
+		},
+		{
+			kind: "common",
+			count: 12,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "token", count: 1, rarityTable: [{ rarity: "token", weight: 1 }] },
+	],
+	coldFoilChance: 1 / 20,
+	coldFoilReplaces: "premium-foil",
+	marvelChance: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Bright Lights (EVO) — 16 cards. fabtcg.com/products/booster-set/bright-lights/
+// states "Product Configuration: ... 16 cards per pack" explicitly, but
+// that same page's own "Rarity Distribution" list only sums to 15 (Cold
+// Foil replaces a token; Rainbow Foil 1/pack folded into the pair; Rare or
+// higher 2/pack; Common 11/pack; Token 1/pack; Token or Expansion Slot
+// 1/pack = 2+11+1+1 = 15) — it's missing the "Basic/Expansion Slot/
+// Marvel/Legendary" wildcard slot that every other set in this same
+// generation (Heavy Hitters/Part the Mistveil/Rosetta/The Hunted) has,
+// with an identical "Rarity Distribution" paragraph otherwise. Confirmed
+// with the product owner that the pack size really is 16; modelled here as
+// the same family structure with that wildcard slot restored, since every
+// other line matches that family exactly and 16 only works out if it's
+// there. This is the one config in this file that isn't a verbatim
+// transcription — flagged so it isn't mistaken for one.
+// Real population: rare 56, majestic 34 (12 more via Expansion Slot),
+// marvel 9, legendary 4, token 12. No real Basic printings, same gap as
+// the Heavy Hitters family — omitted from the wildcard table.
+// ---------------------------------------------------------------------------
+const BRIGHT_LIGHTS = buildHvyFamilyConfig("EVO", {
+	rare: 56,
+	majestic: 34,
+	majesticExpansion: 12,
+	marvel: 9,
+	legendary: 4,
+	token: 12,
+});
+
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	EVR: EVERFEST,
 	UPR: UPRISING,
@@ -496,4 +885,10 @@ export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	HNT: THE_HUNTED,
 	SUP: SUPER_SLAM,
 	OMN: OMENS_OF_THE_THIRD_AGE,
+	WTR: WELCOME_TO_RATHE,
+	ARC: ARCANE_RISING,
+	CRU: CRUCIBLE_OF_WAR,
+	MON: MONARCH,
+	ELE: TALES_OF_ARIA,
+	EVO: BRIGHT_LIGHTS,
 };
