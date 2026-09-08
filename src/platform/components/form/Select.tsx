@@ -58,7 +58,7 @@ export interface SelectOption<T extends string> {
 	variant?: "action";
 
 	/** Optional leading icon, mainly for action options */
-	icon?: React.ElementType;
+	icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 	/** Small trailing pill, for marking an option's provenance (e.g. "custom"). */
 	badge?: string;
