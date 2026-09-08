@@ -168,6 +168,15 @@ export interface SetIndexEntry {
 	 * fallback (see SetCarousel.tsx). */
 	setLogo: string | null;
 	printingCount: number;
+	/** URLs of this set's uploaded 3D pack-front artwork
+	 * (public/img/pack-opener/packs/<CODE>/1.webp, 2.webp, ...), in upload
+	 * order — see the execution plan, section 7.1. Empty until the product
+	 * owner uploads at least one; PackMesh.tsx falls back to the mock
+	 * canvas-drawn pack when this is empty (see the plan's section 8.6
+	 * degradation ladder — the composited-logo fallback described there
+	 * needs a template asset that doesn't exist yet, so this is currently
+	 * a two-rung ladder, not three). */
+	packArt: string[];
 }
 
 let setIndexCache: SetIndexEntry[] | null = null;

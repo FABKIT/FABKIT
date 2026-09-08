@@ -1,3 +1,15 @@
+// Pack mesh proportions (world units) — matches real FAB pack proportions,
+// roughly 1:2 width:height. Shared between PackMesh.tsx (the actual
+// boxGeometry dimensions) and textures/useRealPackTexture.ts (which derives
+// the seal/body split fraction of an uploaded pack image from these same
+// numbers) so the two can never drift apart and shear the art at the tear
+// line — see the execution plan, section 5.3.
+export const PACK_WIDTH = 1.05;
+export const PACK_HEIGHT = 2.0;
+/** The seal strip's share of PACK_HEIGHT — also the top fraction of an
+ * uploaded pack-front image that becomes the tear-off seal texture. */
+export const PACK_SEAL_HEIGHT = 0.16;
+
 export const TEAR_DURATION_MS = 1200;
 /** Extra pause after the tear animation finishes before the first card's flip starts. */
 export const TEAR_TAIL_MS = 300;

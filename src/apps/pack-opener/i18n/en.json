@@ -14,7 +14,8 @@
 	},
 	"carousel": {
 		"previous_set": "Previous set",
-		"next_set": "Next set"
+		"next_set": "Next set",
+		"set_info_button": "Pull rates and pack contents"
 	},
 	"dialog": {
 		"cards_per_pack_title": "Cards per pack",
