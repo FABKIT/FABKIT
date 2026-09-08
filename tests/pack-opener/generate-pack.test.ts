@@ -12,16 +12,16 @@ describe("generatePack", () => {
 		}
 	});
 
-	it("always has exactly one premium-foil slot and it is always foil", () => {
+	it("always has exactly one premium-foil slot and it is always Rainbow Foil", () => {
 		const config = { ...DEFAULT_PACK_CONFIG, coldFoilChance: 0 };
 		const rng = mulberry32(2);
 		for (let i = 0; i < 200; i++) {
 			const pack = generatePack(config, rng);
 			const premiumCards = pack.filter((c) => c.slot === "premium-foil");
 			expect(premiumCards.length).toBe(1);
-			expect(premiumCards[0].foil).toBe(true);
-			const foilCount = pack.filter((c) => c.foil).length;
-			expect(foilCount).toBe(1);
+			expect(premiumCards[0].treatment).toBe("rainbow");
+			const foiledCount = pack.filter((c) => c.treatment !== "standard").length;
+			expect(foiledCount).toBe(1);
 		}
 	});
 
@@ -40,19 +40,23 @@ describe("generatePack", () => {
 		const rng = mulberry32(4);
 		for (let i = 0; i < 500; i++) {
 			const pack = generatePack(config, rng);
-			expect(pack.some((c) => c.marvel)).toBe(false);
+			expect(pack.some((c) => c.rarity === "marvel")).toBe(false);
 		}
 	});
 
-	it("always upgrades a non-premium slot to foil when coldFoilChance is 1", () => {
+	it("always upgrades exactly one eligible card to Cold Foil when coldFoilChance is 1", () => {
 		const config = { ...DEFAULT_PACK_CONFIG, coldFoilChance: 1 };
 		const rng = mulberry32(5);
 		for (let i = 0; i < 200; i++) {
 			const pack = generatePack(config, rng);
-			const nonPremiumFoil = pack.filter(
-				(c) => c.slot !== "premium-foil" && c.foil,
+			// Exclude the premium slot: it's never eligible for this upgrade
+			// (fixedTreatment "rainbow", or "cold" on the rare marvel roll),
+			// so counting it in would make this flaky on the ~1/2000 packs
+			// where marvel also fires.
+			const coldFoiled = pack.filter(
+				(c) => c.slot !== "premium-foil" && c.treatment === "cold",
 			);
-			expect(nonPremiumFoil.length).toBe(1);
+			expect(coldFoiled.length).toBe(1);
 		}
 	});
 
@@ -63,10 +67,12 @@ describe("generatePack", () => {
 		let marvelCount = 0;
 		for (let i = 0; i < n; i++) {
 			const pack = generatePack(DEFAULT_PACK_CONFIG, rng);
-			if (pack.some((c) => c.slot !== "premium-foil" && c.foil)) {
+			if (
+				pack.some((c) => c.slot !== "premium-foil" && c.treatment === "cold")
+			) {
 				extraFoilCount++;
 			}
-			if (pack.some((c) => c.marvel)) {
+			if (pack.some((c) => c.rarity === "marvel")) {
 				marvelCount++;
 			}
 		}

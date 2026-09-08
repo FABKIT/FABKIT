@@ -37,12 +37,12 @@ export function PackSummary() {
 								alt={t(CardRarities[card.rarity].label)}
 								className="h-6 w-6"
 							/>
-							{card.marvel && (
+							{card.rarity === "marvel" && (
 								<span className="text-[10px] font-bold text-fuchsia-400">
 									{t("page.marvel_badge")}
 								</span>
 							)}
-							{!card.marvel && card.foil && (
+							{card.rarity !== "marvel" && card.treatment !== "standard" && (
 								<span className="text-[10px] font-bold text-sky-400">
 									{t("page.foil_badge")}
 								</span>

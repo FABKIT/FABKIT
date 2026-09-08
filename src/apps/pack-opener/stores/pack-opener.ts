@@ -84,8 +84,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					name: "pack_opener_card_revealed",
 					data: {
 						rarity: revealed.rarity,
-						foil: revealed.foil,
-						marvel: revealed.marvel,
+						treatment: revealed.treatment,
 					},
 				});
 			}, TEAR_DURATION_MS + TEAR_TAIL_MS);
@@ -125,8 +124,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				name: "pack_opener_card_revealed",
 				data: {
 					rarity: revealed.rarity,
-					foil: revealed.foil,
-					marvel: revealed.marvel,
+					treatment: revealed.treatment,
 				},
 			});
 		},

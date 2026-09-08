@@ -148,7 +148,7 @@ export function drawMockCardFace(
 	);
 	ctx.stroke();
 
-	if (card.foil || card.marvel) {
+	if (card.treatment !== "standard") {
 		drawRainbowEdge(ctx, width, height);
 	}
 
@@ -216,7 +216,7 @@ export function drawMockCardFace(
 	drawPip(ctx, width * 0.12, statY, pipRadius, "#7a1f1f", String(card.power));
 	drawPip(ctx, width * 0.88, statY, pipRadius, "#1f3d5c", String(card.defense));
 
-	if (card.marvel) {
+	if (card.rarity === "marvel") {
 		ctx.font = `bold ${Math.round(width * 0.045)}px sans-serif`;
 		ctx.fillStyle = colors.gem;
 		ctx.textAlign = "center";

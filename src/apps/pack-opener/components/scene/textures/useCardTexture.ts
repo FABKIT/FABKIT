@@ -30,8 +30,7 @@ function toMockCard(card: ResolvedCard): MockCard {
 		id: card.id,
 		name: card.name,
 		rarity: card.rarity,
-		foil: card.foil,
-		marvel: card.marvel,
+		treatment: card.treatment,
 		pitch:
 			card.pitch === 1 || card.pitch === 2 || card.pitch === 3
 				? null

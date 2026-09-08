@@ -5,6 +5,7 @@ import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import type { FabCard } from "@fabkit/shared/data/fab-card-dataset";
 import { getFabCardsByRarity } from "@fabkit/shared/data/fab-card-dataset";
+import type { FoilTreatment } from "@fabkit/shared/data/fab-printings";
 
 /**
  * Shape every 3D/UI component consumes, deliberately mirroring FabbleCard's
@@ -17,8 +18,7 @@ export interface ResolvedCard {
 	id: string;
 	name: string;
 	rarity: CardRarity;
-	foil: boolean;
-	marvel: boolean;
+	treatment: FoilTreatment;
 	imageUrl: string | null;
 	set?: string;
 	pitch: MockPitch | 1 | 2 | 3;
@@ -38,8 +38,7 @@ export const mockCardResolver: CardResolver = {
 			id: mock.id,
 			name: mock.name,
 			rarity: mock.rarity,
-			foil: mock.foil,
-			marvel: mock.marvel,
+			treatment: mock.treatment,
 			imageUrl: null,
 			pitch: mock.pitch,
 			cost: mock.cost,
@@ -58,8 +57,7 @@ function toResolvedCard(drawn: DrawnCard, real: FabCard): ResolvedCard {
 		// pool, but the pack's odds model and HUD should still reflect what
 		// was actually drawn.
 		rarity: drawn.rarity,
-		foil: drawn.foil,
-		marvel: drawn.marvel,
+		treatment: drawn.treatment,
 		imageUrl: real.imageUrl,
 		pitch: real.pitch,
 		cost: real.cost,

@@ -11,7 +11,7 @@ export const CARD_HEIGHT = CARD_WIDTH * (628 / 450);
 
 interface CardFaceMaterialProps {
 	texture: Texture;
-	isFoil: boolean;
+	isFoiled: boolean;
 	isMarvel: boolean;
 }
 
@@ -19,13 +19,13 @@ interface CardFaceMaterialProps {
  * both the real-image and mock-canvas rendering paths below. */
 function CardFaceMaterial({
 	texture,
-	isFoil,
+	isFoiled,
 	isMarvel,
 }: CardFaceMaterialProps) {
 	const foilMaterial = useMemo(() => new FoilMaterialImpl(), []);
 
 	useFrame((_, delta) => {
-		if (!isFoil) return;
+		if (!isFoiled) return;
 		foilMaterial.uTime += delta;
 		foilMaterial.uBaseTexture = texture;
 		foilMaterial.uIntensity = isMarvel ? 1 : 0.4;
@@ -36,7 +36,7 @@ function CardFaceMaterial({
 	// this scene's ambient + directional + studio-environment lighting washed
 	// the art out. foilMaterial is a fully custom shader (no scene-light
 	// uniforms), so it's unaffected either way.
-	return isFoil ? (
+	return isFoiled ? (
 		<primitive object={foilMaterial} attach="material" />
 	) : (
 		<meshBasicMaterial map={texture} />
@@ -58,8 +58,8 @@ function RealCardFace({
 	return (
 		<CardFaceMaterial
 			texture={texture}
-			isFoil={card.foil || card.marvel}
-			isMarvel={card.marvel}
+			isFoiled={card.treatment !== "standard"}
+			isMarvel={card.rarity === "marvel"}
 		/>
 	);
 }
@@ -71,8 +71,8 @@ function MockCardFace({ card }: { card: ResolvedCard }) {
 	return (
 		<CardFaceMaterial
 			texture={texture}
-			isFoil={card.foil || card.marvel}
-			isMarvel={card.marvel}
+			isFoiled={card.treatment !== "standard"}
+			isMarvel={card.rarity === "marvel"}
 		/>
 	);
 }
