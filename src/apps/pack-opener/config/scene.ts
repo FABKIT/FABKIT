@@ -10,6 +10,13 @@ export const PACK_HEIGHT = 2.0;
  * uploaded pack-front image that becomes the tear-off seal texture. */
 export const PACK_SEAL_HEIGHT = 0.16;
 
+/** Card tilt (see the execution plan, section 3.4) — pointer position maps
+ * to a tilt of at most this many degrees on each axis, eased toward its
+ * target each frame rather than snapping (TILT_EASE is a lerp factor, a
+ * cheap spring approximation, not a real spring model). */
+export const CARD_TILT_MAX_DEG = 12;
+export const CARD_TILT_EASE = 0.12;
+
 export const TEAR_DURATION_MS = 1200;
 /** Extra pause after the tear animation finishes before the first card's flip starts. */
 export const TEAR_TAIL_MS = 300;

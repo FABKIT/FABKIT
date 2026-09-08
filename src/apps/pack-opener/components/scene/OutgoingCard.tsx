@@ -40,7 +40,7 @@ export function OutgoingCard({ card, phaseStartedAt }: OutgoingCardProps) {
 
 	return (
 		<group ref={group}>
-			<Card3D card={card} />
+			<Card3D card={card} interactive={false} />
 		</group>
 	);
 }
