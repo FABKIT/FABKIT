@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 export function RevealCaption() {
 	const { t } = useTranslation("pack-opener");
 	const pack = usePackOpenerStore((state) => state.pack);
+	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
@@ -28,8 +29,11 @@ export function RevealCaption() {
 			? pack[activeIndex]
 			: null;
 	const resolved = useMemo(
-		() => (drawn ? activeCardResolver.resolve(drawn) : null),
-		[drawn],
+		() =>
+			drawn
+				? activeCardResolver.resolve(drawn, packSetCode ?? undefined)
+				: null,
+		[drawn, packSetCode],
 	);
 
 	if (!resolved || !pack) return null;

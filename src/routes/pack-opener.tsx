@@ -9,9 +9,11 @@ export const Route = createFileRoute("/pack-opener")({
 		Promise.all([
 			preloadRarityIcons(),
 			// Errors are swallowed here, not left to fail the whole route load —
-			// fabDatasetCardResolver falls back to mock cards per-draw if this
-			// dataset never loads (offline, feed down, etc), so the app should
-			// still work rather than blocking on this one fetch.
+			// this is the cross-set fallback dataset (see card-resolver.ts's
+			// fabDatasetCardResolver), used when a set's own per-set printing
+			// data isn't available, itself falling back to mock cards per-draw
+			// if this never loads either (offline, feed down, etc), so the app
+			// should still work rather than blocking on this one fetch.
 			loadFabCardDataset().catch((error) => {
 				console.error("pack-opener: FAB card dataset failed to load", error);
 			}),

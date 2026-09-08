@@ -1,5 +1,6 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { clearCardTextureCache } from "@fabkit/apps/pack-opener/components/scene/textures/useCardTexture";
+import { preloadSafeTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
 import {
 	ADVANCE_DEBOUNCE_MS,
 	TEAR_DURATION_MS,
@@ -15,6 +16,7 @@ import type {
 import { trackEvent } from "@fabkit/platform/analytics";
 import {
 	getSetIndex,
+	loadSetPrintings,
 	type SetIndexEntry,
 } from "@fabkit/shared/data/fab-printings";
 import { useTexture } from "@react-three/drei";
@@ -24,11 +26,14 @@ import { devtools } from "zustand/middleware";
 /** Kicks off loading every card's real image up front, right as the pack is
  * generated — the ~1.5s tear animation gives them a head start, so by the
  * time each card becomes active its texture is (usually) already cached
- * and Card3D's useTexture() doesn't suspend mid-reveal. */
-function preloadPackTextures(pack: DrawnCard[]): void {
+ * and Card3D's RealCardFace doesn't have to wait on it. Uses
+ * preloadSafeTexture, not drei's useTexture.preload — see
+ * textures/useSafeTexture.ts for why a real printing's image can 404 and
+ * why that can't be handled with drei's Suspense-based loader. */
+function preloadPackTextures(pack: DrawnCard[], setCode: string): void {
 	for (const drawn of pack) {
-		const imageUrl = activeCardResolver.resolve(drawn).imageUrl;
-		if (imageUrl) useTexture.preload(imageUrl);
+		const imageUrl = activeCardResolver.resolve(drawn, setCode).imageUrl;
+		if (imageUrl) preloadSafeTexture(imageUrl);
 	}
 }
 
@@ -67,6 +72,12 @@ export interface PackOpenerState {
 	 * summary ledger to look at that card again — read-only, doesn't touch
 	 * `revealIndex` or re-roll anything. Null means "not revisiting". */
 	revisitIndex: number | null;
+	/** The set `pack` was actually generated for (packConfig.id at the time
+	 * openPack() ran) — recorded separately from `selectedSet` so card
+	 * resolution stays correct even after selectedSet moves on, and so
+	 * every resolve() call site doesn't have to reach for two pieces of
+	 * state. Null before the first pack of the session is opened. */
+	packSetCode: string | null;
 }
 
 export interface PackOpenerActions {
@@ -122,6 +133,7 @@ const initialState: PackOpenerState = {
 	selectedSet: readStoredSelectedSet(),
 	packArtUrl: null,
 	revisitIndex: null,
+	packSetCode: null,
 };
 
 export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
@@ -135,7 +147,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			const packConfig = config ?? getPackConfig(selectedSet ?? undefined);
 			clearCardTextureCache();
 			const pack = orderForReveal(generatePack(packConfig));
-			preloadPackTextures(pack);
+			preloadPackTextures(pack, packConfig.id);
 			set(
 				{
 					phase: "tearing",
@@ -143,6 +155,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					revealIndex: -1,
 					phaseStartedAt: Date.now(),
 					revisitIndex: null,
+					packSetCode: packConfig.id,
 				},
 				undefined,
 				"pack-opener/openPack",
@@ -217,6 +230,13 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			const entry = getSetIndex().find((set) => set.code === setCode);
 			const packArtUrl = entry ? pickPackArt(entry) : null;
 			if (packArtUrl) useTexture.preload(packArtUrl);
+			// Warm the set's own printing pool ahead of the next openPack()
+			// call, same spirit as the pack-art preload above — see
+			// card-resolver.ts's fabPrintingsCardResolver, which needs this
+			// loaded to show the set's own cards rather than falling back
+			// cross-set. Errors swallowed like every other loader here; a
+			// slow/failed load just means that fallback kicks in instead.
+			loadSetPrintings(setCode).catch(() => {});
 
 			writeStoredSelectedSet(setCode);
 			set(
@@ -228,6 +248,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					revealIndex: -1,
 					phaseStartedAt: null,
 					revisitIndex: null,
+					packSetCode: null,
 				},
 				undefined,
 				"pack-opener/selectSet",
@@ -244,6 +265,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				writeStoredSelectedSet(latest.code);
 				const url = pickPackArt(latest);
 				if (url) useTexture.preload(url);
+				loadSetPrintings(latest.code).catch(() => {});
 				set(
 					{ selectedSet: latest.code, packArtUrl: url },
 					undefined,
@@ -251,6 +273,12 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				);
 				return;
 			}
+
+			// Always warm the returning visitor's already-selected set's
+			// printing pool too, even when packArtUrl below short-circuits —
+			// this runs once per mount either way (see this action's own doc
+			// comment) and loadSetPrintings is idempotent per set code.
+			loadSetPrintings(selectedSet).catch(() => {});
 
 			if (packArtUrl) return; // already resolved this session
 

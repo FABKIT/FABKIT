@@ -19,7 +19,7 @@ src/apps/pack-opener/
                       mock name/pitch generator and the real-card resolver's pool selection
     mock-card.ts     resolveMockCard() — deterministic placeholder flavor names by rarity
     card-resolver.ts ResolvedCard type (mirrors FabbleCard's shape) + CardResolver interface;
-                      fabDatasetCardResolver (real data, see "Card data" below) is
+                      fabPrintingsCardResolver (real per-set data, see "Card data" below) is
                       activeCardResolver — the swap point, in case that ever needs to change
     rarity-icon-cache.ts  Preloads the 10 shared rarity SVGs once (called from the route loader)
     mock-card-texture.ts  drawMockCardFace() — canvas-drawn FAB-style placeholder card face,
@@ -80,23 +80,37 @@ uniforms, so it already behaved as effectively unlit.
 
 ## Card data
 
-Cards are real Flesh and Blood cards, sourced from the same public dataset the Fabble
-app consumes (github.com/FABKIT/fabble-data). Since apps can't import each other,
-`src/shared/data/fab-card-dataset.ts` fetches and parses it independently of Fabble's
-own `load-dataset.ts` — a slim `FabCard` type (id/name/rarity/imageUrl/pitch/cost/
-power/defense) rather than the full `FabbleCard` shape, grouped by rarity for
-`getFabCardsByRarity()`. The route loader (`src/routes/pack-opener.tsx`) awaits
-`loadFabCardDataset()` up front, same as the rarity-icon preload.
+Cards are real Flesh and Blood cards, resolved per the set the open pack was actually
+generated from. `src/shared/data/fab-printings.ts` fetches one JSON file per set
+(`public/data/pack-opener/sets/<CODE>.json`, built by `scripts/build-pack-data.ts` from
+github.com/the-fab-cube/flesh-and-blood-cards) — every real *printing* of a card, with
+that set's own rarity, foil treatments, and TCGplayer product id. `loadSetPrintings()`
+is called whenever a set is selected (`stores/pack-opener.ts`'s `selectSet` and
+`initializeSetArt`), warming that set's pool ahead of the next `openPack()`.
 
-`fabDatasetCardResolver` (`cards/card-resolver.ts`) picks a real card from the drawn
-rarity's pool, deterministically per drawn-card id (`hashToIndex`) so re-renders don't
-reshuffle which card a slot shows. The dataset has no cards of rarity "token" or
-"marvel" (tokens aren't guessable trivia answers in the source game; Marvel is a foil
+`fabPrintingsCardResolver` (`cards/card-resolver.ts`, the `activeCardResolver` swap
+point) picks a real printing from the pack's own set (`packSetCode` in the store) whose
+rarity, expansion-slot flag, required type and class-restriction all match what was
+actually drawn — deterministically per drawn-card id (`hashToIndex`) so re-renders don't
+reshuffle which card a slot shows. Every declared slot in every real set's `PackConfig`
+is verified non-empty against that set's own pool by
+`tests/pack-opener/pool-viability.test.ts`, so this pool is only ever empty for the mock
+`"default-mock-set"` config or while a set's data is still loading.
+
+When it is empty, `fabPrintingsCardResolver` falls back to `fabDatasetCardResolver`, the
+older cross-set resolver: it picks a real card from `src/shared/data/fab-card-dataset.ts`
+(the same public dataset the Fabble app consumes, github.com/FABKIT/fabble-data — a slim
+`FabCard` type rather than the full `FabbleCard` shape, grouped by rarity for
+`getFabCardsByRarity()`), which shows a real card but not necessarily one printed in the
+pack's own set, and never carries a `tcgplayerProductId`. The route loader
+(`src/routes/pack-opener.tsx`) awaits `loadFabCardDataset()` up front for this fallback,
+same as the rarity-icon preload. That dataset has no cards of rarity "token" or "marvel"
+either (tokens aren't guessable trivia answers in the source game; Marvel is a foil
 treatment on an existing card, not its own rarity) — `substituteRarityFor()` redirects
-those draws to "basic" and "legendary" pools respectively, so those slots still show a
-real card rather than falling back to mock art. If the dataset never loaded (or a pool
-is somehow still empty), `fabDatasetCardResolver` falls back to `mockCardResolver`
-per-draw rather than crashing.
+those draws to "basic" and "legendary" pools respectively so this fallback still shows a
+real card rather than mock art. If even that dataset never loaded (or a pool is somehow
+still empty), `fabDatasetCardResolver` falls back to `mockCardResolver` per-draw rather
+than crashing.
 
 A real card's own image already IS the fully rendered card face — Card3D's
 `RealCardFace` loads it directly via drei's `useTexture` (Suspense-based, cached by
