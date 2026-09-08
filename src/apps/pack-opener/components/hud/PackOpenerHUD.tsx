@@ -9,11 +9,12 @@ import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener"
  * never overlap the card. */
 export function PackOpenerHUD() {
 	const phase = usePackOpenerStore((state) => state.phase);
+	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 
 	return (
 		<div className="pointer-events-none absolute inset-0">
 			{phase === "idle" && <IdleOverlay />}
-			{phase === "done" && (
+			{phase === "done" && revisitIndex === null && (
 				<div className="pointer-events-auto absolute inset-0">
 					<PackSummary />
 				</div>

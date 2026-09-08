@@ -63,6 +63,10 @@ export interface PackOpenerState {
 	 * set — never re-rolled by a render. Null falls back to the mock pack;
 	 * see PackMesh.tsx. */
 	packArtUrl: string | null;
+	/** Set while phase is "done" and the player has tapped a row in the
+	 * summary ledger to look at that card again — read-only, doesn't touch
+	 * `revealIndex` or re-roll anything. Null means "not revisiting". */
+	revisitIndex: number | null;
 }
 
 export interface PackOpenerActions {
@@ -79,6 +83,11 @@ export interface PackOpenerActions {
 	 * now that it can. A no-op once packArtUrl is already resolved for the
 	 * current selection, so it's safe to call on every mount. */
 	initializeSetArt(): void;
+	/** Enters read-only revisit mode on a card from the just-finished pack —
+	 * only valid once phase is "done". */
+	revisitCard(index: number): void;
+	/** Leaves revisit mode, returning to the summary ledger. */
+	exitRevisit(): void;
 }
 
 const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
@@ -112,6 +121,7 @@ const initialState: PackOpenerState = {
 	packsOpenedThisSession: 0,
 	selectedSet: readStoredSelectedSet(),
 	packArtUrl: null,
+	revisitIndex: null,
 };
 
 export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
@@ -127,7 +137,13 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			const pack = orderForReveal(generatePack(packConfig));
 			preloadPackTextures(pack);
 			set(
-				{ phase: "tearing", pack, revealIndex: -1, phaseStartedAt: Date.now() },
+				{
+					phase: "tearing",
+					pack,
+					revealIndex: -1,
+					phaseStartedAt: Date.now(),
+					revisitIndex: null,
+				},
 				undefined,
 				"pack-opener/openPack",
 			);
@@ -211,6 +227,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					pack: null,
 					revealIndex: -1,
 					phaseStartedAt: null,
+					revisitIndex: null,
 				},
 				undefined,
 				"pack-opener/selectSet",
@@ -241,6 +258,17 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			const url = entry ? pickPackArt(entry) : null;
 			if (url) useTexture.preload(url);
 			set({ packArtUrl: url }, undefined, "pack-opener/initializeSetArt");
+		},
+
+		revisitCard(index) {
+			const { phase, pack } = get();
+			if (phase !== "done" || !pack) return;
+			if (index < 0 || index >= pack.length) return;
+			set({ revisitIndex: index }, undefined, "pack-opener/revisitCard");
+		},
+
+		exitRevisit() {
+			set({ revisitIndex: null }, undefined, "pack-opener/exitRevisit");
 		},
 	})),
 );
