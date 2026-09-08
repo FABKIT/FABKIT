@@ -49,6 +49,12 @@
 
 	/* Fonts */
 	--font-card-text: "palatino_lt_stdroman", serif;
+	/* Pack opener's reveal caption/summary (see src/apps/pack-opener/CLAUDE.md
+	   and the execution plan, section 3.7): the game's own faces for the
+	   game's own content — card names in the real FAB card-name face, and
+	   numbers/rarity labels/prices in the real FAB stat/type-line face. */
+	--font-card-name: "amanda_std_regular", serif;
+	--font-card-stat: "dialog_cond_semiboldregular", sans-serif;
 
 	/* Fabble feedback tiles (saturated game colors — same family in light and dark) */
 	--color-feedback-match: #2e9e53;
