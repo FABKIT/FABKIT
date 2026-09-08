@@ -10,7 +10,12 @@
 		"summary_title": "Your Pull",
 		"packs_opened_session": "Packs opened this session: {{count}}",
 		"foil_badge": "Foil",
-		"marvel_badge": "Marvel"
+		"marvel_badge": "Marvel",
+		"treatment_name": {
+			"rainbow": "Rainbow Foil",
+			"cold": "Cold Foil",
+			"gold-cold": "Gold Cold Foil"
+		}
 	},
 	"carousel": {
 		"previous_set": "Previous set",
