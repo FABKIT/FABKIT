@@ -1,12 +1,12 @@
 import type { ResolvedCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { FoilMaterialImpl } from "@fabkit/apps/pack-opener/components/scene/materials/foilMaterial";
 import { useCardTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useCardTexture";
+import { useSafeTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
 import {
 	CARD_TILT_EASE,
 	CARD_TILT_MAX_DEG,
 } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
-import { useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { type RefObject, useMemo, useRef } from "react";
 import type { Group, Texture } from "three";
@@ -75,7 +75,12 @@ function CardFaceMaterial({
 /** A real FAB card's own image already is the full rendered card face — no
  * canvas frame-drawing needed, just load it as a texture (preloaded ahead
  * of time by the store when a pack opens, see stores/pack-opener.ts, so
- * this shouldn't actually suspend mid-reveal). */
+ * this shouldn't actually suspend mid-reveal). Uses useSafeTexture rather
+ * than drei's Suspense-based useTexture — see that hook's own comment for
+ * why: not every printing's art actually exists on the image host, and
+ * that specific failure can't be caught by a React error boundary, so it
+ * has to be handled at the loader level instead. Falls back to the mock
+ * canvas-drawn face for just this one card rather than crashing the scene. */
 function RealCardFace({
 	card,
 	imageUrl,
@@ -85,10 +90,14 @@ function RealCardFace({
 	imageUrl: string;
 	lightDirRef: LightDirRef;
 }) {
-	const texture = useTexture(imageUrl);
+	const state = useSafeTexture(imageUrl);
+	if (state.status === "error") {
+		return <MockCardFace card={card} lightDirRef={lightDirRef} />;
+	}
+	if (state.status === "loading") return null;
 	return (
 		<CardFaceMaterial
-			texture={texture}
+			texture={state.texture}
 			treatment={card.treatment}
 			isMarvel={card.rarity === "marvel"}
 			lightDirRef={lightDirRef}

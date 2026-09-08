@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 export function PackSummary() {
 	const { t } = useTranslation("pack-opener");
 	const pack = usePackOpenerStore((state) => state.pack);
+	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
 	const packsOpenedThisSession = usePackOpenerStore(
 		(state) => state.packsOpenedThisSession,
 	);
@@ -20,8 +21,11 @@ export function PackSummary() {
 	const revisitCard = usePackOpenerStore((state) => state.revisitCard);
 
 	const resolvedCards = useMemo(
-		() => pack?.map((card) => activeCardResolver.resolve(card)) ?? [],
-		[pack],
+		() =>
+			pack?.map((card) =>
+				activeCardResolver.resolve(card, packSetCode ?? undefined),
+			) ?? [],
+		[pack, packSetCode],
 	);
 
 	if (!pack) return null;

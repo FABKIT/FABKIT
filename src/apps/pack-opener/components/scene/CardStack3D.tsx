@@ -9,6 +9,7 @@ import { useMemo } from "react";
  * physical stack. */
 export function CardStack3D() {
 	const pack = usePackOpenerStore((state) => state.pack);
+	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
@@ -31,12 +32,18 @@ export function CardStack3D() {
 		!isRevisiting && pack && revealIndex > 0 ? pack[revealIndex - 1] : null;
 
 	const resolvedCard = useMemo(
-		() => (activeDrawn ? activeCardResolver.resolve(activeDrawn) : null),
-		[activeDrawn],
+		() =>
+			activeDrawn
+				? activeCardResolver.resolve(activeDrawn, packSetCode ?? undefined)
+				: null,
+		[activeDrawn, packSetCode],
 	);
 	const resolvedOutgoing = useMemo(
-		() => (outgoingDrawn ? activeCardResolver.resolve(outgoingDrawn) : null),
-		[outgoingDrawn],
+		() =>
+			outgoingDrawn
+				? activeCardResolver.resolve(outgoingDrawn, packSetCode ?? undefined)
+				: null,
+		[outgoingDrawn, packSetCode],
 	);
 
 	if (!resolvedCard) return null;
