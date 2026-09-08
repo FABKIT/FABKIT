@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 export function PackOpenerPage() {
 	const { t } = useTranslation("pack-opener");
 	const phase = usePackOpenerStore((state) => state.phase);
+	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 
 	return (
 		<div className="relative flex h-[calc(100dvh-4rem)] w-full flex-col overflow-hidden bg-surface lg:h-dvh">
@@ -33,6 +34,16 @@ export function PackOpenerPage() {
 				<SetCarousel />
 			</div>
 			{phase === "revealing" && <RevealCaption />}
+			{/* Reserve the caption's height for the whole done phase (invisible
+			    until a ledger row is tapped) so entering/leaving revisit mode
+			    never resizes the canvas above it — see the execution plan,
+			    section 4.4, "with the tilt still active": a layout jump here
+			    would read as a glitch, not a feature. */}
+			{phase === "done" && (
+				<div className={revisitIndex === null ? "invisible" : undefined}>
+					<RevealCaption />
+				</div>
+			)}
 		</div>
 	);
 }

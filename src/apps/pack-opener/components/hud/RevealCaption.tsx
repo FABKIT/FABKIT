@@ -15,10 +15,17 @@ export function RevealCaption() {
 	const { t } = useTranslation("pack-opener");
 	const pack = usePackOpenerStore((state) => state.pack);
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
+	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
+	const phase = usePackOpenerStore((state) => state.phase);
+	const exitRevisit = usePackOpenerStore((state) => state.exitRevisit);
+
+	const isRevisiting = phase === "done" && revisitIndex !== null;
+	const activeIndex =
+		revisitIndex !== null && phase === "done" ? revisitIndex : revealIndex;
 
 	const drawn =
-		pack && revealIndex >= 0 && revealIndex < pack.length
-			? pack[revealIndex]
+		pack && activeIndex >= 0 && activeIndex < pack.length
+			? pack[activeIndex]
 			: null;
 	const resolved = useMemo(
 		() => (drawn ? activeCardResolver.resolve(drawn) : null),
@@ -54,10 +61,22 @@ export function RevealCaption() {
 					</span>
 				)}
 			</p>
-			<p className="text-sm text-muted">{t("page.tap_to_reveal")}</p>
-			<p className="text-xs text-subtle">
-				{revealIndex + 1} / {pack.length}
-			</p>
+			{isRevisiting ? (
+				<button
+					type="button"
+					onClick={exitRevisit}
+					className="text-sm font-semibold text-heading underline-offset-2 hover:underline"
+				>
+					{t("page.back_to_summary")}
+				</button>
+			) : (
+				<>
+					<p className="text-sm text-muted">{t("page.tap_to_reveal")}</p>
+					<p className="text-xs text-subtle">
+						{revealIndex + 1} / {pack.length}
+					</p>
+				</>
+			)}
 		</div>
 	);
 }

@@ -7,15 +7,18 @@
 		"tap_to_tear": "Tap the pack to tear it open",
 		"tap_to_reveal": "Tap to reveal the next card",
 		"open_another": "Open Another Pack",
-		"summary_title": "Your Pull",
+		"summary_title": "Your pulls in this booster",
 		"packs_opened_session": "Packs opened this session: {{count}}",
-		"foil_badge": "Foil",
 		"marvel_badge": "Marvel",
 		"treatment_name": {
 			"rainbow": "Rainbow Foil",
 			"cold": "Cold Foil",
 			"gold-cold": "Gold Cold Foil"
-		}
+		},
+		"price_unavailable": "Not priced yet",
+		"pack_total_label": "Pack total",
+		"pack_total_pending": "Pricing coming soon",
+		"back_to_summary": "Back to summary"
 	},
 	"carousel": {
 		"previous_set": "Previous set",
