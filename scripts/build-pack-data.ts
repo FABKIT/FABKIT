@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { KNOWN_SETS } from "@fabkit/apps/pack-opener/config/known-sets";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
@@ -35,6 +35,39 @@ const FOILING_JSON_URL =
 	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/foiling.json";
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");
+
+/** Real, checked-in artwork (not gitignored build output like OUTPUT_DIR
+ * above) — see the execution plan, section 7.1, for the exact spec the
+ * product owner uploads to. */
+const PACK_ART_DIR = join("public", "img", "pack-opener", "packs");
+
+/** Numbered pack-front artworks for one set, in order, as public URLs —
+ * or an empty array when nothing's been uploaded for it yet (the normal
+ * case for most sets today; see fab-printings.ts's SetIndexEntry.packArt
+ * for how the app degrades when this is empty). Stops at the first gap in
+ * the numbering rather than requiring a strict contiguous set, so a
+ * mis-numbered upload degrades to "fewer artworks found" instead of
+ * silently discarding everything after the gap. */
+async function resolvePackArt(code: string): Promise<string[]> {
+	let entries: string[];
+	try {
+		entries = await readdir(join(PACK_ART_DIR, code));
+	} catch {
+		return [];
+	}
+
+	const numbers = entries
+		.map((name) => name.match(/^(\d+)\.webp$/)?.[1])
+		.filter((n): n is string => n !== undefined)
+		.map(Number)
+		.sort((a, b) => a - b);
+
+	const urls: string[] = [];
+	for (let expected = 1; numbers.includes(expected); expected++) {
+		urls.push(`/img/pack-opener/packs/${code}/${expected}.webp`);
+	}
+	return urls;
+}
 
 /** A booster-shaped candidate needs at least this many distinct printings
  * (see the plan, section 8.3, rule 2). Below this, small crossover/promo
@@ -352,6 +385,7 @@ async function main() {
 		releaseDate: string | null;
 		setLogo: string | null;
 		printingCount: number;
+		packArt: string[];
 	}> = [];
 
 	for (const code of includedCodes) {
@@ -370,14 +404,18 @@ async function main() {
 			JSON.stringify(setPrintings),
 			"utf-8",
 		);
+		const packArt = await resolvePackArt(code);
 		indexEntries.push({
 			code,
 			name: meta.name,
 			releaseDate: meta.releaseDate,
 			setLogo: meta.setLogo,
 			printingCount: setPrintings.printings.length,
+			packArt,
 		});
-		console.log(`  ${code}: ${setPrintings.printings.length} printings`);
+		console.log(
+			`  ${code}: ${setPrintings.printings.length} printings, ${packArt.length} pack artwork(s)`,
+		);
 	}
 
 	indexEntries.sort((a, b) =>

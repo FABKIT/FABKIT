@@ -1,7 +1,7 @@
 import { SetInfoDialog } from "@fabkit/apps/pack-opener/components/carousel/SetInfoDialog";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { getSetIndex } from "@fabkit/shared/data/fab-printings";
-import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -21,6 +21,9 @@ export function SetCarousel() {
 	const phase = usePackOpenerStore((state) => state.phase);
 	const selectedSet = usePackOpenerStore((state) => state.selectedSet);
 	const selectSet = usePackOpenerStore((state) => state.selectSet);
+	const initializeSetArt = usePackOpenerStore(
+		(state) => state.initializeSetArt,
+	);
 	const [infoOpen, setInfoOpen] = useState(false);
 	const touchStartX = useRef<number | null>(null);
 
@@ -28,12 +31,14 @@ export function SetCarousel() {
 	const visible =
 		phase !== "tearing" && phase !== "revealing" && sets.length > 0;
 
-	// No set chosen yet (first visit, nothing in localStorage) — default to
-	// the most recently released set once the index is available.
+	// Picks a default set on a first-ever visit, or resolves pack art for a
+	// set already restored from localStorage once the index exists to look
+	// it up in — see initializeSetArt's own doc comment. Safe to call every
+	// mount; it no-ops once there's nothing left to resolve.
 	useEffect(() => {
-		if (selectedSet || sets.length === 0) return;
-		selectSet(sets[sets.length - 1].code);
-	}, [selectedSet, sets, selectSet]);
+		if (sets.length === 0) return;
+		initializeSetArt();
+	}, [sets, initializeSetArt]);
 
 	const currentIndex = sets.findIndex((set) => set.code === selectedSet);
 
@@ -79,7 +84,7 @@ export function SetCarousel() {
 
 	return (
 		<div
-			className="pointer-events-auto absolute inset-x-0 top-0 flex items-center justify-center gap-2 p-4"
+			className="pointer-events-auto absolute inset-x-0 top-0 flex flex-col items-center gap-1 p-4"
 			onTouchStart={(event) => {
 				touchStartX.current = event.touches[0].clientX;
 			}}
@@ -91,42 +96,49 @@ export function SetCarousel() {
 				goTo(delta > 0 ? -1 : 1);
 			}}
 		>
-			<button
-				type="button"
-				onClick={() => goTo(-1)}
-				aria-label={t("carousel.previous_set")}
-				className="rounded-full p-2 text-muted transition-colors hover:text-heading"
-			>
-				<ChevronLeft className="h-5 w-5" />
-			</button>
+			<div className="flex items-center gap-3 rounded-full bg-surface/85 px-3 py-2 shadow-lg backdrop-blur">
+				<button
+					type="button"
+					onClick={() => goTo(-1)}
+					aria-label={t("carousel.previous_set")}
+					className="rounded-full p-1 text-muted transition-colors hover:text-heading"
+				>
+					<ChevronLeft className="h-5 w-5" />
+				</button>
 
-			<button
-				type="button"
-				onClick={() => setInfoOpen(true)}
-				className="flex items-center gap-2 rounded-full bg-surface/85 px-4 py-2 shadow-lg backdrop-blur transition-colors hover:bg-surface-active"
-			>
 				{current.setLogo ? (
 					<img
 						src={current.setLogo}
 						alt=""
-						className="h-6 w-auto max-w-24 object-contain"
+						className="h-8 w-auto max-w-28 object-contain"
 					/>
 				) : (
-					<span className="font-semibold text-heading">{current.name}</span>
+					<Package className="h-6 w-6 text-muted" aria-hidden="true" />
 				)}
+
+				<button
+					type="button"
+					onClick={() => goTo(1)}
+					aria-label={t("carousel.next_set")}
+					className="rounded-full p-1 text-muted transition-colors hover:text-heading"
+				>
+					<ChevronRight className="h-5 w-5" />
+				</button>
+			</div>
+
+			<div className="text-center leading-tight">
+				<p className="text-sm font-semibold text-heading">{current.name}</p>
 				{releaseYear !== null && (
-					<span className="text-xs text-subtle">{releaseYear}</span>
+					<p className="text-xs text-subtle">{releaseYear}</p>
 				)}
-				<Info className="h-4 w-4 text-muted" />
-			</button>
+			</div>
 
 			<button
 				type="button"
-				onClick={() => goTo(1)}
-				aria-label={t("carousel.next_set")}
-				className="rounded-full p-2 text-muted transition-colors hover:text-heading"
+				onClick={() => setInfoOpen(true)}
+				className="text-xs text-muted underline-offset-2 transition-colors hover:text-heading hover:underline"
 			>
-				<ChevronRight className="h-5 w-5" />
+				{t("carousel.set_info_button")}
 			</button>
 
 			<SetInfoDialog

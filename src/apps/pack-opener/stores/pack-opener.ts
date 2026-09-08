@@ -13,6 +13,10 @@ import type {
 	PackConfig,
 } from "@fabkit/apps/pack-opener/pack/types";
 import { trackEvent } from "@fabkit/platform/analytics";
+import {
+	getSetIndex,
+	type SetIndexEntry,
+} from "@fabkit/shared/data/fab-printings";
 import { useTexture } from "@react-three/drei";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
@@ -26,6 +30,16 @@ function preloadPackTextures(pack: DrawnCard[]): void {
 		const imageUrl = activeCardResolver.resolve(drawn).imageUrl;
 		if (imageUrl) useTexture.preload(imageUrl);
 	}
+}
+
+/** One of a set's uploaded pack-front artworks, chosen at random — see the
+ * execution plan, section 4.1 ("picks one of that set's pack artworks at
+ * random"). Null when nothing's been uploaded for this set yet, in which
+ * case PackMesh.tsx falls back to the mock canvas-drawn pack. */
+function pickPackArt(entry: SetIndexEntry): string | null {
+	if (entry.packArt.length === 0) return null;
+	const index = Math.floor(Math.random() * entry.packArt.length);
+	return entry.packArt[index];
 }
 
 export type PackOpenerPhase = "idle" | "tearing" | "revealing" | "done";
@@ -44,14 +58,27 @@ export interface PackOpenerState {
 	 * set index hasn't loaded yet, or nothing was ever stored). See
 	 * SELECTED_SET_STORAGE_KEY below for the persisted value. */
 	selectedSet: string | null;
+	/** The one artwork PackMesh.tsx renders for selectedSet, picked once
+	 * (see pickPackArt) and held stable across every pack opened for that
+	 * set — never re-rolled by a render. Null falls back to the mock pack;
+	 * see PackMesh.tsx. */
+	packArtUrl: string | null;
 }
 
 export interface PackOpenerActions {
 	openPack(config?: PackConfig): void;
 	advanceReveal(): void;
-	/** Switches the active set — persists the choice and resets to idle so
-	 * a stale pack/summary from the previous set never lingers on screen. */
+	/** Switches the active set — persists the choice, re-rolls its pack
+	 * art, and resets to idle so a stale pack/summary from the previous
+	 * set never lingers on screen. */
 	selectSet(setCode: string): void;
+	/** Called once the set index has finished loading (see SetCarousel's
+	 * mount effect) — picks a default set on a first-ever visit, or, for a
+	 * returning visitor whose selectedSet was already restored from
+	 * localStorage before the index existed, resolves that set's pack art
+	 * now that it can. A no-op once packArtUrl is already resolved for the
+	 * current selection, so it's safe to call on every mount. */
+	initializeSetArt(): void;
 }
 
 const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
@@ -84,6 +111,7 @@ const initialState: PackOpenerState = {
 	phaseStartedAt: null,
 	packsOpenedThisSession: 0,
 	selectedSet: readStoredSelectedSet(),
+	packArtUrl: null,
 };
 
 export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
@@ -170,10 +198,15 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			// anyway rather than trusting the UI layer alone.
 			if (phase === "tearing" || phase === "revealing") return;
 
+			const entry = getSetIndex().find((set) => set.code === setCode);
+			const packArtUrl = entry ? pickPackArt(entry) : null;
+			if (packArtUrl) useTexture.preload(packArtUrl);
+
 			writeStoredSelectedSet(setCode);
 			set(
 				{
 					selectedSet: setCode,
+					packArtUrl,
 					phase: "idle",
 					pack: null,
 					revealIndex: -1,
@@ -182,6 +215,32 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				undefined,
 				"pack-opener/selectSet",
 			);
+		},
+
+		initializeSetArt() {
+			const { selectedSet, packArtUrl } = get();
+			const sets = getSetIndex();
+			if (sets.length === 0) return;
+
+			if (!selectedSet) {
+				const latest = sets[sets.length - 1];
+				writeStoredSelectedSet(latest.code);
+				const url = pickPackArt(latest);
+				if (url) useTexture.preload(url);
+				set(
+					{ selectedSet: latest.code, packArtUrl: url },
+					undefined,
+					"pack-opener/initializeSetArt",
+				);
+				return;
+			}
+
+			if (packArtUrl) return; // already resolved this session
+
+			const entry = sets.find((set) => set.code === selectedSet);
+			const url = entry ? pickPackArt(entry) : null;
+			if (url) useTexture.preload(url);
+			set({ packArtUrl: url }, undefined, "pack-opener/initializeSetArt");
 		},
 	})),
 );
