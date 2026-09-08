@@ -32,12 +32,12 @@ export function RevealBadge() {
 				<span className="text-sm text-muted">
 					{t(CardRarities[resolved.rarity].label)}
 				</span>
-				{resolved.marvel && (
+				{resolved.rarity === "marvel" && (
 					<span className="rounded bg-fuchsia-500/20 px-2 py-0.5 text-xs font-bold text-fuchsia-400">
 						{t("page.marvel_badge")}
 					</span>
 				)}
-				{!resolved.marvel && resolved.foil && (
+				{resolved.rarity !== "marvel" && resolved.treatment !== "standard" && (
 					<span className="rounded bg-sky-500/20 px-2 py-0.5 text-xs font-bold text-sky-400">
 						{t("page.foil_badge")}
 					</span>

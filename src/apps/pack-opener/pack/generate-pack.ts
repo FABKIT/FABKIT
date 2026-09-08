@@ -4,6 +4,7 @@ import type {
 	RarityWeight,
 } from "@fabkit/apps/pack-opener/pack/types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import type { FoilTreatment } from "@fabkit/shared/data/fab-printings";
 import { v4 as uuid } from "uuid";
 
 function weightedPick(table: RarityWeight[], rng: () => number): CardRarity {
@@ -28,30 +29,26 @@ export function generatePack(
 	for (const slot of config.slots) {
 		for (let i = 0; i < slot.count; i++) {
 			let rarity = weightedPick(slot.rarityTable, rng);
-			let marvel = false;
+			let treatment: FoilTreatment = slot.fixedTreatment ?? "standard";
 			if (slot.kind === "premium-foil" && rng() < config.marvelChance) {
 				rarity = "marvel";
-				marvel = true;
+				// Real Marvel cards are exclusively printed Cold Foil — see
+				// pack/types.ts's DrawnCard comment.
+				treatment = "cold";
 			}
-			cards.push({
-				id: uuid(),
-				slot: slot.kind,
-				rarity,
-				foil: Boolean(slot.alwaysFoil),
-				marvel,
-			});
+			cards.push({ id: uuid(), slot: slot.kind, rarity, treatment });
 		}
 	}
 
 	if (rng() < config.coldFoilChance) {
-		const nonPremiumIndexes = cards
+		const eligibleIndexes = cards
 			.map((card, index) => ({ card, index }))
-			.filter(({ card }) => card.slot !== "premium-foil")
+			.filter(({ card }) => card.treatment === "standard")
 			.map(({ index }) => index);
-		if (nonPremiumIndexes.length > 0) {
+		if (eligibleIndexes.length > 0) {
 			const pickedIndex =
-				nonPremiumIndexes[Math.floor(rng() * nonPremiumIndexes.length)];
-			cards[pickedIndex] = { ...cards[pickedIndex], foil: true };
+				eligibleIndexes[Math.floor(rng() * eligibleIndexes.length)];
+			cards[pickedIndex] = { ...cards[pickedIndex], treatment: "cold" };
 		}
 	}
 

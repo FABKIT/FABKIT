@@ -45,7 +45,9 @@ const guaranteedRareSlot: PackSlotSpec = {
 const premiumFoilSlot: PackSlotSpec = {
 	kind: "premium-foil",
 	count: PREMIUM_SLOT_COUNT,
-	alwaysFoil: true,
+	// Real sets' guaranteed foil slot is Rainbow Foil (see the execution
+	// plan's per-set pull rate research) — matched here for the mock config.
+	fixedTreatment: "rainbow",
 	rarityTable: [
 		{ rarity: "rare", weight: 70 },
 		{ rarity: "superrare", weight: 22 },

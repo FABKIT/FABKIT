@@ -1,6 +1,7 @@
 import { hashToIndex } from "@fabkit/apps/pack-opener/cards/deterministic-hash";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import type { FoilTreatment } from "@fabkit/shared/data/fab-printings";
 
 export type MockPitch = "red" | "yellow" | "blue" | null;
 
@@ -8,8 +9,7 @@ export interface MockCard {
 	id: string;
 	name: string;
 	rarity: CardRarity;
-	foil: boolean;
-	marvel: boolean;
+	treatment: FoilTreatment;
 	/** null = generic (gold-trim) frame, matching real non-pitch cards. */
 	pitch: MockPitch;
 	cost: number;
@@ -43,8 +43,7 @@ export function resolveMockCard(drawn: DrawnCard): MockCard {
 		id: drawn.id,
 		name,
 		rarity: drawn.rarity,
-		foil: drawn.foil,
-		marvel: drawn.marvel,
+		treatment: drawn.treatment,
 		pitch,
 		cost: hashToIndex(`${drawn.id}c`, 4),
 		power: hashToIndex(`${drawn.id}pw`, 8) + 1,

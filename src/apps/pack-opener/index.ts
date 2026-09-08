@@ -13,8 +13,7 @@ registerReportDataProvider("pack-opener", () => {
 			packSummary:
 				pack?.map((card) => ({
 					rarity: card.rarity,
-					foil: card.foil,
-					marvel: card.marvel,
+					treatment: card.treatment,
 				})) ?? null,
 		},
 	};

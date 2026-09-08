@@ -89,7 +89,7 @@ type AnalyticsEvent =
 	| { name: "pack_opener_pack_opened" }
 	| {
 			name: "pack_opener_card_revealed";
-			data: { rarity: string; foil: boolean; marvel: boolean };
+			data: { rarity: string; treatment: string };
 	  }
 	| { name: "pack_opener_pack_completed" };
 
