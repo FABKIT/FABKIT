@@ -9,6 +9,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "bun test tests/",
+		"build-pack-data": "bun run scripts/build-pack-data",
 		"lint": "biome check",
 		"format": "biome check --write"
 	},
