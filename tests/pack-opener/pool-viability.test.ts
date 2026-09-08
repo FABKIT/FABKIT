@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { REAL_SET_PACK_CONFIGS } from "../../src/apps/pack-opener/pack/set-configs";
 import type { CardRarity } from "../../src/shared/config/cards/rarities";
 import type { FabSetPrintings } from "../../src/shared/data/fab-printings";
+import { hasType, isClassCard } from "../../src/shared/data/fab-printings";
 
 /**
  * Hard gate from the execution plan, section 5.2: every rarity a real
@@ -30,10 +31,18 @@ function poolSize(
 	data: FabSetPrintings,
 	rarity: CardRarity,
 	expansionSlot: boolean,
+	requiresType: string | undefined,
+	classRestricted: boolean | undefined,
 ): number {
-	return data.printings.filter(
-		(p) => p.rarity === rarity && p.expansionSlot === expansionSlot,
-	).length;
+	return data.printings.filter((p) => {
+		if (p.rarity !== rarity) return false;
+		if (p.expansionSlot !== expansionSlot) return false;
+		if (requiresType && !hasType(p, requiresType)) return false;
+		if (classRestricted !== undefined && isClassCard(p) !== classRestricted) {
+			return false;
+		}
+		return true;
+	}).length;
 }
 
 describe("pool viability", () => {
@@ -49,11 +58,19 @@ describe("pool viability", () => {
 							data,
 							entry.rarity,
 							Boolean(entry.expansionSlot),
+							entry.requiresType,
+							entry.classRestricted,
 						);
 						if (size === 0) {
 							empty.push(
 								`slot "${slot.kind}" -> rarity "${entry.rarity}"` +
-									(entry.expansionSlot ? " (expansion slot)" : ""),
+									(entry.expansionSlot ? " (expansion slot)" : "") +
+									(entry.requiresType
+										? ` (type "${entry.requiresType}")`
+										: "") +
+									(entry.classRestricted !== undefined
+										? ` (classRestricted=${entry.classRestricted})`
+										: ""),
 							);
 						}
 					}

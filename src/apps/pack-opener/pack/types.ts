@@ -12,7 +12,10 @@ export type PackSlotKind =
 	| "token"
 	| "token-or-wildcard"
 	| "basic"
-	| "basic-or-wildcard";
+	| "basic-or-wildcard"
+	| "generic-common"
+	| "class-common"
+	| "equipment";
 
 export interface RarityWeight {
 	rarity: CardRarity;
@@ -27,6 +30,19 @@ export interface RarityWeight {
 	 * rarity for it rather than modelling the full spread — see each
 	 * config's own comment in odds.ts. */
 	expansionSlot?: boolean;
+	/** This entry only matches printings whose card types (see
+	 * shared/data/fab-printings.ts's `types`/`hasType`) include this value
+	 * (case-insensitive) — e.g. "Equipment", for the handful of early sets
+	 * that name a slot by card type rather than by rarity alone. */
+	requiresType?: string;
+	/** This entry only matches printings that ARE class-restricted (Brute,
+	 * Guardian, ... — see fab-printings.ts's `isClassCard`) when true, or
+	 * that are generic (no class) when false. Omit when a slot doesn't
+	 * care either way. Welcome to Rathe and Arcane Rising split their
+	 * common slot into a fixed "4 Generic Commons" + "7 Class Commons"
+	 * rather than a single undifferentiated common slot — see
+	 * pack/set-configs.ts. */
+	classRestricted?: boolean;
 }
 
 export interface PackSlotSpec {
@@ -74,4 +90,8 @@ export interface DrawnCard {
 	/** True when this draw should resolve from `rarity`'s expansion-slot
 	 * pool rather than its ordinary pool — see RarityWeight.expansionSlot. */
 	expansionSlot: boolean;
+	/** See RarityWeight.requiresType. */
+	requiresType?: string;
+	/** See RarityWeight.classRestricted. */
+	classRestricted?: boolean;
 }

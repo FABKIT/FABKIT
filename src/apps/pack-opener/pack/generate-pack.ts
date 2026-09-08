@@ -42,6 +42,8 @@ export function generatePack(
 				rarity,
 				treatment,
 				expansionSlot: Boolean(picked.expansionSlot),
+				requiresType: picked.requiresType,
+				classRestricted: picked.classRestricted,
 			});
 		}
 	}

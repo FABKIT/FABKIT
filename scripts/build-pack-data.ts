@@ -62,6 +62,7 @@ interface RawCard {
 	cost: string;
 	power: string;
 	defense: string;
+	types: string[];
 	printings: RawPrinting[];
 }
 
@@ -291,6 +292,7 @@ function buildSetPrintings(
 				cost: toNumberOrNull(card.cost),
 				power: toNumberOrNull(card.power),
 				defense: toNumberOrNull(card.defense),
+				types: card.types,
 			};
 		})
 		.filter((printing): printing is FabPrinting => printing !== null)
