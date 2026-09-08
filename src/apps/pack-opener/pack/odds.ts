@@ -1,30 +1,20 @@
+import {
+	DEFAULT_COLD_FOIL_CHANCE,
+	DEFAULT_MARVEL_CHANCE,
+} from "@fabkit/apps/pack-opener/pack/rates";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
 import type {
 	PackConfig,
 	PackSlotSpec,
 } from "@fabkit/apps/pack-opener/pack/types";
+
+export { DEFAULT_COLD_FOIL_CHANCE, DEFAULT_MARVEL_CHANCE };
 
 export const CARDS_PER_PACK = 16;
 export const COMMON_SLOT_COUNT = 12;
 export const RARE_SLOT_COUNT = 1;
 export const PREMIUM_SLOT_COUNT = 1;
 export const BASIC_SLOT_COUNT = 2;
-
-/**
- * LSS has never published an official per-set cold foil rate. ~1/22 packs is a
- * widely cited community estimate across recent non-Draft retail sets
- * (Part the Mistveil / The Hunted / Dusk till Dawn / Heavy Hitters) —
- * treat as an approximation, not a sourced constant.
- */
-export const DEFAULT_COLD_FOIL_CHANCE = 1 / 22;
-
-/**
- * Marvel is an unofficial, unpublished ultra-rare alternate-art treatment.
- * No documented pull rate exists — community tracking suggests it varies
- * wildly per card/set (roughly 1:1000 up to documented outliers around
- * 1:10,000 for chase cards). 1/2000 is a rough placeholder, intentionally
- * configurable per set rather than a real published rate.
- */
-export const DEFAULT_MARVEL_CHANCE = 1 / 2000;
 
 const commonSlot: PackSlotSpec = {
 	kind: "common",
@@ -70,11 +60,13 @@ export const DEFAULT_PACK_CONFIG: PackConfig = {
 	cardsPerPack: CARDS_PER_PACK,
 	slots: [commonSlot, guaranteedRareSlot, premiumFoilSlot, basicOrTokenSlot],
 	coldFoilChance: DEFAULT_COLD_FOIL_CHANCE,
+	coldFoilReplaces: "basic-or-token",
 	marvelChance: DEFAULT_MARVEL_CHANCE,
 };
 
 export const PackConfigsBySet: Record<string, PackConfig> = {
 	[DEFAULT_PACK_CONFIG.id]: DEFAULT_PACK_CONFIG,
+	...REAL_SET_PACK_CONFIGS,
 };
 
 export function getPackConfig(setCode?: string): PackConfig {

@@ -3,18 +3,17 @@ import type {
 	PackConfig,
 	RarityWeight,
 } from "@fabkit/apps/pack-opener/pack/types";
-import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import type { FoilTreatment } from "@fabkit/shared/data/fab-printings";
 import { v4 as uuid } from "uuid";
 
-function weightedPick(table: RarityWeight[], rng: () => number): CardRarity {
+function weightedPick(table: RarityWeight[], rng: () => number): RarityWeight {
 	const total = table.reduce((sum, entry) => sum + entry.weight, 0);
 	let roll = rng() * total;
 	for (const entry of table) {
 		roll -= entry.weight;
-		if (roll <= 0) return entry.rarity;
+		if (roll <= 0) return entry;
 	}
-	return table[table.length - 1].rarity;
+	return table[table.length - 1];
 }
 
 /** Generates one booster pack's worth of drawn cards from a PackConfig.
@@ -28,7 +27,8 @@ export function generatePack(
 
 	for (const slot of config.slots) {
 		for (let i = 0; i < slot.count; i++) {
-			let rarity = weightedPick(slot.rarityTable, rng);
+			const picked = weightedPick(slot.rarityTable, rng);
+			let rarity = picked.rarity;
 			let treatment: FoilTreatment = slot.fixedTreatment ?? "standard";
 			if (slot.kind === "premium-foil" && rng() < config.marvelChance) {
 				rarity = "marvel";
@@ -36,14 +36,20 @@ export function generatePack(
 				// pack/types.ts's DrawnCard comment.
 				treatment = "cold";
 			}
-			cards.push({ id: uuid(), slot: slot.kind, rarity, treatment });
+			cards.push({
+				id: uuid(),
+				slot: slot.kind,
+				rarity,
+				treatment,
+				expansionSlot: Boolean(picked.expansionSlot),
+			});
 		}
 	}
 
-	if (rng() < config.coldFoilChance) {
+	if (config.coldFoilReplaces && rng() < config.coldFoilChance) {
 		const eligibleIndexes = cards
 			.map((card, index) => ({ card, index }))
-			.filter(({ card }) => card.treatment === "standard")
+			.filter(({ card }) => card.slot === config.coldFoilReplaces)
 			.map(({ index }) => index);
 		if (eligibleIndexes.length > 0) {
 			const pickedIndex =
