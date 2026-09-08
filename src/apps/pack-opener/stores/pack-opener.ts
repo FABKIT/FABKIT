@@ -6,7 +6,7 @@ import {
 	TEAR_TAIL_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
-import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
+import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
 import { orderForReveal } from "@fabkit/apps/pack-opener/pack/reveal-order";
 import type {
 	DrawnCard,
@@ -39,11 +39,42 @@ export interface PackOpenerState {
 	 * source of truth every animation timer reads from. */
 	phaseStartedAt: number | null;
 	packsOpenedThisSession: number;
+	/** Set code driving getPackConfig() for the next openPack() call, and
+	 * shown by SetCarousel — null until the carousel picks a default (the
+	 * set index hasn't loaded yet, or nothing was ever stored). See
+	 * SELECTED_SET_STORAGE_KEY below for the persisted value. */
+	selectedSet: string | null;
 }
 
 export interface PackOpenerActions {
 	openPack(config?: PackConfig): void;
 	advanceReveal(): void;
+	/** Switches the active set — persists the choice and resets to idle so
+	 * a stale pack/summary from the previous set never lingers on screen. */
+	selectSet(setCode: string): void;
+}
+
+const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
+
+/** Deliberately not a shared safeStorage util (see Fabble's
+ * src/apps/fabble/game/storage.ts) — apps can't import each other, and
+ * this store only ever touches one key, so a tiny inline try/catch is
+ * simpler than a new shared module for it. */
+function readStoredSelectedSet(): string | null {
+	try {
+		return localStorage.getItem(SELECTED_SET_STORAGE_KEY);
+	} catch {
+		return null;
+	}
+}
+
+function writeStoredSelectedSet(setCode: string): void {
+	try {
+		localStorage.setItem(SELECTED_SET_STORAGE_KEY, setCode);
+	} catch {
+		// Private mode / quota exceeded — the selection just won't survive
+		// a reload, which is a fine degrade for a preference like this.
+	}
 }
 
 const initialState: PackOpenerState = {
@@ -52,18 +83,20 @@ const initialState: PackOpenerState = {
 	revealIndex: -1,
 	phaseStartedAt: null,
 	packsOpenedThisSession: 0,
+	selectedSet: readStoredSelectedSet(),
 };
 
 export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 	devtools((set, get) => ({
 		...initialState,
 
-		openPack(config = DEFAULT_PACK_CONFIG) {
-			const { phase } = get();
+		openPack(config) {
+			const { phase, selectedSet } = get();
 			if (phase !== "idle" && phase !== "done") return;
 
+			const packConfig = config ?? getPackConfig(selectedSet ?? undefined);
 			clearCardTextureCache();
-			const pack = orderForReveal(generatePack(config));
+			const pack = orderForReveal(generatePack(packConfig));
 			preloadPackTextures(pack);
 			set(
 				{ phase: "tearing", pack, revealIndex: -1, phaseStartedAt: Date.now() },
@@ -127,6 +160,28 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					treatment: revealed.treatment,
 				},
 			});
+		},
+
+		selectSet(setCode) {
+			const { phase, selectedSet } = get();
+			if (setCode === selectedSet) return;
+			// The carousel is hidden during tearing/revealing (see
+			// SetCarousel.tsx), so this shouldn't fire mid-animation — guarded
+			// anyway rather than trusting the UI layer alone.
+			if (phase === "tearing" || phase === "revealing") return;
+
+			writeStoredSelectedSet(setCode);
+			set(
+				{
+					selectedSet: setCode,
+					phase: "idle",
+					pack: null,
+					revealIndex: -1,
+					phaseStartedAt: null,
+				},
+				undefined,
+				"pack-opener/selectSet",
+			);
 		},
 	})),
 );

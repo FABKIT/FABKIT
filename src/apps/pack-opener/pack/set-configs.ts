@@ -1140,3 +1140,34 @@ export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	OUT: OUTSIDERS,
 	"1HP": HISTORY_PACK_1,
 };
+
+/** The live fabtcg.com product/collectors-centre page each config above was
+ * sourced from — see that set's own comment for the exact quoted text.
+ * Kept as a separate table rather than a field on PackConfig so the odds
+ * engine itself (pack/generate-pack.ts) never needs to know this exists;
+ * only the set info dialog (components/carousel/SetInfoDialog.tsx) reads
+ * it. Several of these are the *live* URL, not the-fab-cube's own
+ * (frequently stale or null) product_page field — see each set's comment
+ * above for why. */
+export const SET_SOURCE_URLS: Record<string, string> = {
+	EVR: "https://fabtcg.com/products/booster-set/everfest/",
+	UPR: "https://fabtcg.com/products/booster-set/uprising/",
+	DYN: "https://fabtcg.com/products/booster-set/dynasty/",
+	DTD: "https://fabtcg.com/en/products/booster-set/dusk-till-dawn/",
+	HVY: "https://fabtcg.com/products/booster-set/heavy-hitters/",
+	MST: "https://fabtcg.com/products/booster-set/part-the-mistveil/",
+	ROS: "https://fabtcg.com/products/product/rosetta/",
+	HNT: "https://fabtcg.com/products/product/the-hunted/",
+	SUP: "https://fabtcg.com/en/products/booster-set/super-slam/",
+	OMN: "https://fabtcg.com/products/booster-set/omen/",
+	WTR: "https://fabtcg.com/products/booster-set/welcome-to-rathe/",
+	ARC: "https://fabtcg.com/products/booster-set/arcane-rising/",
+	CRU: "https://fabtcg.com/products/booster-set/crucible-of-war/",
+	MON: "https://fabtcg.com/products/booster-set/monarch-unlimited/",
+	ELE: "https://fabtcg.com/products/booster-set/tales-of-aria/",
+	EVO: "https://fabtcg.com/products/booster-set/bright-lights/",
+	SEA: "https://fabtcg.com/products/booster-set/high-seas/",
+	PEN: "https://fabtcg.com/products/booster-set/compendium-of-rathe/",
+	OUT: "https://fabtcg.com/products/booster-set/outsiders/",
+	"1HP": "https://fabtcg.com/products/booster-set/history-pack-1-en/",
+};

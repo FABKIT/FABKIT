@@ -1,3 +1,4 @@
+import { SetCarousel } from "@fabkit/apps/pack-opener/components/carousel/SetCarousel";
 import { PackOpenerHUD } from "@fabkit/apps/pack-opener/components/hud/PackOpenerHUD";
 import { PackOpenerCanvas } from "@fabkit/apps/pack-opener/components/scene/PackOpenerCanvas";
 import { useTranslation } from "react-i18next";
@@ -21,6 +22,7 @@ export function PackOpenerPage() {
 			/>
 			<PackOpenerCanvas />
 			<PackOpenerHUD />
+			<SetCarousel />
 		</div>
 	);
 }

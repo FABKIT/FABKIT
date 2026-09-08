@@ -153,3 +153,52 @@ export function hasType(printing: FabPrinting, type: string): boolean {
 	const needle = type.toLowerCase();
 	return printing.types.some((t) => t.toLowerCase() === needle);
 }
+
+/** One row of `public/data/pack-opener/index.json` — the set picker's data
+ * source (see components/carousel/SetCarousel.tsx). Mirrors the index
+ * entry shape scripts/build-pack-data.ts writes. */
+export interface SetIndexEntry {
+	code: string;
+	name: string;
+	/** ISO date string, or null when the-fab-cube has no release date for
+	 * this set. */
+	releaseDate: string | null;
+	/** URL of the set's logo image, or null — Compendium of Rathe has none
+	 * in the source data as of this writing; consumers need a name-only
+	 * fallback (see SetCarousel.tsx). */
+	setLogo: string | null;
+	printingCount: number;
+}
+
+let setIndexCache: SetIndexEntry[] | null = null;
+let setIndexPromise: Promise<SetIndexEntry[]> | null = null;
+
+/** Fetches and caches the set list (sorted by release date — see the build
+ * script). Safe to call more than once; subsequent calls reuse the same
+ * in-flight/settled promise, same pattern as loadSetPrintings above. */
+export function loadSetIndex(): Promise<SetIndexEntry[]> {
+	if (setIndexCache) return Promise.resolve(setIndexCache);
+	if (setIndexPromise) return setIndexPromise;
+
+	const promise = fetch("/data/pack-opener/index.json")
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error(`Set index fetch failed: ${response.status}`);
+			}
+			return response.json() as Promise<{ sets: SetIndexEntry[] }>;
+		})
+		.then((data) => {
+			setIndexCache = data.sets;
+			setIndexPromise = null;
+			return data.sets;
+		});
+
+	setIndexPromise = promise;
+	return promise;
+}
+
+/** Synchronous accessor — returns an empty array until loadSetIndex() has
+ * resolved (e.g. the index never loaded, offline/build output missing). */
+export function getSetIndex(): SetIndexEntry[] {
+	return setIndexCache ?? [];
+}
