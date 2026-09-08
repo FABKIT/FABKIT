@@ -82,4 +82,14 @@ describe("frequency calibration", () => {
 		expectRate("ELE", "majestic", 1 / 4);
 		expectRate("ELE", "legendary", 1 / 88);
 	});
+
+	// Outsiders: collectors-centre gives Rare 1.75/pack, Majestic 1/5,
+	// Legendary 1/70 (Rainbow Foil) — see set-configs.ts's OUT comment for
+	// how the published "1-2 Rare or higher" range was resolved into
+	// these two slots.
+	it("Outsiders matches its published rates", () => {
+		expectRate("OUT", "rare", 1.75);
+		expectRate("OUT", "majestic", 1 / 5);
+		expectRate("OUT", "legendary", 1 / 70);
+	});
 });

@@ -874,6 +874,250 @@ const BRIGHT_LIGHTS = buildHvyFamilyConfig("EVO", {
 	token: 12,
 });
 
+// ---------------------------------------------------------------------------
+// High Seas (SEA) — 16 cards.
+// fabtcg.com/products/booster-set/high-seas/, "Rarity Distribution":
+// Rainbow Foil - 1 per pack; Rare or higher - 2 per pack (1 Rare + 1 Rare
+// or Majestic); Common - 11 per pack; Basic - 1 per pack; Basic /
+// Expansion Slot / Marvel / Legendary - 1 per pack. Sum: 1 + 2 + 11 + 1 +
+// 1 = 16 — same "separate Premium Foil card" structure as Super Slam and
+// Omens of the Third Age (this set released after both), not the older
+// fold-in style. No Cold Foil line at all on this page, unlike every
+// other same-era set — modelled as coldFoilChance 0 to match what's
+// actually published rather than assuming the family default.
+// Real population: rare 64, majestic 33 (13 more via Expansion Slot),
+// legendary 5, basic 18, marvel 31. Premium Foil modelled as Common only
+// — Legendary and Marvel already have their own channel (the wildcard
+// slot), same reasoning as Super Slam/Omens.
+// ---------------------------------------------------------------------------
+const seaRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: 64 },
+	{ rarity: "majestic" as const, weight: 33 },
+];
+const seaPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+
+const HIGH_SEAS: PackConfig = {
+	id: "SEA",
+	cardsPerPack: 16,
+	slots: [
+		{
+			kind: "common",
+			count: 11,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: seaRareOrMajesticTable,
+		},
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: seaPremiumTable,
+		},
+		{ kind: "basic", count: 1, rarityTable: [{ rarity: "basic", weight: 1 }] },
+		{
+			kind: "basic-or-wildcard",
+			count: 1,
+			rarityTable: [
+				{ rarity: "basic", weight: 18 },
+				{ rarity: "majestic", weight: 13, expansionSlot: true },
+				{ rarity: "legendary", weight: 5 },
+				{ rarity: "marvel", weight: 31 },
+			],
+		},
+	],
+	coldFoilChance: 0,
+	marvelChance: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Compendium of Rathe (PEN) — 9 cards. fabtcg.com/products/booster-set/
+// compendium-of-rathe/ (the-fab-cube's data has null product_page/
+// collectors_center for this set — this live page exists under a
+// different URL pattern than the-fab-cube points to, same situation as
+// several of the older sets above). "Product Configuration: ... 9 cards
+// per pack." "Rarity Distribution: Cold Foil - 1 per 8 packs (replaces a
+// Rare); Rainbow Foil - 1 per pack; Rare or higher - 3 per pack (2 Rare +
+// 1 Rare, Majestic, Legendary, or Marvel); Common - 5 per pack." Sum:
+// 1 + 3 + 5 = 9 — Rainbow Foil is a separate card here too (matches the
+// modern-era pattern; 3 + 5 = 8 without it, one short of the stated 9).
+// Real population: rare 124, majestic 58, legendary 8, marvel 23 — this
+// is the only set in this file whose own page names Marvel directly
+// inside a rarity table rather than leaving it to a wildcard slot or
+// marvelChance.
+// Premium Foil modelled as Common only, same reasoning as every set here
+// whose named slot(s) already cover Legendary/Marvel on their own.
+// Cold Foil: "1 per 8 packs (replaces a Rare)" — the highest published
+// cold foil rate of any set in this file, and the only one that replaces
+// one of the *pure* guaranteed Rare cards specifically (there are 2 here).
+// ---------------------------------------------------------------------------
+const penRareOrHigherWildcardTable = [
+	{ rarity: "rare" as const, weight: 124 },
+	{ rarity: "majestic" as const, weight: 58 },
+	{ rarity: "legendary" as const, weight: 8 },
+	{ rarity: "marvel" as const, weight: 23 },
+];
+const penPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+
+const COMPENDIUM_OF_RATHE: PackConfig = {
+	id: "PEN",
+	cardsPerPack: 9,
+	slots: [
+		{
+			kind: "common",
+			count: 5,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 2, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-super-rare-plus",
+			count: 1,
+			rarityTable: penRareOrHigherWildcardTable,
+		},
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: penPremiumTable,
+		},
+	],
+	coldFoilChance: 1 / 8,
+	coldFoilReplaces: "rare",
+	marvelChance: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Outsiders (OUT) — 16 cards. fabtcg.com/products/booster-set/outsiders/
+// states "A booster pack contains 16 cards, being: Rainbow Foil - 1 per
+// pack; Rare or higher - 1-2 per pack; Common - 11-12 per pack; Token - 2
+// per pack; Cold Foil - 1 per 24 packs." Unlike every other set in this
+// file, this is a genuine published *range*, not an ambiguity introduced
+// by scraping — confirmed by fetching the live page directly. Per the
+// product owner: approximate it as closely as possible using whatever
+// real numbers can be found, rather than picking an arbitrary rate.
+//
+// Found: the collectors-centre page (fabtcg.com/en/collectors-centre/
+// outsiders/) gives the precise averages behind that range: "51 Rares
+// (1.75 per pack); 31 Majestic (1 per 5 packs); 5 Legendary (Rainbow Foil
+// - 1:70 packs / Cold Foil - 1:264 packs); 128 Commons (11 per pack); 20
+// Tokens (1.75 tokens per pack)."
+//
+// Slot count check: Rare 1.75 + Majestic 0.2 (1/5) + Legendary 0.0143
+// (1/70) = 1.9643 -> rounds to 2 rare-or-better slots, matching the
+// product page's "1-2" (a guaranteed pure Rare, plus a second slot that's
+// usually Rare and sometimes Majestic). The Legendary rate is specifically
+// described in terms of the Rainbow Foil treatment, so — same reasoning
+// as Welcome to Rathe's Equipment channel — it's modelled as reachable
+// only via the Premium Foil (Rainbow Foil) slot, at exactly 1/70, with
+// the remainder Common. That leaves the second "rare or better" slot to
+// explain Rare (0.75 of the 1.75 total, since the pure slot already
+// covers 1.0) and Majestic (0.2, entirely) on its own: roughly 80%
+// Rare / 20% Majestic, which conveniently is exactly what "1 per 5
+// packs" already says about Majestic on its own — so that slot is
+// modelled as a clean 4:1 Rare:Majestic split.
+//
+// Token's own published average (1.75, not a flat 2) implies a similar
+// "usually 1, sometimes 2" mechanic trading off against Common — the
+// engine here only supports a fixed card count per slot, not a
+// probabilistic *count*, so Token is modelled as a flat 2 and Common as a
+// flat 11 (matching the collectors-centre's own Common number). This
+// slightly overstates how often a pack has 2 Tokens rather than 1, and is
+// the one place in this config that's a real simplification rather than a
+// direct translation of a published number — flagged here rather than
+// left silent.
+//
+// The separate "Cold Foil - 1 per 24 packs" line (distinct from the
+// Legendary-specific 1:264 Cold Foil rate above, which is a treatment
+// upgrade *within* that already-rare Legendary pull, not modelled
+// separately here) matches the family default — targeting Token, by the
+// same inference used for every set in this file whose page doesn't
+// explicitly say what Cold Foil replaces.
+// Real population: rare 51, majestic 34, legendary 5, marvel 3, token 20.
+// ---------------------------------------------------------------------------
+const outRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: 4 },
+	{ rarity: "majestic" as const, weight: 1 },
+];
+const outPremiumTable = [
+	{ rarity: "legendary" as const, weight: 1 },
+	{ rarity: "common" as const, weight: 69 },
+];
+
+const OUTSIDERS: PackConfig = {
+	id: "OUT",
+	cardsPerPack: 16,
+	slots: [
+		{
+			kind: "common",
+			count: 11,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: outRareOrMajesticTable,
+		},
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: outPremiumTable,
+		},
+		{ kind: "token", count: 2, rarityTable: [{ rarity: "token", weight: 1 }] },
+	],
+	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilReplaces: "token",
+	marvelChance: DEFAULT_MARVEL_CHANCE,
+};
+
+// ---------------------------------------------------------------------------
+// History Pack 1 (1HP) — 10 cards.
+// fabtcg.com/products/booster-set/history-pack-1-en/, "Pack
+// Configuration: 10 cards per booster pack; Rare or higher - 1 per pack;
+// Rare - 1 per pack; Common - 8 per pack." Sum: 1 + 1 + 8 = 10. A History
+// Pack is explicitly "designed to support card accessibility for
+// constructed play, not intended for booster draft or sealed deck play"
+// — no Token, Premium Foil, or Cold Foil slot at all, matching its
+// simpler reprint-focused design. This is also the set the automatic
+// derivation rule structurally can't find on its own (see known-sets.ts)
+// since it has no Rainbow Foil printing at all.
+// Real population: common 238, rare 118, majestic 62, legendary 9. No
+// published split for "Rare or higher"'s own rarities — weighted by
+// population, same convention as every other config here where LSS
+// states a slot's membership without its internal weights. No separate
+// premium/foil slot exists to double-count against here, unlike the
+// sets fixed earlier in this file.
+// ---------------------------------------------------------------------------
+const hpRareOrHigherTable = [
+	{ rarity: "rare" as const, weight: 118 },
+	{ rarity: "majestic" as const, weight: 62 },
+	{ rarity: "legendary" as const, weight: 9 },
+];
+
+const HISTORY_PACK_1: PackConfig = {
+	id: "1HP",
+	cardsPerPack: 10,
+	slots: [
+		{
+			kind: "common",
+			count: 8,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: hpRareOrHigherTable,
+		},
+	],
+	coldFoilChance: 0,
+	marvelChance: 0,
+};
+
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	EVR: EVERFEST,
 	UPR: UPRISING,
@@ -891,4 +1135,8 @@ export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	MON: MONARCH,
 	ELE: TALES_OF_ARIA,
 	EVO: BRIGHT_LIGHTS,
+	SEA: HIGH_SEAS,
+	PEN: COMPENDIUM_OF_RATHE,
+	OUT: OUTSIDERS,
+	"1HP": HISTORY_PACK_1,
 };
