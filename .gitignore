@@ -31,6 +31,9 @@ analyse.html
 dev-dist/
 CHANGELOG.md
 
+# Generated pack opener data (scripts/build-pack-data.ts) — build output, not source
+public/data/pack-opener/
+
 # Local AI files
 .claude/settings.local.json
 .claude/worktrees/
