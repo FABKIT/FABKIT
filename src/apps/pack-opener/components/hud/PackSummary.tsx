@@ -38,12 +38,12 @@ export function PackSummary() {
 								className="h-6 w-6"
 							/>
 							{card.rarity === "marvel" && (
-								<span className="text-[10px] font-bold text-fuchsia-400">
+								<span className="text-[10px] font-bold text-pack-marvel">
 									{t("page.marvel_badge")}
 								</span>
 							)}
 							{card.rarity !== "marvel" && card.treatment !== "standard" && (
-								<span className="text-[10px] font-bold text-sky-400">
+								<span className="text-[10px] font-bold text-pack-foil">
 									{t("page.foil_badge")}
 								</span>
 							)}

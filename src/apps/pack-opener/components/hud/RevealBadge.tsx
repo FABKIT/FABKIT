@@ -33,20 +33,20 @@ export function RevealBadge() {
 					{t(CardRarities[resolved.rarity].label)}
 				</span>
 				{resolved.rarity === "marvel" && (
-					<span className="rounded bg-fuchsia-500/20 px-2 py-0.5 text-xs font-bold text-fuchsia-400">
+					<span className="rounded bg-pack-marvel-subtle px-2 py-0.5 text-xs font-bold text-pack-marvel">
 						{t("page.marvel_badge")}
 					</span>
 				)}
 				{resolved.rarity !== "marvel" && resolved.treatment !== "standard" && (
-					<span className="rounded bg-sky-500/20 px-2 py-0.5 text-xs font-bold text-sky-400">
+					<span className="rounded bg-pack-foil-subtle px-2 py-0.5 text-xs font-bold text-pack-foil">
 						{t("page.foil_badge")}
 					</span>
 				)}
 			</div>
-			<p className="text-sm text-white/80 drop-shadow">
+			<p className="text-sm text-muted drop-shadow">
 				{t("page.tap_to_reveal")}
 			</p>
-			<p className="text-xs text-white/60 drop-shadow">
+			<p className="text-xs text-subtle drop-shadow">
 				{revealIndex + 1} / {pack.length}
 			</p>
 		</div>
