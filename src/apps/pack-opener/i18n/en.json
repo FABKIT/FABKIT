@@ -1,4 +1,7 @@
 {
+	"common": {
+		"close": "Close"
+	},
 	"page": {
 		"title": "Pack Opener",
 		"tap_to_tear": "Tap the pack to tear it open",
@@ -8,6 +11,37 @@
 		"packs_opened_session": "Packs opened this session: {{count}}",
 		"foil_badge": "Foil",
 		"marvel_badge": "Marvel"
+	},
+	"carousel": {
+		"previous_set": "Previous set",
+		"next_set": "Next set"
+	},
+	"dialog": {
+		"cards_per_pack_title": "Cards per pack",
+		"pack_contents_title": "Pack contents",
+		"cold_foil_note": "Cold Foil: roughly 1 in {{odds}} packs",
+		"source_link": "See the official product page",
+		"treatment": {
+			"rainbow": "guaranteed Rainbow Foil",
+			"cold": "guaranteed Cold Foil",
+			"gold-cold": "guaranteed Gold Cold Foil"
+		},
+		"slot": {
+			"common": "Common",
+			"guaranteed-rare-plus": "Guaranteed Rare or better",
+			"premium-foil": "Premium Foil",
+			"basic-or-token": "Basic or Token",
+			"rare": "Rare",
+			"rare-or-majestic": "Rare or Majestic",
+			"rare-or-super-rare-plus": "Rare, Super Rare, or better",
+			"token": "Token",
+			"token-or-wildcard": "Token or Wildcard",
+			"basic": "Basic",
+			"basic-or-wildcard": "Basic or Wildcard",
+			"generic-common": "Generic Common",
+			"class-common": "Class Common",
+			"equipment": "Equipment"
+		}
 	},
 	"card": {
 		"rarity": {
