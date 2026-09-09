@@ -760,3 +760,8 @@ Record these so they are not lost:
 - **Edition fidelity.** The build script does not distinguish First Edition from
   Unlimited printings (`edition` field, `U-` prefixed artwork). A Welcome to Rathe pack
   can currently show Unlimited art.
+- **The unopened pack's studio lighting (`<Environment preset="studio" />`).** Left as
+  is per Louis's decision: not worth the visual change right now, but worth revisiting
+  later with an approach that doesn't need its own runtime download (e.g. tuned
+  ambient/directional lights, or a baked-in lightformer setup) instead of drei's
+  `Environment` preset, which fetches an HDR file from a third-party CDN at runtime.
