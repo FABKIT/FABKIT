@@ -1,10 +1,14 @@
 import { useMemo } from "react";
 import { CanvasTexture } from "three";
 
+// Sized to the proportions of the meshes these are stretched onto (see
+// config/scene.ts's PACK_WIDTH/PACK_HEIGHT/PACK_SEAL_HEIGHT), so the
+// fallback pack isn't subtly squashed the way it was when these were
+// picked independently of the geometry.
 const BODY_WIDTH = 512;
-const BODY_HEIGHT = 980;
+const BODY_HEIGHT = 860;
 const SEAL_WIDTH = 512;
-const SEAL_HEIGHT = 140;
+const SEAL_HEIGHT = 115;
 
 let bodyTexture: CanvasTexture | null = null;
 let sealTexture: CanvasTexture | null = null;

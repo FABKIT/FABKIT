@@ -6,9 +6,18 @@
 // line — see the execution plan, section 5.3.
 export const PACK_WIDTH = 1.05;
 export const PACK_HEIGHT = 2.0;
-/** The seal strip's share of PACK_HEIGHT — also the top fraction of an
- * uploaded pack-front image that becomes the tear-off seal texture. */
-export const PACK_SEAL_HEIGHT = 0.16;
+/** Height of the tear-off seal strip, in the same world units as
+ * PACK_HEIGHT. Its share of PACK_HEIGHT (0.236 / 2.0 = 11.8%) is also the
+ * top fraction of an uploaded pack-front image that gets cut away as the
+ * seal texture — see useRealPackTexture.ts's SEAL_FRACTION.
+ *
+ * Measured off a real pack front rather than guessed: on Legend Story
+ * Studios' own product shots the crimped foil strip runs from the top edge
+ * down to about 9% of the image, then a shadowed gap, and the pack face's
+ * gold trim line starts at 11.8%. Tearing anywhere above that leaves a
+ * band of crimp stuck to the body. If a future set's art crimps
+ * differently, this one number is the thing to re-measure. */
+export const PACK_SEAL_HEIGHT = 0.236;
 
 /** Card tilt (see the execution plan, section 3.4) — pointer position maps
  * to a tilt of at most this many degrees on each axis, eased toward its
