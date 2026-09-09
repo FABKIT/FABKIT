@@ -282,6 +282,19 @@ interface RawPrinting {
 	foiling: string;
 	expansion_slot: boolean;
 	tcgplayer_product_id: string | null;
+	/** This printing's own true identity — unlike `id` (the collector
+	 * number, e.g. "SEA001"), which a card and its Marvel version share.
+	 * Carried through as FabPrinting.uniqueId. */
+	unique_id: string;
+	/** e.g. ["FA"] on a Marvel/full-art printing. Carried through as
+	 * FabPrinting.artVariations — see printingImageUrl's own comment in
+	 * fab-printings.ts for what this is used for. */
+	art_variations: string[];
+	/** The real artwork filename this printing actually renders with —
+	 * differs from `id` for Marvel printings (e.g. SEA001's Marvel version
+	 * is SEA001-MV). Optional/nullable defensively: not every printing in
+	 * the upstream data is guaranteed to carry one. */
+	image_url?: string | null;
 }
 
 interface RawCard {
@@ -368,6 +381,19 @@ function toNumberOrNull(value: string): number | null {
 function toPitch(value: string): 1 | 2 | 3 | null {
 	const parsed = toNumberOrNull(value);
 	return parsed === 1 || parsed === 2 || parsed === 3 ? parsed : null;
+}
+
+/** The basename of a printing's real artwork filename, extension stripped
+ * — e.g. ".../SEA001-MV.webp" gives "SEA001-MV". Null when the upstream
+ * data has no image_url for this printing at all (not observed for any
+ * Marvel printing as of this writing, but handled rather than assumed).
+ * See fab-printings.ts's printingImageUrl for why only Marvel printings
+ * ever actually use this value instead of the printing's own `id`. */
+function toArtSlug(imageUrl: string | null | undefined): string | null {
+	if (!imageUrl) return null;
+	const filename = imageUrl.split("/").pop();
+	if (!filename) return null;
+	return filename.replace(/\.[a-zA-Z0-9]+$/, "");
 }
 
 interface SetMeta {
@@ -511,6 +537,7 @@ function buildSetPrintings(
 			}
 			return {
 				id: raw.id,
+				uniqueId: raw.unique_id,
 				name: card.name,
 				rarity,
 				foiling,
@@ -521,6 +548,8 @@ function buildSetPrintings(
 				power: toNumberOrNull(card.power),
 				defense: toNumberOrNull(card.defense),
 				types: card.types,
+				artVariations: raw.art_variations ?? [],
+				artSlug: toArtSlug(raw.image_url),
 			};
 		})
 		.filter((printing): printing is FabPrinting => printing !== null)

@@ -144,6 +144,28 @@ function poolForDrawn(setCode: string, drawn: DrawnCard): FabPrinting[] {
 	);
 }
 
+/** Real per-set data is the tie-breaker between what the odds engine drew
+ * and what the set actually printed — see the execution plan, section 3.3.
+ * The engine's own draw wins when it deliberately produced a foil (the
+ * cold-foil upgrade roll is a pack mechanic, not a property of any one
+ * card), but when it drew "standard" and this exact printing was never
+ * printed that way, the printing wins instead. In most modern sets every
+ * Legendary is foil-only (see set-configs.ts's own per-set counts), so this
+ * is the common case in practice for Legendary pulls specifically — a few
+ * older sets (History Pack 1, Compendium of Rathe, Bright Lights, and a
+ * couple of others) print some Legendaries plain, and those are left alone
+ * since the printing's own foiling already agrees with a "standard" draw
+ * there. */
+export function resolveTreatment(
+	drawn: DrawnCard,
+	printing: FabPrinting,
+): FoilTreatment {
+	if (drawn.treatment === "standard" && printing.foiling !== "standard") {
+		return printing.foiling;
+	}
+	return drawn.treatment;
+}
+
 function toResolvedCardFromPrinting(
 	drawn: DrawnCard,
 	printing: FabPrinting,
@@ -153,8 +175,8 @@ function toResolvedCardFromPrinting(
 		id: drawn.id,
 		name: printing.name,
 		rarity: drawn.rarity,
-		treatment: drawn.treatment,
-		imageUrl: printingImageUrl(printing.id),
+		treatment: resolveTreatment(drawn, printing),
+		imageUrl: printingImageUrl(printing),
 		set: setCode,
 		pitch: printing.pitch,
 		cost: printing.cost,
