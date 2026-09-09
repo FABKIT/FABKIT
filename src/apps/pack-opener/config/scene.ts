@@ -46,6 +46,22 @@ export const REVEAL_TRANSITION_MS = 320;
 /** How far (world units) the outgoing card slides upward — comfortably more
  * than the reveal-phase vertical frustum so it fully clears the frame. */
 export const CARD_SLIDE_DISTANCE = 2.6;
+/** How long the first card takes to settle in after the pack tears open.
+ * Without it the pack vanishes and the card is simply *there* on the very
+ * next frame, which reads as a hard cut. This is deliberately a scale/depth
+ * move rather than an opacity fade: the card materials use a hard alpha
+ * cutout so they stay in the opaque render queue, and fading them would
+ * push them into the transparent queue, which paints after everything
+ * opaque regardless of render order — the exact thing that caused the glow
+ * plane to paint over the card (see PullCelebration.tsx). */
+export const REVEAL_INTRO_MS = 260;
+/** Scale the first card grows from over REVEAL_INTRO_MS. Close to 1 on
+ * purpose: this should read as the card settling into place, not as it
+ * zooming in. */
+export const REVEAL_INTRO_START_SCALE = 0.9;
+/** How far back (world units) the first card starts before easing forward
+ * to its resting z over REVEAL_INTRO_MS. */
+export const REVEAL_INTRO_START_Z = -0.45;
 /** Minimum gap between two advanceReveal() calls — guards against a single
  * tap/click firing twice, not against spamming through the pack. A player
  * can tap faster than REVEAL_TRANSITION_MS to skip through reveals quickly;

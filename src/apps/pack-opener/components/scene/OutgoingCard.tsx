@@ -5,7 +5,7 @@ import {
 	REVEAL_TRANSITION_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import type { Group } from "three";
 
 function easeInCubic(t: number): number {
@@ -33,6 +33,23 @@ interface OutgoingCardProps {
  * just keeps the two planes from perfectly coinciding. */
 export function OutgoingCard({ card, phaseStartedAt }: OutgoingCardProps) {
 	const group = useRef<Group>(null);
+
+	// This group is reused across every reveal in a pack, so it arrives at
+	// each new one still holding the END of the previous slide: pushed off
+	// the top of the frame and hidden. React swaps the card in during
+	// commit, but nothing repairs the transform until the next useFrame
+	// tick — which is one rendered frame of the incoming card showing
+	// uncovered before the outgoing card snaps back into place and slides.
+	// That is the momentary flash-through. Resetting in a layout effect
+	// puts the group in its correct starting state during the same commit
+	// that swaps the card, so there is no frame in between.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: phaseStartedAt is the reset trigger, not a value read here — a new timestamp means a new reveal has started and this group has to go back to its start pose.
+	useLayoutEffect(() => {
+		if (!group.current) return;
+		group.current.position.set(0, 0, 0.03);
+		group.current.rotation.z = 0;
+		group.current.visible = true;
+	}, [phaseStartedAt]);
 
 	useFrame(() => {
 		if (!group.current) return;
