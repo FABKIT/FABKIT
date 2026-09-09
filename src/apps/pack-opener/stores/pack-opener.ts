@@ -106,6 +106,18 @@ export interface PackOpenerState {
 	/** Epoch ms the current phase (or current card's flip) began — the sole
 	 * source of truth every animation timer reads from. */
 	phaseStartedAt: number | null;
+	/** Epoch ms the FIRST card of the current pack appeared, i.e. the moment
+	 * the tear handed over to the reveal. Unlike phaseStartedAt this does
+	 * not move on each advanceReveal(), which is exactly what the card's
+	 * arrival animation needs: it plays once per pack, not once per card.
+	 * It lives here, rather than as a mount timestamp inside the scene,
+	 * because a component that times itself from its own mount restarts
+	 * that animation whenever React remounts it (StrictMode's double mount,
+	 * a Suspense boundary re-suspending) — which read on screen as the card
+	 * appearing, vanishing and appearing again. Same reason the tear reads
+	 * off phaseStartedAt: a remount mid-animation has to pick the animation
+	 * up where it is, never restart it. */
+	revealStartedAt: number | null;
 	packsOpenedThisSession: number;
 	/** Every pack completed this session, in order — the raw material for
 	 * the session stats dialog (see stats/session-stats.ts's
@@ -189,6 +201,7 @@ const initialState: PackOpenerState = {
 	pack: null,
 	revealIndex: -1,
 	phaseStartedAt: null,
+	revealStartedAt: null,
 	packsOpenedThisSession: 0,
 	openedPacksThisSession: [],
 	selectedSet: readStoredSelectedSet(),
@@ -236,6 +249,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						pack,
 						revealIndex: -1,
 						phaseStartedAt: Date.now(),
+						revealStartedAt: null,
 						revisitIndex: null,
 						packSetCode: packConfig.id,
 					},
@@ -252,6 +266,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 								phase: "revealing",
 								revealIndex: 0,
 								phaseStartedAt: Date.now(),
+								revealStartedAt: Date.now(),
 							},
 							undefined,
 							"pack-opener/tearComplete",
@@ -369,6 +384,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						pack: null,
 						revealIndex: -1,
 						phaseStartedAt: null,
+						revealStartedAt: null,
 						revisitIndex: null,
 						packSetCode: null,
 					},
