@@ -28,16 +28,58 @@ import { useTexture } from "@react-three/drei";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-/** Kicks off loading every card's real image up front, right as the pack is
- * generated — the ~1.5s tear animation gives them a head start, so by the
- * time each card becomes active its texture is (usually) already cached
- * and Card3D's RealCardFace doesn't have to wait on it. Uses
- * preloadSafeTexture, not drei's useTexture.preload — see
- * textures/useSafeTexture.ts for why a real printing's image can 404 and
- * why that can't be handled with drei's Suspense-based loader. */
-function preloadPackTextures(pack: DrawnCard[], setCode: string): void {
-	for (const drawn of pack) {
-		const imageUrl = activeCardResolver.resolve(drawn, setCode).imageUrl;
+/** How many cards ahead of the active one to keep preloaded — see the
+ * execution plan, section 5 (performance), fix 2. Loading all 16 cards at
+ * once the moment a pack is generated (roughly 3-4MB) used to saturate a
+ * slow connection and stall the pack opening on time; staggering this
+ * keeps only a handful of ~200KB images in flight at once instead, while
+ * still comfortably keeping ahead of how fast a player can actually tap
+ * through reveals. */
+const DEFAULT_PRELOAD_LOOKAHEAD = 3;
+/** Fix 4: a visitor who has said they want less data (Data Saver, or a
+ * 2G-class connection) gets a tighter lookahead instead. navigator.connection
+ * doesn't exist in Safari — that's a normal, expected case here, not a
+ * failure, and just means every visitor there gets the default lookahead
+ * rather than this app guessing at their connection quality. */
+const REDUCED_PRELOAD_LOOKAHEAD = 1;
+
+interface NetworkInformationLike {
+	saveData?: boolean;
+	effectiveType?: string;
+}
+
+export function preloadLookaheadCount(): number {
+	const connection = (
+		navigator as Navigator & { connection?: NetworkInformationLike }
+	).connection;
+	if (!connection) return DEFAULT_PRELOAD_LOOKAHEAD;
+	if (connection.saveData) return REDUCED_PRELOAD_LOOKAHEAD;
+	if (
+		connection.effectiveType === "2g" ||
+		connection.effectiveType === "slow-2g"
+	) {
+		return REDUCED_PRELOAD_LOOKAHEAD;
+	}
+	return DEFAULT_PRELOAD_LOOKAHEAD;
+}
+
+/** Kicks off loading the real images for `count` cards starting at
+ * `fromIndex` — called once with a small starting batch when a pack is
+ * generated (see openPack below), then again with count 1 each time
+ * advanceReveal moves the lookahead frontier forward by one card, rather
+ * than loading the whole pack's ~3-4MB up front. Uses preloadSafeTexture,
+ * not drei's useTexture.preload — see textures/useSafeTexture.ts for why a
+ * real printing's image can 404 and why that can't be handled with drei's
+ * Suspense-based loader. */
+function preloadPackTextures(
+	pack: DrawnCard[],
+	setCode: string,
+	fromIndex: number,
+	count: number,
+): void {
+	const end = Math.min(fromIndex + count, pack.length);
+	for (let i = fromIndex; i < end; i++) {
+		const imageUrl = activeCardResolver.resolve(pack[i], setCode).imageUrl;
 		if (imageUrl) preloadSafeTexture(imageUrl);
 	}
 }
@@ -161,7 +203,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			const packConfig = config ?? getPackConfig(selectedSet ?? undefined);
 			clearCardTextureCache();
 			const pack = orderForReveal(generatePack(packConfig));
-			preloadPackTextures(pack, packConfig.id);
+			preloadPackTextures(pack, packConfig.id, 0, preloadLookaheadCount());
 			set(
 				{
 					phase: "tearing",
@@ -226,6 +268,17 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				{ revealIndex: nextIndex, phaseStartedAt: Date.now() },
 				undefined,
 				"pack-opener/advanceReveal",
+			);
+			// Keeps the lookahead window moving forward one card at a time as
+			// the player advances — the cards behind this frontier were
+			// already preloaded by openPack's initial batch or an earlier
+			// call here, so only the new topmost index needs fetching.
+			const frontierIndex = nextIndex + preloadLookaheadCount() - 1;
+			preloadPackTextures(
+				pack,
+				packSetCode ?? DEFAULT_PACK_CONFIG.id,
+				frontierIndex,
+				1,
 			);
 			const revealed = pack[nextIndex];
 			trackEvent({

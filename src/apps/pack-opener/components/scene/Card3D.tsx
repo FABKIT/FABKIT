@@ -14,6 +14,16 @@ import type { Group, Texture } from "three";
 export const CARD_WIDTH = 1.2;
 export const CARD_HEIGHT = CARD_WIDTH * (628 / 450);
 
+/** The official Flesh and Blood card back — self-hosted rather than
+ * hotlinked from content.fabrary.net (see the execution plan, section 5,
+ * fix 3): a loading placeholder must never itself be the thing that's
+ * loading, self-hosted it gets precached by the service worker and works
+ * offline, and it removes a third-party dependency from a core piece of
+ * UI. Preloaded by the route loader (src/routes/pack-opener.tsx) so it's
+ * normally already cached by the time any real card needs it as a stand-in
+ * — see CardBackFace below, RealCardFace's only consumer of it. */
+export const CARD_BACK_URL = "/img/pack-opener/card-back.webp";
+
 const MAX_TILT_RAD = (CARD_TILT_MAX_DEG * Math.PI) / 180;
 
 /** The light direction the foil shader uses when prefers-reduced-motion is
@@ -96,6 +106,32 @@ function CardFaceMaterial({
 	);
 }
 
+/** Stand-in shown while a real card's own image is still loading — see the
+ * execution plan, section 5, fix 3: staggering the pack's texture preload
+ * (stores/pack-opener.ts) makes hitting this state a real possibility now,
+ * not a rare edge case, so it needs to look intentional rather than
+ * leaving the card blank. A face-down card waiting to be turned over is
+ * exactly the right metaphor. Uses useSafeTexture rather than drei's
+ * Suspense-based useTexture for the same reason RealCardFace does: this
+ * renders INSIDE another still-loading branch, so suspending here would
+ * escalate to the shared Suspense boundary in PackOpenerCanvas.tsx and
+ * blank the whole scene, defeating the point. In the rare case this local
+ * asset hasn't loaded yet either, it just renders nothing for a moment —
+ * CARD_BACK_URL is preloaded by the route loader well ahead of any pack
+ * being opened, so this should be instant in practice. */
+function CardBackFace({ alwaysOnTop }: { alwaysOnTop: boolean }) {
+	const state = useSafeTexture(CARD_BACK_URL);
+	if (state.status !== "loaded") return null;
+	return (
+		<meshBasicMaterial
+			map={state.texture}
+			alphaTest={0.5}
+			depthTest={!alwaysOnTop}
+			depthWrite={!alwaysOnTop}
+		/>
+	);
+}
+
 /** A real FAB card's own image already is the full rendered card face — no
  * canvas frame-drawing needed, just load it as a texture (preloaded ahead
  * of time by the store when a pack opens, see stores/pack-opener.ts, so
@@ -126,7 +162,9 @@ function RealCardFace({
 			/>
 		);
 	}
-	if (state.status === "loading") return null;
+	if (state.status === "loading") {
+		return <CardBackFace alwaysOnTop={alwaysOnTop} />;
+	}
 	return (
 		<CardFaceMaterial
 			texture={state.texture}

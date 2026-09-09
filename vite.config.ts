@@ -51,10 +51,37 @@ export default defineConfig({
 			},
 			workbox: {
 				cleanupOutdatedCaches: true,
+				// Pack opener card art (see the execution plan, section 5,
+				// performance fix 1): content.fabrary.net's own Cache-Control
+				// only holds a card's image for 3 days, but a pack draws its
+				// commons from a pool of roughly 130 per set, so repeat
+				// openings of the same set collide constantly — after around
+				// ten packs, most of that set's commons are already on the
+				// device. CacheFirst here means a card downloaded once stays
+				// available for a full month regardless of what the origin
+				// server's own header says, capped at 600 images so this can
+				// never grow without bound.
+				runtimeCaching: [
+					{
+						urlPattern: ({ url }: { url: URL }) =>
+							url.origin === "https://content.fabrary.net" &&
+							url.pathname.startsWith("/cards/"),
+						handler: "CacheFirst",
+						options: {
+							cacheName: "pack-opener-card-art",
+							expiration: {
+								maxEntries: 600,
+								maxAgeSeconds: 60 * 60 * 24 * 30,
+							},
+							cacheableResponse: { statuses: [0, 200] },
+						},
+					},
+				],
 			},
 			includeAssets: [
 				"favicon.ico",
 				"apple-touch-icon.png",
+				"img/pack-opener/card-back.webp",
 				"cardbacks/generated/683c9f087ee5f.png",
 				"cardbacks/generated/683c9f087f497.png",
 				"cardbacks/generated/683c9f087fa14.png",
