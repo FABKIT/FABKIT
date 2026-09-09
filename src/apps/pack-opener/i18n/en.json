@@ -32,6 +32,9 @@
 	},
 	"dialog": {
 		"cards_per_pack_title": "Cards per pack",
+		"cards_per_pack_with_token": "{{cards}} (+ {{count}} token)",
+		"cards_per_pack_with_token_plural": "{{cards}} (+ {{count}} tokens)",
+		"cards_per_pack_note": "The printed pack counts the cards only. Legend Story Studios counts the token too, which is why their product page says {{total}}.",
 		"pull_rates_title": "Pull rates",
 		"rate_odds": "About 1 in {{odds}} packs",
 		"rate_disclaimer": "Some rates are estimated where Legend Story Studios has not published them.",

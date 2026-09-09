@@ -1,6 +1,7 @@
 import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
 import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
 import {
+	guaranteedTokenCount,
 	PERCENT_DISPLAY_THRESHOLD,
 	percentOfPack,
 	pullRateRows,
@@ -94,6 +95,7 @@ export function SetInfoDialog({
 	const config = getPackConfig(setCode);
 	const sourceUrl = SET_SOURCE_URLS[setCode];
 	const rates = pullRateRows(config);
+	const tokenCount = guaranteedTokenCount(config);
 	const prices = getSetPrices(setCode);
 	const capturedDate = prices
 		? new Date(prices.capturedAt).toLocaleDateString(undefined, {
@@ -127,11 +129,31 @@ export function SetInfoDialog({
 						</button>
 					</div>
 
+					{/* Shown the way the physical pack counts it: cards, then the
+					    token alongside. fabtcg.com counts the token inside its own
+					    total, the printed wrapper does not, and a player holding
+					    the real pack should not have to work out which of the two
+					    numbers this app means. See guaranteedTokenCount for why
+					    the underlying cardsPerPack is deliberately left alone. */}
 					<section className="space-y-1">
 						<h3 className="font-semibold text-body">
 							{t("dialog.cards_per_pack_title")}
 						</h3>
-						<p className="text-sm text-muted">{config.cardsPerPack}</p>
+						<p className="text-sm text-muted">
+							{tokenCount > 0
+								? t("dialog.cards_per_pack_with_token", {
+										cards: config.cardsPerPack - tokenCount,
+										count: tokenCount,
+									})
+								: config.cardsPerPack}
+						</p>
+						{tokenCount > 0 && (
+							<p className="text-xs text-subtle">
+								{t("dialog.cards_per_pack_note", {
+									total: config.cardsPerPack,
+								})}
+							</p>
+						)}
 					</section>
 
 					<section className="space-y-2">
