@@ -117,7 +117,7 @@ export function PackSummary() {
 	return (
 		<div
 			ref={containerRef}
-			className="pointer-events-auto relative flex shrink-0 flex-col items-center gap-2 px-4 pb-3"
+			className="pointer-events-auto relative flex shrink-0 flex-col items-center gap-2 px-4 pb-2"
 		>
 			{/* The ledger opens UPWARD, over the canvas, rather than pushing the
 			    layout around — that is what keeps the card exactly one size
@@ -255,7 +255,7 @@ export function PackSummary() {
 							event.preventDefault();
 							setExpandedByChoice(delta < 0);
 						}}
-						className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
+						className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-left"
 					>
 						<span>{t("page.summary_title")}</span>
 						<span className="flex shrink-0 items-center gap-2">
@@ -279,7 +279,7 @@ export function PackSummary() {
 				<button
 					type="button"
 					onClick={() => openPack()}
-					className="rounded-full bg-heading px-6 py-3 font-semibold text-surface shadow-lg transition hover:opacity-90"
+					className="rounded-full bg-heading px-6 py-2.5 font-semibold text-surface shadow-lg transition hover:opacity-90"
 				>
 					{t("page.open_another")}
 				</button>
@@ -290,7 +290,7 @@ export function PackSummary() {
 					<button
 						type="button"
 						onClick={() => setStatsOpen(true)}
-						className="rounded-full border border-primary bg-surface/80 px-6 py-3 font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white"
+						className="rounded-full border border-primary bg-surface/80 px-6 py-2.5 font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white"
 					>
 						{t("stats.open_button")}
 					</button>
