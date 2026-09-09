@@ -3,9 +3,15 @@ import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-t
 import { Card3D } from "@fabkit/apps/pack-opener/components/scene/Card3D";
 import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/OutgoingCard";
 import { PullCelebration } from "@fabkit/apps/pack-opener/components/scene/PullCelebration";
-import { REVEALING_CARD_Y_OFFSET } from "@fabkit/apps/pack-opener/config/scene";
+import {
+	CARD_Y_EASE_BASE,
+	DONE_CARD_Y_OFFSET,
+	REVEALING_CARD_Y_OFFSET,
+} from "@fabkit/apps/pack-opener/config/scene";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
-import { useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
+import type { Group } from "three";
 
 /** Hosts the active card (static, always face-up), the glow behind it for a
  * celebrated pull (see cards/celebration-tier.ts), and the previous card
@@ -22,6 +28,19 @@ export function CardStack3D() {
 	const phase = usePackOpenerStore((state) => state.phase);
 	const phaseStartedAt = usePackOpenerStore((state) => state.phaseStartedAt);
 	const advanceReveal = usePackOpenerStore((state) => state.advanceReveal);
+	const group = useRef<Group>(null);
+
+	// Eases the whole stack up once the pack is done, clearing the strip the
+	// summary occupies — see DONE_CARD_Y_OFFSET. Lerped rather than set
+	// straight on the group so the move reads as deliberate.
+	useFrame((_, delta) => {
+		if (!group.current) return;
+		const target =
+			phase === "done" ? DONE_CARD_Y_OFFSET : REVEALING_CARD_Y_OFFSET;
+		const current = group.current.position.y;
+		group.current.position.y =
+			current + (target - current) * (1 - CARD_Y_EASE_BASE ** delta);
+	});
 
 	// While revisiting a finished pack, the ledger's chosen card takes over
 	// as "active" — read-only (see the guarded onClick below), no outgoing
@@ -60,7 +79,7 @@ export function CardStack3D() {
 	if (!resolvedCard) return null;
 
 	return (
-		<group position={[0, REVEALING_CARD_Y_OFFSET, 0]}>
+		<group ref={group} position={[0, REVEALING_CARD_Y_OFFSET, 0]}>
 			{celebrationTier && (
 				<PullCelebration
 					tier={celebrationTier}

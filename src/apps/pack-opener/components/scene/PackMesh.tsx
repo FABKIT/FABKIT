@@ -12,10 +12,11 @@ import {
 	PACK_SEAL_HEIGHT,
 	PACK_WIDTH,
 	TEAR_DURATION_MS,
+	TEAR_START_DELAY_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Group, Mesh } from "three";
 
 function easeOutCubic(t: number): number {
@@ -91,16 +92,39 @@ export function PackMesh() {
 	const body = useRef<Mesh>(null);
 	const seal = useRef<Mesh>(null);
 	const group = useRef<Group>(null);
+	// Gates the sparkle burst so it fires with the rip rather than during
+	// the hold before it. Keyed on phaseStartedAt as well as phase so every
+	// new pack restarts the hold, not just the first one.
+	const [tearStarted, setTearStarted] = useState(false);
+
+	useEffect(() => {
+		setTearStarted(false);
+		if (phase !== "tearing" || phaseStartedAt === null) return;
+		// Derived from the store's own timestamp rather than a flat delay, so
+		// a remount partway through a tear picks up where that tear actually
+		// is instead of restarting the hold.
+		const remaining = phaseStartedAt + TEAR_START_DELAY_MS - Date.now();
+		if (remaining <= 0) {
+			setTearStarted(true);
+			return;
+		}
+		const timer = setTimeout(() => setTearStarted(true), remaining);
+		return () => clearTimeout(timer);
+	}, [phase, phaseStartedAt]);
 
 	useFrame(() => {
 		if (!body.current || !seal.current || !group.current) return;
 
-		const t =
+		// The pack holds closed for TEAR_START_DELAY_MS before the seal moves
+		// at all, so the rip lands after the camera has settled into the
+		// tearing shot rather than under a moving one — see that constant's
+		// own comment in config/scene.ts.
+		const elapsed =
 			phase === "tearing" && phaseStartedAt !== null
-				? easeOutCubic(
-						Math.min((Date.now() - phaseStartedAt) / TEAR_DURATION_MS, 1),
-					)
+				? Date.now() - phaseStartedAt - TEAR_START_DELAY_MS
 				: 0;
+		const t =
+			elapsed > 0 ? easeOutCubic(Math.min(elapsed / TEAR_DURATION_MS, 1)) : 0;
 
 		seal.current.position.y = SEAL_CENTER_Y + t * 1.9;
 		seal.current.position.x = t * 0.35;
@@ -128,7 +152,7 @@ export function PackMesh() {
 				<boxGeometry args={[PACK_WIDTH, PACK_SEAL_HEIGHT, 0.1]} />
 				<PackSealMaterial packArtUrl={packArtUrl} />
 			</mesh>
-			{phase === "tearing" && (
+			{phase === "tearing" && tearStarted && (
 				<TearBurst position={[0, BODY_HEIGHT / 2 + BODY_CENTER_Y, 0.1]} />
 			)}
 		</group>

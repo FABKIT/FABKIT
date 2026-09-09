@@ -3,7 +3,9 @@ import { clearCardTextureCache } from "@fabkit/apps/pack-opener/components/scene
 import { preloadSafeTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
 import {
 	ADVANCE_DEBOUNCE_MS,
+	LAST_CARD_AUTO_SUMMARY_MS,
 	TEAR_DURATION_MS,
+	TEAR_START_DELAY_MS,
 	TEAR_TAIL_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
@@ -193,39 +195,131 @@ const initialState: PackOpenerState = {
 };
 
 export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
-	devtools((set, get) => ({
-		...initialState,
-
-		openPack(config) {
-			const { phase, selectedSet } = get();
-			if (phase !== "idle" && phase !== "done") return;
-
-			const packConfig = config ?? getPackConfig(selectedSet ?? undefined);
-			clearCardTextureCache();
-			const pack = orderForReveal(generatePack(packConfig));
-			preloadPackTextures(pack, packConfig.id, 0, preloadLookaheadCount());
+	devtools((set, get) => {
+		/** Ends the pack and hands over to the summary. Shared by the last
+		 * tap and by the automatic hand-over on the final card (see
+		 * LAST_CARD_AUTO_SUMMARY_MS), so both paths record the pack into
+		 * session stats identically rather than one of them drifting. */
+		function completePack(pack: DrawnCard[], setCode: string | null): void {
 			set(
 				{
-					phase: "tearing",
-					pack,
-					revealIndex: -1,
-					phaseStartedAt: Date.now(),
-					revisitIndex: null,
-					packSetCode: packConfig.id,
+					phase: "done",
+					packsOpenedThisSession: get().packsOpenedThisSession + 1,
+					openedPacksThisSession: [
+						...get().openedPacksThisSession,
+						{ setCode: setCode ?? DEFAULT_PACK_CONFIG.id, cards: pack },
+					],
 				},
 				undefined,
-				"pack-opener/openPack",
+				"pack-opener/packCompleted",
 			);
-			trackEvent({ name: "pack_opener_pack_opened" });
+			trackEvent({ name: "pack_opener_pack_completed" });
+		}
 
-			setTimeout(() => {
-				if (get().phase !== "tearing" || get().pack !== pack) return;
+		return {
+			...initialState,
+
+			openPack(config) {
+				const { phase, selectedSet } = get();
+				if (phase !== "idle" && phase !== "done") return;
+
+				const packConfig = config ?? getPackConfig(selectedSet ?? undefined);
+				clearCardTextureCache();
+				const pack = orderForReveal(generatePack(packConfig));
+				preloadPackTextures(pack, packConfig.id, 0, preloadLookaheadCount());
 				set(
-					{ phase: "revealing", revealIndex: 0, phaseStartedAt: Date.now() },
+					{
+						phase: "tearing",
+						pack,
+						revealIndex: -1,
+						phaseStartedAt: Date.now(),
+						revisitIndex: null,
+						packSetCode: packConfig.id,
+					},
 					undefined,
-					"pack-opener/tearComplete",
+					"pack-opener/openPack",
 				);
-				const revealed = pack[0];
+				trackEvent({ name: "pack_opener_pack_opened" });
+
+				setTimeout(
+					() => {
+						if (get().phase !== "tearing" || get().pack !== pack) return;
+						set(
+							{
+								phase: "revealing",
+								revealIndex: 0,
+								phaseStartedAt: Date.now(),
+							},
+							undefined,
+							"pack-opener/tearComplete",
+						);
+						const revealed = pack[0];
+						trackEvent({
+							name: "pack_opener_card_revealed",
+							data: {
+								rarity: revealed.rarity,
+								treatment: revealed.treatment,
+							},
+						});
+					},
+					TEAR_START_DELAY_MS + TEAR_DURATION_MS + TEAR_TAIL_MS,
+				);
+			},
+
+			advanceReveal() {
+				const { phase, pack, revealIndex, phaseStartedAt, packSetCode } = get();
+				if (phase !== "revealing" || !pack) return;
+				if (
+					phaseStartedAt !== null &&
+					Date.now() - phaseStartedAt < ADVANCE_DEBOUNCE_MS
+				) {
+					return;
+				}
+
+				const nextIndex = revealIndex + 1;
+				if (nextIndex >= pack.length) {
+					completePack(pack, packSetCode);
+					return;
+				}
+
+				set(
+					{ revealIndex: nextIndex, phaseStartedAt: Date.now() },
+					undefined,
+					"pack-opener/advanceReveal",
+				);
+				// Keeps the lookahead window moving forward one card at a time as
+				// the player advances — the cards behind this frontier were
+				// already preloaded by openPack's initial batch or an earlier
+				// call here, so only the new topmost index needs fetching.
+				const frontierIndex = nextIndex + preloadLookaheadCount() - 1;
+				preloadPackTextures(
+					pack,
+					packSetCode ?? DEFAULT_PACK_CONFIG.id,
+					frontierIndex,
+					1,
+				);
+
+				// The last card is already on screen at this point, so requiring
+				// one more tap to see the summary asked the player to dismiss the
+				// pack's best card to reveal nothing. Hand over on its own after
+				// a beat instead. Re-checks everything on fire rather than
+				// holding a cancellable handle: a tap that completes the pack
+				// early, or switching sets out from under it, both simply make
+				// these conditions false.
+				if (nextIndex === pack.length - 1) {
+					setTimeout(() => {
+						const live = get();
+						if (
+							live.phase !== "revealing" ||
+							live.pack !== pack ||
+							live.revealIndex !== nextIndex
+						) {
+							return;
+						}
+						completePack(pack, live.packSetCode);
+					}, LAST_CARD_AUTO_SUMMARY_MS);
+				}
+				const revealed = pack[nextIndex];
 				trackEvent({
 					name: "pack_opener_card_revealed",
 					data: {
@@ -233,153 +327,99 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						treatment: revealed.treatment,
 					},
 				});
-			}, TEAR_DURATION_MS + TEAR_TAIL_MS);
-		},
+			},
 
-		advanceReveal() {
-			const { phase, pack, revealIndex, phaseStartedAt, packSetCode } = get();
-			if (phase !== "revealing" || !pack) return;
-			if (
-				phaseStartedAt !== null &&
-				Date.now() - phaseStartedAt < ADVANCE_DEBOUNCE_MS
-			) {
-				return;
-			}
+			selectSet(setCode) {
+				const { selectedSet } = get();
+				if (setCode === selectedSet) return;
+				// The carousel now stays visible during tearing/revealing (see
+				// SetCarousel.tsx) so a player can switch sets mid-pack. That is a
+				// deliberate, user-facing decision, not something this store should
+				// silently allow or silently block: SetCarousel gates the call
+				// behind LeavePackDialog, which warns that an in-flight pack is
+				// discarded and does not count toward session stats, before ever
+				// calling this action. This action itself stays unconditional —
+				// it already resets pack/phase/revealIndex cleanly below, which is
+				// exactly "discard the pack" — so there is nothing else to guard
+				// here once the UI has confirmed the player wants that.
+				const entry = getSetIndex().find((set) => set.code === setCode);
+				const packArtUrl = entry ? pickPackArt(entry) : null;
+				if (packArtUrl) useTexture.preload(packArtUrl);
+				// Warm the set's own printing pool ahead of the next openPack()
+				// call, same spirit as the pack-art preload above — see
+				// card-resolver.ts's fabPrintingsCardResolver, which needs this
+				// loaded to show the set's own cards rather than falling back
+				// cross-set. Errors swallowed like every other loader here; a
+				// slow/failed load just means that fallback kicks in instead.
+				loadSetPrintings(setCode).catch(() => {});
+				// Same for the price snapshot — a set with no price file (or a
+				// failed fetch) just shows dashes everywhere a price would go,
+				// see PackSummary.tsx and SetInfoDialog.tsx.
+				loadSetPrices(setCode).catch(() => {});
 
-			const nextIndex = revealIndex + 1;
-			if (nextIndex >= pack.length) {
+				writeStoredSelectedSet(setCode);
 				set(
 					{
-						phase: "done",
-						packsOpenedThisSession: get().packsOpenedThisSession + 1,
-						openedPacksThisSession: [
-							...get().openedPacksThisSession,
-							{ setCode: packSetCode ?? DEFAULT_PACK_CONFIG.id, cards: pack },
-						],
+						selectedSet: setCode,
+						packArtUrl,
+						phase: "idle",
+						pack: null,
+						revealIndex: -1,
+						phaseStartedAt: null,
+						revisitIndex: null,
+						packSetCode: null,
 					},
 					undefined,
-					"pack-opener/packCompleted",
+					"pack-opener/selectSet",
 				);
-				trackEvent({ name: "pack_opener_pack_completed" });
-				return;
-			}
+			},
 
-			set(
-				{ revealIndex: nextIndex, phaseStartedAt: Date.now() },
-				undefined,
-				"pack-opener/advanceReveal",
-			);
-			// Keeps the lookahead window moving forward one card at a time as
-			// the player advances — the cards behind this frontier were
-			// already preloaded by openPack's initial batch or an earlier
-			// call here, so only the new topmost index needs fetching.
-			const frontierIndex = nextIndex + preloadLookaheadCount() - 1;
-			preloadPackTextures(
-				pack,
-				packSetCode ?? DEFAULT_PACK_CONFIG.id,
-				frontierIndex,
-				1,
-			);
-			const revealed = pack[nextIndex];
-			trackEvent({
-				name: "pack_opener_card_revealed",
-				data: {
-					rarity: revealed.rarity,
-					treatment: revealed.treatment,
-				},
-			});
-		},
+			initializeSetArt() {
+				const { selectedSet, packArtUrl } = get();
+				const sets = getSetIndex();
+				if (sets.length === 0) return;
 
-		selectSet(setCode) {
-			const { selectedSet } = get();
-			if (setCode === selectedSet) return;
-			// The carousel now stays visible during tearing/revealing (see
-			// SetCarousel.tsx) so a player can switch sets mid-pack. That is a
-			// deliberate, user-facing decision, not something this store should
-			// silently allow or silently block: SetCarousel gates the call
-			// behind LeavePackDialog, which warns that an in-flight pack is
-			// discarded and does not count toward session stats, before ever
-			// calling this action. This action itself stays unconditional —
-			// it already resets pack/phase/revealIndex cleanly below, which is
-			// exactly "discard the pack" — so there is nothing else to guard
-			// here once the UI has confirmed the player wants that.
-			const entry = getSetIndex().find((set) => set.code === setCode);
-			const packArtUrl = entry ? pickPackArt(entry) : null;
-			if (packArtUrl) useTexture.preload(packArtUrl);
-			// Warm the set's own printing pool ahead of the next openPack()
-			// call, same spirit as the pack-art preload above — see
-			// card-resolver.ts's fabPrintingsCardResolver, which needs this
-			// loaded to show the set's own cards rather than falling back
-			// cross-set. Errors swallowed like every other loader here; a
-			// slow/failed load just means that fallback kicks in instead.
-			loadSetPrintings(setCode).catch(() => {});
-			// Same for the price snapshot — a set with no price file (or a
-			// failed fetch) just shows dashes everywhere a price would go,
-			// see PackSummary.tsx and SetInfoDialog.tsx.
-			loadSetPrices(setCode).catch(() => {});
+				if (!selectedSet) {
+					const latest = sets[sets.length - 1];
+					writeStoredSelectedSet(latest.code);
+					const url = pickPackArt(latest);
+					if (url) useTexture.preload(url);
+					loadSetPrintings(latest.code).catch(() => {});
+					loadSetPrices(latest.code).catch(() => {});
+					set(
+						{ selectedSet: latest.code, packArtUrl: url },
+						undefined,
+						"pack-opener/initializeSetArt",
+					);
+					return;
+				}
 
-			writeStoredSelectedSet(setCode);
-			set(
-				{
-					selectedSet: setCode,
-					packArtUrl,
-					phase: "idle",
-					pack: null,
-					revealIndex: -1,
-					phaseStartedAt: null,
-					revisitIndex: null,
-					packSetCode: null,
-				},
-				undefined,
-				"pack-opener/selectSet",
-			);
-		},
+				// Always warm the returning visitor's already-selected set's
+				// printing pool and price snapshot too, even when packArtUrl below
+				// short-circuits — this runs once per mount either way (see this
+				// action's own doc comment) and both loaders are idempotent per
+				// set code.
+				loadSetPrintings(selectedSet).catch(() => {});
+				loadSetPrices(selectedSet).catch(() => {});
 
-		initializeSetArt() {
-			const { selectedSet, packArtUrl } = get();
-			const sets = getSetIndex();
-			if (sets.length === 0) return;
+				if (packArtUrl) return; // already resolved this session
 
-			if (!selectedSet) {
-				const latest = sets[sets.length - 1];
-				writeStoredSelectedSet(latest.code);
-				const url = pickPackArt(latest);
+				const entry = sets.find((set) => set.code === selectedSet);
+				const url = entry ? pickPackArt(entry) : null;
 				if (url) useTexture.preload(url);
-				loadSetPrintings(latest.code).catch(() => {});
-				loadSetPrices(latest.code).catch(() => {});
-				set(
-					{ selectedSet: latest.code, packArtUrl: url },
-					undefined,
-					"pack-opener/initializeSetArt",
-				);
-				return;
-			}
+				set({ packArtUrl: url }, undefined, "pack-opener/initializeSetArt");
+			},
 
-			// Always warm the returning visitor's already-selected set's
-			// printing pool and price snapshot too, even when packArtUrl below
-			// short-circuits — this runs once per mount either way (see this
-			// action's own doc comment) and both loaders are idempotent per
-			// set code.
-			loadSetPrintings(selectedSet).catch(() => {});
-			loadSetPrices(selectedSet).catch(() => {});
+			revisitCard(index) {
+				const { phase, pack } = get();
+				if (phase !== "done" || !pack) return;
+				if (index < 0 || index >= pack.length) return;
+				set({ revisitIndex: index }, undefined, "pack-opener/revisitCard");
+			},
 
-			if (packArtUrl) return; // already resolved this session
-
-			const entry = sets.find((set) => set.code === selectedSet);
-			const url = entry ? pickPackArt(entry) : null;
-			if (url) useTexture.preload(url);
-			set({ packArtUrl: url }, undefined, "pack-opener/initializeSetArt");
-		},
-
-		revisitCard(index) {
-			const { phase, pack } = get();
-			if (phase !== "done" || !pack) return;
-			if (index < 0 || index >= pack.length) return;
-			set({ revisitIndex: index }, undefined, "pack-opener/revisitCard");
-		},
-
-		exitRevisit() {
-			set({ revisitIndex: null }, undefined, "pack-opener/exitRevisit");
-		},
-	})),
+			exitRevisit() {
+				set({ revisitIndex: null }, undefined, "pack-opener/exitRevisit");
+			},
+		};
+	}),
 );
