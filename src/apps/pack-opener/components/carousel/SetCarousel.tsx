@@ -15,6 +15,13 @@ const SWIPE_THRESHOLD_PX = 40;
  * to be visible whenever there's a set to show, including mid-animation now
  * (see the execution plan, section 1.5: a player can switch sets while a
  * pack is tearing or revealing, behind LeavePackDialog's confirmation).
+ *
+ * Sits in normal document flow ABOVE the canvas rather than floating over
+ * it. It used to be absolutely positioned across the top of the canvas,
+ * which put the set logo and the pull-rates button directly on top of the
+ * card underneath as soon as the card was anything but small. The canvas
+ * takes the remaining height (see PackOpenerPage.tsx), so the two can no
+ * longer overlap at any viewport size.
  * Reads set data straight from getSetIndex()'s module cache rather than a
  * loader prop: the route loader (src/routes/pack-opener.tsx) already awaits
  * loadSetIndex() before this page ever mounts, same convention
@@ -116,7 +123,7 @@ export function SetCarousel() {
 
 	return (
 		<div
-			className="pointer-events-auto absolute inset-x-0 top-0 flex flex-col items-center gap-2 p-4"
+			className="pointer-events-auto flex w-full shrink-0 flex-col items-center gap-2 p-4"
 			onTouchStart={(event) => {
 				touchStartX.current = event.touches[0].clientX;
 			}}
@@ -184,10 +191,14 @@ export function SetCarousel() {
 				</button>
 			</div>
 
+			{/* Fills with the brand colour and flips the label to white on
+			    hover. It previously only shifted its background, which left
+			    the primary-coloured text washing into the hovered surface
+			    behind it. */}
 			<button
 				type="button"
 				onClick={() => setInfoOpen(true)}
-				className="rounded-md border border-primary bg-surface/70 px-3.5 py-2 text-sm font-semibold text-primary backdrop-blur transition-colors hover:bg-surface-active"
+				className="rounded-md border border-primary bg-surface/70 px-3.5 py-2 text-sm font-semibold text-primary backdrop-blur transition-colors hover:bg-primary hover:text-white"
 			>
 				{t("carousel.set_info_button")}
 			</button>

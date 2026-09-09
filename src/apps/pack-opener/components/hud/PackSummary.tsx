@@ -38,10 +38,29 @@ export function PackSummary() {
 	);
 	const openPack = usePackOpenerStore((state) => state.openPack);
 	const revisitCard = usePackOpenerStore((state) => state.revisitCard);
+	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
+	const exitRevisit = usePackOpenerStore((state) => state.exitRevisit);
 	const [statsOpen, setStatsOpen] = useState(false);
-	const [expanded, setExpanded] = useState(true);
+	const [expandedByChoice, setExpandedByChoice] = useState(true);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const touchStartY = useRef<number | null>(null);
+
+	// Looking at one card from the ledger always means the panel is out of
+	// the way — tapping a row used to swap the whole summary out for a
+	// separate revisit view, which showed the card smaller with the ledger
+	// gone entirely. Collapsing instead keeps one consistent screen: the
+	// card at its normal size with the summary tucked down to its header,
+	// exactly as if it had been collapsed by hand.
+	const isRevisiting = revisitIndex !== null;
+	const expanded = !isRevisiting && expandedByChoice;
+
+	/** Expanding while a card is being revisited also drops that card, since
+	 * the ledger and a single revisited card are two views of the same
+	 * space. Collapsing by hand leaves the last-revealed card showing. */
+	function setExpandedState(next: boolean): void {
+		if (next && isRevisiting) exitRevisit();
+		setExpandedByChoice(next);
+	}
 
 	const resolvedCards = useMemo(
 		() =>
@@ -89,7 +108,7 @@ export function PackSummary() {
 			if (target instanceof Element && target.closest('[role="dialog"]')) {
 				return;
 			}
-			setExpanded(false);
+			setExpandedByChoice(false);
 		}
 		document.addEventListener("pointerdown", handlePointerDown);
 		return () => document.removeEventListener("pointerdown", handlePointerDown);
@@ -100,9 +119,13 @@ export function PackSummary() {
 	return (
 		<div
 			ref={containerRef}
-			className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-4 px-4"
+			className="pointer-events-auto absolute inset-x-0 bottom-6 flex flex-col items-center gap-4 px-4"
 		>
-			<div className="flex w-full max-w-2xl flex-col rounded-2xl bg-surface/90 shadow-lg backdrop-blur">
+			{/* Near-opaque on purpose. The card behind it is now full size for
+			    the whole done phase (see DONE_CAMERA_POSITION), so a lightly
+			    tinted panel let bright card art bleed through the ledger and
+			    made the prices hard to read. */}
+			<div className="flex w-full max-w-2xl flex-col rounded-2xl border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md">
 				{/* The heading wraps the button (rather than sitting inside
 				    it, which HTML doesn't allow — a <button> can only hold
 				    phrasing content, not a heading) so the summary title
@@ -113,7 +136,7 @@ export function PackSummary() {
 					<button
 						type="button"
 						aria-expanded={expanded}
-						onClick={() => setExpanded((value) => !value)}
+						onClick={() => setExpandedState(!expanded)}
 						onTouchStart={(event) => {
 							touchStartY.current = event.touches[0].clientY;
 						}}
@@ -127,7 +150,7 @@ export function PackSummary() {
 							// synthesized click from also firing right after
 							// this and toggling the state a second time.
 							event.preventDefault();
-							setExpanded(delta < 0);
+							setExpandedState(delta < 0);
 						}}
 						className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
 					>
