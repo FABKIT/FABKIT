@@ -39,27 +39,25 @@ export function PackSummary() {
 	const openPack = usePackOpenerStore((state) => state.openPack);
 	const revisitCard = usePackOpenerStore((state) => state.revisitCard);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
-	const exitRevisit = usePackOpenerStore((state) => state.exitRevisit);
+	const phase = usePackOpenerStore((state) => state.phase);
 	const [statsOpen, setStatsOpen] = useState(false);
 	const [expandedByChoice, setExpandedByChoice] = useState(true);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const touchStartY = useRef<number | null>(null);
 
-	// Looking at one card from the ledger always means the panel is out of
-	// the way — tapping a row used to swap the whole summary out for a
-	// separate revisit view, which showed the card smaller with the ledger
-	// gone entirely. Collapsing instead keeps one consistent screen: the
-	// card at its normal size with the summary tucked down to its header,
-	// exactly as if it had been collapsed by hand.
-	const isRevisiting = revisitIndex !== null;
-	const expanded = !isRevisiting && expandedByChoice;
+	// Tapping a row collapses the panel out of the way so the chosen card is
+	// visible at its normal size. Which card is on screen and whether the
+	// ledger is open are otherwise independent of each other: reopening the
+	// ledger deliberately does NOT put the last-revealed card back, because
+	// then you could never open the ledger to pick a different card without
+	// losing the one you were looking at. The chosen card stays until
+	// another row is tapped or a new pack is opened.
+	const expanded = expandedByChoice;
 
-	/** Expanding while a card is being revisited also drops that card, since
-	 * the ledger and a single revisited card are two views of the same
-	 * space. Collapsing by hand leaves the last-revealed card showing. */
-	function setExpandedState(next: boolean): void {
-		if (next && isRevisiting) exitRevisit();
-		setExpandedByChoice(next);
+	/** Tapping a row: show that card and get the ledger out of the way. */
+	function showCard(index: number): void {
+		revisitCard(index);
+		setExpandedByChoice(false);
 	}
 
 	const resolvedCards = useMemo(
@@ -100,7 +98,7 @@ export function PackSummary() {
 	// root, so this check covers all of them generically rather than
 	// tracking each one's own open state here.
 	useEffect(() => {
-		if (!expanded) return;
+		if (!expanded || phase !== "done") return;
 		function handlePointerDown(event: PointerEvent): void {
 			if (!containerRef.current) return;
 			const target = event.target as Node;
@@ -112,81 +110,50 @@ export function PackSummary() {
 		}
 		document.addEventListener("pointerdown", handlePointerDown);
 		return () => document.removeEventListener("pointerdown", handlePointerDown);
-	}, [expanded]);
+	}, [expanded, phase]);
 
 	if (!pack) return null;
 
 	return (
 		<div
 			ref={containerRef}
-			className="pointer-events-auto absolute inset-x-0 bottom-6 flex flex-col items-center gap-4 px-4"
+			className="pointer-events-auto relative flex shrink-0 flex-col items-center gap-2 px-4 pb-3"
 		>
-			{/* Near-opaque on purpose. The card behind it is now full size for
-			    the whole done phase (see DONE_CAMERA_POSITION), so a lightly
-			    tinted panel let bright card art bleed through the ledger and
-			    made the prices hard to read. */}
-			<div className="flex w-full max-w-2xl flex-col rounded-2xl border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md">
-				{/* The heading wraps the button (rather than sitting inside
-				    it, which HTML doesn't allow — a <button> can only hold
-				    phrasing content, not a heading) so the summary title
-				    stays in the document outline for screen readers while
-				    the whole header is still one native, keyboard-operable
-				    toggle. Standard WAI-ARIA disclosure/accordion pattern. */}
-				<h2 className="text-lg font-semibold text-heading">
-					<button
-						type="button"
-						aria-expanded={expanded}
-						onClick={() => setExpandedState(!expanded)}
-						onTouchStart={(event) => {
-							touchStartY.current = event.touches[0].clientY;
-						}}
-						onTouchEnd={(event) => {
-							if (touchStartY.current === null) return;
-							const delta =
-								event.changedTouches[0].clientY - touchStartY.current;
-							touchStartY.current = null;
-							if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
-							// A real swipe, not a tap — stop the browser's own
-							// synthesized click from also firing right after
-							// this and toggling the state a second time.
-							event.preventDefault();
-							setExpandedState(delta < 0);
-						}}
-						className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
-					>
-						<span>{t("page.summary_title")}</span>
-						<span className="flex shrink-0 items-center gap-2">
-							<span className="font-card-stat text-base text-body">
-								{pulledTotal !== null
-									? formatUsd(pulledTotal)
-									: t("page.price_unavailable")}
-							</span>
-							<ChevronDown
-								className={`h-5 w-5 text-muted transition-transform ${
-									expanded ? "rotate-180" : ""
-								}`}
-								aria-hidden="true"
-							/>
-						</span>
-					</button>
-				</h2>
-
+			{/* The ledger opens UPWARD, over the canvas, rather than pushing the
+			    layout around — that is what keeps the card exactly one size
+			    whether the summary is open or shut (see PackOpenerPage.tsx).
+			    Collapsed it has no height at all: the border and background sit
+			    on the inner element so nothing shows as a stray line above the
+			    header. */}
+			<div className="absolute inset-x-0 bottom-full flex justify-center px-4">
 				<div
-					className={`grid transition-[grid-template-rows] duration-300 motion-reduce:transition-none ${
+					className={`grid w-full max-w-2xl transition-[grid-template-rows] duration-300 motion-reduce:transition-none ${
 						expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
 					}`}
 				>
 					<div className="overflow-hidden">
-						<div className="px-4 pb-1">
+						{/* Near-opaque on purpose: the card behind it is full size
+						    for the whole done phase, so a lightly tinted panel let
+						    bright card art bleed through and made prices hard to
+						    read. */}
+						<div className="rounded-t-2xl border border-b-0 border-border-primary bg-surface/95 px-4 pt-4 shadow-xl backdrop-blur-md">
 							<ul className="flex max-h-64 flex-col gap-1 overflow-y-auto">
 								{resolvedCards.map((card, index) => {
 									const price = cardPrices[index];
+									const isShowing = revisitIndex === index;
 									return (
 										<li key={card.id}>
+											{/* The row whose card is currently on screen stays
+											    marked, so reopening the ledger shows at a
+											    glance which one you were looking at. */}
 											<button
 												type="button"
-												onClick={() => revisitCard(index)}
-												className="flex w-full items-center gap-3 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-border-primary hover:bg-surface-muted"
+												onClick={() => showCard(index)}
+												className={`flex w-full items-center gap-3 rounded-lg border px-2 py-1.5 text-left transition hover:border-border-primary hover:bg-surface-muted ${
+													isShowing
+														? "border-border-primary bg-surface-active"
+														: "border-transparent"
+												}`}
 											>
 												<img
 													src={CardRarities[card.rarity].icon}
@@ -244,7 +211,7 @@ export function PackSummary() {
 									</span>
 								</div>
 							</div>
-							<p className="mt-3 pb-3 text-center text-xs text-subtle">
+							<p className="mt-3 pb-4 text-center text-xs text-subtle">
 								{t("page.packs_opened_session", {
 									count: packsOpenedThisSession,
 								})}
@@ -252,6 +219,60 @@ export function PackSummary() {
 						</div>
 					</div>
 				</div>
+			</div>
+
+			{/* The header bar itself stays in flow, directly under the card's
+			    details, so it never covers the card. Squared off at the top
+			    while open so it reads as one panel with the ledger above. */}
+			<div
+				className={`w-full max-w-2xl border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md ${
+					expanded ? "rounded-b-2xl border-t-0" : "rounded-2xl"
+				}`}
+			>
+				{/* The heading wraps the button (rather than sitting inside it,
+				    which HTML doesn't allow — a <button> can only hold phrasing
+				    content, not a heading) so the summary title stays in the
+				    document outline for screen readers while the whole header is
+				    still one native, keyboard-operable toggle. Standard
+				    WAI-ARIA disclosure/accordion pattern. */}
+				<h2 className="text-lg font-semibold text-heading">
+					<button
+						type="button"
+						aria-expanded={expanded}
+						onClick={() => setExpandedByChoice(!expanded)}
+						onTouchStart={(event) => {
+							touchStartY.current = event.touches[0].clientY;
+						}}
+						onTouchEnd={(event) => {
+							if (touchStartY.current === null) return;
+							const delta =
+								event.changedTouches[0].clientY - touchStartY.current;
+							touchStartY.current = null;
+							if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
+							// A real swipe, not a tap — stop the browser's own
+							// synthesized click from also firing right after this
+							// and toggling the state a second time.
+							event.preventDefault();
+							setExpandedByChoice(delta < 0);
+						}}
+						className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
+					>
+						<span>{t("page.summary_title")}</span>
+						<span className="flex shrink-0 items-center gap-2">
+							<span className="font-card-stat text-base text-body">
+								{pulledTotal !== null
+									? formatUsd(pulledTotal)
+									: t("page.price_unavailable")}
+							</span>
+							<ChevronDown
+								className={`h-5 w-5 text-muted transition-transform ${
+									expanded ? "rotate-180" : ""
+								}`}
+								aria-hidden="true"
+							/>
+						</span>
+					</button>
+				</h2>
 			</div>
 
 			<div className="flex flex-col gap-2 sm:flex-row">
@@ -262,11 +283,14 @@ export function PackSummary() {
 				>
 					{t("page.open_another")}
 				</button>
+				{/* Fills with the brand colour and flips the label white on
+				    hover, matching the pull-rates button. It previously only
+				    shifted its background, leaving the label washing into it. */}
 				{packsOpenedThisSession > 0 && (
 					<button
 						type="button"
 						onClick={() => setStatsOpen(true)}
-						className="rounded-full border border-primary bg-surface/80 px-6 py-3 font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-surface-active"
+						className="rounded-full border border-primary bg-surface/80 px-6 py-3 font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white"
 					>
 						{t("stats.open_button")}
 					</button>

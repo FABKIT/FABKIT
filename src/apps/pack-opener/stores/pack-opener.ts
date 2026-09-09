@@ -151,11 +151,14 @@ export interface PackOpenerActions {
 	 * now that it can. A no-op once packArtUrl is already resolved for the
 	 * current selection, so it's safe to call on every mount. */
 	initializeSetArt(): void;
-	/** Enters read-only revisit mode on a card from the just-finished pack —
-	 * only valid once phase is "done". */
+	/** Shows a specific card from the just-finished pack — only valid once
+	 * phase is "done". Read-only: it doesn't touch `revealIndex` or re-roll
+	 * anything. Deliberately sticky, with no matching "clear" action: which
+	 * card is on screen and whether the summary ledger is open are
+	 * independent of each other (see PackSummary.tsx), so reopening the
+	 * ledger must not silently swap the card back. Opening a new pack or
+	 * switching sets is what resets it. */
 	revisitCard(index: number): void;
-	/** Leaves revisit mode, returning to the summary ledger. */
-	exitRevisit(): void;
 }
 
 const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
@@ -415,10 +418,6 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				if (phase !== "done" || !pack) return;
 				if (index < 0 || index >= pack.length) return;
 				set({ revisitIndex: index }, undefined, "pack-opener/revisitCard");
-			},
-
-			exitRevisit() {
-				set({ revisitIndex: null }, undefined, "pack-opener/exitRevisit");
 			},
 		};
 	}),

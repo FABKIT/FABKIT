@@ -62,20 +62,24 @@ export const GLOW_ANIMATION_MS = 900;
 // subject's height (pack 2.0 units, single card CARD_HEIGHT ~1.675). The pack
 // being the taller object is why it needs the greater distance: framed from
 // the same spot as a card it would loom noticeably larger than the cards it
-// produces. At 4.3 the pack and at 3.6 a card both land near 74% of frame.
+// produces. The card now fills ~94% of its canvas, up from ~74%: it was
+// leaving a wide empty band between itself and the set picker above it.
+// The pack's canvas is taller (nothing is reserved beneath it in the idle
+// and tearing phases), so its distances match the card's on-screen HEIGHT
+// rather than its share of frame — the same share in a taller box would
+// put the pack straight back to towering over the cards it produces.
 // Idle sits slightly further out than tearing so tapping still gives a
 // gentle push-in.
-export const IDLE_CAMERA_POSITION: [number, number, number] = [0, 0.3, 4.6];
-export const TEARING_CAMERA_POSITION: [number, number, number] = [0, 0.15, 4.3];
-/** z pulled back from 3.2 (see the execution plan, section 2.3) — Louis's
- * feedback was the opposite of what it sounds like at first: the revealed
- * card itself was too big/dominant on screen, not too small. A farther
- * camera makes the card a smaller share of the (now taller, at this fov)
- * frame — see the H(d) formula above. This alone opens up MORE empty
- * margin around the card, not less; REVEALING_CARD_Y_OFFSET below is what
- * actually closes the specific gap Louis flagged, between the card and
- * RevealCaption underneath it. */
-export const REVEALING_CAMERA_POSITION: [number, number, number] = [0, 0, 3.6];
+export const IDLE_CAMERA_POSITION: [number, number, number] = [0, 0.3, 4.9];
+export const TEARING_CAMERA_POSITION: [number, number, number] = [
+	0, 0.15, 4.73,
+];
+/** Close enough that the card fills most of its canvas. Everything that
+ * shares the page with it (set picker above, card details and summary
+ * below) now takes its own fixed space, so the canvas is exactly the room
+ * the card gets and it should use nearly all of it — a wide empty band
+ * between the card and the set picker was the specific complaint. */
+export const REVEALING_CAMERA_POSITION: [number, number, number] = [0, 0, 2.83];
 /** Deliberately identical to REVEALING_CAMERA_POSITION. It used to pull
  * back to [0, 0.45, 5] to clear room for the summary panel, which meant
  * the last card of a pack visibly shrank as the summary arrived, and every
@@ -83,7 +87,7 @@ export const REVEALING_CAMERA_POSITION: [number, number, number] = [0, 0, 3.6];
  * during the reveal. A card should be exactly one size for the whole
  * session; the summary collapsing (see PackSummary.tsx) is what makes room
  * now, not the camera. */
-export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0, 3.6];
+export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0, 2.83];
 
 /**
  * A camera position always looks at the world origin (see CameraRig.tsx's
@@ -95,16 +99,10 @@ export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0, 3.6];
  * section 2.3), CardStack3D.tsx offsets the CARD ITSELF by this amount
  * instead of moving the camera. Negative Y = down. Modest on purpose: the
  * card must stay fully inside the vertical frustum at every tilt angle. */
-export const REVEALING_CARD_Y_OFFSET = -0.18;
-
-/** Where the card sits once the pack is finished. The summary occupies the
- * bottom strip of the canvas from here on (its collapsed header plus the
- * two action buttons, roughly 135px), and the card is deliberately the same
- * size as it was during the reveal, so the only way for both to be fully
- * visible is for the card to move up out of that strip. Positive Y = up.
- * CardStack3D eases between this and REVEALING_CARD_Y_OFFSET rather than
- * snapping, so the card reads as making room rather than jumping. */
-export const DONE_CARD_Y_OFFSET = 0.18;
-/** Lerp factor base for that easing, in the same
- * `1 - base ** delta` form CameraRig.tsx uses for the camera. */
-export const CARD_Y_EASE_BASE = 0.005;
+/** The card sits dead centre in the canvas in every phase. It briefly had a
+ * separate, raised position for the done phase, back when the summary was
+ * an overlay floating over the bottom of the canvas and the card had to
+ * climb out from under it. The summary now takes its own space in the page
+ * below the canvas (see PackOpenerPage.tsx), so there is nothing left to
+ * dodge and one centred position serves every phase. */
+export const CARD_Y_OFFSET = 0;

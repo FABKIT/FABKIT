@@ -123,7 +123,7 @@ export function SetCarousel() {
 
 	return (
 		<div
-			className="pointer-events-auto flex w-full shrink-0 flex-col items-center gap-2 p-4"
+			className="pointer-events-auto flex w-full shrink-0 flex-col items-center gap-1.5 px-4 pt-2 pb-3"
 			onTouchStart={(event) => {
 				touchStartX.current = event.touches[0].clientX;
 			}}

@@ -4,13 +4,22 @@ import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-/** Replaces RevealBadge — same information, but in normal document flow
- * BELOW the 3D canvas (see PackOpenerPage.tsx) rather than an absolutely
- * positioned overlay sitting on top of the card. RevealBadge's
- * `absolute bottom-10` placement overlapped the bottom of the card itself,
- * which the execution plan (section 3.8) calls out explicitly as something
- * to fix, not preserve: "The caption block sits entirely below the card,
- * never overlapping it." */
+/** What the card currently on screen actually is — in normal document flow
+ * BELOW the 3D canvas and ABOVE the summary (see PackOpenerPage.tsx),
+ * never an overlay sitting on top of the card itself.
+ *
+ * Shown for the whole of both card-bearing phases, not just the reveal. It
+ * used to disappear the moment the summary arrived, which left the last
+ * card of a pack — and every card opened from the ledger afterwards —
+ * sitting there unlabelled. Whatever card the scene is showing, this
+ * describes it: the one being revisited if there is one, otherwise the
+ * last one revealed. The tap prompt and the running count are the only
+ * parts specific to the reveal itself.
+ *
+ * Its height is fixed. The reveal shows one line more than the done phase
+ * does, and if this block were free to resize, the canvas above it would
+ * resize with it and the card would change size at exactly the moment the
+ * summary appears — the thing this layout exists to prevent. */
 export function RevealCaption() {
 	const { t } = useTranslation("pack-opener");
 	const pack = usePackOpenerStore((state) => state.pack);
@@ -19,7 +28,6 @@ export function RevealCaption() {
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
 
-	const isRevisiting = phase === "done" && revisitIndex !== null;
 	const activeIndex =
 		revisitIndex !== null && phase === "done" ? revisitIndex : revealIndex;
 
@@ -38,7 +46,7 @@ export function RevealCaption() {
 	if (!resolved || !pack) return null;
 
 	return (
-		<div className="flex shrink-0 flex-col items-center gap-1 px-4 py-3 text-center">
+		<div className="flex h-24 shrink-0 flex-col items-center justify-center gap-1 px-4 text-center">
 			{/* Card names in the real FAB card-name face — section 3.7's
 			    "the game's own face for the game's own content". */}
 			<span className="font-card-name text-lg text-heading">
@@ -46,10 +54,9 @@ export function RevealCaption() {
 			</span>
 			<p className="font-card-stat flex items-center gap-2 text-sm text-muted">
 				{/* Rarity symbol sits directly next to its own label (the C
-				    before "Common", and so on) — see the execution plan,
-				    section 2.4. It used to sit next to the card name instead,
-				    which read as decorating the name rather than labelling
-				    the rarity underneath it. */}
+				    before "Common", and so on). It used to sit next to the card
+				    name instead, which read as decorating the name rather than
+				    labelling the rarity underneath it. */}
 				<img
 					src={CardRarities[resolved.rarity].icon}
 					alt=""
@@ -67,18 +74,19 @@ export function RevealCaption() {
 					</span>
 				)}
 			</p>
-			{/* No "back to summary" control here any more: while revisiting, the
-			    summary is still on screen just below, collapsed to its header,
-			    and expanding it is what returns to the ledger (see
-			    PackSummary.tsx). Two controls for the same action read as
-			    clutter, and this one sat under a stack of empty space. */}
-			{!isRevisiting && (
-				<>
-					<p className="text-sm text-muted">{t("page.tap_to_reveal")}</p>
-					<p className="text-xs text-subtle">
+			{/* Reveal-only. Once the pack is done there is nothing left to tap
+			    through, and the summary below carries the count instead. There
+			    is deliberately no "back to summary" control: the summary sits
+			    right underneath, collapsed to its header, and expanding it is
+			    what reopens the ledger (see PackSummary.tsx). */}
+			{phase === "revealing" && (
+				<p className="text-sm text-muted">
+					{t("page.tap_to_reveal")}
+					<span className="text-subtle"> · </span>
+					<span className="font-card-stat text-xs text-subtle">
 						{revealIndex + 1} / {pack.length}
-					</p>
-				</>
+					</span>
+				</p>
 			)}
 		</div>
 	);
