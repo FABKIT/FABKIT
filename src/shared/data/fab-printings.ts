@@ -36,9 +36,17 @@ export type FoilTreatment = "standard" | "rainbow" | "cold" | "gold-cold";
 
 /** One real printing of one real card, within one set. */
 export interface FabPrinting {
-	/** Collector id, e.g. "MST131". Also the key used to build the card
-	 * image URL — see printingImageUrl() below. */
+	/** Collector id, e.g. "MST131". A card and its Marvel version share this
+	 * same id — see uniqueId below for the field that actually tells them
+	 * apart, and printingImageUrl() for why `id` alone isn't safe to build
+	 * an image URL from for every printing. */
 	id: string;
+	/** This printing's true identity (the-fab-cube's own unique_id) — unlike
+	 * `id`, never shared with another printing. Not currently used for
+	 * anything but documenting the distinction; kept for whenever a future
+	 * feature (Marvel front/back, see the execution plan's "Deferred"
+	 * section) needs to address one exact printing. */
+	uniqueId: string;
 	name: string;
 	rarity: CardRarity;
 	foiling: FoilTreatment;
@@ -55,6 +63,16 @@ export interface FabPrinting {
 	 * a generic-vs-class split on commons — see pack/set-configs.ts), which
 	 * rarity alone can't express. */
 	types: string[];
+	/** e.g. ["FA"] on a Marvel/full-art printing — see printingImageUrl()
+	 * below, which is the only current consumer. */
+	artVariations: string[];
+	/** The basename (no extension) of this printing's real artwork file,
+	 * derived at build time from the upstream data's own image_url — e.g.
+	 * "SEA001-MV" for a Marvel printing whose collector id is "SEA001".
+	 * Null when the upstream data had no image_url to derive one from. See
+	 * printingImageUrl() below for the one thing this is used for, and why
+	 * it's scoped to Marvel printings only. */
+	artSlug: string | null;
 }
 
 export interface FabSetPrintings {
@@ -62,12 +80,35 @@ export interface FabSetPrintings {
 	printings: FabPrinting[];
 }
 
-/** Card art host — see src/apps/pack-opener/CLAUDE.md's "Card data" section
+/**
+ * Card art host — see src/apps/pack-opener/CLAUDE.md's "Card data" section
  * for the CORS verification notes (it needs an Origin header, which every
- * three.js texture loader sends by default). Built from the printing's own
- * collector id rather than mirrored, so per-set art is always correct. */
-export function printingImageUrl(printingId: string): string {
-	return `https://content.fabrary.net/cards/${printingId}.webp`;
+ * three.js texture loader sends by default).
+ *
+ * Built from the printing's own collector id (`printing.id`) for almost
+ * every printing — that's correct and per-set. The one exception is Marvel:
+ * a card and its Marvel version share the same collector id (`SEA001` is
+ * both), so building the URL from `id` alone would show the base card's art
+ * for a Marvel pull too. Marvel printings instead use `artSlug`, the real
+ * artwork filename the upstream data actually carries for them (verified
+ * live: content.fabrary.net serves a genuinely distinct image at that slug
+ * for the large majority of Marvel printings — see the execution plan,
+ * section 3.2, for the small number of exceptions and why they're not worth
+ * chasing).
+ *
+ * This is deliberately scoped to Marvel ONLY, not "any printing whose
+ * artSlug differs from its id" — a great many non-Marvel printings also
+ * have a differing slug (Unlimited-edition reprints, resized thumbnail
+ * artifacts, and critically, real Rainbow/Cold Foil artwork with the foil
+ * effect already baked into the image, which would double up with this
+ * app's own foil shader). Using artSlug for those would be a real
+ * regression, not an improvement — see the plan's own extensive comment on
+ * this exact trap.
+ */
+export function printingImageUrl(printing: FabPrinting): string {
+	const isMarvel = printing.rarity === "marvel";
+	const slug = isMarvel && printing.artSlug ? printing.artSlug : printing.id;
+	return `https://content.fabrary.net/cards/${slug}.webp`;
 }
 
 const setCache = new Map<string, FabSetPrintings>();
