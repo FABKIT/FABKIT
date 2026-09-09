@@ -16,8 +16,9 @@
 			"gold-cold": "Gold Cold Foil"
 		},
 		"price_unavailable": "Not priced yet",
-		"pack_total_label": "Pack total",
-		"pack_total_pending": "Pricing coming soon",
+		"value_pulled_label": "Value of cards pulled",
+		"pack_price_label": "This pack's price",
+		"partial_total_note": "Some cards aren't priced yet",
 		"back_to_summary": "Back to summary"
 	},
 	"carousel": {
@@ -29,6 +30,10 @@
 		"cards_per_pack_title": "Cards per pack",
 		"pack_contents_title": "Pack contents",
 		"cold_foil_note": "Cold Foil: roughly 1 in {{odds}} packs",
+		"price_title": "Current prices",
+		"pack_price_label": "Booster pack",
+		"box_price_label": "Booster box",
+		"price_captured": "Prices captured {{date}}",
 		"source_link": "See the official product page",
 		"treatment": {
 			"rainbow": "guaranteed Rainbow Foil",

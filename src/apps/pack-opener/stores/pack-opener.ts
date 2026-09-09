@@ -14,6 +14,7 @@ import type {
 	PackConfig,
 } from "@fabkit/apps/pack-opener/pack/types";
 import { trackEvent } from "@fabkit/platform/analytics";
+import { loadSetPrices } from "@fabkit/shared/data/fab-prices";
 import {
 	getSetIndex,
 	loadSetPrintings,
@@ -237,6 +238,10 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			// cross-set. Errors swallowed like every other loader here; a
 			// slow/failed load just means that fallback kicks in instead.
 			loadSetPrintings(setCode).catch(() => {});
+			// Same for the price snapshot — a set with no price file (or a
+			// failed fetch) just shows dashes everywhere a price would go,
+			// see PackSummary.tsx and SetInfoDialog.tsx.
+			loadSetPrices(setCode).catch(() => {});
 
 			writeStoredSelectedSet(setCode);
 			set(
@@ -266,6 +271,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				const url = pickPackArt(latest);
 				if (url) useTexture.preload(url);
 				loadSetPrintings(latest.code).catch(() => {});
+				loadSetPrices(latest.code).catch(() => {});
 				set(
 					{ selectedSet: latest.code, packArtUrl: url },
 					undefined,
@@ -275,10 +281,12 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			}
 
 			// Always warm the returning visitor's already-selected set's
-			// printing pool too, even when packArtUrl below short-circuits —
-			// this runs once per mount either way (see this action's own doc
-			// comment) and loadSetPrintings is idempotent per set code.
+			// printing pool and price snapshot too, even when packArtUrl below
+			// short-circuits — this runs once per mount either way (see this
+			// action's own doc comment) and both loaders are idempotent per
+			// set code.
 			loadSetPrintings(selectedSet).catch(() => {});
+			loadSetPrices(selectedSet).catch(() => {});
 
 			if (packArtUrl) return; // already resolved this session
 
