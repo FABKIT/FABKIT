@@ -24,6 +24,11 @@ export const PACK_SEAL_HEIGHT = 0.236;
  * target each frame rather than snapping (TILT_EASE is a lerp factor, a
  * cheap spring approximation, not a real spring model). */
 export const CARD_TILT_MAX_DEG = 12;
+/** The same gesture on the closed pack (see PackMesh.tsx). Smaller than the
+ * card's: the pack is a tall box rather than a flat plane, so the same
+ * angle swings its edges much further and starts to read as the whole pack
+ * swivelling rather than catching the light. */
+export const PACK_TILT_MAX_DEG = 8;
 export const CARD_TILT_EASE = 0.12;
 
 /** A beat where the pack sits closed before the seal starts moving. The
