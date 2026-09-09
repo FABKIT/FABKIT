@@ -18,8 +18,7 @@
 		"price_unavailable": "Not priced yet",
 		"value_pulled_label": "Value of cards pulled",
 		"pack_price_label": "This pack's price",
-		"partial_total_note": "Some cards aren't priced yet",
-		"back_to_summary": "Back to summary"
+		"partial_total_note": "Some cards aren't priced yet"
 	},
 	"carousel": {
 		"previous_set": "Previous set",
@@ -42,6 +41,7 @@
 		"pack_price_label": "Booster pack",
 		"box_price_label": "Booster box",
 		"price_captured": "Prices captured {{date}}",
+		"price_source": "Market prices come from TCGplayer, collected through tcgcsv.com.",
 		"source_link": "See the official product page",
 		"treatment": {
 			"rainbow": "guaranteed Rainbow Foil",

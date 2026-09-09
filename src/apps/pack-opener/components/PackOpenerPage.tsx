@@ -13,6 +13,10 @@ export function PackOpenerPage() {
 	return (
 		<div className="relative flex h-[calc(100dvh-4rem)] w-full flex-col overflow-hidden bg-surface lg:h-dvh">
 			<h1 className="sr-only">{t("page.title")}</h1>
+			{/* In flow above the canvas, not floating over it — the canvas
+			    below takes whatever height is left, so the set picker can
+			    never sit on top of a card. */}
+			<SetCarousel />
 			{/* The canvas area shrinks to make room for the caption below it
 			    (min-h-0 is what lets a flex child actually shrink below its
 			    content size) rather than the caption floating on top of the
@@ -31,7 +35,6 @@ export function PackOpenerPage() {
 				/>
 				<PackOpenerCanvas />
 				<PackOpenerHUD />
-				<SetCarousel />
 			</div>
 			{phase === "revealing" && <RevealCaption />}
 			{/* Reserve the caption's height for the whole done phase (invisible

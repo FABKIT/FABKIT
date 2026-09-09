@@ -18,7 +18,6 @@ export function RevealCaption() {
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
-	const exitRevisit = usePackOpenerStore((state) => state.exitRevisit);
 
 	const isRevisiting = phase === "done" && revisitIndex !== null;
 	const activeIndex =
@@ -68,15 +67,12 @@ export function RevealCaption() {
 					</span>
 				)}
 			</p>
-			{isRevisiting ? (
-				<button
-					type="button"
-					onClick={exitRevisit}
-					className="text-sm font-semibold text-heading underline-offset-2 hover:underline"
-				>
-					{t("page.back_to_summary")}
-				</button>
-			) : (
+			{/* No "back to summary" control here any more: while revisiting, the
+			    summary is still on screen just below, collapsed to its header,
+			    and expanding it is what returns to the ledger (see
+			    PackSummary.tsx). Two controls for the same action read as
+			    clutter, and this one sat under a stack of empty space. */}
+			{!isRevisiting && (
 				<>
 					<p className="text-sm text-muted">{t("page.tap_to_reveal")}</p>
 					<p className="text-xs text-subtle">

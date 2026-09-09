@@ -9,16 +9,19 @@ import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener"
  * never overlap the card. */
 export function PackOpenerHUD() {
 	const phase = usePackOpenerStore((state) => state.phase);
-	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 
 	return (
 		<div className="pointer-events-none absolute inset-0">
 			{phase === "idle" && <IdleOverlay />}
-			{phase === "done" && revisitIndex === null && (
-				<div className="pointer-events-auto absolute inset-0">
-					<PackSummary />
-				</div>
-			)}
+			{/* Mounted for the whole done phase, including while revisiting a
+			    card from the ledger — revisiting now collapses the summary
+			    rather than replacing it (see PackSummary.tsx), so it has to
+			    stay on screen to be collapsed. Deliberately NOT wrapped in a
+			    full-bleed pointer-events-auto layer: PackSummary's own root
+			    only covers the bottom strip it occupies, leaving the rest of
+			    the canvas free to receive the pointer moves that drive the
+			    card's tilt. */}
+			{phase === "done" && <PackSummary />}
 		</div>
 	);
 }

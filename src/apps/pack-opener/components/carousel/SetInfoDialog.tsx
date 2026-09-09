@@ -222,6 +222,10 @@ export function SetInfoDialog({
 								{t("dialog.price_captured", { date: capturedDate })}
 							</p>
 						)}
+						{/* Says where the money numbers actually come from. Players
+						    reasonably want to know a price is a real market figure
+						    and not something this app invented. */}
+						<p className="text-xs text-subtle">{t("dialog.price_source")}</p>
 					</section>
 
 					{sourceUrl && (
