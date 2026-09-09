@@ -43,3 +43,28 @@ export function pullRateRows(config: PackConfig): PullRateRow[] {
 export function percentOfPack(row: PullRateRow, config: PackConfig): number {
 	return (row.expectedPerPack / config.cardsPerPack) * 100;
 }
+
+/** How many of a pack's cards are guaranteed tokens.
+ *
+ * Real packs print a smaller number on the wrapper than fabtcg.com's own
+ * product pages state, and both are correct: fabtcg counts the token, the
+ * printed wrapper does not. Welcome to Rathe is the clearest case, its
+ * product page says "A booster pack contains 16 cards, being: 1 Token per
+ * pack; 4 Generic Commons; ..." while the pack itself reads "15-Card
+ * Booster Pack". So the app shows the printed count with the token called
+ * out beside it, and this is where that split is worked out.
+ *
+ * Only slots that are ALWAYS a token count. A "token-or-wildcard" slot (the
+ * Heavy Hitters family) can land on a real card, so subtracting it would
+ * understate the pack. That leaves Heavy Hitters at 15 plus 1 token rather
+ * than 14, which is what its wrapper says.
+ *
+ * Nothing about the odds engine depends on this. cardsPerPack itself stays
+ * exactly as fabtcg publishes it, because every pull-rate percentage
+ * divides by it (see percentOfPack above). This is a labelling helper only.
+ */
+export function guaranteedTokenCount(config: PackConfig): number {
+	return config.slots
+		.filter((slot) => slot.kind === "token")
+		.reduce((total, slot) => total + slot.count, 0);
+}
