@@ -16,10 +16,11 @@ import { useTranslation } from "react-i18next";
  * last one revealed. The tap prompt and the running count are the only
  * parts specific to the reveal itself.
  *
- * Its height is fixed. The reveal shows one line more than the done phase
- * does, and if this block were free to resize, the canvas above it would
- * resize with it and the card would change size at exactly the moment the
- * summary appears — the thing this layout exists to prevent. */
+ * The fixed-height slot it sits in is owned by PackOpenerPage, not by this
+ * component: the reveal shows one line more than the done phase does, and
+ * if the block were free to resize, the canvas above it would resize with
+ * it and the card would change size at exactly the moment the summary
+ * appears — the thing that layout exists to prevent. */
 export function RevealCaption() {
 	const { t } = useTranslation("pack-opener");
 	const pack = usePackOpenerStore((state) => state.pack);
@@ -46,7 +47,7 @@ export function RevealCaption() {
 	if (!resolved || !pack) return null;
 
 	return (
-		<div className="flex h-24 shrink-0 flex-col items-center justify-center gap-1 px-4 text-center">
+		<div className="flex flex-col items-center gap-1">
 			{/* Card names in the real FAB card-name face — section 3.7's
 			    "the game's own face for the game's own content". */}
 			<span className="font-card-name text-lg text-heading">
