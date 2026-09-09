@@ -39,20 +39,23 @@ export function RevealCaption() {
 	if (!resolved || !pack) return null;
 
 	return (
-		<div className="flex shrink-0 flex-col items-center gap-1 px-4 py-4 text-center">
-			<div className="flex items-center gap-2">
+		<div className="flex shrink-0 flex-col items-center gap-1 px-4 py-3 text-center">
+			{/* Card names in the real FAB card-name face — section 3.7's
+			    "the game's own face for the game's own content". */}
+			<span className="font-card-name text-lg text-heading">
+				{resolved.name}
+			</span>
+			<p className="font-card-stat flex items-center gap-2 text-sm text-muted">
+				{/* Rarity symbol sits directly next to its own label (the C
+				    before "Common", and so on) — see the execution plan,
+				    section 2.4. It used to sit next to the card name instead,
+				    which read as decorating the name rather than labelling
+				    the rarity underneath it. */}
 				<img
 					src={CardRarities[resolved.rarity].icon}
 					alt=""
-					className="h-5 w-5"
+					className="h-4 w-4"
 				/>
-				{/* Card names in the real FAB card-name face — section 3.7's
-				    "the game's own face for the game's own content". */}
-				<span className="font-card-name text-lg text-heading">
-					{resolved.name}
-				</span>
-			</div>
-			<p className="font-card-stat flex items-center gap-2 text-sm text-muted">
 				<span>{t(CardRarities[resolved.rarity].label)}</span>
 				{resolved.rarity === "marvel" && (
 					<span className="font-bold text-pack-marvel">

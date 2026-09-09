@@ -40,15 +40,29 @@ interface CardFaceMaterialProps {
 	 * every frame — owned by Card3D's own useFrame below, which keeps the
 	 * tilt group's rotation and the shader's light direction in agreement. */
 	lightDirRef: LightDirRef;
+	/** See Card3DProps.alwaysOnTop below — turns off depth testing/writing
+	 * on this material so it always paints over whatever's behind it,
+	 * regardless of z. */
+	alwaysOnTop: boolean;
 }
 
 /** Plain vs. holographic foilMaterial for a resolved texture — shared by
- * both the real-image and mock-canvas rendering paths below. */
+ * both the real-image and mock-canvas rendering paths below. Every real
+ * card image has transparent rounded corners baked into its own alpha
+ * channel (verified directly against the webp files) — alphaTest here is
+ * what actually makes them round on screen instead of square; without it
+ * meshBasicMaterial ignores alpha entirely and just paints the full
+ * rectangle. alphaTest (a hard per-pixel cutoff, not blended transparency)
+ * keeps the material in the normal depth-tested opaque render queue rather
+ * than opting into transparency sorting for a corner cutout that doesn't
+ * need it — see foilMaterial.ts's own explicit `discard` for why the foil
+ * path needs its own version of the same fix. */
 function CardFaceMaterial({
 	texture,
 	treatment,
 	isMarvel,
 	lightDirRef,
+	alwaysOnTop,
 }: CardFaceMaterialProps) {
 	const foilMaterial = useMemo(() => new FoilMaterialImpl(), []);
 
@@ -66,9 +80,19 @@ function CardFaceMaterial({
 	// the art out. foilMaterial is a fully custom shader (no scene-light
 	// uniforms), so it's unaffected either way.
 	return treatment !== "standard" ? (
-		<primitive object={foilMaterial} attach="material" />
+		<primitive
+			object={foilMaterial}
+			attach="material"
+			depthTest={!alwaysOnTop}
+			depthWrite={!alwaysOnTop}
+		/>
 	) : (
-		<meshBasicMaterial map={texture} />
+		<meshBasicMaterial
+			map={texture}
+			alphaTest={0.5}
+			depthTest={!alwaysOnTop}
+			depthWrite={!alwaysOnTop}
+		/>
 	);
 }
 
@@ -85,14 +109,22 @@ function RealCardFace({
 	card,
 	imageUrl,
 	lightDirRef,
+	alwaysOnTop,
 }: {
 	card: ResolvedCard;
 	imageUrl: string;
 	lightDirRef: LightDirRef;
+	alwaysOnTop: boolean;
 }) {
 	const state = useSafeTexture(imageUrl);
 	if (state.status === "error") {
-		return <MockCardFace card={card} lightDirRef={lightDirRef} />;
+		return (
+			<MockCardFace
+				card={card}
+				lightDirRef={lightDirRef}
+				alwaysOnTop={alwaysOnTop}
+			/>
+		);
 	}
 	if (state.status === "loading") return null;
 	return (
@@ -101,6 +133,7 @@ function RealCardFace({
 			treatment={card.treatment}
 			isMarvel={card.rarity === "marvel"}
 			lightDirRef={lightDirRef}
+			alwaysOnTop={alwaysOnTop}
 		/>
 	);
 }
@@ -110,9 +143,11 @@ function RealCardFace({
 function MockCardFace({
 	card,
 	lightDirRef,
+	alwaysOnTop,
 }: {
 	card: ResolvedCard;
 	lightDirRef: LightDirRef;
+	alwaysOnTop: boolean;
 }) {
 	const texture = useCardTexture(card);
 	return (
@@ -121,6 +156,7 @@ function MockCardFace({
 			treatment={card.treatment}
 			isMarvel={card.rarity === "marvel"}
 			lightDirRef={lightDirRef}
+			alwaysOnTop={alwaysOnTop}
 		/>
 	);
 }
@@ -134,6 +170,17 @@ interface Card3DProps {
 	 * slide stays on OutgoingCard's own separate group, per the execution
 	 * plan section 5.3 — the two never touch the same transform. */
 	interactive?: boolean;
+	/** True only for the outgoing (sliding-away) card in OutgoingCard.tsx —
+	 * see the execution plan, section 2.2. The card underneath tilts with
+	 * the pointer (up to CARD_TILT_MAX_DEG), which at the corners swings it
+	 * geometrically past the ~0.03-unit gap OutgoingCard's z offset leaves
+	 * between the two cards, so the active card can poke through the
+	 * outgoing one mid-slide. Disabling depth testing/writing on the
+	 * outgoing card's material and raising its renderOrder makes it always
+	 * paint on top regardless of the actual geometry, which is safe here
+	 * because only these two cards are ever in the scene during a reveal
+	 * (PackMesh is unmounted then — see PackOpenerCanvas.tsx). */
+	alwaysOnTop?: boolean;
 }
 
 /** A single face-up card. Always static in place — no flip, no rotation as
@@ -142,7 +189,12 @@ interface Card3DProps {
  * also drives the foil shader's light direction (section 3.3) so the two
  * are one piece of work, not two. Reveals still happen by sliding the
  * previous card away (see OutgoingCard), never by turning this one over. */
-export function Card3D({ card, onClick, interactive = true }: Card3DProps) {
+export function Card3D({
+	card,
+	onClick,
+	interactive = true,
+	alwaysOnTop = false,
+}: Card3DProps) {
 	const group = useRef<Group>(null);
 	const lightDir = useRef({ x: 0, y: 0 });
 	const reducedMotion = usePrefersReducedMotion();
@@ -178,16 +230,21 @@ export function Card3D({ card, onClick, interactive = true }: Card3DProps) {
 
 	return (
 		<group ref={group}>
-			<mesh onClick={onClick}>
+			<mesh onClick={onClick} renderOrder={alwaysOnTop ? 1 : 0}>
 				<planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
 				{card.imageUrl !== null ? (
 					<RealCardFace
 						card={card}
 						imageUrl={card.imageUrl}
 						lightDirRef={lightDir}
+						alwaysOnTop={alwaysOnTop}
 					/>
 				) : (
-					<MockCardFace card={card} lightDirRef={lightDir} />
+					<MockCardFace
+						card={card}
+						lightDirRef={lightDir}
+						alwaysOnTop={alwaysOnTop}
+					/>
 				)}
 			</mesh>
 		</group>
