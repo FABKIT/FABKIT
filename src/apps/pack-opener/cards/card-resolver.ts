@@ -132,9 +132,29 @@ function toResolvedCardFromFabCard(
  * only comes back empty for a set the odds engine didn't generate the pack
  * from (the mock "default-mock-set" config, or a real set whose printing
  * data hasn't finished loading yet — see stores/pack-opener.ts's
- * loadSetPrintings calls). */
-function poolForDrawn(setCode: string, drawn: DrawnCard): FabPrinting[] {
-	return getSetPrintings(setCode).filter(
+ * loadSetPrintings calls).
+ *
+ * Foiling is a PREFERENCE, not part of the exact match, and that
+ * distinction is the whole point of this function's shape. Most rarities
+ * exist in a set as both plain and foil printings — roughly half of High
+ * Seas' common pool is Rainbow/Cold Foil, for instance — so matching on
+ * rarity alone and letting resolveTreatment() adopt whatever printing came
+ * back turned about half of every pack's commons into foils. A pack is
+ * supposed to hold exactly one guaranteed foil (plus the occasional cold
+ * foil upgrade or foil-only Legendary), not eight.
+ *
+ * So: filter to printings actually printed in the treatment that was
+ * drawn, and only fall back to the unfiltered pool when the set never
+ * printed this rarity that way at all. That fallback is exactly what keeps
+ * "the real printed card wins" working for Legendary (see
+ * resolveTreatment below) — a standard-drawn Legendary in a set that only
+ * ever printed Legendaries foil finds no standard match, falls back, and
+ * gets correctly promoted to foil. */
+export function selectPrintingPool(
+	printings: FabPrinting[],
+	drawn: DrawnCard,
+): FabPrinting[] {
+	const matching = printings.filter(
 		(printing) =>
 			printing.rarity === drawn.rarity &&
 			printing.expansionSlot === drawn.expansionSlot &&
@@ -142,6 +162,14 @@ function poolForDrawn(setCode: string, drawn: DrawnCard): FabPrinting[] {
 			(drawn.classRestricted === undefined ||
 				isClassCard(printing) === drawn.classRestricted),
 	);
+	const sameTreatment = matching.filter(
+		(printing) => printing.foiling === drawn.treatment,
+	);
+	return sameTreatment.length > 0 ? sameTreatment : matching;
+}
+
+function poolForDrawn(setCode: string, drawn: DrawnCard): FabPrinting[] {
+	return selectPrintingPool(getSetPrintings(setCode), drawn);
 }
 
 /** Real per-set data is the tie-breaker between what the odds engine drew
