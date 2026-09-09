@@ -3,23 +3,17 @@ import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-t
 import { Card3D } from "@fabkit/apps/pack-opener/components/scene/Card3D";
 import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/OutgoingCard";
 import { PullCelebration } from "@fabkit/apps/pack-opener/components/scene/PullCelebration";
-import {
-	CARD_Y_EASE_BASE,
-	DONE_CARD_Y_OFFSET,
-	REVEALING_CARD_Y_OFFSET,
-} from "@fabkit/apps/pack-opener/config/scene";
+import { CARD_Y_OFFSET } from "@fabkit/apps/pack-opener/config/scene";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
-import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
-import type { Group } from "three";
+import { useMemo } from "react";
 
 /** Hosts the active card (static, always face-up), the glow behind it for a
  * celebrated pull (see cards/celebration-tier.ts), and the previous card
  * sliding away above it — reading as pulling cards, one at a time, off a
- * physical stack. The whole group sits offset by REVEALING_CARD_Y_OFFSET
- * (see config/scene.ts's own comment on why this is a card-position offset
- * rather than a camera move) so the card sits a little lower in the canvas,
- * closing the gap RevealCaption sits in below it. */
+ * physical stack. The group sits at CARD_Y_OFFSET, which is simply centred:
+ * the card details and the summary each take their own space in the page
+ * below the canvas now (see PackOpenerPage.tsx), so there is nothing for
+ * the card to dodge. */
 export function CardStack3D() {
 	const pack = usePackOpenerStore((state) => state.pack);
 	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
@@ -28,19 +22,6 @@ export function CardStack3D() {
 	const phase = usePackOpenerStore((state) => state.phase);
 	const phaseStartedAt = usePackOpenerStore((state) => state.phaseStartedAt);
 	const advanceReveal = usePackOpenerStore((state) => state.advanceReveal);
-	const group = useRef<Group>(null);
-
-	// Eases the whole stack up once the pack is done, clearing the strip the
-	// summary occupies — see DONE_CARD_Y_OFFSET. Lerped rather than set
-	// straight on the group so the move reads as deliberate.
-	useFrame((_, delta) => {
-		if (!group.current) return;
-		const target =
-			phase === "done" ? DONE_CARD_Y_OFFSET : REVEALING_CARD_Y_OFFSET;
-		const current = group.current.position.y;
-		group.current.position.y =
-			current + (target - current) * (1 - CARD_Y_EASE_BASE ** delta);
-	});
 
 	// While revisiting a finished pack, the ledger's chosen card takes over
 	// as "active" — read-only (see the guarded onClick below), no outgoing
@@ -79,7 +60,7 @@ export function CardStack3D() {
 	if (!resolvedCard) return null;
 
 	return (
-		<group ref={group} position={[0, REVEALING_CARD_Y_OFFSET, 0]}>
+		<group position={[0, CARD_Y_OFFSET, 0]}>
 			{celebrationTier && (
 				<PullCelebration
 					tier={celebrationTier}

@@ -42,13 +42,15 @@ const GLOW_Z_OFFSET = -0.55;
 /** How much bigger than the card (CARD_WIDTH/CARD_HEIGHT) the glow grows at
  * its resting size — this multiplies a plane already sized to the card, so
  * 1.35 means "35% bigger than the card on every side put together".
- * Nudged up from the pre-GLOW_Z_OFFSET values to hold the same apparent
- * size on screen now that the plane sits further from the camera. */
+ * Kept close to 1 because the card now fills roughly 94% of the canvas: a
+ * glow much larger than that is simply cropped by the canvas edges, so the
+ * halo is sized to stay visible around the card rather than to be dramatic
+ * in isolation. */
 const TIER_MAX_SCALE: Record<CelebrationTier, number> = {
-	majestic: 1.5,
-	foil: 1.6,
-	legendary: 1.8,
-	marvel: 2.05,
+	majestic: 1.14,
+	foil: 1.18,
+	legendary: 1.26,
+	marvel: 1.36,
 };
 
 /** Resting opacity per tier — Marvel and Legendary read as a clear flash;
