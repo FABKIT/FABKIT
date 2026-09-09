@@ -3,9 +3,21 @@ import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-t
 import { Card3D } from "@fabkit/apps/pack-opener/components/scene/Card3D";
 import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/OutgoingCard";
 import { PullCelebration } from "@fabkit/apps/pack-opener/components/scene/PullCelebration";
-import { CARD_Y_OFFSET } from "@fabkit/apps/pack-opener/config/scene";
+import {
+	CARD_Y_OFFSET,
+	REVEAL_INTRO_MS,
+	REVEAL_INTRO_START_SCALE,
+	REVEAL_INTRO_START_Z,
+} from "@fabkit/apps/pack-opener/config/scene";
+import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
-import { useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
+import type { Group } from "three";
+
+function easeOutCubic(t: number): number {
+	return 1 - (1 - t) ** 3;
+}
 
 /** Hosts the active card (static, always face-up), the glow behind it for a
  * celebrated pull (see cards/celebration-tier.ts), and the previous card
@@ -22,6 +34,27 @@ export function CardStack3D() {
 	const phase = usePackOpenerStore((state) => state.phase);
 	const phaseStartedAt = usePackOpenerStore((state) => state.phaseStartedAt);
 	const advanceReveal = usePackOpenerStore((state) => state.advanceReveal);
+	const reducedMotion = usePrefersReducedMotion();
+
+	// This component mounts the moment the pack finishes tearing (see
+	// PackOpenerCanvas.tsx, which swaps PackMesh out for it), so its own
+	// mount time IS the moment the first card arrives — no need to watch
+	// phaseStartedAt, which also ticks on every subsequent reveal and would
+	// re-run the intro sixteen times per pack.
+	const introStartedAt = useRef(Date.now());
+	const introGroup = useRef<Group>(null);
+
+	useFrame(() => {
+		if (!introGroup.current) return;
+		const t = reducedMotion
+			? 1
+			: Math.min((Date.now() - introStartedAt.current) / REVEAL_INTRO_MS, 1);
+		const eased = easeOutCubic(t);
+		const scale =
+			REVEAL_INTRO_START_SCALE + (1 - REVEAL_INTRO_START_SCALE) * eased;
+		introGroup.current.scale.setScalar(scale);
+		introGroup.current.position.z = REVEAL_INTRO_START_Z * (1 - eased);
+	});
 
 	// While revisiting a finished pack, the ledger's chosen card takes over
 	// as "active" — read-only (see the guarded onClick below), no outgoing
@@ -61,21 +94,31 @@ export function CardStack3D() {
 
 	return (
 		<group position={[0, CARD_Y_OFFSET, 0]}>
-			{celebrationTier && (
-				<PullCelebration
-					tier={celebrationTier}
-					phaseStartedAt={phaseStartedAt}
+			{/* The intro group carries the whole stack, glow included, so the
+			    celebration scales in with its card instead of arriving at full
+			    size beside a card that is still growing. Starts at
+			    REVEAL_INTRO_START_SCALE, which is why the group's own resting
+			    transform is left to the useFrame above rather than set here. */}
+			<group ref={introGroup}>
+				{celebrationTier && (
+					<PullCelebration
+						tier={celebrationTier}
+						phaseStartedAt={phaseStartedAt}
+					/>
+				)}
+				<Card3D
+					card={resolvedCard}
+					onClick={() =>
+						!isRevisiting && phase === "revealing" && advanceReveal()
+					}
 				/>
-			)}
-			<Card3D
-				card={resolvedCard}
-				onClick={() =>
-					!isRevisiting && phase === "revealing" && advanceReveal()
-				}
-			/>
-			{resolvedOutgoing && (
-				<OutgoingCard card={resolvedOutgoing} phaseStartedAt={phaseStartedAt} />
-			)}
+				{resolvedOutgoing && (
+					<OutgoingCard
+						card={resolvedOutgoing}
+						phaseStartedAt={phaseStartedAt}
+					/>
+				)}
+			</group>
 		</group>
 	);
 }
