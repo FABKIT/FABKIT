@@ -1,3 +1,4 @@
+import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
 import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
 import { SET_SOURCE_URLS } from "@fabkit/apps/pack-opener/pack/set-configs";
 import type {
@@ -5,6 +6,7 @@ import type {
 	RarityWeight,
 } from "@fabkit/apps/pack-opener/pack/types";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
+import { getSetPrices } from "@fabkit/shared/data/fab-prices";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -62,8 +64,10 @@ const SLOT_LABEL_KEYS: Record<PackSlotKind, string> = {
  * rates are derived live from the set's own PackConfig (pack/odds.ts),
  * not a separately-authored copy of fabtcg.com's wording — that keeps the
  * dialog impossible to drift out of sync with the actual odds engine.
- * Prices are deliberately not shown here yet — no price data exists
- * until the snapshot pipeline lands (see the execution plan's commit 10). */
+ * Prices come from the build-time snapshot (see shared/data/fab-prices.ts)
+ * and show a neutral placeholder rather than nothing when unavailable — a
+ * set the build script never resolved a tcgcsv group for, or whose
+ * snapshot hasn't loaded yet. */
 export function SetInfoDialog({
 	open,
 	onClose,
@@ -75,6 +79,14 @@ export function SetInfoDialog({
 
 	const config = getPackConfig(setCode);
 	const sourceUrl = SET_SOURCE_URLS[setCode];
+	const prices = getSetPrices(setCode);
+	const capturedDate = prices
+		? new Date(prices.capturedAt).toLocaleDateString(undefined, {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+			})
+		: null;
 
 	return (
 		<Dialog
@@ -135,6 +147,33 @@ export function SetInfoDialog({
 								{t("dialog.cold_foil_note", {
 									odds: Math.round(1 / config.coldFoilChance),
 								})}
+							</p>
+						)}
+					</section>
+
+					<section className="space-y-1.5">
+						<h3 className="font-semibold text-body">
+							{t("dialog.price_title")}
+						</h3>
+						<div className="flex items-center justify-between text-sm">
+							<span className="text-muted">{t("dialog.pack_price_label")}</span>
+							<span className="font-card-stat text-body">
+								{prices?.packMarketPrice != null
+									? formatUsd(prices.packMarketPrice)
+									: t("page.price_unavailable")}
+							</span>
+						</div>
+						<div className="flex items-center justify-between text-sm">
+							<span className="text-muted">{t("dialog.box_price_label")}</span>
+							<span className="font-card-stat text-body">
+								{prices?.boxMarketPrice != null
+									? formatUsd(prices.boxMarketPrice)
+									: t("page.price_unavailable")}
+							</span>
+						</div>
+						{capturedDate && (
+							<p className="text-xs text-subtle">
+								{t("dialog.price_captured", { date: capturedDate })}
 							</p>
 						)}
 					</section>

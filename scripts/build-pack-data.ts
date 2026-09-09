@@ -2,6 +2,8 @@ import { mkdir, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { KNOWN_SETS } from "@fabkit/apps/pack-opener/config/known-sets";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import type { SetPriceSnapshot } from "@fabkit/shared/data/fab-prices";
+import { priceKey } from "@fabkit/shared/data/fab-prices";
 import type {
 	FabPrinting,
 	FabSetPrintings,
@@ -9,20 +11,21 @@ import type {
 } from "@fabkit/shared/data/fab-printings";
 
 /**
- * Builds the pack opener's per-set card data from the-fab-cube's public
- * dataset. See the execution plan (D:\Desktop\pack-opener-execution-plan.md,
- * outside the repo), sections 2.2, 5.1 and 8, for the full reasoning.
+ * Builds the pack opener's per-set card and price data from the-fab-cube's
+ * public dataset and tcgcsv.com's TCGplayer mirror. See the execution plan
+ * (D:\Desktop\pack-opener-execution-plan.md, outside the repo), sections
+ * 2.2, 2.4, 5.1 and 8, for the full reasoning.
  *
  * Output (gitignored — build output, not source, see .gitignore):
- *   public/data/pack-opener/sets/<CODE>.json   one file per included set
- *   public/data/pack-opener/index.json         set list + metadata
+ *   public/data/pack-opener/sets/<CODE>.json    one file per included set
+ *   public/data/pack-opener/prices/<CODE>.json  one file per set with a
+ *                                                resolved tcgcsv group
+ *   public/data/pack-opener/index.json          set list + metadata
  *
- * Deliberately does NOT fetch prices yet (tcgcsv.com) — that lands with the
- * CI wiring in a later commit (see the plan's commit table, item 10). This
- * script is safe to run locally any time: `bun run build-pack-data`. A
+ * This script is safe to run locally any time: `bun run build-pack-data`. A
  * fresh checkout without ever having run it just has no pack-opener data
- * yet; nothing else in the repo depends on these files existing until the
- * pack opener actually switches its card resolver over to fab-printings.ts.
+ * yet, and the app degrades per the plan's section 8.6 (a set with no
+ * price file shows dashes, not zeros).
  */
 
 const CARD_JSON_URL =
@@ -35,6 +38,198 @@ const FOILING_JSON_URL =
 	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/foiling.json";
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");
+
+/** Flesh and Blood's category id on tcgcsv/TCGplayer — verified against
+ * live data (see the execution plan, section 2.4 and appendix A.4). */
+const TCGCSV_CATEGORY_ID = 62;
+const TCGCSV_BASE = `https://tcgcsv.com/tcgplayer/${TCGCSV_CATEGORY_ID}`;
+
+/** tcgcsv rejects requests with no identifying User-Agent (plan section
+ * 2.4). APP_VERSION matches what pages.yml resolves at deploy time; local
+ * runs (no env var set) just say "dev". */
+const TCGCSV_USER_AGENT = `FABKIT/${process.env.APP_VERSION ?? "dev"} (+https://github.com/FABKIT/FABKIT)`;
+
+async function fetchTcgcsv<T>(path: string): Promise<T> {
+	const response = await fetch(`${TCGCSV_BASE}${path}`, {
+		headers: { "User-Agent": TCGCSV_USER_AGENT },
+	});
+	if (!response.ok) {
+		throw new Error(`tcgcsv fetch failed for ${path}: ${response.status}`);
+	}
+	return response.json() as Promise<T>;
+}
+
+interface TcgcsvGroup {
+	groupId: number;
+	name: string;
+	abbreviation: string;
+}
+
+interface TcgcsvProduct {
+	productId: number;
+	name: string;
+}
+
+interface TcgcsvPriceRow {
+	productId: number;
+	marketPrice: number | null;
+	subTypeName: string;
+}
+
+/** Maps our own FoilTreatment vocabulary to TCGplayer's subtype names, so
+ * the price snapshot can be keyed identically to how printings are already
+ * keyed (see fab-prices.ts's priceKey). TCGplayer does not list Gold Cold
+ * Foil as its own subtype (verified against multiple sets' live price
+ * data) — the closest real listing is the plain Cold Foil one, which is
+ * used here rather than showing no price at all for a treatment that, as
+ * of this writing, the odds engine never actually draws (see
+ * pack/generate-pack.ts) but the shader and types already model. */
+const TCGCSV_SUBTYPE_BY_TREATMENT: Record<FoilTreatment, string> = {
+	standard: "Normal",
+	rainbow: "Rainbow Foil",
+	cold: "Cold Foil",
+	"gold-cold": "Cold Foil",
+};
+
+/** Resolves a set's tcgcsv group id — abbreviation first, then exact set
+ * name (see the plan, section 8.4: neither alone is reliable, but the two
+ * combined resolve all 20 known booster sets). Returns null (logged, not
+ * thrown) when neither matches, so one set's tcgcsv naming drifting must
+ * never fail the whole build — that set's prices are simply unavailable
+ * until the mismatch is noticed and fixed. */
+function resolveGroup(
+	code: string,
+	setName: string,
+	groups: TcgcsvGroup[],
+): TcgcsvGroup | null {
+	const byAbbreviation = groups.find((g) => g.abbreviation === code);
+	if (byAbbreviation) return byAbbreviation;
+	const byName = groups.find((g) => g.name === setName);
+	if (byName) return byName;
+	console.warn(
+		`  ${code}: no tcgcsv group matched by abbreviation or exact name ("${setName}") — prices unavailable`,
+	);
+	return null;
+}
+
+/** The sealed booster pack/box products within a group, matched by
+ * TCGplayer's own naming convention — "<Set Name> Booster Pack" for a
+ * modern single-edition set, or "<Set Name> Booster Pack [Unlimited
+ * Edition]" / "[1st Edition]" for an older set with more than one print
+ * run (verified against live data for Arcane Rising). `setName` should be
+ * the tcgcsv *group's* own name, not the-fab-cube's — the two disagree on
+ * casing and wording often enough to matter (verified: TCGplayer's own
+ * group is "Dusk till Dawn" but its own product is "Dusk Till Dawn";
+ * the-fab-cube's "History Pack 1" vs TCGplayer's "History Pack Vol.1" is
+ * worse still), and matching within one source's own naming is far more reliable
+ * than matching across two. Still compared case-insensitively on top of
+ * that, per the "Dusk Till/till Dawn" case.
+ *
+ * Deliberately anchored to `${base}` or `${base} [` rather than a
+ * substring/`.includes()` check — "Booster Box" would otherwise also match
+ * "Booster Box Case" (a case of boxes, a much bigger and differently-priced
+ * product).
+ *
+ * Returned in preference order (exact name, then Unlimited, then 1st
+ * Edition, then anything else), not narrowed to one product here — the
+ * caller tries each in turn, because the "preferred" edition's own product
+ * sometimes has no live market price at all (also verified for Arcane
+ * Rising: its Unlimited Edition pack has none, while its 1st Edition pack
+ * does) and falling through to a priced-but-less-preferred edition beats
+ * showing no pack price whatsoever. */
+function findSealedProductCandidates(
+	products: TcgcsvProduct[],
+	setName: string,
+	kind: "Booster Pack" | "Booster Box",
+): TcgcsvProduct[] {
+	const base = `${setName} ${kind}`.toLowerCase();
+	const candidates = products.filter((p) => {
+		const name = p.name.toLowerCase();
+		return name === base || name.startsWith(`${base} [`);
+	});
+	const rank = (p: TcgcsvProduct): number => {
+		const name = p.name.toLowerCase();
+		if (name === base) return 0;
+		if (name.includes("[unlimited edition]")) return 1;
+		if (name.includes("[1st edition]")) return 2;
+		return 3;
+	};
+	return [...candidates].sort((a, b) => rank(a) - rank(b));
+}
+
+/** Builds one set's price snapshot from its resolved tcgcsv group — sealed
+ * pack/box market prices plus a market price per (tcgplayerProductId,
+ * treatment) pair actually present in the set's own printings. Only
+ * entries tcgcsv has a real market price for are written; everything else
+ * is simply absent (see fab-prices.ts's SetPriceSnapshot doc comment). */
+async function buildSetPriceSnapshot(
+	groupId: number,
+	setName: string,
+	printings: FabPrinting[],
+): Promise<SetPriceSnapshot> {
+	const [products, prices] = await Promise.all([
+		fetchTcgcsv<{ results: TcgcsvProduct[] }>(`/${groupId}/products`),
+		fetchTcgcsv<{ results: TcgcsvPriceRow[] }>(`/${groupId}/prices`),
+	]);
+
+	const priceByProductAndSubtype = new Map<string, number>();
+	for (const row of prices.results) {
+		if (row.marketPrice === null) continue;
+		priceByProductAndSubtype.set(
+			`${row.productId}:${row.subTypeName}`,
+			row.marketPrice,
+		);
+	}
+	// Sets with more than one historical print run (Alpha/1st Edition vs
+	// Unlimited — see toSetMeta's own comment on this) don't carry a bare
+	// "Normal" / "Cold Foil" / "Rainbow Foil" subtype at all; tcgcsv only
+	// has "Unlimited Edition Cold Foil", "1st Edition Cold Foil", etc
+	// (verified against live data for Arcane Rising). Prefer the plain
+	// name when it exists, then Unlimited (the print still sold in current
+	// boosters), then 1st Edition, rather than showing no price at all for
+	// every card in these older sets.
+	const EDITION_PREFIXES = ["", "Unlimited Edition ", "1st Edition "];
+	function marketPriceFor(
+		productId: number,
+		subTypeName: string,
+	): number | null {
+		for (const prefix of EDITION_PREFIXES) {
+			const price = priceByProductAndSubtype.get(
+				`${productId}:${prefix}${subTypeName}`,
+			);
+			if (price !== undefined) return price;
+		}
+		return null;
+	}
+
+	function bestSealedPrice(candidates: TcgcsvProduct[]): number | null {
+		for (const candidate of candidates) {
+			const price = marketPriceFor(candidate.productId, "Normal");
+			if (price !== null) return price;
+		}
+		return null;
+	}
+
+	const cardPrices: Record<string, number> = {};
+	for (const printing of printings) {
+		if (!printing.tcgplayerProductId) continue;
+		const subType = TCGCSV_SUBTYPE_BY_TREATMENT[printing.foiling];
+		const price = marketPriceFor(Number(printing.tcgplayerProductId), subType);
+		if (price === null) continue;
+		cardPrices[priceKey(printing.tcgplayerProductId, printing.foiling)] = price;
+	}
+
+	return {
+		capturedAt: new Date().toISOString(),
+		packMarketPrice: bestSealedPrice(
+			findSealedProductCandidates(products.results, setName, "Booster Pack"),
+		),
+		boxMarketPrice: bestSealedPrice(
+			findSealedProductCandidates(products.results, setName, "Booster Box"),
+		),
+		cardPrices,
+	};
+}
 
 /** Real, checked-in artwork (not gitignored build output like OUTPUT_DIR
  * above) — see the execution plan, section 7.1, for the exact spec the
@@ -378,6 +573,10 @@ async function main() {
 	);
 
 	await mkdir(join(OUTPUT_DIR, "sets"), { recursive: true });
+	await mkdir(join(OUTPUT_DIR, "prices"), { recursive: true });
+
+	console.log("Fetching tcgcsv group list...");
+	const groups = await fetchTcgcsv<{ results: TcgcsvGroup[] }>("/groups");
 
 	const indexEntries: Array<{
 		code: string;
@@ -413,8 +612,35 @@ async function main() {
 			printingCount: setPrintings.printings.length,
 			packArt,
 		});
+
+		const group = resolveGroup(code, meta.name, groups.results);
+		let priceLogSuffix = "no prices";
+		if (group !== null) {
+			try {
+				const snapshot = await buildSetPriceSnapshot(
+					group.groupId,
+					group.name,
+					setPrintings.printings,
+				);
+				await writeFile(
+					join(OUTPUT_DIR, "prices", `${code}.json`),
+					JSON.stringify(snapshot),
+					"utf-8",
+				);
+				priceLogSuffix = `${Object.keys(snapshot.cardPrices).length} card prices`;
+			} catch (error) {
+				// A price fetch failing must not fail the whole build (or drop a
+				// set's card/art data, already written above) — that set's cards
+				// just show no price this deploy, same degrade as no group match.
+				console.warn(
+					`  ${code}: price fetch failed (${error instanceof Error ? error.message : error})`,
+				);
+				priceLogSuffix = "price fetch failed";
+			}
+		}
+
 		console.log(
-			`  ${code}: ${setPrintings.printings.length} printings, ${packArt.length} pack artwork(s)`,
+			`  ${code}: ${setPrintings.printings.length} printings, ${packArt.length} pack artwork(s), ${priceLogSuffix}`,
 		);
 	}
 

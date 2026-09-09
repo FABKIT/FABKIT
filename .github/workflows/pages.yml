@@ -67,6 +67,11 @@ jobs:
       - name: Update PWA assets
         run: bun run scripts/update-pwa-assets
 
+      - name: Update pack opener data
+        env:
+          APP_VERSION: ${{ steps.version.outputs.value }}
+        run: bun run build-pack-data
+
       - name: Build (Production)
         if: ${{ github.repository == 'FABKIT/FABKIT' }}
         env:
