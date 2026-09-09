@@ -29,17 +29,24 @@ const BODY_HEIGHT = PACK_HEIGHT - PACK_SEAL_HEIGHT;
 const BODY_CENTER_Y = -PACK_SEAL_HEIGHT / 2;
 const SEAL_CENTER_Y = PACK_HEIGHT / 2 - PACK_SEAL_HEIGHT / 2;
 
+// alphaTest: real pack art from LSS's product shots is a cut-out — the
+// pack against transparency, with rounded corners. Without this those
+// pixels paint as near-black fringes around the pack, which reads as a
+// dark halo on a light background. A hard cutout keeps the material in
+// the opaque queue, same reasoning as the cards (see Card3D.tsx).
 const BODY_MATERIAL_PROPS = {
 	metalness: 0.55,
 	roughness: 0.3,
 	clearcoat: 1,
 	clearcoatRoughness: 0.15,
+	alphaTest: 0.5,
 } as const;
 const SEAL_MATERIAL_PROPS = {
 	metalness: 0.6,
 	roughness: 0.25,
 	clearcoat: 1,
 	clearcoatRoughness: 0.1,
+	alphaTest: 0.5,
 } as const;
 
 /** Real vs. mock texture source, branched as separate mounted components
