@@ -1,5 +1,10 @@
 import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
 import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
+import {
+	PERCENT_DISPLAY_THRESHOLD,
+	percentOfPack,
+	pullRateRows,
+} from "@fabkit/apps/pack-opener/pack/pull-rates";
 import { SET_SOURCE_URLS } from "@fabkit/apps/pack-opener/pack/set-configs";
 import type {
 	PackSlotKind,
@@ -60,14 +65,23 @@ const SLOT_LABEL_KEYS: Record<PackSlotKind, string> = {
 };
 
 /** Reuses the Headless UI Dialog pattern from
- * src/apps/fabble/components/RulesDialog.tsx. Pack contents and pull
- * rates are derived live from the set's own PackConfig (pack/odds.ts),
+ * src/apps/fabble/components/RulesDialog.tsx. Pull rates and pack contents
+ * are both derived live from the set's own PackConfig (pack/odds.ts),
  * not a separately-authored copy of fabtcg.com's wording — that keeps the
- * dialog impossible to drift out of sync with the actual odds engine.
- * Prices come from the build-time snapshot (see shared/data/fab-prices.ts)
- * and show a neutral placeholder rather than nothing when unavailable — a
- * set the build script never resolved a tcgcsv group for, or whose
- * snapshot hasn't loaded yet. */
+ * dialog impossible to drift out of sync with the actual odds engine. The
+ * pull-rate percentages (pullRateRows above) reuse the same
+ * expectedRarityCounts SessionStatsDialog.tsx compares actual pulls
+ * against, so a player can never see two different numbers claiming to be
+ * the same rate. Many of those weights are themselves LSS-published-slot-
+ * membership-times-population approximations rather than a confirmed
+ * per-rarity split (see pack/set-configs.ts's own extensive comments) —
+ * dialog.rate_disclaimer says so in the UI rather than presenting an
+ * approximation as a confirmed number. Order asked for by the product
+ * owner: rates, then pack contents, then current prices. Prices come from
+ * the build-time snapshot (see shared/data/fab-prices.ts) and show a
+ * neutral placeholder rather than nothing when unavailable — a set the
+ * build script never resolved a tcgcsv group for, or whose snapshot hasn't
+ * loaded yet. */
 export function SetInfoDialog({
 	open,
 	onClose,
@@ -79,6 +93,7 @@ export function SetInfoDialog({
 
 	const config = getPackConfig(setCode);
 	const sourceUrl = SET_SOURCE_URLS[setCode];
+	const rates = pullRateRows(config);
 	const prices = getSetPrices(setCode);
 	const capturedDate = prices
 		? new Date(prices.capturedAt).toLocaleDateString(undefined, {
@@ -96,7 +111,7 @@ export function SetInfoDialog({
 			className="relative z-50"
 		>
 			<DialogBackdrop className="fixed inset-0 bg-black/30" />
-			<div className="fixed inset-0 flex w-screen items-center justify-center p-4">
+			<div className="fixed inset-0 flex w-screen items-center justify-center p-4 lg:pl-72">
 				<DialogPanel className="max-h-[85vh] w-full max-w-105 overflow-y-auto space-y-5 rounded-lg border border-border-primary bg-surface p-6 shadow-xl">
 					<div className="flex items-start justify-between gap-4">
 						<DialogTitle className="text-lg font-bold text-heading">
@@ -117,6 +132,44 @@ export function SetInfoDialog({
 							{t("dialog.cards_per_pack_title")}
 						</h3>
 						<p className="text-sm text-muted">{config.cardsPerPack}</p>
+					</section>
+
+					<section className="space-y-2">
+						<h3 className="font-semibold text-body">
+							{t("dialog.pull_rates_title")}
+						</h3>
+						<ul className="space-y-1.5 text-sm">
+							{rates.map((row) => {
+								const percent = percentOfPack(row, config);
+								return (
+									<li key={row.rarity} className="flex items-center gap-2">
+										<img
+											src={CardRarities[row.rarity].icon}
+											alt=""
+											className="h-4 w-4 shrink-0"
+										/>
+										<span className="flex-1 text-body">
+											{t(CardRarities[row.rarity].label)}
+										</span>
+										<span className="font-card-stat shrink-0 text-xs text-subtle">
+											{percent >= PERCENT_DISPLAY_THRESHOLD
+												? `${percent.toFixed(1)}%`
+												: t("dialog.rate_odds", {
+														odds: Math.round(1 / row.expectedPerPack),
+													})}
+										</span>
+									</li>
+								);
+							})}
+						</ul>
+						{config.coldFoilChance > 0 && (
+							<p className="text-xs text-subtle">
+								{t("dialog.cold_foil_note", {
+									odds: Math.round(1 / config.coldFoilChance),
+								})}
+							</p>
+						)}
+						<p className="text-xs text-subtle">{t("dialog.rate_disclaimer")}</p>
 					</section>
 
 					<section className="space-y-2">
@@ -142,13 +195,6 @@ export function SetInfoDialog({
 								</li>
 							))}
 						</ul>
-						{config.coldFoilChance > 0 && (
-							<p className="text-xs text-subtle">
-								{t("dialog.cold_foil_note", {
-									odds: Math.round(1 / config.coldFoilChance),
-								})}
-							</p>
-						)}
 					</section>
 
 					<section className="space-y-1.5">

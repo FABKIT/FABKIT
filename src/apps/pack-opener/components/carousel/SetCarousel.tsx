@@ -1,8 +1,10 @@
+import { LeavePackDialog } from "@fabkit/apps/pack-opener/components/carousel/LeavePackDialog";
 import { SetInfoDialog } from "@fabkit/apps/pack-opener/components/carousel/SetInfoDialog";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
+import Select from "@fabkit/platform/components/form/Select";
 import { getSetIndex } from "@fabkit/shared/data/fab-printings";
 import { ChevronLeft, ChevronRight, Package } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 /** Minimum horizontal drag, in pixels, before a touch gesture counts as a
@@ -10,26 +12,30 @@ import { useTranslation } from "react-i18next";
 const SWIPE_THRESHOLD_PX = 40;
 
 /** Page-level chrome, not a HUD overlay (see PackOpenerHUD.tsx) — it needs
- * to be visible whenever a set choice is meaningful (idle, done) and
- * hidden mid-animation, which doesn't line up with the HUD's own
- * per-phase children. Reads set data straight from getSetIndex()'s module
- * cache rather than a loader prop: the route loader
- * (src/routes/pack-opener.tsx) already awaits loadSetIndex() before this
- * page ever mounts, same convention loadFabCardDataset()'s consumers use. */
+ * to be visible whenever there's a set to show, including mid-animation now
+ * (see the execution plan, section 1.5: a player can switch sets while a
+ * pack is tearing or revealing, behind LeavePackDialog's confirmation).
+ * Reads set data straight from getSetIndex()'s module cache rather than a
+ * loader prop: the route loader (src/routes/pack-opener.tsx) already awaits
+ * loadSetIndex() before this page ever mounts, same convention
+ * loadFabCardDataset()'s consumers use. */
 export function SetCarousel() {
 	const { t } = useTranslation("pack-opener");
-	const phase = usePackOpenerStore((state) => state.phase);
+	// Deliberately NOT subscribed to `phase`/`pack` here — this component no
+	// longer needs to re-render when those change (it stays on screen through
+	// every phase now); requestSetChange below reads them fresh via
+	// getState() only at the moment a set change is actually requested.
 	const selectedSet = usePackOpenerStore((state) => state.selectedSet);
 	const selectSet = usePackOpenerStore((state) => state.selectSet);
 	const initializeSetArt = usePackOpenerStore(
 		(state) => state.initializeSetArt,
 	);
 	const [infoOpen, setInfoOpen] = useState(false);
+	const [pendingSetCode, setPendingSetCode] = useState<string | null>(null);
 	const touchStartX = useRef<number | null>(null);
 
 	const sets = getSetIndex();
-	const visible =
-		phase !== "tearing" && phase !== "revealing" && sets.length > 0;
+	const hasSets = sets.length > 0;
 
 	// Picks a default set on a first-ever visit, or resolves pack art for a
 	// set already restored from localStorage once the index exists to look
@@ -42,11 +48,36 @@ export function SetCarousel() {
 
 	const currentIndex = sets.findIndex((set) => set.code === selectedSet);
 
+	/** The single gate every set-changing gesture (arrows, dropdown, swipe,
+	 * arrow keys) goes through. A pack still being torn open or revealed is
+	 * never silently discarded — this pauses on LeavePackDialog first, and
+	 * only calls the store's selectSet() (which does the actual discarding)
+	 * once the player has confirmed. Reads live store state via getState()
+	 * rather than this render's own `phase`/`pack`, and closes only over
+	 * stable setters (selectSet's identity never changes, same as any
+	 * zustand action), so it's safe to depend on from the keydown effect
+	 * below without that effect needing to re-run on every phase change. */
+	const requestSetChange = useCallback(
+		(code: string): void => {
+			const state = usePackOpenerStore.getState();
+			if (code === state.selectedSet) return;
+			const hasInFlightPack =
+				state.pack !== null &&
+				(state.phase === "tearing" || state.phase === "revealing");
+			if (hasInFlightPack) {
+				setPendingSetCode(code);
+				return;
+			}
+			selectSet(code);
+		},
+		[selectSet],
+	);
+
 	function goTo(offset: number): void {
 		if (sets.length === 0) return;
 		const base = currentIndex >= 0 ? currentIndex : sets.length - 1;
 		const nextIndex = (base + offset + sets.length) % sets.length;
-		selectSet(sets[nextIndex].code);
+		requestSetChange(sets[nextIndex].code);
 	}
 
 	// Left/right arrow keys step through sets whenever the carousel is on
@@ -55,7 +86,7 @@ export function SetCarousel() {
 	// this render's values, so the listener never needs to be re-attached
 	// (and never goes stale) as the selection changes.
 	useEffect(() => {
-		if (!visible) return;
+		if (!hasSets) return;
 		function handleKeyDown(event: KeyboardEvent): void {
 			if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
 			const liveSets = getSetIndex();
@@ -67,24 +98,25 @@ export function SetCarousel() {
 			);
 			const offset = event.key === "ArrowLeft" ? -1 : 1;
 			const nextIndex = (base + offset + liveSets.length) % liveSets.length;
-			usePackOpenerStore.getState().selectSet(liveSets[nextIndex].code);
+			requestSetChange(liveSets[nextIndex].code);
 		}
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [visible]);
+	}, [hasSets, requestSetChange]);
 
-	if (!visible) return null;
+	if (!hasSets) return null;
 
 	const current =
 		currentIndex >= 0 ? sets[currentIndex] : sets[sets.length - 1];
 
-	const releaseYear = current.releaseDate
-		? new Date(current.releaseDate).getFullYear()
-		: null;
+	const dropdownOptions = sets.map((set) => ({
+		value: set.code,
+		label: set.name,
+	}));
 
 	return (
 		<div
-			className="pointer-events-auto absolute inset-x-0 top-0 flex flex-col items-center gap-1 p-4"
+			className="pointer-events-auto absolute inset-x-0 top-0 flex flex-col items-center gap-2 p-4"
 			onTouchStart={(event) => {
 				touchStartX.current = event.touches[0].clientX;
 			}}
@@ -96,7 +128,7 @@ export function SetCarousel() {
 				goTo(delta > 0 ? -1 : 1);
 			}}
 		>
-			<div className="flex items-center gap-3 rounded-full bg-surface/85 px-3 py-2 shadow-lg backdrop-blur">
+			<div className="flex items-center gap-2 rounded-full bg-surface/85 px-3 py-2 shadow-lg backdrop-blur">
 				<button
 					type="button"
 					onClick={() => goTo(-1)}
@@ -109,12 +141,38 @@ export function SetCarousel() {
 				{current.setLogo ? (
 					<img
 						src={current.setLogo}
-						alt=""
-						className="h-8 w-auto max-w-28 object-contain"
+						alt={current.name}
+						className="h-16 w-auto max-w-56 object-contain"
 					/>
 				) : (
-					<Package className="h-6 w-6 text-muted" aria-hidden="true" />
+					<div className="flex items-center gap-2 px-1">
+						<Package className="h-10 w-10 text-muted" aria-hidden="true" />
+						<span className="text-sm font-semibold text-heading">
+							{current.name}
+						</span>
+					</div>
 				)}
+
+				{/* Reuses the shared Select dropdown (same component the card
+				    creator's card back picker uses — see the execution plan,
+				    section 1.3), collapsed down to just the chevron: the logo
+				    above already shows the current selection, so the button's
+				    own value text is visually hidden (valueClassName, see
+				    Select.tsx) rather than removed, keeping it in the
+				    accessible name/value chain that Select already wires up.
+				    Selecting an option here jumps straight to that set
+				    instead of stepping one at a time. */}
+				<Select
+					value={current.code}
+					onChange={(code) => requestSetChange(code)}
+					options={dropdownOptions}
+					label={null}
+					ariaLabel={t("carousel.choose_set_label")}
+					className="relative"
+					buttonClassName="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full transition-colors hover:bg-surface-active focus:outline-none"
+					valueClassName="sr-only"
+					optionsClassName="mt-1 w-64 bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-50 max-h-72 overflow-auto"
+				/>
 
 				<button
 					type="button"
@@ -126,17 +184,10 @@ export function SetCarousel() {
 				</button>
 			</div>
 
-			<div className="text-center leading-tight">
-				<p className="text-sm font-semibold text-heading">{current.name}</p>
-				{releaseYear !== null && (
-					<p className="text-xs text-subtle">{releaseYear}</p>
-				)}
-			</div>
-
 			<button
 				type="button"
 				onClick={() => setInfoOpen(true)}
-				className="text-xs text-muted underline-offset-2 transition-colors hover:text-heading hover:underline"
+				className="rounded-md border border-primary bg-surface/70 px-3.5 py-2 text-sm font-semibold text-primary backdrop-blur transition-colors hover:bg-surface-active"
 			>
 				{t("carousel.set_info_button")}
 			</button>
@@ -146,6 +197,15 @@ export function SetCarousel() {
 				onClose={() => setInfoOpen(false)}
 				setCode={current.code}
 				setName={current.name}
+			/>
+
+			<LeavePackDialog
+				open={pendingSetCode !== null}
+				onConfirm={() => {
+					if (pendingSetCode) selectSet(pendingSetCode);
+					setPendingSetCode(null);
+				}}
+				onCancel={() => setPendingSetCode(null)}
 			/>
 		</div>
 	);

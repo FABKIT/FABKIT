@@ -238,13 +238,18 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 		},
 
 		selectSet(setCode) {
-			const { phase, selectedSet } = get();
+			const { selectedSet } = get();
 			if (setCode === selectedSet) return;
-			// The carousel is hidden during tearing/revealing (see
-			// SetCarousel.tsx), so this shouldn't fire mid-animation — guarded
-			// anyway rather than trusting the UI layer alone.
-			if (phase === "tearing" || phase === "revealing") return;
-
+			// The carousel now stays visible during tearing/revealing (see
+			// SetCarousel.tsx) so a player can switch sets mid-pack. That is a
+			// deliberate, user-facing decision, not something this store should
+			// silently allow or silently block: SetCarousel gates the call
+			// behind LeavePackDialog, which warns that an in-flight pack is
+			// discarded and does not count toward session stats, before ever
+			// calling this action. This action itself stays unconditional —
+			// it already resets pack/phase/revealIndex cleanly below, which is
+			// exactly "discard the pack" — so there is nothing else to guard
+			// here once the UI has confirmed the player wants that.
 			const entry = getSetIndex().find((set) => set.code === setCode);
 			const packArtUrl = entry ? pickPackArt(entry) : null;
 			if (packArtUrl) useTexture.preload(packArtUrl);

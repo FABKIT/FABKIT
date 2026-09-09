@@ -94,6 +94,22 @@ interface SelectProps<T extends string> {
 	className?: string;
 	/** Class names for custom button styling */
 	buttonClassName?: string;
+	/** Overrides the button's visible-value span (default: text-body when a
+	 * value is selected, text-faint otherwise). Setting this to something
+	 * like "text-transparent" visually hides the label text while keeping
+	 * it in the accessible name/value chain — for a caller whose button
+	 * already shows the current value another way (e.g. pack-opener's
+	 * SetCarousel, which renders the selected set's logo next to a
+	 * collapsed chevron-only button) and doesn't want it duplicated as
+	 * visible text. Note this only affects the closed button; option rows
+	 * in the open list always show their own real label. */
+	valueClassName?: string;
+	/** Class names for the open dropdown panel. The default anchors its
+	 * width to the trigger button's own rendered width (w-(--button-width)),
+	 * which looks wrong for a caller whose button is deliberately small
+	 * (see valueClassName above) but whose option labels are normal-length
+	 * text — pass a fixed width here instead in that case. */
+	optionsClassName?: string;
 	/** Native tooltip text for the button, for cases where the label may be truncated */
 	title?: string;
 	/** Accessible name for the button, for cases where no visible <Label> is rendered (label=null) */
@@ -114,6 +130,8 @@ export default function Select<T extends string>({
 	placeholder,
 	className,
 	buttonClassName,
+	valueClassName,
+	optionsClassName,
 	title,
 	ariaLabel,
 }: SelectProps<T>) {
@@ -139,7 +157,11 @@ export default function Select<T extends string>({
 						"relative w-full px-3 py-1.5 bg-surface border border-border rounded-md text-left text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
 					}
 				>
-					<span className={selectedOption ? "text-body" : "text-faint"}>
+					<span
+						className={
+							valueClassName ?? (selectedOption ? "text-body" : "text-faint")
+						}
+					>
 						{selectedOption?.label || placeholder || "Select an option"}
 						{selectedOption?.badge && (
 							<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
@@ -154,7 +176,10 @@ export default function Select<T extends string>({
 				</ListboxButton>
 				<ListboxOptions
 					anchor="bottom"
-					className="mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-50 max-h-60 overflow-auto"
+					className={
+						optionsClassName ??
+						"mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-50 max-h-60 overflow-auto"
+					}
 				>
 					{options.map((option) => {
 						const isAction = option.variant === "action";

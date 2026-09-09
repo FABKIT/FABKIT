@@ -102,7 +102,7 @@ export function SessionStatsDialog({
 			className="relative z-50"
 		>
 			<DialogBackdrop className="fixed inset-0 bg-black/30" />
-			<div className="fixed inset-0 flex w-screen items-center justify-center p-4">
+			<div className="fixed inset-0 flex w-screen items-center justify-center p-4 lg:pl-72">
 				<DialogPanel className="max-h-[85vh] w-full max-w-105 overflow-y-auto space-y-5 rounded-lg border border-border-primary bg-surface p-6 shadow-xl">
 					<div className="flex items-start justify-between gap-4">
 						<DialogTitle className="text-lg font-bold text-heading">
