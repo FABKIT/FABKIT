@@ -52,6 +52,14 @@ const fragmentShader = /* glsl */ `
 	void main() {
 		vec4 base = texture2D(uBaseTexture, vUv);
 
+		// Card art has transparent rounded corners baked into its own alpha
+		// channel (see Card3D.tsx's plain meshBasicMaterial path, which relies
+		// on the same cutout via alphaTest). A ShaderMaterial doesn't get
+		// three.js's built-in alphaTest handling for free — that only applies
+		// to three's own built-in materials — so it has to be an explicit
+		// discard here instead.
+		if (base.a < 0.5) discard;
+
 		if (uTreatment == 0) {
 			gl_FragColor = base;
 			return;
