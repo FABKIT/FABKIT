@@ -27,14 +27,28 @@ const TIER_COLOR: Record<CelebrationTier, string> = {
 	marvel: "#ff6fae",
 };
 
+/** How far behind the card the glow plane sits. This is the fix for the
+ * glow appearing to wash OVER the card: at 0.05 the plane sat well inside
+ * the arc the card sweeps when it tilts (up to CARD_TILT_MAX_DEG, which
+ * swings a corner roughly 0.17 units in z), so moving the pointer above or
+ * below the card tipped part of it behind the glow. The glow is additively
+ * blended and in the transparent queue, which three.js always draws after
+ * the opaque queue, so wherever the card had sunk behind this plane the
+ * glow drew straight over it as a bright rectangle. Sitting well clear of
+ * the card's full tilt excursion means the card is always in front of it,
+ * at every angle. */
+const GLOW_Z_OFFSET = -0.55;
+
 /** How much bigger than the card (CARD_WIDTH/CARD_HEIGHT) the glow grows at
  * its resting size — this multiplies a plane already sized to the card, so
- * 1.35 means "35% bigger than the card on every side put together". */
+ * 1.35 means "35% bigger than the card on every side put together".
+ * Nudged up from the pre-GLOW_Z_OFFSET values to hold the same apparent
+ * size on screen now that the plane sits further from the camera. */
 const TIER_MAX_SCALE: Record<CelebrationTier, number> = {
-	majestic: 1.35,
-	foil: 1.45,
-	legendary: 1.6,
-	marvel: 1.85,
+	majestic: 1.5,
+	foil: 1.6,
+	legendary: 1.8,
+	marvel: 2.05,
 };
 
 /** Resting opacity per tier — Marvel and Legendary read as a clear flash;
@@ -107,7 +121,7 @@ export function PullCelebration({
 	});
 
 	return (
-		<mesh ref={meshRef} position={[0, 0, -0.05]} renderOrder={-1}>
+		<mesh ref={meshRef} position={[0, 0, GLOW_Z_OFFSET]} renderOrder={-1}>
 			<planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
 			<meshBasicMaterial
 				ref={materialRef}

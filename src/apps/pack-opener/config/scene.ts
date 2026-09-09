@@ -17,6 +17,16 @@ export const PACK_SEAL_HEIGHT = 0.16;
 export const CARD_TILT_MAX_DEG = 12;
 export const CARD_TILT_EASE = 0.12;
 
+/** A beat where the pack sits closed before the seal starts moving. The
+ * tear used to begin the instant openPack() fired, which meant it played
+ * out while the camera was still swinging in from wherever the previous
+ * phase left it — the rip was over before the shot had settled, and on
+ * "Open Another Pack" it read as though the animation had been skipped
+ * entirely (it hadn't; measured, the state machine ran the full tear every
+ * time). Holding first gives the camera time to arrive and makes the rip a
+ * deliberate, visible event rather than something happening under a
+ * moving camera. */
+export const TEAR_START_DELAY_MS = 420;
 export const TEAR_DURATION_MS = 1200;
 /** Extra pause after the tear animation finishes before the first card's flip starts. */
 export const TEAR_TAIL_MS = 300;
@@ -32,6 +42,13 @@ export const CARD_SLIDE_DISTANCE = 2.6;
  * can tap faster than REVEAL_TRANSITION_MS to skip through reveals quickly;
  * each new card just appears in place, no wait required. */
 export const ADVANCE_DEBOUNCE_MS = 120;
+/** How long the last card of a pack stays on screen before the summary
+ * appears on its own. Reaching the final card used to need one more tap
+ * that revealed nothing new — the card was already showing, so the tap
+ * only dismissed it. Long enough to actually look at what is usually the
+ * pack's best card, short enough not to feel stuck. Tapping still works
+ * and skips the wait. */
+export const LAST_CARD_AUTO_SUMMARY_MS = 2600;
 /** How long PullCelebration.tsx's glow takes to bloom in to its resting
  * size/opacity once a celebrated card becomes active — see
  * cards/celebration-tier.ts for which pulls celebrate. Deliberately close
@@ -39,12 +56,17 @@ export const ADVANCE_DEBOUNCE_MS = 120;
  * as a separate, later event. */
 export const GLOW_ANIMATION_MS = 900;
 
-// Camera distances are chosen so the framed object fills ~80% of the vertical
-// frustum at the Canvas's fov (35°) — big and centered, but never cropped.
-// H(d) = 2 * d * tan(fov/2); solved for d given each phase's object height
-// (pack closed ~2.15 units tall, single card CARD_HEIGHT ~1.675 units).
-export const IDLE_CAMERA_POSITION: [number, number, number] = [0, 0.3, 4.3];
-export const TEARING_CAMERA_POSITION: [number, number, number] = [0, 0.15, 3.5];
+// Camera distances frame each phase's subject at a similar share of the
+// vertical frustum, so nothing changes apparent size as the phases move on.
+// H(d) = 2 * d * tan(fov/2) at the Canvas's 35° fov; solved for d given each
+// subject's height (pack 2.0 units, single card CARD_HEIGHT ~1.675). The pack
+// being the taller object is why it needs the greater distance: framed from
+// the same spot as a card it would loom noticeably larger than the cards it
+// produces. At 4.3 the pack and at 3.6 a card both land near 74% of frame.
+// Idle sits slightly further out than tearing so tapping still gives a
+// gentle push-in.
+export const IDLE_CAMERA_POSITION: [number, number, number] = [0, 0.3, 4.6];
+export const TEARING_CAMERA_POSITION: [number, number, number] = [0, 0.15, 4.3];
 /** z pulled back from 3.2 (see the execution plan, section 2.3) — Louis's
  * feedback was the opposite of what it sounds like at first: the revealed
  * card itself was too big/dominant on screen, not too small. A farther
@@ -54,7 +76,14 @@ export const TEARING_CAMERA_POSITION: [number, number, number] = [0, 0.15, 3.5];
  * actually closes the specific gap Louis flagged, between the card and
  * RevealCaption underneath it. */
 export const REVEALING_CAMERA_POSITION: [number, number, number] = [0, 0, 3.6];
-export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0.45, 5];
+/** Deliberately identical to REVEALING_CAMERA_POSITION. It used to pull
+ * back to [0, 0.45, 5] to clear room for the summary panel, which meant
+ * the last card of a pack visibly shrank as the summary arrived, and every
+ * card revisited from the summary ledger showed up smaller than it had
+ * during the reveal. A card should be exactly one size for the whole
+ * session; the summary collapsing (see PackSummary.tsx) is what makes room
+ * now, not the camera. */
+export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0, 3.6];
 
 /**
  * A camera position always looks at the world origin (see CameraRig.tsx's
@@ -67,3 +96,15 @@ export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0.45, 5];
  * instead of moving the camera. Negative Y = down. Modest on purpose: the
  * card must stay fully inside the vertical frustum at every tilt angle. */
 export const REVEALING_CARD_Y_OFFSET = -0.18;
+
+/** Where the card sits once the pack is finished. The summary occupies the
+ * bottom strip of the canvas from here on (its collapsed header plus the
+ * two action buttons, roughly 135px), and the card is deliberately the same
+ * size as it was during the reveal, so the only way for both to be fully
+ * visible is for the card to move up out of that strip. Positive Y = up.
+ * CardStack3D eases between this and REVEALING_CARD_Y_OFFSET rather than
+ * snapping, so the card reads as making room rather than jumping. */
+export const DONE_CARD_Y_OFFSET = 0.18;
+/** Lerp factor base for that easing, in the same
+ * `1 - base ** delta` form CameraRig.tsx uses for the camera. */
+export const CARD_Y_EASE_BASE = 0.005;
