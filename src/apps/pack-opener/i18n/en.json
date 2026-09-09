@@ -24,10 +24,18 @@
 	"carousel": {
 		"previous_set": "Previous set",
 		"next_set": "Next set",
-		"set_info_button": "Pull rates and pack contents"
+		"set_info_button": "Pull rates and pack contents",
+		"choose_set_label": "Choose a set",
+		"leave_pack_title": "Leave this pack?",
+		"leave_pack_body": "You have not finished opening this pack. If you switch sets now, this pack is discarded and will not count towards your session stats.",
+		"leave_pack_confirm": "Switch set",
+		"leave_pack_cancel": "Keep opening"
 	},
 	"dialog": {
 		"cards_per_pack_title": "Cards per pack",
+		"pull_rates_title": "Pull rates",
+		"rate_odds": "About 1 in {{odds}} packs",
+		"rate_disclaimer": "Some rates are estimated where Legend Story Studios has not published them.",
 		"pack_contents_title": "Pack contents",
 		"cold_foil_note": "Cold Foil: roughly 1 in {{odds}} packs",
 		"price_title": "Current prices",

@@ -48,8 +48,12 @@ export interface SessionStats {
  * weightedPick. Also folds in the premium-foil slot's marvelChance upgrade,
  * since that measurably shifts its slot's real rarity mix. This is an
  * expectation, not a guarantee — real packs vary, which is the whole point
- * of showing it next to what was actually pulled. */
-function expectedRarityCounts(
+ * of showing it next to what was actually pulled.
+ *
+ * Exported for pack/pull-rates.ts too, which turns these same expected
+ * counts into the percentages SetInfoDialog.tsx shows before a pack is even
+ * opened — one source for both, so the two views can't drift apart. */
+export function expectedRarityCounts(
 	config: PackConfig,
 ): Partial<Record<CardRarity, number>> {
 	const counts: Partial<Record<CardRarity, number>> = {};
