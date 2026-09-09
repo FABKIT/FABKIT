@@ -35,20 +35,25 @@ export function CardStack3D() {
 	const phaseStartedAt = usePackOpenerStore((state) => state.phaseStartedAt);
 	const advanceReveal = usePackOpenerStore((state) => state.advanceReveal);
 	const reducedMotion = usePrefersReducedMotion();
+	const revealStartedAt = usePackOpenerStore((state) => state.revealStartedAt);
 
-	// This component mounts the moment the pack finishes tearing (see
-	// PackOpenerCanvas.tsx, which swaps PackMesh out for it), so its own
-	// mount time IS the moment the first card arrives — no need to watch
-	// phaseStartedAt, which also ticks on every subsequent reveal and would
-	// re-run the intro sixteen times per pack.
-	const introStartedAt = useRef(Date.now());
+	// Timed off the store's revealStartedAt, never off this component's own
+	// mount — see that field's comment in stores/pack-opener.ts. React
+	// remounts this subtree more than once per pack (StrictMode's double
+	// mount, and the canvas Suspense boundary tearing its contents down when
+	// a branch swaps), and a mount-timestamped animation restarts every
+	// time: the card appeared, vanished and appeared again. Reading a store
+	// timestamp means a remount resumes the animation wherever it actually
+	// is, exactly as PackMesh's tear does. Unlike phaseStartedAt this one
+	// does not move on each advance, so the arrival plays once per pack.
 	const introGroup = useRef<Group>(null);
 
 	useFrame(() => {
 		if (!introGroup.current) return;
-		const t = reducedMotion
-			? 1
-			: Math.min((Date.now() - introStartedAt.current) / REVEAL_INTRO_MS, 1);
+		const t =
+			reducedMotion || revealStartedAt === null
+				? 1
+				: Math.min((Date.now() - revealStartedAt) / REVEAL_INTRO_MS, 1);
 		const eased = easeOutCubic(t);
 		const scale =
 			REVEAL_INTRO_START_SCALE + (1 - REVEAL_INTRO_START_SCALE) * eased;

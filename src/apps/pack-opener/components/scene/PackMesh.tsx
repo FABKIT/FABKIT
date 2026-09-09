@@ -34,39 +34,29 @@ const BODY_HEIGHT = PACK_HEIGHT - PACK_SEAL_HEIGHT;
 const BODY_CENTER_Y = -PACK_SEAL_HEIGHT / 2;
 const SEAL_CENTER_Y = PACK_HEIGHT / 2 - PACK_SEAL_HEIGHT / 2;
 
-// alphaTest: real pack art from LSS's product shots is a cut-out — the
-// pack against transparency, with rounded corners. Without this those
-// pixels paint as near-black fringes around the pack, which reads as a
-// dark halo on a light background. A hard cutout keeps the material in
-// the opaque queue, same reasoning as the cards (see Card3D.tsx).
+// Unlit, exactly like the card faces and for the same reason (see this
+// app's CLAUDE.md, "Rendering"): the pack art is a PHOTOGRAPH of a foil
+// pouch, so its sheen, highlights and creases are already in the pixels.
+// A lit material adds a second, computed highlight on top, and because
+// that specular term is ADDITIVE it lifts the blacks — most FAB pack
+// fronts are largely black behind the character art, so the whole thing
+// went grey and muffled. Diffuse alone would have been harmless (black
+// times any amount of light is still black); it was the clearcoat and
+// specular that washed it out. Unlit removes that term entirely and the
+// printed art renders true-to-source.
 //
-// The rest of these numbers were tuned down hard once real artwork
-// replaced the flat canvas mock. A product shot is a PHOTOGRAPH: the foil
-// pouch's own sheen, its highlights and its creases are already painted
-// into the pixels. Laying this scene's directional light and studio
-// environment on top of that at metalness 0.55 / clearcoat 1 added a
-// second, fake highlight that swept across the printed art and read as a
-// vague glow sitting on the pack. Same principle the card faces settled
-// on for the same reason (see this app's CLAUDE.md, "Rendering"): art is
-// shown true-to-source rather than re-lit. A little sheen is kept
-// deliberately, not removed altogether, because the pack IS foil and the
-// pointer tilt below needs something to catch.
+// This also leaves nothing in the scene that consumes lighting at all,
+// which is why PackOpenerCanvas.tsx no longer mounts any lights or drei's
+// Environment — see there.
+//
+// alphaTest: the art is a cut-out, the pack against transparency with
+// rounded corners. Without this those pixels paint as near-black fringes,
+// a dark halo on a light background. A hard cutout also keeps the
+// material in the opaque queue, same reasoning as the cards.
 const BODY_MATERIAL_PROPS = {
-	metalness: 0.05,
-	roughness: 0.62,
-	clearcoat: 0.18,
-	clearcoatRoughness: 0.45,
-	envMapIntensity: 0.22,
 	alphaTest: 0.5,
 } as const;
-const SEAL_MATERIAL_PROPS = {
-	metalness: 0.08,
-	roughness: 0.55,
-	clearcoat: 0.22,
-	clearcoatRoughness: 0.4,
-	envMapIntensity: 0.25,
-	alphaTest: 0.5,
-} as const;
+const SEAL_MATERIAL_PROPS = BODY_MATERIAL_PROPS;
 
 /** Real vs. mock texture source, branched as separate mounted components
  * (not a conditional hook call within one component) — same pattern
@@ -75,11 +65,11 @@ const SEAL_MATERIAL_PROPS = {
  * shouldn't actually suspend in the common case. */
 function RealPackBodyMaterial({ url }: { url: string }) {
 	const texture = useRealPackBodyTexture(url);
-	return <meshPhysicalMaterial map={texture} {...BODY_MATERIAL_PROPS} />;
+	return <meshBasicMaterial map={texture} {...BODY_MATERIAL_PROPS} />;
 }
 function MockPackBodyMaterial() {
 	const texture = usePackBodyTexture();
-	return <meshPhysicalMaterial map={texture} {...BODY_MATERIAL_PROPS} />;
+	return <meshBasicMaterial map={texture} {...BODY_MATERIAL_PROPS} />;
 }
 function PackBodyMaterial({ packArtUrl }: { packArtUrl: string | null }) {
 	return packArtUrl ? (
@@ -91,11 +81,11 @@ function PackBodyMaterial({ packArtUrl }: { packArtUrl: string | null }) {
 
 function RealPackSealMaterial({ url }: { url: string }) {
 	const texture = useRealPackSealTexture(url);
-	return <meshPhysicalMaterial map={texture} {...SEAL_MATERIAL_PROPS} />;
+	return <meshBasicMaterial map={texture} {...SEAL_MATERIAL_PROPS} />;
 }
 function MockPackSealMaterial() {
 	const texture = usePackSealTexture();
-	return <meshPhysicalMaterial map={texture} {...SEAL_MATERIAL_PROPS} />;
+	return <meshBasicMaterial map={texture} {...SEAL_MATERIAL_PROPS} />;
 }
 function PackSealMaterial({ packArtUrl }: { packArtUrl: string | null }) {
 	return packArtUrl ? (
