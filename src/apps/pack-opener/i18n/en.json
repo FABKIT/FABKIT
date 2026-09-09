@@ -57,6 +57,16 @@
 			"equipment": "Equipment"
 		}
 	},
+	"stats": {
+		"open_button": "Session stats",
+		"title": "This session",
+		"empty": "Open a pack to start tracking your session.",
+		"packs_opened_label": "Packs opened",
+		"value_title": "Value this session",
+		"spent_label": "Spent on packs",
+		"packs_opened_for_set": "{{count}} opened",
+		"expected_short": "expected"
+	},
 	"card": {
 		"rarity": {
 			"basic": "Basic",

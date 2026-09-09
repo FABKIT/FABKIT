@@ -7,12 +7,16 @@ import {
 	TEAR_TAIL_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
-import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
+import {
+	DEFAULT_PACK_CONFIG,
+	getPackConfig,
+} from "@fabkit/apps/pack-opener/pack/odds";
 import { orderForReveal } from "@fabkit/apps/pack-opener/pack/reveal-order";
 import type {
 	DrawnCard,
 	PackConfig,
 } from "@fabkit/apps/pack-opener/pack/types";
+import type { OpenedPackRecord } from "@fabkit/apps/pack-opener/stats/session-stats";
 import { trackEvent } from "@fabkit/platform/analytics";
 import { loadSetPrices } from "@fabkit/shared/data/fab-prices";
 import {
@@ -59,6 +63,14 @@ export interface PackOpenerState {
 	 * source of truth every animation timer reads from. */
 	phaseStartedAt: number | null;
 	packsOpenedThisSession: number;
+	/** Every pack completed this session, in order — the raw material for
+	 * the session stats dialog (see stats/session-stats.ts's
+	 * computeSessionStats, and SessionStatsDialog.tsx). Deliberately just a
+	 * flat list of {setCode, cards}, not pre-aggregated, so promoting this
+	 * to persistent per-device history later (execution plan, section 9) is
+	 * "persist this array", not a redesign. In-memory only — resets on
+	 * reload, same as packsOpenedThisSession above. */
+	openedPacksThisSession: OpenedPackRecord[];
 	/** Set code driving getPackConfig() for the next openPack() call, and
 	 * shown by SetCarousel — null until the carousel picks a default (the
 	 * set index hasn't loaded yet, or nothing was ever stored). See
@@ -131,6 +143,7 @@ const initialState: PackOpenerState = {
 	revealIndex: -1,
 	phaseStartedAt: null,
 	packsOpenedThisSession: 0,
+	openedPacksThisSession: [],
 	selectedSet: readStoredSelectedSet(),
 	packArtUrl: null,
 	revisitIndex: null,
@@ -182,7 +195,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 		},
 
 		advanceReveal() {
-			const { phase, pack, revealIndex, phaseStartedAt } = get();
+			const { phase, pack, revealIndex, phaseStartedAt, packSetCode } = get();
 			if (phase !== "revealing" || !pack) return;
 			if (
 				phaseStartedAt !== null &&
@@ -197,6 +210,10 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					{
 						phase: "done",
 						packsOpenedThisSession: get().packsOpenedThisSession + 1,
+						openedPacksThisSession: [
+							...get().openedPacksThisSession,
+							{ setCode: packSetCode ?? DEFAULT_PACK_CONFIG.id, cards: pack },
+						],
 					},
 					undefined,
 					"pack-opener/packCompleted",

@@ -1,9 +1,10 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { SessionStatsDialog } from "@fabkit/apps/pack-opener/components/hud/SessionStatsDialog";
 import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { getCardPrice, getSetPrices } from "@fabkit/shared/data/fab-prices";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 /** A finished pack resolves into an ordered, legible ledger — one row per
@@ -20,8 +21,12 @@ export function PackSummary() {
 	const packsOpenedThisSession = usePackOpenerStore(
 		(state) => state.packsOpenedThisSession,
 	);
+	const openedPacksThisSession = usePackOpenerStore(
+		(state) => state.openedPacksThisSession,
+	);
 	const openPack = usePackOpenerStore((state) => state.openPack);
 	const revisitCard = usePackOpenerStore((state) => state.revisitCard);
+	const [statsOpen, setStatsOpen] = useState(false);
 
 	const resolvedCards = useMemo(
 		() =>
@@ -127,9 +132,23 @@ export function PackSummary() {
 						</span>
 					</div>
 				</div>
-				<p className="mt-3 text-center text-xs text-subtle">
-					{t("page.packs_opened_session", { count: packsOpenedThisSession })}
-				</p>
+				<div className="mt-3 flex items-center justify-center gap-2">
+					<p className="text-xs text-subtle">
+						{t("page.packs_opened_session", { count: packsOpenedThisSession })}
+					</p>
+					{packsOpenedThisSession > 0 && (
+						<>
+							<span className="text-xs text-subtle">·</span>
+							<button
+								type="button"
+								onClick={() => setStatsOpen(true)}
+								className="text-xs font-semibold text-heading underline-offset-2 hover:underline"
+							>
+								{t("stats.open_button")}
+							</button>
+						</>
+					)}
+				</div>
 			</div>
 			<button
 				type="button"
@@ -138,6 +157,11 @@ export function PackSummary() {
 			>
 				{t("page.open_another")}
 			</button>
+			<SessionStatsDialog
+				open={statsOpen}
+				onClose={() => setStatsOpen(false)}
+				openedPacks={openedPacksThisSession}
+			/>
 		</div>
 	);
 }
