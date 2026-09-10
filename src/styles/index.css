@@ -153,3 +153,30 @@
 		@apply bg-surface text-body;
 	}
 }
+
+/* Ko-fi floating "Support Us" button.
+ *
+ * The widget is injected by Ko-fi's own script (see index.html) and styles
+ * itself inline at z-index 99999999, so it can only be adjusted from
+ * outside with !important. It is not hidden anywhere: FABKIT depends on
+ * donations, and it stays reachable on every screen size.
+ *
+ * On phones it was 180x50 in the bottom-left corner, which sat exactly on
+ * top of the pack opener's "Open Another Pack" button. That was not merely
+ * visual overlap: a tap on the button's centre landed on the Ko-fi iframe
+ * instead, so the primary action of that whole screen could not be pressed.
+ *
+ * Two changes, both needed. Scaling alone was measured and was NOT enough:
+ * even at 62% the widget's corner still covered the left-hand button.
+ * So it is also lifted above the phone action row (107px tall, see
+ * PackOpenerPage.tsx) rather than only made smaller. It keeps its familiar
+ * bottom-left corner, just clear of the controls. Ko-fi positions the
+ * widget from its own stylesheet, hence the !important on each. */
+@media (max-width: 767px) {
+	.floatingchat-container-wrap,
+	.floatingchat-container-wrap-mobi {
+		bottom: 124px !important;
+		transform: scale(0.7) !important;
+		transform-origin: bottom left !important;
+	}
+}
