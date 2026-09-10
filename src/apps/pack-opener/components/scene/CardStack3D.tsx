@@ -1,6 +1,7 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-tier";
 import { Card3D } from "@fabkit/apps/pack-opener/components/scene/Card3D";
+import { LegendaryFireworks } from "@fabkit/apps/pack-opener/components/scene/LegendaryFireworks";
 import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/OutgoingCard";
 import { PullCelebration } from "@fabkit/apps/pack-opener/components/scene/PullCelebration";
 import { PullSparkles } from "@fabkit/apps/pack-opener/components/scene/PullSparkles";
@@ -114,8 +115,12 @@ export function CardStack3D() {
 							phaseStartedAt={phaseStartedAt}
 						/>
 						{/* Particles for the rare-by-rarity tiers only — see
-						    PullSparkles.tsx, which no-ops for a plain foil. */}
+						    PullSparkles.tsx, which no-ops for a plain foil.
+						    Legendary and Marvel add bursting fireworks on top,
+						    so those pulls read as a different kind of event
+						    rather than more of the same glitter. */}
 						<PullSparkles tier={celebrationTier} />
+						<LegendaryFireworks tier={celebrationTier} />
 					</>
 				)}
 				<Card3D
