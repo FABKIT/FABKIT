@@ -109,7 +109,11 @@ const fragmentShader = /* glsl */ `
 			effectColor = uTreatment == 3
 				? vec3(0.651, 0.525, 0.290)  // FABKIT gold, #a6864a
 				: vec3(1.0, 1.0, 1.0);       // near-white, metallic rather than colourful
-			strength = band;
+			// Scaled back from a full-strength band: at 1.0 the glint read as
+			// a hard specular blowout rather than the softer sheen a real
+			// cold foil catches. Only the peak is lowered, so the band keeps
+			// its shape, its position and the way it sweeps with the tilt.
+			strength = band * 0.68;
 		}
 
 		strength = clamp(strength + grain * strength, 0.0, 1.0);
