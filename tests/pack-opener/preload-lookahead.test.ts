@@ -48,8 +48,11 @@ describe("preloadLookaheadCount", () => {
 		expect(preloadLookaheadCount()).toBe(1);
 	});
 
-	it("still preloads the whole pack on 3g (only 2g-class and Data Saver are reduced)", () => {
+	it("uses a middle lookahead on 3g: ahead of the player, but not sixteen at once", () => {
 		setConnection({ saveData: false, effectiveType: "3g" });
-		expect(preloadLookaheadCount()).toBeGreaterThanOrEqual(WHOLE_PACK);
+		const count = preloadLookaheadCount();
+		expect(count).toBeLessThan(WHOLE_PACK);
+		// Still has to stay ahead of a player tapping at the debounce floor.
+		expect(count).toBeGreaterThan(3);
 	});
 });

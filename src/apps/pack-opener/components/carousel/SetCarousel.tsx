@@ -35,6 +35,7 @@ export function SetCarousel() {
 		(state) => state.initializeSetArt,
 	);
 	const [infoOpen, setInfoOpen] = useState(false);
+	const [logoLoaded, setLogoLoaded] = useState(false);
 	const [pendingSetCode, setPendingSetCode] = useState<string | null>(null);
 	const touchStartX = useRef<number | null>(null);
 
@@ -51,6 +52,25 @@ export function SetCarousel() {
 	}, [sets, initializeSetArt]);
 
 	const currentIndex = sets.findIndex((set) => set.code === selectedSet);
+
+	// Warm the logos either side of the current set. Stepping through the
+	// carousel is the common way to browse, so the next one a player asks
+	// for is almost always one of these two, and fetching them now turns a
+	// visible wait into an instant swap. Deliberately only the neighbours:
+	// these are full-resolution originals, so preloading all twenty would
+	// trade one slow logo for a great deal of pointless traffic.
+	useEffect(() => {
+		if (sets.length === 0) return;
+		setLogoLoaded(false);
+		const base = currentIndex >= 0 ? currentIndex : sets.length - 1;
+		for (const offset of [-1, 1]) {
+			const neighbour = sets[(base + offset + sets.length) % sets.length];
+			if (!neighbour?.setLogo) continue;
+			const img = new Image();
+			img.decoding = "async";
+			img.src = neighbour.setLogo;
+		}
+	}, [sets, currentIndex]);
 
 	/** The single gate every set-changing gesture (arrows, dropdown, swipe,
 	 * arrow keys) goes through. A pack still being torn open or revealed is
@@ -132,7 +152,7 @@ export function SetCarousel() {
 				goTo(delta > 0 ? -1 : 1);
 			}}
 		>
-			<div className="flex items-center gap-2 rounded-full bg-surface/85 px-3 py-2 shadow-lg backdrop-blur">
+			<div className="relative flex items-center gap-2 rounded-full bg-surface/85 px-3 py-2 shadow-lg backdrop-blur">
 				<button
 					type="button"
 					onClick={() => goTo(-1)}
@@ -142,20 +162,38 @@ export function SetCarousel() {
 					<ChevronLeft className="h-5 w-5" />
 				</button>
 
-				{current.setLogo ? (
-					<img
-						src={current.setLogo}
-						alt={current.name}
-						className="h-16 w-auto max-w-56 object-contain"
-					/>
-				) : (
-					<div className="flex items-center gap-2 px-1">
-						<Package className="h-10 w-10 text-muted" aria-hidden="true" />
-						<span className="text-sm font-semibold text-heading">
-							{current.name}
-						</span>
-					</div>
-				)}
+				{/* The slot is a fixed height whether or not the logo has
+				    arrived, and the set's name stands in until it does, so
+				    stepping through sets never leaves a blank gap where the
+				    logo will be. These are Legend Story Studios' own
+				    full-resolution logo files, served from their CDN at up to
+				    2500x1768 for something drawn 64px tall, and they take
+				    between a third of a second and nearly two seconds to
+				    arrive the first time. Preloading the neighbours (see the
+				    effect above) covers the common case of stepping one set at
+				    a time; this covers the rest. */}
+				<div className="flex h-16 w-56 shrink-0 items-center justify-center">
+					{current.setLogo ? (
+						<img
+							key={current.setLogo}
+							src={current.setLogo}
+							alt={current.name}
+							decoding="async"
+							onLoad={() => setLogoLoaded(true)}
+							className={`h-16 w-auto max-w-56 object-contain transition-opacity duration-200 ${
+								logoLoaded ? "opacity-100" : "opacity-0"
+							}`}
+						/>
+					) : null}
+					{(!current.setLogo || !logoLoaded) && (
+						<div className="absolute flex items-center gap-2 px-1">
+							<Package className="h-8 w-8 text-muted" aria-hidden="true" />
+							<span className="text-sm font-semibold text-heading">
+								{current.name}
+							</span>
+						</div>
+					)}
+				</div>
 
 				{/* Reuses the shared Select dropdown (same component the card
 				    creator's card back picker uses — see the execution plan,
