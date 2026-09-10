@@ -3,6 +3,7 @@ import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-t
 import { Card3D } from "@fabkit/apps/pack-opener/components/scene/Card3D";
 import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/OutgoingCard";
 import { PullCelebration } from "@fabkit/apps/pack-opener/components/scene/PullCelebration";
+import { PullSparkles } from "@fabkit/apps/pack-opener/components/scene/PullSparkles";
 import { revealIntroTransform } from "@fabkit/apps/pack-opener/components/scene/revealIntro";
 import { CARD_Y_OFFSET } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
@@ -107,10 +108,15 @@ export function CardStack3D() {
 				position={[0, 0, initialIntro.z]}
 			>
 				{celebrationTier && (
-					<PullCelebration
-						tier={celebrationTier}
-						phaseStartedAt={phaseStartedAt}
-					/>
+					<>
+						<PullCelebration
+							tier={celebrationTier}
+							phaseStartedAt={phaseStartedAt}
+						/>
+						{/* Particles for the rare-by-rarity tiers only — see
+						    PullSparkles.tsx, which no-ops for a plain foil. */}
+						<PullSparkles tier={celebrationTier} />
+					</>
 				)}
 				<Card3D
 					card={resolvedCard}
