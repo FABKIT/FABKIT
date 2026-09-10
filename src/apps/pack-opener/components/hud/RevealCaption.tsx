@@ -1,7 +1,7 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
-import { RotateCw } from "lucide-react";
+import { FlipHorizontal2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -68,11 +68,10 @@ export function RevealCaption() {
 						type="button"
 						onClick={flipCard}
 						aria-pressed={showingOtherFace}
-						title={t("page.flip_card")}
-						aria-label={t("page.flip_card")}
-						className="rounded-full border border-border-primary p-1.5 text-muted transition-colors hover:bg-primary hover:text-white"
+						className="flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
 					>
-						<RotateCw className="h-4 w-4" aria-hidden="true" />
+						<FlipHorizontal2 className="h-3.5 w-3.5" aria-hidden="true" />
+						{showingOtherFace ? t("page.see_front") : t("page.see_back")}
 					</button>
 				)}
 			</span>
@@ -87,9 +86,6 @@ export function RevealCaption() {
 					className="h-4 w-4"
 				/>
 				<span>{t(CardRarities[resolved.rarity].label)}</span>
-				{showingOtherFace && resolved.backImageUrl !== null && (
-					<span className="text-subtle">{t("page.other_side")}</span>
-				)}
 				{resolved.rarity === "marvel" && (
 					<span className="font-bold text-pack-marvel">
 						{t("page.marvel_badge")}
