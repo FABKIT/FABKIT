@@ -1,5 +1,6 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { SessionStatsDialog } from "@fabkit/apps/pack-opener/components/hud/SessionStatsDialog";
+import { SWIPE_THRESHOLD_PX } from "@fabkit/apps/pack-opener/config/scene";
 import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
@@ -7,11 +8,6 @@ import { getCardPrice, getSetPrices } from "@fabkit/shared/data/fab-prices";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-/** Minimum vertical drag, in pixels, before a touch gesture on the summary
- * header counts as a swipe rather than a tap — same threshold/pattern as
- * SetCarousel.tsx's horizontal swipe, just on the other axis. */
-const SWIPE_THRESHOLD_PX = 40;
 
 /** A finished pack resolves into an ordered, legible ledger — one row per
  * card, tappable to look at that specific card again in the 3D scene (see

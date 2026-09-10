@@ -3,6 +3,7 @@ import {
 	REVEAL_INTRO_START_SCALE,
 	REVEAL_INTRO_START_Z,
 } from "@fabkit/apps/pack-opener/config/scene";
+import { easeOutCubic } from "@fabkit/apps/pack-opener/lib/easing";
 
 export interface RevealIntroTransform {
 	scale: number;
@@ -10,10 +11,6 @@ export interface RevealIntroTransform {
 }
 
 const AT_REST: RevealIntroTransform = { scale: 1, z: 0 };
-
-function easeOutCubic(t: number): number {
-	return 1 - (1 - t) ** 3;
-}
 
 /**
  * Where the card stack sits in its arrival animation at a given moment.

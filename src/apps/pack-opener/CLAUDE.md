@@ -37,8 +37,9 @@ src/apps/pack-opener/
                       textures/useCardTexture.ts (the only place a THREE.CanvasTexture is
                       constructed — real card images load via drei's useTexture instead,
                       see "Card data")
-    hud/             2D overlay UI (IdleOverlay, RevealBadge, PackSummary) composed by
-                      PackOpenerHUD, driven purely by store state
+    hud/             2D page chrome BELOW the canvas, not overlaid on it (IdleOverlay,
+                      RevealCaption, PackSummary, SessionStatsDialog), driven purely by
+                      store state and composed directly by PackOpenerPage
   config/scene.ts     Animation durations, easing, camera targets/punch-per-slot
   i18n/en.json        Namespace "pack-opener" — carries its own card.rarity.* block since
                       rarity labels are per-app translations, not centrally shared (see
@@ -70,13 +71,26 @@ stack, not spinning one in place).
 
 ## Rendering
 
-The card face's material is deliberately unlit (`meshBasicMaterial`, not
-`meshStandardMaterial`) — a card's image is meant to read true-to-source, like a photo,
-not as a physically-lit 3D object. Running real card art through this scene's ambient +
-directional + studio-environment lighting washed the colors out. `foilMaterial` (the
-holographic shader for foil/Marvel cards) was never affected by this — it's a fully
-custom shader that samples the base texture directly and never consumes scene-light
-uniforms, so it already behaved as effectively unlit.
+Nothing in this scene is lit. There are no lights and no drei `<Environment>`: the card
+faces, the foil shader, the celebration glow, the sparkles and the pack are all unlit
+materials, so there was nothing left for them to light. A card's image is meant to read
+true-to-source, like a photo, not as a physically-lit 3D object — running real card art
+through ambient + directional + studio-environment lighting washed the colors out. The
+pack went the same way once it carried real product photography: a computed specular
+highlight on top of a photograph that already has its own is additive, so it lifted the
+blacks and most FAB pack fronts are largely black behind the character art.
+
+Removing `<Environment>` also removed an HDRI download and, with it, a measured ~300ms
+where the canvas rendered nothing at all on first load while that texture resolved.
+
+**The transparent queue is the trap in this scene.** three.js draws every transparent
+material after every opaque one, whatever `renderOrder` says. The card is opaque (it cuts
+its rounded corners with `alphaTest`/`discard`, deliberately, rather than blending), and
+every celebration effect is additive and therefore transparent. So anything additive
+nearer the camera than the card's furthest tilt excursion paints straight over the card.
+`CELEBRATION_Z` in `config/scene.ts` is the single number that keeps them all clear of it.
+The same rule is why the foil shader adds its highlight in the fragment shader rather than
+switching the material to `AdditiveBlending`.
 
 ## Card data
 

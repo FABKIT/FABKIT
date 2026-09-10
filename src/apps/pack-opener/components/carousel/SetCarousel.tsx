@@ -1,5 +1,6 @@
 import { LeavePackDialog } from "@fabkit/apps/pack-opener/components/carousel/LeavePackDialog";
 import { SetInfoDialog } from "@fabkit/apps/pack-opener/components/carousel/SetInfoDialog";
+import { SWIPE_THRESHOLD_PX } from "@fabkit/apps/pack-opener/config/scene";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import Select from "@fabkit/platform/components/form/Select";
 import { getSetIndex } from "@fabkit/shared/data/fab-printings";
@@ -7,11 +8,7 @@ import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-/** Minimum horizontal drag, in pixels, before a touch gesture counts as a
- * swipe rather than a tap. */
-const SWIPE_THRESHOLD_PX = 40;
-
-/** Page-level chrome, not a HUD overlay (see PackOpenerHUD.tsx) — it needs
+/** Page-level chrome, not an overlay floating over the canvas — it needs
  * to be visible whenever there's a set to show, including mid-animation now
  * (see the execution plan, section 1.5: a player can switch sets while a
  * pack is tearing or revealing, behind LeavePackDialog's confirmation).

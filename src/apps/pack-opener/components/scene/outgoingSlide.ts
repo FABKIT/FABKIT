@@ -2,16 +2,13 @@ import {
 	CARD_SLIDE_DISTANCE,
 	REVEAL_TRANSITION_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
+import { easeInCubic } from "@fabkit/apps/pack-opener/lib/easing";
 
 export interface OutgoingSlideTransform {
 	y: number;
 	z: number;
 	rotationZ: number;
 	visible: boolean;
-}
-
-function easeInCubic(t: number): number {
-	return t ** 3;
 }
 
 /**

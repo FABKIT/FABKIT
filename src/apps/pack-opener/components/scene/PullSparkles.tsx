@@ -1,4 +1,5 @@
 import type { CelebrationTier } from "@fabkit/apps/pack-opener/cards/celebration-tier";
+import { CELEBRATION_Z } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { Sparkles } from "@react-three/drei";
 
@@ -44,15 +45,10 @@ const TIER_SPARKLES: Partial<Record<CelebrationTier, SparkleSpec>> = {
 	},
 };
 
-/** How far behind the card the particles live. At least as far back as
- * PullCelebration's own glow plane, and for exactly the same reason: these
- * are additive and therefore in three.js's transparent queue, which always
- * draws after the opaque queue no matter what render order anything is
- * given. Any particle nearer the camera than the card's full tilt
- * excursion would paint straight over the card whenever the pointer tipped
- * it back. Sitting well clear of that arc means they can only ever appear
- * around the card, never on it. */
-const SPARKLE_Z = -0.6;
+/** Layered just behind the shared celebration depth — see
+ * CELEBRATION_Z in config/scene.ts for the render-queue reason every
+ * effect back here has to respect. */
+const SPARKLE_Z = CELEBRATION_Z - 0.05;
 
 /** Particles behind the card for a genuinely rare pull.
  *
