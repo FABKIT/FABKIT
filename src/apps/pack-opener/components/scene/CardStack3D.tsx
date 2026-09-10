@@ -3,21 +3,13 @@ import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-t
 import { Card3D } from "@fabkit/apps/pack-opener/components/scene/Card3D";
 import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/OutgoingCard";
 import { PullCelebration } from "@fabkit/apps/pack-opener/components/scene/PullCelebration";
-import {
-	CARD_Y_OFFSET,
-	REVEAL_INTRO_MS,
-	REVEAL_INTRO_START_SCALE,
-	REVEAL_INTRO_START_Z,
-} from "@fabkit/apps/pack-opener/config/scene";
+import { revealIntroTransform } from "@fabkit/apps/pack-opener/components/scene/revealIntro";
+import { CARD_Y_OFFSET } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import type { Group } from "three";
-
-function easeOutCubic(t: number): number {
-	return 1 - (1 - t) ** 3;
-}
 
 /** Hosts the active card (static, always face-up), the glow behind it for a
  * celebrated pull (see cards/celebration-tier.ts), and the previous card
@@ -39,26 +31,31 @@ export function CardStack3D() {
 
 	// Timed off the store's revealStartedAt, never off this component's own
 	// mount — see that field's comment in stores/pack-opener.ts. React
-	// remounts this subtree more than once per pack (StrictMode's double
-	// mount, and the canvas Suspense boundary tearing its contents down when
-	// a branch swaps), and a mount-timestamped animation restarts every
-	// time: the card appeared, vanished and appeared again. Reading a store
-	// timestamp means a remount resumes the animation wherever it actually
-	// is, exactly as PackMesh's tear does. Unlike phaseStartedAt this one
-	// does not move on each advance, so the arrival plays once per pack.
+	// remounts this subtree more than once per pack, and a mount-timestamped
+	// animation restarts every time. Reading a store timestamp means a
+	// remount resumes the animation wherever it actually is, exactly as
+	// PackMesh's tear does. Unlike phaseStartedAt this one does not move on
+	// each advance, so the arrival plays once per pack.
+	//
+	// The transform is applied twice on purpose: as this group's initial
+	// props below, and again every frame here. See revealIntro.ts for why
+	// the props alone are not enough and the useFrame alone is too late.
 	const introGroup = useRef<Group>(null);
+	const initialIntro = revealIntroTransform(
+		revealStartedAt,
+		Date.now(),
+		reducedMotion,
+	);
 
 	useFrame(() => {
 		if (!introGroup.current) return;
-		const t =
-			reducedMotion || revealStartedAt === null
-				? 1
-				: Math.min((Date.now() - revealStartedAt) / REVEAL_INTRO_MS, 1);
-		const eased = easeOutCubic(t);
-		const scale =
-			REVEAL_INTRO_START_SCALE + (1 - REVEAL_INTRO_START_SCALE) * eased;
+		const { scale, z } = revealIntroTransform(
+			revealStartedAt,
+			Date.now(),
+			reducedMotion,
+		);
 		introGroup.current.scale.setScalar(scale);
-		introGroup.current.position.z = REVEAL_INTRO_START_Z * (1 - eased);
+		introGroup.current.position.z = z;
 	});
 
 	// While revisiting a finished pack, the ledger's chosen card takes over
@@ -104,7 +101,11 @@ export function CardStack3D() {
 			    size beside a card that is still growing. Starts at
 			    REVEAL_INTRO_START_SCALE, which is why the group's own resting
 			    transform is left to the useFrame above rather than set here. */}
-			<group ref={introGroup}>
+			<group
+				ref={introGroup}
+				scale={initialIntro.scale}
+				position={[0, 0, initialIntro.z]}
+			>
 				{celebrationTier && (
 					<PullCelebration
 						tier={celebrationTier}
