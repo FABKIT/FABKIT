@@ -30,14 +30,22 @@ import { useTexture } from "@react-three/drei";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-/** How many cards ahead of the active one to keep preloaded — see the
- * execution plan, section 5 (performance), fix 2. Loading all 16 cards at
- * once the moment a pack is generated (roughly 3-4MB) used to saturate a
- * slow connection and stall the pack opening on time; staggering this
- * keeps only a handful of ~200KB images in flight at once instead, while
- * still comfortably keeping ahead of how fast a player can actually tap
- * through reveals. */
-const DEFAULT_PRELOAD_LOOKAHEAD = 3;
+/** How many cards ahead of the active one to keep preloaded.
+ *
+ * The whole pack, on any connection that hasn't told us to go easy. This
+ * used to be 3, staggered so only a handful of ~200KB images were ever in
+ * flight (see the execution plan, section 5, fix 2). That protected slow
+ * connections at everyone else's expense, and the arithmetic is the giveaway:
+ * a player can advance every ADVANCE_DEBOUNCE_MS, so with a lookahead of 3
+ * each card had barely 240ms of head start on the tap that revealed it. Any
+ * image slower than that showed the card back instead, which is exactly what
+ * was happening on a fast machine on fibre.
+ *
+ * A whole pack is roughly 3-4MB and the tear animation gives it about 1.9
+ * seconds of cover before the first card is even asked for, so there is no
+ * reason to ration it. Slow and metered connections still get the tight
+ * lookahead below, which is who the staggering was always for. */
+const DEFAULT_PRELOAD_LOOKAHEAD = Number.MAX_SAFE_INTEGER;
 /** Fix 4: a visitor who has said they want less data (Data Saver, or a
  * 2G-class connection) gets a tighter lookahead instead. navigator.connection
  * doesn't exist in Safari — that's a normal, expected case here, not a
@@ -66,10 +74,10 @@ export function preloadLookaheadCount(): number {
 }
 
 /** Kicks off loading the real images for `count` cards starting at
- * `fromIndex` — called once with a small starting batch when a pack is
- * generated (see openPack below), then again with count 1 each time
- * advanceReveal moves the lookahead frontier forward by one card, rather
- * than loading the whole pack's ~3-4MB up front. Uses preloadSafeTexture,
+ * `fromIndex`, clamped to the end of the pack. Called once when a pack is
+ * generated (see openPack below), which on a normal connection covers the
+ * whole pack, and again with count 1 on each advance, which only does
+ * anything when a reduced lookahead is in force. Uses preloadSafeTexture,
  * not drei's useTexture.preload — see textures/useSafeTexture.ts for why a
  * real printing's image can 404 and why that can't be handled with drei's
  * Suspense-based loader. */

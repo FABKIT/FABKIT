@@ -18,14 +18,19 @@ describe("preloadLookaheadCount", () => {
 		setConnection(undefined);
 	});
 
-	it("defaults to 3 when navigator.connection doesn't exist at all (e.g. Safari)", () => {
+	// "The whole pack" rather than a specific number: preloadPackTextures
+	// clamps to the pack's length, so anything at or above 16 means the same
+	// thing. The test asserts the intent, not the sentinel.
+	const WHOLE_PACK = 16;
+
+	it("preloads the whole pack when navigator.connection doesn't exist at all (e.g. Safari)", () => {
 		setConnection(undefined);
-		expect(preloadLookaheadCount()).toBe(3);
+		expect(preloadLookaheadCount()).toBeGreaterThanOrEqual(WHOLE_PACK);
 	});
 
-	it("defaults to 3 on a normal connection", () => {
+	it("preloads the whole pack on a normal connection", () => {
 		setConnection({ saveData: false, effectiveType: "4g" });
-		expect(preloadLookaheadCount()).toBe(3);
+		expect(preloadLookaheadCount()).toBeGreaterThanOrEqual(WHOLE_PACK);
 	});
 
 	it("drops to 1 when the visitor has Data Saver on", () => {
@@ -43,8 +48,8 @@ describe("preloadLookaheadCount", () => {
 		expect(preloadLookaheadCount()).toBe(1);
 	});
 
-	it("stays at 3 on 3g (only 2g-class and Data Saver are reduced)", () => {
+	it("still preloads the whole pack on 3g (only 2g-class and Data Saver are reduced)", () => {
 		setConnection({ saveData: false, effectiveType: "3g" });
-		expect(preloadLookaheadCount()).toBe(3);
+		expect(preloadLookaheadCount()).toBeGreaterThanOrEqual(WHOLE_PACK);
 	});
 });
