@@ -20,12 +20,18 @@ export type CelebrationTier = "majestic" | "foil" | "legendary" | "marvel";
  *    card-resolver.ts's toResolvedCardFromPrinting), but some sets (History
  *    Pack 1, Compendium of Rathe, Bright Lights) print non-foil Legendaries
  *    too, and those still deserve the celebration.
+ *  - Majestic: its own tier, whether or not this copy happens to be foil.
+ *    Rarity deliberately outranks foiling here. It used to be the other way
+ *    round, which was harmless while the only effect was a glow, but the
+ *    tier now also decides whether a pull gets particles (see
+ *    PullSparkles.tsx) — and a foil Majestic was falling through to "foil"
+ *    and so getting LESS celebration than a plain one. A player who pulls a
+ *    Majestic has pulled a Majestic; the foil is a bonus on top, already
+ *    visible as the shader on the card face and named in the caption.
  *  - Any other foil treatment (Rainbow, Cold, Gold Cold): a spectral glow,
- *    covering a foiled Rare/Super Rare/Majestic that isn't already caught
- *    by the two tiers above.
- *  - Majestic: even a plain, non-foil Majestic still gets a gentle glow of
- *    its own — Louis specifically asked for Majestic to be celebrated even
- *    when it isn't foil.
+ *    covering a foiled Common/Rare/Super Rare that isn't already caught by
+ *    a rarity tier above. No particles: the rarity is what is special, and
+ *    a foil Common is not a rare pull.
  *  - Everything else (Common through Rare, Basic, Token): no celebration.
  */
 export function celebrationTierFor(card: ResolvedCard): CelebrationTier | null {
@@ -33,7 +39,7 @@ export function celebrationTierFor(card: ResolvedCard): CelebrationTier | null {
 	if (card.rarity === "legendary" || card.rarity === "fabled") {
 		return "legendary";
 	}
-	if (card.treatment !== "standard") return "foil";
 	if (card.rarity === "majestic") return "majestic";
+	if (card.treatment !== "standard") return "foil";
 	return null;
 }

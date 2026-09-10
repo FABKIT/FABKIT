@@ -9,6 +9,7 @@ function card(overrides: Partial<ResolvedCard>): ResolvedCard {
 		rarity: "common",
 		treatment: "standard",
 		imageUrl: null,
+		backImageUrl: null,
 		pitch: null,
 		cost: null,
 		power: null,
@@ -50,9 +51,29 @@ describe("celebrationTierFor", () => {
 		).toBe("foil");
 	});
 
-	it("a foil majestic still reads as foil, not double-counted as majestic too", () => {
+	it("keeps a foil majestic in the majestic tier, not the foil one", () => {
+		// Regression: this used to return "foil", on the reasoning that a
+		// card should not be double-counted. Harmless while the tier only
+		// chose a glow colour, but the tier now also decides whether a pull
+		// gets particles at all, and a foil Majestic was ending up with LESS
+		// celebration than a plain one — reported from the app as "a majestic
+		// rainbow foil that didn't have the sparkles".
 		expect(
 			celebrationTierFor(card({ rarity: "majestic", treatment: "rainbow" })),
+		).toBe("majestic");
+		expect(
+			celebrationTierFor(card({ rarity: "majestic", treatment: "cold" })),
+		).toBe("majestic");
+	});
+
+	it("still gives a foil common or rare only the foil tier", () => {
+		// The other side of that change: rarity outranking foil must not
+		// promote an ordinary card into a rarity celebration.
+		expect(
+			celebrationTierFor(card({ rarity: "common", treatment: "rainbow" })),
+		).toBe("foil");
+		expect(
+			celebrationTierFor(card({ rarity: "rare", treatment: "cold" })),
 		).toBe("foil");
 	});
 
