@@ -143,12 +143,25 @@ export function PackSummary() {
 	if (!pack) return null;
 
 	return (
-		<div className="pointer-events-auto flex shrink-0 flex-col items-center gap-2 px-4 pb-2">
-			{/* The frame: ledger plus header, and exactly the box that
-			    click-outside measures against (see panelRef above). Being
-			    `relative` at the header's own width is also what the ledger's
-			    `bottom-full` anchors to, so the two stay in one column. */}
-			<div ref={panelRef} className="relative w-full max-w-2xl">
+		<div className="pointer-events-auto flex shrink-0 flex-col items-center px-4 pb-2">
+			{/* The whole frame: ledger, header bar and both actions, on ONE row
+			    from `sm` up so the finished-pack chrome costs the canvas as
+			    little height as possible — the canvas is a fixed height in
+			    every phase (see PackOpenerPage.tsx), so every pixel saved here
+			    goes straight to the card. Below `sm` there is not room for
+			    that, so it wraps and the actions sit under the bar.
+
+			    panelRef is on this row rather than on the bar alone, so the
+			    actions count as INSIDE the panel: clicking "Session stats" no
+			    longer collapses the summary on its way to opening the dialog,
+			    which was a side effect of the previous arrangement rather than
+			    anything anyone asked for. Clicking anywhere genuinely outside
+			    the frame still collapses it. It is also what the ledger's
+			    `bottom-full` anchors to, so the ledger spans the full row. */}
+			<div
+				ref={panelRef}
+				className="relative flex w-full max-w-4xl flex-col items-stretch gap-2 md:flex-row md:items-center"
+			>
 				{/* The ledger opens UPWARD, over the canvas, rather than pushing the
 			    layout around — that is what keeps the card exactly one size
 			    whether the summary is open or shut (see PackOpenerPage.tsx).
@@ -269,7 +282,7 @@ export function PackSummary() {
 			    details, so it never covers the card. Squared off at the top
 			    while open so it reads as one panel with the ledger above. */}
 				<div
-					className={`w-full max-w-2xl border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md ${
+					className={`min-w-0 flex-1 border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md ${
 						expanded ? "rounded-b-2xl border-t-0" : "rounded-2xl"
 					}`}
 				>
@@ -301,7 +314,7 @@ export function PackSummary() {
 							}}
 							className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-left"
 						>
-							<span>{t("page.summary_title")}</span>
+							<span className="truncate">{t("page.summary_title")}</span>
 							<span className="flex shrink-0 items-center gap-2">
 								<span className="font-card-stat text-base text-body">
 									{pulledTotal !== null
@@ -318,28 +331,33 @@ export function PackSummary() {
 						</button>
 					</h2>
 				</div>
-			</div>
 
-			<div className="flex flex-col gap-2 sm:flex-row">
-				<button
-					type="button"
-					onClick={() => openPack()}
-					className="rounded-full bg-heading px-6 py-2.5 font-semibold text-surface shadow-lg transition hover:opacity-90"
-				>
-					{t("page.open_another")}
-				</button>
-				{/* Fills with the brand colour and flips the label white on
-				    hover, matching the pull-rates button. It previously only
-				    shifted its background, leaving the label washing into it. */}
-				{packsOpenedThisSession > 0 && (
+				{/* Below md the two actions share the row width and shrink to fit
+				    rather than wrapping onto a third line: wrapping made the
+				    reserved slot taller on the narrowest phones only, which would
+				    have needed its own height stop. Above md they take their
+				    natural width beside the bar. */}
+				<div className="flex w-full shrink-0 justify-center gap-2 md:w-auto">
 					<button
 						type="button"
-						onClick={() => setStatsOpen(true)}
-						className="rounded-full border border-primary bg-surface/80 px-6 py-2.5 font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white"
+						onClick={() => openPack()}
+						className="min-w-0 flex-1 truncate rounded-full bg-heading px-4 py-2.5 text-sm font-semibold text-surface shadow-lg transition hover:opacity-90 md:flex-none md:px-6 md:text-base"
 					>
-						{t("stats.open_button")}
+						{t("page.open_another")}
 					</button>
-				)}
+					{/* Fills with the brand colour and flips the label white on
+				    hover, matching the pull-rates button. It previously only
+				    shifted its background, leaving the label washing into it. */}
+					{packsOpenedThisSession > 0 && (
+						<button
+							type="button"
+							onClick={() => setStatsOpen(true)}
+							className="min-w-0 flex-1 truncate rounded-full border border-primary bg-surface/80 px-4 py-2.5 text-sm font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white md:flex-none md:px-6 md:text-base"
+						>
+							{t("stats.open_button")}
+						</button>
+					)}
+				</div>
 			</div>
 
 			<SessionStatsDialog
