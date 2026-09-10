@@ -80,7 +80,10 @@ function CardFaceMaterial({
 		if (treatment === "standard") return;
 		foilMaterial.uBaseTexture = texture;
 		foilMaterial.uTreatment = TREATMENT_CODE[treatment];
-		foilMaterial.uIntensity = isMarvel ? 1 : 0.4;
+		// Retuned for the additive combine (see foilMaterial.ts): under the
+		// old mix() these were how much of the art to REPLACE, now they are
+		// how much light to ADD, so the same numbers would blow out.
+		foilMaterial.uIntensity = isMarvel ? 0.7 : 0.45;
 		foilMaterial.uLightDir = [lightDirRef.current.x, lightDirRef.current.y];
 	});
 
