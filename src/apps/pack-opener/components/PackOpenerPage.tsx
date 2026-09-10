@@ -54,14 +54,35 @@ export function PackOpenerPage() {
 			<div className="flex h-19 shrink-0 items-center justify-center px-4 text-center">
 				{showsCard ? <RevealCaption /> : <IdleOverlay />}
 			</div>
-			{showsCard && (
-				<div
-					className={phase === "done" ? undefined : "invisible"}
-					aria-hidden={phase !== "done"}
-				>
-					<PackSummary />
-				</div>
-			)}
+			{/* Always present, always the same height, in every phase — the
+			    summary is only ever VISIBLE once a pack is finished, but its
+			    space is reserved from the very first frame.
+
+			    This used to be mounted only during the card phases, and that
+			    was the last real source of stutter in this screen. Mounting it
+			    took 112px away from the canvas at the exact moment the first
+			    card arrived, and unmounting it gave 112px back the moment
+			    "Open Another Pack" was pressed. The canvas measured 669px tall
+			    while the pack was on screen and 557px once the summary
+			    appeared. A canvas that resizes reflows a frame later than the
+			    scene inside it draws, so the pack and the first card were each
+			    painted once at the previous size before snapping to the right
+			    one. That is what read as an old, smaller copy appearing and
+			    being replaced.
+
+			    The height is fixed here rather than left to the content, for
+			    the same reason the caption slot above is: the two must never
+			    drift apart and resize the canvas between phases. It matches
+			    the summary's measured natural height, which changes at the
+			    `sm` breakpoint because the action buttons stop stacking. */}
+			<div
+				className={`h-41 shrink-0 sm:h-28 ${
+					phase === "done" ? "" : "invisible"
+				}`}
+				aria-hidden={phase !== "done"}
+			>
+				<PackSummary />
+			</div>
 		</div>
 	);
 }
