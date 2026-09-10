@@ -86,10 +86,15 @@ function preloadPackTextures(
 	}
 }
 
-/** One of a set's uploaded pack-front artworks, chosen at random — see the
- * execution plan, section 4.1 ("picks one of that set's pack artworks at
- * random"). Null when nothing's been uploaded for this set yet, in which
- * case PackMesh.tsx falls back to the mock canvas-drawn pack. */
+/** One of a set's uploaded pack-front artworks, chosen at random. Null when
+ * nothing has been uploaded for this set yet, in which case PackMesh.tsx
+ * falls back to the mock canvas-drawn pack.
+ *
+ * Re-rolled every time the pack opener mounts and every time a set is
+ * selected, rather than once and then kept for the session. A set can have
+ * several pack fronts (Welcome to Rathe has four, one per hero) and seeing
+ * the same one every visit made a set with four artworks look like a set
+ * with one. */
 function pickPackArt(entry: SetIndexEntry): string | null {
 	if (entry.packArt.length === 0) return null;
 	const index = Math.floor(Math.random() * entry.packArt.length);
@@ -412,9 +417,14 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			},
 
 			initializeSetArt() {
-				const { selectedSet, packArtUrl } = get();
+				const { selectedSet, phase } = get();
 				const sets = getSetIndex();
 				if (sets.length === 0) return;
+				// Never swap the artwork out from under a pack that is being
+				// torn open or revealed. Every other moment is fair game: this
+				// runs when the page mounts, so arriving at the pack opener
+				// re-rolls which of a set's artworks is on the counter.
+				if (phase === "tearing" || phase === "revealing") return;
 
 				if (!selectedSet) {
 					const latest = sets[sets.length - 1];
@@ -438,8 +448,6 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				// set code.
 				loadSetPrintings(selectedSet).catch(() => {});
 				loadSetPrices(selectedSet).catch(() => {});
-
-				if (packArtUrl) return; // already resolved this session
 
 				const entry = sets.find((set) => set.code === selectedSet);
 				const url = entry ? pickPackArt(entry) : null;
