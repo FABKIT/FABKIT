@@ -1,4 +1,4 @@
-# Pull rate verification against the Collectors Centre
+# Pull rates against the Collectors Centre
 
 Every Flesh and Blood set has a Collectors Centre page carrying an
 "estimated rarity breakdown", for example
@@ -7,99 +7,67 @@ detailed than the product pages this app's odds were originally built from:
 they give a per-pack expectation for each rarity, and for the newer sets they
 break the Premium Foil slot out separately with its own rates.
 
-This document records what those pages say and how far our engine currently
-differs. It is a to-do list, not a description of the app.
+This document is the transcription those configs are derived from. The
+figures below are the source; `src/apps/pack-opener/pack/set-configs.ts` is
+where they are applied, one comment per set citing the lines it used.
 
 ## Status
 
-**Our odds are materially wrong for most sets.** Majestics, Legendaries and
-Marvels all come up far more often than they should. This matches what
-opening packs in the app feels like next to opening them in a store.
+**Every set with a readable Collectors Centre page now deals its published
+rates**, verified by `tests/pack-opener/calibration.test.ts`, which simulates
+200,000 packs per set and asserts each rarity within 20% of the figure
+published here.
 
-The disclaimer in the pull-rates dialog covers us for now, but these numbers
-should be corrected set by set.
+Before this, Majestics, Legendaries and Marvels all came up far more often
+than they should, because most slots were weighted by how many distinct cards
+a set prints at a rarity rather than by how often that rarity is inserted.
+High Seas was the extreme case: a Marvel every 2 packs against a published 1
+per 60.
 
-## How far off we are
+Two sets are still unverified: **Compendium of Rathe (PEN)** and **Omens of
+the Third Age (OMN)**. Their pages render the breakdown behind JavaScript
+tabs rather than in the page text, so the scrape never captured them and
+their configs are untouched, still derived from product-page slot lists.
 
-Only rows outside a 0.8x to 1.25x band are listed. Anything not listed is
-close enough to leave alone for now. "Published" and "Ours" are both expected
-cards per pack.
+## What is published and what is not
 
-| Set | Rarity | Published | Ours | Ours vs published |
-| --- | --- | --- | --- | --- |
-| EVR | majestic | 0.250 | 1.239 | **5.0x** |
-| EVR | legendary | 0.006 | 0.083 | **13.2x** |
-| 1HP | legendary | 0.012 | 0.048 | **3.9x** |
-| UPR | majestic | 0.250 | 0.346 | **1.4x** |
-| UPR | legendary | 0.017 | 0.045 | **2.6x** |
-| DYN | majestic | 0.250 | 0.386 | **1.5x** |
-| DYN | legendary | 0.015 | 0.044 | **2.9x** |
-| OUT | legendary | 0.018 | 0.014 | **0.8x** |
-| DTD | majestic | 0.250 | 0.421 | **1.7x** |
-| DTD | legendary | 0.016 | 0.078 | **5.0x** |
-| EVO | majestic | 0.250 | 0.935 | **3.7x** |
-| EVO | legendary | 0.014 | 0.160 | **11.2x** |
-| HVY | majestic | 0.306 | 0.772 | **2.5x** |
-| HVY | legendary | 0.010 | 0.200 | **19.2x** |
-| HVY | marvel | 0.005 | 0.400 | **76.8x** |
-| MST | majestic | 0.306 | 0.785 | **2.6x** |
-| MST | legendary | 0.010 | 0.162 | **15.6x** |
-| MST | marvel | 0.010 | 0.486 | **48.6x** |
-| ROS | rare | 2.038 | 1.626 | **0.8x** |
-| ROS | majestic | 0.306 | 0.811 | **2.7x** |
-| ROS | legendary | 0.010 | 0.125 | **12.0x** |
-| ROS | token | 1.540 | 1.938 | **1.3x** |
-| HNT | majestic | 0.306 | 0.804 | **2.6x** |
-| HNT | legendary | 0.010 | 0.152 | **14.5x** |
-| HNT | token | 1.540 | 1.941 | **1.3x** |
-| SEA | majestic | 0.306 | 0.534 | **1.7x** |
-| SEA | legendary | 0.010 | 0.075 | **7.2x** |
-| SEA | marvel | 0.017 | 0.463 | **27.8x** |
-| SUP | superrare | 0.536 | 0.426 | **0.8x** |
-| SUP | majestic | 0.045 | 0.745 | **16.4x** |
-| SUP | legendary | 0.011 | 0.043 | **4.0x** |
+Where a page prints "1 per ??? packs", there is no number to use and none was
+invented.
 
-Sets not listed at all (Welcome to Rathe, Arcane Rising, Crucible of War,
-Monarch, Tales of Aria) already match. Those are the ones whose configs were
-worked out from published odds rather than from card populations, which is
-the pattern worth repeating.
+- **Fabled is unpublished on every set.** None of the rewritten configs
+  draws it, so a set's one Fabled card is not pullable there. That is
+  deliberate. Omens of the Third Age is the exception and still draws it at
+  a population weight, because that set was never verified (see above).
+- **Marvel is published for exactly three sets**: High Seas (1 per 60), Part
+  the Mistveil (1 per 100), Heavy Hitters (1 per 192). Sets whose page prints
+  "1 per ??? packs" use `ESTIMATED_MARVEL_CHANCE`, a documented estimate at 1
+  per 100, which is the middle of those three. History Pack 1 stays at zero:
+  its Marvels are Black Label product, not boosters.
+- **Super Slam publishes no base Majestic rate**, only its Premium Foil
+  slot's 1 per 22. Its Majestic total therefore comes from that plus its
+  published Set (1 per 8) and Expansion (1 per 6) content, which is Majestic
+  rarity in the card data.
+- **Uprising, Dynasty and Dusk till Dawn print no expansion-slot Majestic**
+  in the-fab-cube's data at all, so their published Majestic rate is not
+  split with an expansion entry the way the later sets' is.
 
-### Caveats on the table
+## How the newer pages are read
 
-- **Super Slam's Majestic row is not a fair comparison.** Its page lists "42
-  Majestic" in the base breakdown with no rate attached, and only gives a rate
-  for the Premium Foil slot's Majestics (1 per 22). The published figure used
-  here is therefore only part of the story and the 16.4x is overstated.
-- **Compendium of Rathe and Omens of the Third Age are missing.** Their pages
-  render the breakdown behind JavaScript tabs rather than in the page text, so
-  the scrape did not pick them up. They need a manual look.
-- Where a page prints "1 per ??? packs" (Fabled on nearly every set, Marvel on
-  several) there is no published number to compare against.
+Sets from Heavy Hitters onward list two blocks: a base rarity breakdown, then
+a second one under "Premium Foil (1 per pack)". That second block is the
+Premium Foil card's own rarity table, not another set of pack-wide rates. The
+tell is that its listed rates sum to about 1.0, and a block summing to one
+card describes one card. So a rarity listed in both blocks has a per-pack
+rate that is the sum of the two, and a rarity listed only in the premium
+block (Legendary, and Marvel on High Seas) is drawn from that slot alone.
 
-## Why we are off
+The product pages name what *can* appear in a slot; the Collectors Centre
+gives the rates. Where the two disagree on structure, the rates win, because
+rates are what the app models.
 
-Two patterns account for most of it.
-
-1. **Rarity slots modelled from card population rather than published rates.**
-   Where a slot is "Rare or Majestic" and the set has 51 Rares and 56
-   Majestics, weighting by those populations produces far more Majestics than
-   the published 1 per 4 packs. Population tells you how many distinct cards
-   exist at a rarity, not how often that rarity is inserted.
-2. **Marvel and Legendary treated as generic long-tail rolls.** The engine
-   carries default chances for these where a set's page now gives a real
-   number, for example Marvel at 1 per 60 packs for High Seas against our
-   roughly 1 in 2.
-
-## Doing the corrections
-
-Each set's config in `src/apps/pack-opener/pack/set-configs.ts` documents its
-own sourcing in a comment above it. When correcting one:
-
-- Work from the published per-pack rate, not the card population.
-- Sum the base breakdown and the Premium Foil slot's own breakdown where the
-  page lists both; a pack contains one of each.
-- `tests/pack-opener/` carries calibration tests comparing the engine's
-  expected counts against each config's stated intent. Update those in step.
+Normalising a block that sums to 1.02 or 1.04 back down to exactly one card
+costs each of its rates 2% to 4%. That is inside the calibration tolerance
+and is noted in the configs rather than corrected for.
 
 ## Published figures, as scraped
 
