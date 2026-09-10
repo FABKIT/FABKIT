@@ -46,6 +46,17 @@ import { devtools } from "zustand/middleware";
  * reason to ration it. Slow and metered connections still get the tight
  * lookahead below, which is who the staggering was always for. */
 const DEFAULT_PRELOAD_LOOKAHEAD = Number.MAX_SAFE_INTEGER;
+/** A middle rung for 3g. Measured, a card image averages 197KB, so a full
+ * pack is a little over 3MB. Worth knowing before worrying about that
+ * number: preloading does NOT increase what a player downloads. The same
+ * sixteen images are fetched either way, and only their timing changes, so
+ * the whole-pack preload above costs extra bytes only for someone who
+ * abandons a pack part-way through. What it protects against is a
+ * connection slow enough that sixteen parallel requests get in each other's
+ * way, which is a real risk on 3g and not on fibre. Six cards is roughly
+ * 720ms of head start at full tapping speed, comfortably ahead of a player
+ * without saturating the link. */
+const MODERATE_PRELOAD_LOOKAHEAD = 6;
 /** Fix 4: a visitor who has said they want less data (Data Saver, or a
  * 2G-class connection) gets a tighter lookahead instead. navigator.connection
  * doesn't exist in Safari — that's a normal, expected case here, not a
@@ -70,6 +81,7 @@ export function preloadLookaheadCount(): number {
 	) {
 		return REDUCED_PRELOAD_LOOKAHEAD;
 	}
+	if (connection.effectiveType === "3g") return MODERATE_PRELOAD_LOOKAHEAD;
 	return DEFAULT_PRELOAD_LOOKAHEAD;
 }
 
