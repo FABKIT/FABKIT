@@ -29,12 +29,28 @@ export function CameraRig() {
 	const { camera } = useThree();
 	const phase = usePackOpenerStore((state) => state.phase);
 	const target = useRef(new Vector3(...IDLE_CAMERA_POSITION));
+	const previousPhase = useRef(phase);
 
 	useFrame((_, delta) => {
 		const [x, y, z] = targetForPhase(phase);
 		const idleBobY = phase === "idle" ? Math.sin(Date.now() / 1500) * 0.03 : 0;
 		target.current.set(x, y + idleBobY, z);
-		camera.position.lerp(target.current, 1 - 0.001 ** delta);
+
+		// Opening a pack is a scene change, not a continuation, so the camera
+		// jumps rather than eases into it. Easing meant that after "Open
+		// Another Pack" the new pack was first painted from the card's much
+		// closer viewing distance, appearing about a fifth larger than it
+		// belongs, then shrinking over the next half second. That read as the
+		// pack arriving and then being swapped for a different-sized one.
+		// Every other transition still eases, including the deliberate
+		// dolly-in from the torn pack to the first card.
+		const enteringTear = phase === "tearing" && previousPhase.current !== phase;
+		previousPhase.current = phase;
+		if (enteringTear) {
+			camera.position.copy(target.current);
+		} else {
+			camera.position.lerp(target.current, 1 - 0.001 ** delta);
+		}
 		camera.lookAt(0, 0, 0);
 	});
 
