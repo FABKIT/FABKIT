@@ -96,6 +96,21 @@ export function PackSummary() {
 			})
 		: null;
 
+	// Every new pack starts with its ledger open again.
+	//
+	// This used to happen for free: the summary was mounted only while a
+	// card was on screen, so it was destroyed and rebuilt between packs and
+	// its state went back to the default. It now stays mounted in every
+	// phase, because its space has to stay reserved or the canvas resizes
+	// and the scene stutters (see PackOpenerPage.tsx). That made collapsing
+	// it sticky: once shut, it stayed shut for every later pack, so the
+	// summary never appeared on its own after the last card again.
+	// `pack` is a fresh array per openPack(), so it identifies the pack.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: pack is the trigger, not a value read here — a new array means a new pack, which reopens the ledger.
+	useEffect(() => {
+		setExpandedByChoice(true);
+	}, [pack]);
+
 	// Click/tap anywhere outside the panel collapses it — but not a click
 	// landing inside some other dialog open on top of it (the pull-rates
 	// dialog, the session-stats dialog), which portals outside this
