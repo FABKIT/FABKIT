@@ -72,11 +72,15 @@ export function PackOpenerPage() {
 
 			    The height is fixed here rather than left to the content, for
 			    the same reason the caption slot above is: the two must never
-			    drift apart and resize the canvas between phases. It matches
-			    the summary's measured natural height, which changes at the
-			    `sm` breakpoint because the action buttons stop stacking. */}
+			    drift apart and resize the canvas between phases. Both values
+			    are the summary's measured natural height, and there are
+			    exactly two because the actions move onto the bar's own row at
+			    `md` (see PackSummary.tsx). Measured 57px at 768 and above,
+			    107px from 320 to 767. Re-measure these if that component's
+			    chrome changes: a slot shorter than its content clips the
+			    buttons, a taller one is dead space taken from the card. */}
 			<div
-				className={`h-41 shrink-0 sm:h-28 ${
+				className={`h-[107px] shrink-0 md:h-[57px] ${
 					phase === "done" ? "" : "invisible"
 				}`}
 				aria-hidden={phase !== "done"}
