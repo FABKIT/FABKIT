@@ -142,12 +142,23 @@ so this works with zero extra configuration.
 
 ## Odds
 
-Modeled on real FAB booster structure (16 cards: 12 common, 1 guaranteed rare-plus, 1
-guaranteed-foil premium slot, 2 basic/token), with cold foil (~1/22) and Marvel (~1/2000)
-as separately-rolled long-tail upgrades. See `pack/odds.ts` for the sourcing notes — cold
-foil and Marvel rates are community estimates, not published LSS numbers, and are
-deliberately configurable per `PackConfig.id` via `getPackConfig()` rather than hardcoded,
-since real sets vary slot mechanics.
+Every set's per-pack rates come from its Collectors Centre page on fabtcg.com
+(for example fabtcg.com/collectors-centre/high-seas/), transcribed verbatim in
+`docs/pull-rate-verification.md` and applied in `pack/set-configs.ts`, where each
+set's comment cites the lines it was derived from. `tests/pack-opener/calibration.test.ts`
+simulates 200,000 packs per set and asserts every published rate within 20%, so a
+config cannot quietly drift away from its source. That file is the guard; changing a
+weight without changing the transcription will fail it.
+
+Read `docs/pull-rate-verification.md` before touching any config. It records which
+figures are published and which are not: Fabled is unpublished everywhere and is
+therefore not drawn at all, Marvel is published for only three sets and estimated for
+the rest, and two sets (PEN, OMN) have never been verified because their pages hide the
+breakdown behind JavaScript tabs.
+
+Cold foil is a published per-set rate (usually 1 per 24 packs, one display) applied as a
+pack-level upgrade roll rather than a slot. `pack/odds.ts`'s DEFAULT_* constants are now
+community estimates used only by the mock config.
 
 ## Import Rules
 

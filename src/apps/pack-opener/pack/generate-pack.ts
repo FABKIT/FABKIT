@@ -32,10 +32,16 @@ export function generatePack(
 			let treatment: FoilTreatment = slot.fixedTreatment ?? "standard";
 			if (slot.kind === "premium-foil" && rng() < config.marvelChance) {
 				rarity = "marvel";
-				// Real Marvel cards are exclusively printed Cold Foil — see
-				// pack/types.ts's DrawnCard comment.
-				treatment = "cold";
 			}
+			// Real Marvel cards are exclusively printed Cold Foil — see
+			// pack/types.ts's DrawnCard comment. This has to override
+			// fixedTreatment, not just the marvelChance branch above: sets
+			// whose Collectors Centre page publishes a Marvel rate inside
+			// the Premium Foil slot's own breakdown (High Seas, Mistveiled,
+			// Heavy Hitters) carry "marvel" as an ordinary rarityTable entry
+			// in a slot whose fixedTreatment is "rainbow", and a Marvel that
+			// came out rainbow would be wrong in a way no rate test can see.
+			if (rarity === "marvel") treatment = "cold";
 			cards.push({
 				id: uuid(),
 				slot: slot.kind,

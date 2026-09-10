@@ -1,7 +1,3 @@
-import {
-	DEFAULT_COLD_FOIL_CHANCE,
-	DEFAULT_MARVEL_CHANCE,
-} from "@fabkit/apps/pack-opener/pack/rates";
 import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
 
 /**
@@ -53,6 +49,14 @@ import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
  */
 export const PUBLISHED_COLD_FOIL_CHANCE = 1 / 24;
 
+/** Used only where a page prints "1 per ??? packs" for Marvel. It is the
+ * middle of the three rates LSS does publish anywhere (High Seas 1 per 60,
+ * Part the Mistveil 1 per 100, Heavy Hitters 1 per 192), so it sits in the
+ * right order of magnitude without pretending to be sourced. The
+ * pull-rates dialog already tells players some rates are estimates; this
+ * is one of them. */
+const ESTIMATED_MARVEL_CHANCE = 1 / 100;
+
 // ---------------------------------------------------------------------------
 // Everfest (EVR) — 10 cards. fabtcg.com/products/booster-set/everfest/
 // "A booster pack contains 10 cards, being: Premium Foil - 1 per pack
@@ -63,11 +67,26 @@ export const PUBLISHED_COLD_FOIL_CHANCE = 1 / 24;
 // this set at all, so none of those are reachable here — marvelChance is 0
 // to match (a nonzero value would draw from an empty pool).
 // ---------------------------------------------------------------------------
+// Rates from https://fabtcg.com/collectors-centre/everfest/ :
+//   1 Fabled (1 per ??? packs) / 3 Legendary (1 per 160 packs) /
+//   45 Majestic (1 per 4 packs) / 61 Rare (1.65 per pack) /
+//   88 Common (7 per pack) / Rainbow Foil (1 per pack) /
+//   Cold Foil (1 per 16 packs)
+// Those sum to 9.91, i.e. the 10-card pack, once the Premium Foil card is
+// counted as the Common it usually is: the published "7 per pack" Common
+// rate has to be the seven non-foil ones for the arithmetic to close.
+// The two Rare-or-higher slots therefore carry the whole of Rare 1.65,
+// Majestic 1 per 4 and Legendary 1 per 160 between them. Weights below are
+// those rates halved over a denominator of 2000 draws, with Common taking
+// up the small slack the published rounding leaves.
+// Fabled is omitted: its rate is printed "1 per ??? packs".
 const evrRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 61 },
-	{ rarity: "majestic" as const, weight: 45 },
-	{ rarity: "legendary" as const, weight: 3 },
+	{ rarity: "rare" as const, weight: 1650 },
+	{ rarity: "majestic" as const, weight: 250 },
+	{ rarity: "common" as const, weight: 94 },
+	{ rarity: "legendary" as const, weight: 6 },
 ];
+const evrPremiumTable = [{ rarity: "common" as const, weight: 1 }];
 
 const EVERFEST: PackConfig = {
 	id: "EVR",
@@ -83,7 +102,7 @@ const EVERFEST: PackConfig = {
 			kind: "premium-foil",
 			count: 1,
 			fixedTreatment: "rainbow",
-			rarityTable: evrRareOrHigherTable,
+			rarityTable: evrPremiumTable,
 		},
 	],
 	// The page states the premium slot itself is "Rainbow Foil or Cold
@@ -91,7 +110,9 @@ const EVERFEST: PackConfig = {
 	// replace, unlike every other set here. coldFoilReplaces targets the
 	// premium slot directly, which the engine handles regardless of that
 	// slot's existing fixedTreatment (see generate-pack.ts).
-	coldFoilChance: DEFAULT_COLD_FOIL_CHANCE,
+	// Published as "Cold Foil (1 per 16 packs)" on this set's Collectors
+	// Centre page: the one set here that is not the 1-per-display 1/24.
+	coldFoilChance: 1 / 16,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
 };
@@ -124,13 +145,34 @@ const EVERFEST: PackConfig = {
 // Legendary so that rarity stays reachable (it has no other channel in
 // this set, unlike sets with a dedicated wildcard/Equipment slot).
 // ---------------------------------------------------------------------------
+// Rates from https://fabtcg.com/collectors-centre/uprising/ :
+//   1 Fabled (1 per ??? packs) /
+//   6 Legendary (Rainbow Foil 1 per 80 packs, Cold Foil 1 per 220) /
+//   27 Majestic (1 per 4 packs) / 51 Rare (1.75 per pack) /
+//   125 Common (11 per pack) / 16 Tokens (1.75 per pack) /
+//   Premium Foil (1 per pack) / Cold Foil (1 per 24 packs) /
+//   Marvel (1 per ??? packs)
+// Sum: 15.77, i.e. the 16-card pack. Rare 1.75 is one guaranteed Rare plus
+// 0.75 from the pair's second half; Majestic 1 per 4 is the rest of it,
+// split 4:1 with the expansion-slot entry. Legendary keeps its premium-slot
+// channel but now at the published Rainbow Foil rate of 1 per 80 rather
+// than a population sliver. The two token slots share the published 1.75,
+// so each lands on a token 87.5% of the time.
+// Unlike the later sets, this one prints no expansion-slot Majestic at
+// all in the-fab-cube's data (tests/pack-opener/pool-viability.test.ts
+// catches it), so the published Majestic rate stays whole rather than
+// being split with an expansion entry.
 const uprRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 51 },
-	{ rarity: "majestic" as const, weight: 27 },
+	{ rarity: "rare" as const, weight: 75 },
+	{ rarity: "majestic" as const, weight: 25 },
 ];
 const uprPremiumTable = [
-	{ rarity: "common" as const, weight: 127 },
-	{ rarity: "legendary" as const, weight: 6 },
+	{ rarity: "common" as const, weight: 1975 },
+	{ rarity: "legendary" as const, weight: 25 },
+];
+const uprTokenTable = [
+	{ rarity: "token" as const, weight: 875 },
+	{ rarity: "common" as const, weight: 125 },
 ];
 
 const UPRISING: PackConfig = {
@@ -154,11 +196,12 @@ const UPRISING: PackConfig = {
 			fixedTreatment: "rainbow",
 			rarityTable: uprPremiumTable,
 		},
-		{ kind: "token", count: 2, rarityTable: [{ rarity: "token", weight: 1 }] },
+		{ kind: "token", count: 2, rarityTable: uprTokenTable },
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "token",
-	marvelChance: DEFAULT_MARVEL_CHANCE,
+	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
+	marvelChance: ESTIMATED_MARVEL_CHANCE,
 };
 
 // ---------------------------------------------------------------------------
@@ -175,13 +218,24 @@ const UPRISING: PackConfig = {
 // sliver of Legendary, not a reuse of the named pair's own table — same
 // double-counting fix as Uprising above.
 // ---------------------------------------------------------------------------
+// Rates from https://fabtcg.com/collectors-centre/dynasty/ :
+//   1 Fabled (1 per ??? packs) / 14 Marvel (1 per ??? packs) /
+//   5 Legendary (Rainbow Foil 1:88, Cold Foil 1:280) / 51 Majestic (1:4) /
+//   81 Rare (1.75 per pack) / 109 Common (7 per pack) /
+//   Cold Foil (1:24) / Premium Foil (1 per pack)
+// Sum: 10.01, i.e. the 10-card pack. Same derivation as Uprising above.
+// Unlike the later sets, this one prints no expansion-slot Majestic at
+// all in the-fab-cube's data (tests/pack-opener/pool-viability.test.ts
+// catches it), so the published Majestic rate stays whole rather than
+// being split with an expansion entry.
 const dynRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 81 },
-	{ rarity: "majestic" as const, weight: 51 },
+	{ rarity: "rare" as const, weight: 75 },
+	{ rarity: "majestic" as const, weight: 25 },
 ];
+// Legendary at the published Rainbow Foil rate of 1 per 88 packs.
 const dynPremiumTable = [
-	{ rarity: "common" as const, weight: 109 },
-	{ rarity: "legendary" as const, weight: 5 },
+	{ rarity: "common" as const, weight: 87 },
+	{ rarity: "legendary" as const, weight: 1 },
 ];
 
 const DYNASTY: PackConfig = {
@@ -206,8 +260,13 @@ const DYNASTY: PackConfig = {
 			rarityTable: dynPremiumTable,
 		},
 	],
-	coldFoilChance: 0,
-	marvelChance: DEFAULT_MARVEL_CHANCE,
+	// The page publishes "Cold Foil (1:24)" but not what it replaces. This
+	// pack has no token or basic slot, so it targets the Rare, same as Dusk
+	// till Dawn below. That target is an inference; the rate is published.
+	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilReplaces: "rare",
+	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
+	marvelChance: ESTIMATED_MARVEL_CHANCE,
 };
 
 // ---------------------------------------------------------------------------
@@ -222,13 +281,26 @@ const DYNASTY: PackConfig = {
 // sliver of Legendary, not a reuse of the named pair's own table — same
 // double-counting fix as Uprising/Dynasty above.
 // ---------------------------------------------------------------------------
+// Rates from https://fabtcg.com/collectors-centre/dusk-till-dawn/ :
+//   1 Fabled (1 per ??? packs) / 8 Legendary (1 per 64 packs) /
+//   56 Majestic (1 per 4 packs) / 77 Rare (1.68 per pack) /
+//   94 Common (7 per pack) / Premium Foil (1 per pack) /
+//   Cold Foil (1 per 24 packs) / 10 Marvels (1 per ??? packs)
+// Sum: 9.95, i.e. the 10-card pack. Rare 1.68 is one guaranteed plus 0.68
+// from the pair's second half; Common takes the 0.07 of slack left over.
+// Unlike the later sets, this one prints no expansion-slot Majestic at
+// all in the-fab-cube's data (tests/pack-opener/pool-viability.test.ts
+// catches it), so the published Majestic rate stays whole rather than
+// being split with an expansion entry.
 const dtdRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 77 },
-	{ rarity: "majestic" as const, weight: 56 },
+	{ rarity: "rare" as const, weight: 68 },
+	{ rarity: "majestic" as const, weight: 25 },
+	{ rarity: "common" as const, weight: 7 },
 ];
+// Legendary at the published 1 per 64 packs.
 const dtdPremiumTable = [
-	{ rarity: "common" as const, weight: 94 },
-	{ rarity: "legendary" as const, weight: 8 },
+	{ rarity: "common" as const, weight: 63 },
+	{ rarity: "legendary" as const, weight: 1 },
 ];
 
 const DUSK_TILL_DAWN: PackConfig = {
@@ -255,41 +327,89 @@ const DUSK_TILL_DAWN: PackConfig = {
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "rare",
-	marvelChance: DEFAULT_MARVEL_CHANCE,
+	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
+	marvelChance: ESTIMATED_MARVEL_CHANCE,
 };
 
 // ---------------------------------------------------------------------------
 // Heavy Hitters / Part the Mistveil / Rosetta / The Hunted family — 16
-// cards each. fabtcg.com product pages, "Rarity Distribution": Cold Foil
-// - 1 per 24 packs (replaces a token); Rainbow Foil - 1 per pack; Rare or
-// higher - 2 per pack (1 Rare + 1 Rare or Majestic); Common - 11 per pack;
-// Basic / Expansion Slot / Marvel / Legendary - 1 per pack; Token - 1 per
-// pack; Token / Expansion Slot - 1 per pack.
-// Sum: 2 + 11 + 1 + 1 + 1 = 16 — here Rainbow Foil is NOT a separate card
-// (unlike Uprising/Dynasty/Dusk till Dawn above): the sum only reaches 16
-// if it's the guaranteed treatment on the "1 Rare or Majestic" half of the
-// pair, so that's modelled as this family's premium-foil slot directly.
+// cards each. All four now come straight from their Collectors Centre
+// pages (transcribed in docs/pull-rate-verification.md), which publish
+// per-pack rates rather than the slot memberships the product pages give.
+// They share one shape: a base block, then a "Premium Foil (1 per pack)"
+// block, then a Cold Foil block.
 //
-// None of these four sets has a single non-expansion-slot Basic printing
-// in the-fab-cube's data — the wildcard slot's table omits Basic
-// entirely rather than pointing at an empty pool (see file comment).
-// "Token / Expansion Slot" and the wildcard's own Expansion Slot option
-// both use a small placeholder weight against Majestic, since LSS doesn't
-// publish how often either slot actually lands on Expansion Slot content.
+// Heavy Hitters is the worked example. Its base block reads
+//   Majestic 1 per 4 packs / Rare 1.83 per pack /
+//   Common 11 per pack / Token 1.85 per pack
+// and those sum to 14.93, which plus the one Premium Foil card is 15.93.
+// A 16-card pack, accounted for exactly, with no Basic in it at all — so
+// the product page's "Basic / Expansion Slot / Marvel / Legendary" wildcard
+// is not a Basic slot in practice, and this family no longer models one.
+//
+// The Premium Foil block is that single card's own rarity table:
+//   Legendary 1 per 96 / Majestic 1 per 18 / Rare 5 per 24 / Common 18 per 24
+// Those sum to 1.02, which is what tells you it describes one card rather
+// than another set of pack-wide rates. Legendary appears there and nowhere
+// else with a rate, so Legendary is drawn there and only there. Normalising
+// the 1.02 away costs each premium rate about 2%.
+//
+// The remaining four slots carry Rare 1.83, Majestic 0.25 and Token
+// (1.85, 1.84, 1.54, 1.54 — the one number that differs between the four
+// sets) as: a guaranteed Rare, a Rare-or-Majestic, a guaranteed Token, and
+// a Token-or-Common that takes up whatever slack the set's token rate
+// leaves. Common absorbs it because it is the only rarity in the block
+// whose published rate is a round number and therefore visibly rounded;
+// Rosetta's separate "36 Puzzle (6 per 24 packs)" insert lands here too,
+// having no rarity of its own in the-fab-cube's data.
+//
+// Expansion-slot content: LSS publishes no rate for it, but its printings
+// are Majestic rarity, so they come OUT of the published 1-per-4 Majestic
+// rate rather than on top of it. A fifth of that rate is routed to an
+// expansion entry, which keeps those cards pullable without inventing a
+// number the published total does not already pin down.
+//
+// Marvel is published for two of the four (Heavy Hitters 1 per 192, Part
+// the Mistveil 1 per 100) and printed as "1 per ??? packs" for Rosetta and
+// The Hunted, which take ESTIMATED_MARVEL_CHANCE instead. Every Marvel is
+// a Cold Foil card, which is why it is rolled onto the premium slot rather
+// than sitting in a rarity table (see pack/generate-pack.ts).
 // ---------------------------------------------------------------------------
-interface HvyFamilyPopulation {
-	rare: number;
-	majestic: number;
-	majesticExpansion: number;
-	marvel: number;
-	legendary: number;
-	token: number;
-}
+
+/** The Premium Foil slot's published rarity table, shared by all four sets
+ * because all four publish exactly the same one: 1/96, 1/18, 5/24, 18/24
+ * over a common denominator of 1440 packs. Fabled is omitted — every page
+ * prints "1 per ??? packs" for it, and an invented rate is worse than an
+ * unpullable card. */
+const hvyFamilyPremiumTable = [
+	{ rarity: "common" as const, weight: 1080 },
+	{ rarity: "rare" as const, weight: 300 },
+	{ rarity: "majestic" as const, weight: 80 },
+	{ rarity: "legendary" as const, weight: 15 },
+];
+
+/** The published Majestic rate (1 per 4 packs) split 4:1 between ordinary
+ * and expansion-slot printings. The split is ours; the total is LSS's, and
+ * the total is what tests/pack-opener/calibration.test.ts asserts. */
+const hvyFamilyRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: 15 },
+	{ rarity: "majestic" as const, weight: 4 },
+	{ rarity: "majestic" as const, weight: 1, expansionSlot: true },
+];
 
 function buildHvyFamilyConfig(
 	id: string,
-	pop: HvyFamilyPopulation,
+	/** The set's own published Token rate per pack, the only published
+	 * number that differs across these four. */
+	tokenRate: number,
+	/** Published where LSS gives one, ESTIMATED_MARVEL_CHANCE where it
+	 * prints "1 per ??? packs". */
+	marvelChance: number,
 ): PackConfig {
+	// Two token slots, one of them guaranteed, so the second lands on a
+	// token often enough to make up the published rate and on a Common the
+	// rest of the time.
+	const secondTokenWeight = Math.round((tokenRate - 1) * 100);
 	return {
 		id,
 		cardsPerPack: 16,
@@ -301,26 +421,15 @@ function buildHvyFamilyConfig(
 			},
 			{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
 			{
+				kind: "rare-or-majestic",
+				count: 1,
+				rarityTable: hvyFamilyRareOrMajesticTable,
+			},
+			{
 				kind: "premium-foil",
 				count: 1,
 				fixedTreatment: "rainbow",
-				rarityTable: [
-					{ rarity: "rare", weight: pop.rare },
-					{ rarity: "majestic", weight: pop.majestic },
-				],
-			},
-			{
-				kind: "basic-or-wildcard",
-				count: 1,
-				rarityTable: [
-					{
-						rarity: "majestic",
-						weight: pop.majesticExpansion,
-						expansionSlot: true,
-					},
-					{ rarity: "marvel", weight: pop.marvel },
-					{ rarity: "legendary", weight: pop.legendary },
-				],
+				rarityTable: hvyFamilyPremiumTable,
 			},
 			{
 				kind: "token",
@@ -331,52 +440,21 @@ function buildHvyFamilyConfig(
 				kind: "token-or-wildcard",
 				count: 1,
 				rarityTable: [
-					{ rarity: "token", weight: pop.token },
-					{ rarity: "majestic", weight: 1, expansionSlot: true },
+					{ rarity: "token", weight: secondTokenWeight },
+					{ rarity: "common", weight: 100 - secondTokenWeight },
 				],
 			},
 		],
 		coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 		coldFoilReplaces: "token",
-		marvelChance: 0,
+		marvelChance,
 	};
 }
 
-const HEAVY_HITTERS = buildHvyFamilyConfig("HVY", {
-	rare: 67,
-	majestic: 30,
-	majesticExpansion: 10,
-	marvel: 10,
-	legendary: 5,
-	token: 15,
-});
-
-const PART_THE_MISTVEIL = buildHvyFamilyConfig("MST", {
-	rare: 54,
-	majestic: 30,
-	majesticExpansion: 13,
-	marvel: 18,
-	legendary: 6,
-	token: 12,
-});
-
-const ROSETTA = buildHvyFamilyConfig("ROS", {
-	rare: 57,
-	majestic: 34,
-	majesticExpansion: 15,
-	marvel: 20,
-	legendary: 5,
-	token: 15,
-});
-
-const THE_HUNTED = buildHvyFamilyConfig("HNT", {
-	rare: 66,
-	majestic: 27,
-	majesticExpansion: 15,
-	marvel: 13,
-	legendary: 5,
-	token: 16,
-});
+const HEAVY_HITTERS = buildHvyFamilyConfig("HVY", 1.85, 1 / 192);
+const PART_THE_MISTVEIL = buildHvyFamilyConfig("MST", 1.84, 1 / 100);
+const ROSETTA = buildHvyFamilyConfig("ROS", 1.54, ESTIMATED_MARVEL_CHANCE);
+const THE_HUNTED = buildHvyFamilyConfig("HNT", 1.54, ESTIMATED_MARVEL_CHANCE);
 
 // ---------------------------------------------------------------------------
 // Super Slam (SUP) — 15 cards.
@@ -396,12 +474,42 @@ const THE_HUNTED = buildHvyFamilyConfig("HNT", {
 // wildcard slot below), so there's no need to keep a sliver of it in
 // Premium Foil too.
 // ---------------------------------------------------------------------------
+// Rates from https://fabtcg.com/collectors-centre/super-slam/ . Base:
+//   14 Set (1 per 8 packs) / 24 Expansion (1 per 6 packs) /
+//   40 Super Rare (1 per 2.18 packs) / 40 Rare (1.42 per pack) /
+//   134 Common (11 per pack) / 1 Premium Foil (1 per pack)
+//   (1 Fabled, 5 Legendary, 42 Majestic and 14 Basic carry no base rate)
+// Then "1 Premium Foil (1 per pack)" with its own breakdown:
+//   1 Fabled (1 per ??? packs) / 5 Legendary (1 per 94 packs) /
+//   21 Majestic (1 per 22 packs) / 36 Super Rare (1 per 13 packs) /
+//   39 Rare (4 per 24 packs) / 111 Common (17 per 24 packs)
+//   / 47 Cold Foil (1 per 24 packs)
+// That second block sums to 1.01, which is what marks it as one card's
+// distribution rather than more pack-wide rates - same reading as High
+// Seas below. Legendary is published there and nowhere else, so it is
+// drawn there and only there, at 1 per 94.
+//
+// Set and Expansion content (0.125 + 0.167 a pack) is expansion-slot
+// printings, modelled at Majestic rarity per pack/types.ts. It is split
+// between the Rare-or-higher slot and the wildcard; both published rates
+// are honoured in total.
+//
+// This set's base Majestic has no published rate at all, only the premium
+// slot's 1 per 22, so the app now deals Majestics far less often than it
+// used to. That is the published position, not a tuning choice.
 const supRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 40 },
-	{ rarity: "superrare" as const, weight: 40 },
-	{ rarity: "majestic" as const, weight: 14 },
+	{ rarity: "superrare" as const, weight: 459 },
+	{ rarity: "rare" as const, weight: 420 },
+	{ rarity: "majestic" as const, weight: 121, expansionSlot: true },
 ];
-const supPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+// The published premium breakdown over 10,000 packs.
+const supPremiumTable = [
+	{ rarity: "common" as const, weight: 7083 },
+	{ rarity: "rare" as const, weight: 1667 },
+	{ rarity: "superrare" as const, weight: 769 },
+	{ rarity: "majestic" as const, weight: 455 },
+	{ rarity: "legendary" as const, weight: 106 },
+];
 
 const SUPER_SLAM: PackConfig = {
 	id: "SUP",
@@ -428,10 +536,8 @@ const SUPER_SLAM: PackConfig = {
 			kind: "basic-or-wildcard",
 			count: 1,
 			rarityTable: [
-				{ rarity: "basic", weight: 9 },
-				{ rarity: "majestic", weight: 28, expansionSlot: true },
-				{ rarity: "legendary", weight: 2 },
-				{ rarity: "marvel", weight: 8 },
+				{ rarity: "basic", weight: 829 },
+				{ rarity: "majestic", weight: 171, expansionSlot: true },
 			],
 		},
 	],
@@ -847,54 +953,124 @@ const TALES_OF_ARIA: PackConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// Bright Lights (EVO) — 16 cards. fabtcg.com/products/booster-set/bright-lights/
-// states "Product Configuration: ... 16 cards per pack" explicitly, but
-// that same page's own "Rarity Distribution" list only sums to 15 (Cold
-// Foil replaces a token; Rainbow Foil 1/pack folded into the pair; Rare or
-// higher 2/pack; Common 11/pack; Token 1/pack; Token or Expansion Slot
-// 1/pack = 2+11+1+1 = 15) — it's missing the "Basic/Expansion Slot/
-// Marvel/Legendary" wildcard slot that every other set in this same
-// generation (Heavy Hitters/Part the Mistveil/Rosetta/The Hunted) has,
-// with an identical "Rarity Distribution" paragraph otherwise. Confirmed
-// with the product owner that the pack size really is 16; modelled here as
-// the same family structure with that wildcard slot restored, since every
-// other line matches that family exactly and 16 only works out if it's
-// there. This is the one config in this file that isn't a verbatim
-// transcription — flagged so it isn't mistaken for one.
-// Real population: rare 56, majestic 34 (12 more via Expansion Slot),
-// marvel 9, legendary 4, token 12. No real Basic printings, same gap as
-// the Heavy Hitters family — omitted from the wildcard table.
+// Bright Lights (EVO) — 16 cards. Rates from
+// https://fabtcg.com/collectors-centre/bright-lights/ :
+//   1 Fabled (1 per ??? packs) / 7 Legendary (1 per 70 packs) /
+//   46 Majestic (1 per 4 packs) / 56 Rare (1.68 per pack) /
+//   129 Common (11 per pack) / 12 Token (1.8~ per pack) /
+//   Premium Foil (1 per pack) / Cold Foil (1 per 24 packs) /
+//   9 Marvels (1 per ??? packs)
+//
+// Structurally this is the Heavy Hitters family, but it is NOT built by
+// that builder, because its page stops short of one thing all four of
+// those publish: a rarity breakdown for the Premium Foil slot. So its
+// premium card is modelled the older way, as a Common carrying the set's
+// one published Legendary rate, rather than with the family's 1/96-1/18-
+// 5/24-18/24 table, which this set never states.
+//
+// Its rates sum to 1.68 + 0.25 + 11 + 1.8 + 1 = 15.73, i.e. 16 cards, which
+// settles a question the old product-page reading could not: that page's
+// slot list only ever summed to 15 and the missing sixteenth card had to be
+// assumed. It is a second Token/Common slot, not a Basic wildcard.
+//
+// Marvel is printed as "1 per ??? packs" here, so it takes the estimate.
 // ---------------------------------------------------------------------------
-const BRIGHT_LIGHTS = buildHvyFamilyConfig("EVO", {
-	rare: 56,
-	majestic: 34,
-	majesticExpansion: 12,
-	marvel: 9,
-	legendary: 4,
-	token: 12,
-});
+const evoRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: 68 },
+	{ rarity: "majestic" as const, weight: 20 },
+	{ rarity: "majestic" as const, weight: 5, expansionSlot: true },
+	{ rarity: "common" as const, weight: 7 },
+];
+// Legendary at the published 1 per 70 packs, over a denominator of 700.
+const evoPremiumTable = [
+	{ rarity: "common" as const, weight: 690 },
+	{ rarity: "legendary" as const, weight: 10 },
+];
+
+const BRIGHT_LIGHTS: PackConfig = {
+	id: "EVO",
+	cardsPerPack: 16,
+	slots: [
+		{
+			kind: "common",
+			count: 11,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: evoRareOrMajesticTable,
+		},
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: evoPremiumTable,
+		},
+		{ kind: "token", count: 1, rarityTable: [{ rarity: "token", weight: 1 }] },
+		{
+			kind: "token-or-wildcard",
+			count: 1,
+			rarityTable: [
+				{ rarity: "token", weight: 80 },
+				{ rarity: "common", weight: 20 },
+			],
+		},
+	],
+	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilReplaces: "token",
+	marvelChance: ESTIMATED_MARVEL_CHANCE,
+};
 
 // ---------------------------------------------------------------------------
 // High Seas (SEA) — 16 cards.
-// fabtcg.com/products/booster-set/high-seas/, "Rarity Distribution":
-// Rainbow Foil - 1 per pack; Rare or higher - 2 per pack (1 Rare + 1 Rare
-// or Majestic); Common - 11 per pack; Basic - 1 per pack; Basic /
-// Expansion Slot / Marvel / Legendary - 1 per pack. Sum: 1 + 2 + 11 + 1 +
-// 1 = 16 — same "separate Premium Foil card" structure as Super Slam and
-// Omens of the Third Age (this set released after both), not the older
-// fold-in style. No Cold Foil line at all on this page, unlike every
-// other same-era set — modelled as coldFoilChance 0 to match what's
-// actually published rather than assuming the family default.
-// Real population: rare 64, majestic 33 (13 more via Expansion Slot),
-// legendary 5, basic 18, marvel 31. Premium Foil modelled as Common only
-// — Legendary and Marvel already have their own channel (the wildcard
-// slot), same reasoning as Super Slam/Omens.
+// Rates from https://fabtcg.com/collectors-centre/high-seas/ (transcribed
+// verbatim in docs/pull-rate-verification.md). The base block:
+//   1 Fabled / 6 Legendary / 46 Majestic (1 per 4 packs) /
+//   64 Rare (1.83 per pack) / 127 Common (11 per pack) / 18 Basic
+// then a second block under "Premium Foil (1 per pack)":
+//   1 Fabled (1 per ??? packs) / 6 Legendary (1 per 96 packs) /
+//   33 Majestic (1 per 18 packs) / 60 Rare (5 per 24 packs) /
+//   85 Common (18 per 24 packs) / 21 Marvels (1 per 60 packs)
+//
+// That second block is the Premium Foil slot's own rarity table, not an
+// extra set of pack-wide rates: its listed rates sum to 1.04, and a block
+// summing to one card is the distribution for one card. So Legendary and
+// Marvel are premium-slot outcomes here, and they appear in exactly one
+// slot. The product page names the last slot "Basic / Expansion Slot /
+// Marvel / Legendary", but a product page says what CAN appear in a slot
+// while the Collectors Centre gives the rates, and rates are what this
+// models. Normalising that 1.04 back to 1.0 costs every premium rate about
+// 4%, well inside the calibration tolerance.
+//
+// Base Majestic is pinned at 1 per 4 packs in total. Expansion-slot
+// printings are Majestic rarity, so they come OUT of that 0.25 rather than
+// on top of it — the split between the Rare-or-Majestic slot (0.20) and the
+// wildcard's expansion entry (0.05) is ours, since LSS publishes no
+// expansion rate for this set, but the total is the published one and the
+// total is what tests/pack-opener/calibration.test.ts asserts. Keeping a
+// small share there is what keeps expansion cards pullable at all.
+//
+// Base Rare lands at 1.80 against a published 1.83, because Majestic has
+// to come out of the same two rare-or-higher slots. 2% under, left alone.
+//
+// Fabled is deliberately absent: both blocks print "1 per ??? packs" for
+// it, and an invented rate is worse than an unpullable card.
 // ---------------------------------------------------------------------------
 const seaRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 64 },
-	{ rarity: "majestic" as const, weight: 33 },
+	{ rarity: "rare" as const, weight: 4 },
+	{ rarity: "majestic" as const, weight: 1 },
 ];
-const seaPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+// Weights are the published premium rates over a common denominator of
+// 1440 packs: 1/96, 1/18, 5/24, 18/24, 1/60.
+const seaPremiumTable = [
+	{ rarity: "common" as const, weight: 1080 },
+	{ rarity: "rare" as const, weight: 300 },
+	{ rarity: "majestic" as const, weight: 80 },
+	{ rarity: "marvel" as const, weight: 24 },
+	{ rarity: "legendary" as const, weight: 15 },
+];
 
 const HIGH_SEAS: PackConfig = {
 	id: "SEA",
@@ -922,14 +1098,17 @@ const HIGH_SEAS: PackConfig = {
 			kind: "basic-or-wildcard",
 			count: 1,
 			rarityTable: [
-				{ rarity: "basic", weight: 18 },
-				{ rarity: "majestic", weight: 13, expansionSlot: true },
-				{ rarity: "legendary", weight: 5 },
-				{ rarity: "marvel", weight: 31 },
+				{ rarity: "basic", weight: 19 },
+				{ rarity: "majestic", weight: 1, expansionSlot: true },
 			],
 		},
 	],
+	// No Cold Foil line anywhere on this set's page, unlike every other
+	// same-era set. Modelled as 0 to match what is actually published
+	// rather than assuming the family default.
 	coldFoilChance: 0,
+	// Marvel is published as a Premium Foil outcome above, so it is drawn
+	// from that slot's table rather than rolled separately.
 	marvelChance: 0,
 };
 
@@ -1037,9 +1216,24 @@ const COMPENDIUM_OF_RATHE: PackConfig = {
 // explicitly say what Cold Foil replaces.
 // Real population: rare 51, majestic 34, legendary 5, marvel 3, token 20.
 // ---------------------------------------------------------------------------
+// Rates from https://fabtcg.com/collectors-centre/outsiders/ :
+//   1 Fabled (1 per ??? packs) /
+//   5 Legendary (Rainbow Foil 1:70, Cold Foil 1:264) /
+//   31 Majestic (1 per 5 packs) / 51 Rare (1.75 per pack) /
+//   128 Common (11 per pack) / 20 Tokens (1.75 per pack) /
+//   Premium Foil (1 per pack) / Cold Foil (1 per 24 packs) /
+//   3 Marvels (1 per ??? packs)
+// Rare, Majestic and Legendary here were already derived from these rates
+// and are unchanged. Token was not: two guaranteed token slots deal 2.00 a
+// pack against a published 1.75, so the second one now lands on a Common
+// the remaining eighth of the time.
 const outRareOrMajesticTable = [
 	{ rarity: "rare" as const, weight: 4 },
 	{ rarity: "majestic" as const, weight: 1 },
+];
+const outTokenTable = [
+	{ rarity: "token" as const, weight: 875 },
+	{ rarity: "common" as const, weight: 125 },
 ];
 const outPremiumTable = [
 	{ rarity: "legendary" as const, weight: 1 },
@@ -1067,11 +1261,12 @@ const OUTSIDERS: PackConfig = {
 			fixedTreatment: "rainbow",
 			rarityTable: outPremiumTable,
 		},
-		{ kind: "token", count: 2, rarityTable: [{ rarity: "token", weight: 1 }] },
+		{ kind: "token", count: 2, rarityTable: outTokenTable },
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "token",
-	marvelChance: DEFAULT_MARVEL_CHANCE,
+	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
+	marvelChance: ESTIMATED_MARVEL_CHANCE,
 };
 
 // ---------------------------------------------------------------------------
@@ -1092,10 +1287,19 @@ const OUTSIDERS: PackConfig = {
 // premium/foil slot exists to double-count against here, unlike the
 // sets fixed earlier in this file.
 // ---------------------------------------------------------------------------
+// Rates from https://fabtcg.com/collectors-centre/history-pack-1/ :
+//   9 Legendary (1 per 82 packs) / 62 Majestic (1 per 3.15 packs) /
+//   118 Rare (1.65 per pack) / 208 Common (7 per pack)
+//   *3 Fabled and *8 Marvel are Black Label product only, not boosters,
+//   which is why marvelChance stays 0 for this set alone.
+// Rare 1.65 is the one guaranteed Rare plus 0.65 from the second slot;
+// Majestic and Legendary make up most of the rest of it, with Common
+// taking the last 2%. Weights are those rates over 10,000 draws.
 const hpRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 118 },
-	{ rarity: "majestic" as const, weight: 62 },
-	{ rarity: "legendary" as const, weight: 9 },
+	{ rarity: "rare" as const, weight: 6500 },
+	{ rarity: "majestic" as const, weight: 3175 },
+	{ rarity: "common" as const, weight: 203 },
+	{ rarity: "legendary" as const, weight: 122 },
 ];
 
 const HISTORY_PACK_1: PackConfig = {
