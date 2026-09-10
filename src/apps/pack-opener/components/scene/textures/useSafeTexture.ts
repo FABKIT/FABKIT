@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { type Texture, TextureLoader } from "three";
 
 /**
@@ -28,14 +28,23 @@ export type SafeTextureState =
 	| { status: "error" };
 
 export function useSafeTexture(url: string): SafeTextureState {
-	const [state, setState] = useState<SafeTextureState>(() =>
-		resolveCached(url),
-	);
+	// A render counter, not the state itself. The state IS the cache, read
+	// fresh below on every render for whatever url we were actually handed.
+	//
+	// This used to hold the resolved texture in useState. A useState
+	// initializer only runs on mount, so when the url prop changed (every
+	// time the active card advances, and every time the outgoing card takes
+	// over the card before it) React returned the PREVIOUS card's texture
+	// for that render, and an effect corrected it one render later. That is
+	// a guaranteed stale frame on every single advance: for one frame the
+	// card on top showed the wrong art, which is the flash of another card
+	// that kept surviving fixes aimed at the slide animation. Deriving from
+	// the url during render means there is no window in which the two can
+	// disagree.
+	const [, onLoaded] = useReducer((tick: number) => tick + 1, 0);
 
 	useEffect(() => {
-		const cached = resolveCached(url);
-		setState(cached);
-		if (cached.status !== "loading") return;
+		if (resolveCached(url).status !== "loading") return;
 
 		let cancelled = false;
 		loader.load(
@@ -43,13 +52,13 @@ export function useSafeTexture(url: string): SafeTextureState {
 			(texture) => {
 				if (cancelled) return;
 				textureCache.set(url, texture);
-				setState({ status: "loaded", texture });
+				onLoaded();
 			},
 			undefined,
 			() => {
 				if (cancelled) return;
 				failedUrls.add(url);
-				setState({ status: "error" });
+				onLoaded();
 			},
 		);
 		return () => {
@@ -57,7 +66,7 @@ export function useSafeTexture(url: string): SafeTextureState {
 		};
 	}, [url]);
 
-	return state;
+	return resolveCached(url);
 }
 
 function resolveCached(url: string): SafeTextureState {
