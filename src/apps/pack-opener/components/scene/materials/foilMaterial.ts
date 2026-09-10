@@ -68,8 +68,16 @@ const fragmentShader = /* glsl */ `
 		// Sample the base art's own luminance so the effect sits over the
 		// artwork rather than washing out the (usually lighter) text box —
 		// section 3.5's masking requirement.
+		//
+		// This used to run the other way round (smoothstep(0.05, 0.4, ...)),
+		// which gave the FULL effect to the brightest pixels and none to the
+		// darkest: the exact opposite of what the line above it describes,
+		// and it hit the white text box hardest. Foil is light added on top
+		// of the print, so the thing that needs protecting is whatever is
+		// already close to white. Full effect across the art, easing off as
+		// the base approaches white.
 		float luminance = dot(base.rgb, vec3(0.299, 0.587, 0.114));
-		float mask = smoothstep(0.05, 0.4, luminance);
+		float mask = 1.0 - smoothstep(0.55, 0.95, luminance);
 
 		float grain = hash(vUv * 320.0) * 0.18;
 
@@ -83,7 +91,12 @@ const fragmentShader = /* glsl */ `
 			// clock, so tilting the card visibly moves the band.
 			float hue = fract(vUv.x + vUv.y + (uLightDir.x + uLightDir.y) * 0.3);
 			effectColor = hsv2rgb(vec3(hue, 0.55, 1.0));
-			strength = 0.28 + 0.55 * clamp(abs(uLightDir.x) + abs(uLightDir.y), 0.0, 1.0);
+			// Base sheen plus a tilt response. The ramp is deliberately
+			// shallower than the base is large: under the additive combine a
+			// steep ramp turned the whole card into a saturated wash at full
+			// tilt, which is a different kind of wrong from the dullness it
+			// replaced. Verified across the tilt range, not just head-on.
+			strength = 0.20 + 0.30 * clamp(abs(uLightDir.x) + abs(uLightDir.y), 0.0, 1.0);
 		} else {
 			// Cold / Gold Cold Foil: a tight horizontal specular band. Its
 			// vertical position tracks uLightDir.y (tilting the card up or
@@ -109,15 +122,32 @@ const fragmentShader = /* glsl */ `
 			effectColor = uTreatment == 3
 				? vec3(0.651, 0.525, 0.290)  // FABKIT gold, #a6864a
 				: vec3(1.0, 1.0, 1.0);       // near-white, metallic rather than colourful
-			// Scaled back from a full-strength band: at 1.0 the glint read as
-			// a hard specular blowout rather than the softer sheen a real
-			// cold foil catches. Only the peak is lowered, so the band keeps
-			// its shape, its position and the way it sweeps with the tilt.
-			strength = band * 0.68;
+			strength = band;
 		}
 
 		strength = clamp(strength + grain * strength, 0.0, 1.0);
-		vec3 color = mix(base.rgb, effectColor, uIntensity * strength * mask);
+
+		// Added, not mixed.
+		//
+		// mix() REPLACES the artwork with effectColor in proportion to
+		// strength, dragging every pixel toward one fixed value. The rainbow
+		// tint's darkest channel is around 0.45, so mixing toward it visibly
+		// DARKENED light areas; the cold white flattened contrast. Both read
+		// as the card going dull and desaturated, which is not what foil
+		// does. Adding can only ever brighten, which is physically what a
+		// foil layer is, and it leaves the art's own colour and contrast
+		// intact underneath. It also makes the varying brightness between
+		// one card scan and the next less noticeable, not more, since
+		// nothing is being pulled toward a common colour any more.
+		//
+		// Deliberately added HERE, in the fragment shader, and NOT by giving
+		// the material AdditiveBlending: this material stays in the opaque
+		// queue (it cuts its corners with discard, above). A blended
+		// material moves to the transparent queue, which three.js draws
+		// after everything opaque whatever render order it is given — the
+		// exact mechanism that once let the celebration glow paint over the
+		// card.
+		vec3 color = base.rgb + effectColor * (uIntensity * strength * mask);
 		gl_FragColor = vec4(color, base.a);
 	}
 `;
