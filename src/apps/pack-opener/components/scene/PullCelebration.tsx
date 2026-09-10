@@ -4,8 +4,12 @@ import {
 	CARD_WIDTH,
 } from "@fabkit/apps/pack-opener/components/scene/Card3D";
 import { getGlowTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useGlowTexture";
-import { GLOW_ANIMATION_MS } from "@fabkit/apps/pack-opener/config/scene";
+import {
+	CELEBRATION_Z,
+	GLOW_ANIMATION_MS,
+} from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
+import { easeOutCubic } from "@fabkit/apps/pack-opener/lib/easing";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import {
@@ -27,17 +31,10 @@ const TIER_COLOR: Record<CelebrationTier, string> = {
 	marvel: "#ff6fae",
 };
 
-/** How far behind the card the glow plane sits. This is the fix for the
- * glow appearing to wash OVER the card: at 0.05 the plane sat well inside
- * the arc the card sweeps when it tilts (up to CARD_TILT_MAX_DEG, which
- * swings a corner roughly 0.17 units in z), so moving the pointer above or
- * below the card tipped part of it behind the glow. The glow is additively
- * blended and in the transparent queue, which three.js always draws after
- * the opaque queue, so wherever the card had sunk behind this plane the
- * glow drew straight over it as a bright rectangle. Sitting well clear of
- * the card's full tilt excursion means the card is always in front of it,
- * at every angle. */
-const GLOW_Z_OFFSET = -0.55;
+/** Layered just behind the shared celebration depth — see
+ * CELEBRATION_Z in config/scene.ts for the render-queue reason every
+ * effect back here has to respect. */
+const GLOW_Z_OFFSET = CELEBRATION_Z;
 
 /** How much bigger than the card (CARD_WIDTH/CARD_HEIGHT) the glow grows at
  * its resting size — this multiplies a plane already sized to the card, so
@@ -61,10 +58,6 @@ const TIER_MAX_OPACITY: Record<CelebrationTier, number> = {
 	legendary: 0.55,
 	marvel: 0.7,
 };
-
-function easeOutCubic(t: number): number {
-	return 1 - (1 - t) ** 3;
-}
 
 interface PullCelebrationProps {
 	tier: CelebrationTier;

@@ -29,6 +29,31 @@ export const CARD_TILT_MAX_DEG = 12;
  * angle swings its edges much further and starts to read as the whole pack
  * swivelling rather than catching the light. */
 export const PACK_TILT_MAX_DEG = 8;
+
+/** Minimum drag, in pixels, before a touch gesture counts as a swipe rather
+ * than a tap. Shared by the set carousel (horizontal) and the pack summary
+ * (vertical) so the two gestures need the same commitment from the player;
+ * they had the same number written out separately, which is exactly how two
+ * gestures end up feeling different for no reason. */
+export const SWIPE_THRESHOLD_PX = 40;
+
+/** How far behind the card every celebration effect sits.
+ *
+ * This is one number with one reason, rather than the same reasoning
+ * repeated in three components. Everything that celebrates a pull — the
+ * glow plane, the drifting sparkles, the fireworks — is additively blended
+ * and therefore lands in three.js's TRANSPARENT render queue, which is
+ * drawn after everything opaque no matter what render order it is given.
+ * The card itself is opaque (it cuts its rounded corners with a hard alpha
+ * test rather than blending). So any effect nearer the camera than the
+ * card's furthest tilt excursion will paint straight over the card as soon
+ * as the pointer tips it back, which is exactly the bug that once made the
+ * glow look like a bright rectangle stuck to the front of the card.
+ *
+ * At CARD_TILT_MAX_DEG a corner of the card swings roughly 0.30 world units
+ * toward the camera, so this sits comfortably clear of that. Effects layer
+ * themselves further back from here. */
+export const CELEBRATION_Z = -0.55;
 export const CARD_TILT_EASE = 0.12;
 
 /** A beat where the pack sits closed before the seal starts moving. The
@@ -92,13 +117,15 @@ export const GLOW_ANIMATION_MS = 900;
 // subject's height (pack 2.0 units, single card CARD_HEIGHT ~1.675). The pack
 // being the taller object is why it needs the greater distance: framed from
 // the same spot as a card it would loom noticeably larger than the cards it
-// produces. Both the pack and the cards now fill most of their own canvas
+// produces. Both the pack and the cards fill most of their own canvas
 // (~92% and ~95%), because everything else on the page takes a fixed
 // amount of room and whatever is left IS the subject's space — it should
-// use nearly all of it. The pack's canvas is the taller of the two (no
-// summary is reserved beneath it while the pack is on screen), so the same
-// share leaves it a little larger than a card, which is about right for a
-// thing that contains cards. Idle sits slightly further out than tearing
+// use nearly all of it. The canvas is now exactly ONE height in every
+// phase (PackOpenerPage.tsx reserves the summary's space from the first
+// frame), so the pack and the cards come out at very nearly the same size.
+// The pack used to have a taller canvas to itself, and the resize as it
+// handed over to the first card was a visible stutter. Idle sits slightly
+// further out than tearing
 // so tapping still gives a gentle push-in.
 export const IDLE_CAMERA_POSITION: [number, number, number] = [0, 0, 3.45];
 export const TEARING_CAMERA_POSITION: [number, number, number] = [0, 0, 3.35];

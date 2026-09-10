@@ -1,5 +1,6 @@
 import type { CelebrationTier } from "@fabkit/apps/pack-opener/cards/celebration-tier";
 import { getGlowTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useGlowTexture";
+import { CELEBRATION_Z } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -33,12 +34,10 @@ const TIER_FIREWORKS: Partial<
 	marvel: { shells: 4, perShell: 26, color: "#ff9ed2" },
 };
 
-/** Behind the card's full tilt excursion, exactly like PullSparkles and the
- * celebration glow: these points are additively blended and therefore in
- * three.js's transparent queue, which draws after the opaque card whatever
- * render order it is given. Anything nearer than this would paint over the
- * card as soon as the pointer tipped it back. */
-const FIREWORKS_Z = -0.62;
+/** Layered just behind the shared celebration depth — see
+ * CELEBRATION_Z in config/scene.ts for the render-queue reason every
+ * effect back here has to respect. */
+const FIREWORKS_Z = CELEBRATION_Z - 0.07;
 
 const GRAVITY = 1.5;
 const SHELL_SPREAD_X = 2.6;

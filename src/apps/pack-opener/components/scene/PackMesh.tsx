@@ -17,16 +17,13 @@ import {
 	TEAR_START_DELAY_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
+import { easeOutCubic } from "@fabkit/apps/pack-opener/lib/easing";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import type { Group, Mesh } from "three";
 
 const MAX_TILT_RAD = (PACK_TILT_MAX_DEG * Math.PI) / 180;
-
-function easeOutCubic(t: number): number {
-	return 1 - (1 - t) ** 3;
-}
 
 const BODY_HEIGHT = PACK_HEIGHT - PACK_SEAL_HEIGHT;
 // Body's bottom edge sits at -PACK_HEIGHT/2, seal's top edge at +PACK_HEIGHT/2,
