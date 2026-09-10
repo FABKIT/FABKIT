@@ -30,6 +30,7 @@ function printing(overrides: Partial<FabPrinting>): FabPrinting {
 		types: [],
 		artVariations: [],
 		artSlug: null,
+		backSlug: null,
 		...overrides,
 	};
 }

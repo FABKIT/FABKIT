@@ -13,6 +13,7 @@ import {
 	getSetPrintings,
 	hasType,
 	isClassCard,
+	printingBackImageUrl,
 	printingImageUrl,
 } from "@fabkit/shared/data/fab-printings";
 
@@ -29,6 +30,13 @@ export interface ResolvedCard {
 	rarity: CardRarity;
 	treatment: FoilTreatment;
 	imageUrl: string | null;
+	/** The other face's art, for the roughly 500 real printings that are one
+	 * face of a double-faced card, otherwise null. Null for every mock card
+	 * and for the cross-set fallback below, which resolves a card by rarity
+	 * rather than a specific printing and so cannot know about its faces.
+	 * Nothing to do with CARD_BACK_URL, which is the generic Flesh and Blood
+	 * back used as a loading placeholder. */
+	backImageUrl: string | null;
 	set?: string;
 	pitch: MockPitch | 1 | 2 | 3;
 	cost: number | null;
@@ -58,6 +66,7 @@ export const mockCardResolver: CardResolver = {
 			rarity: mock.rarity,
 			treatment: mock.treatment,
 			imageUrl: null,
+			backImageUrl: null,
 			pitch: mock.pitch,
 			cost: mock.cost,
 			power: mock.power,
@@ -118,6 +127,7 @@ function toResolvedCardFromFabCard(
 		rarity: drawn.rarity,
 		treatment: drawn.treatment,
 		imageUrl: real.imageUrl,
+		backImageUrl: null,
 		pitch: real.pitch,
 		cost: real.cost,
 		power: real.power,
@@ -205,6 +215,7 @@ function toResolvedCardFromPrinting(
 		rarity: drawn.rarity,
 		treatment: resolveTreatment(drawn, printing),
 		imageUrl: printingImageUrl(printing),
+		backImageUrl: printingBackImageUrl(printing),
 		set: setCode,
 		pitch: printing.pitch,
 		cost: printing.cost,

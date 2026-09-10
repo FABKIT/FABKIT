@@ -118,6 +118,13 @@ export interface PackOpenerState {
 	 * off phaseStartedAt: a remount mid-animation has to pick the animation
 	 * up where it is, never restart it. */
 	revealStartedAt: number | null;
+	/** True while the player is looking at the OTHER face of a double-faced
+	 * card (see cards/card-resolver.ts's backImageUrl). Lives here rather
+	 * than in the scene because the control that toggles it is 2D chrome
+	 * (RevealCaption.tsx) while the thing it changes is the 3D card. Always
+	 * back to the front for a newly revealed or revisited card: a player
+	 * who flipped one card has not asked to see every later one reversed. */
+	showingOtherFace: boolean;
 	packsOpenedThisSession: number;
 	/** Every pack completed this session, in order — the raw material for
 	 * the session stats dialog (see stats/session-stats.ts's
@@ -171,6 +178,10 @@ export interface PackOpenerActions {
 	 * ledger must not silently swap the card back. Opening a new pack or
 	 * switching sets is what resets it. */
 	revisitCard(index: number): void;
+	/** Turn the active card over, for the double-faced cards that have
+	 * another side. No-ops for everything else, so the caller does not have
+	 * to check first. */
+	flipCard(): void;
 }
 
 const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
@@ -202,6 +213,7 @@ const initialState: PackOpenerState = {
 	revealIndex: -1,
 	phaseStartedAt: null,
 	revealStartedAt: null,
+	showingOtherFace: false,
 	packsOpenedThisSession: 0,
 	openedPacksThisSession: [],
 	selectedSet: readStoredSelectedSet(),
@@ -250,6 +262,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						revealIndex: -1,
 						phaseStartedAt: Date.now(),
 						revealStartedAt: null,
+						showingOtherFace: false,
 						revisitIndex: null,
 						packSetCode: packConfig.id,
 					},
@@ -301,7 +314,11 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				}
 
 				set(
-					{ revealIndex: nextIndex, phaseStartedAt: Date.now() },
+					{
+						revealIndex: nextIndex,
+						phaseStartedAt: Date.now(),
+						showingOtherFace: false,
+					},
 					undefined,
 					"pack-opener/advanceReveal",
 				);
@@ -385,6 +402,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						revealIndex: -1,
 						phaseStartedAt: null,
 						revealStartedAt: null,
+						showingOtherFace: false,
 						revisitIndex: null,
 						packSetCode: null,
 					},
@@ -429,11 +447,23 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				set({ packArtUrl: url }, undefined, "pack-opener/initializeSetArt");
 			},
 
+			flipCard() {
+				set(
+					{ showingOtherFace: !get().showingOtherFace },
+					undefined,
+					"pack-opener/flipCard",
+				);
+			},
+
 			revisitCard(index) {
 				const { phase, pack } = get();
 				if (phase !== "done" || !pack) return;
 				if (index < 0 || index >= pack.length) return;
-				set({ revisitIndex: index }, undefined, "pack-opener/revisitCard");
+				set(
+					{ revisitIndex: index, showingOtherFace: false },
+					undefined,
+					"pack-opener/revisitCard",
+				);
 			},
 		};
 	}),

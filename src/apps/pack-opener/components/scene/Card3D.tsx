@@ -147,16 +147,34 @@ function CardBackFace({ alwaysOnTop }: { alwaysOnTop: boolean }) {
 function RealCardFace({
 	card,
 	imageUrl,
+	fallbackImageUrl,
 	lightDirRef,
 	alwaysOnTop,
 }: {
 	card: ResolvedCard;
 	imageUrl: string;
+	/** Tried if `imageUrl` 404s, before giving up and drawing the mock face.
+	 * Used for the other side of a double-faced card: the image host is
+	 * missing exactly one of the 106 back-face images this app can ask for
+	 * (verified by fetching all of them), and showing the card's own front
+	 * again is a far better answer there than a placeholder that looks
+	 * nothing like the card. Deliberately not recursive beyond one step. */
+	fallbackImageUrl?: string | null;
 	lightDirRef: LightDirRef;
 	alwaysOnTop: boolean;
 }) {
 	const state = useSafeTexture(imageUrl);
 	if (state.status === "error") {
+		if (fallbackImageUrl) {
+			return (
+				<RealCardFace
+					card={card}
+					imageUrl={fallbackImageUrl}
+					lightDirRef={lightDirRef}
+					alwaysOnTop={alwaysOnTop}
+				/>
+			);
+		}
 		return (
 			<MockCardFace
 				card={card}
@@ -222,6 +240,16 @@ interface Card3DProps {
 	 * because only these two cards are ever in the scene during a reveal
 	 * (PackMesh is unmounted then — see PackOpenerCanvas.tsx). */
 	alwaysOnTop?: boolean;
+	/** Show the other side of a double-faced card instead of its front (see
+	 * the store's showingOtherFace, and card-resolver.ts's backImageUrl).
+	 * Ignored for the great majority of cards, which have only one face.
+	 *
+	 * This swaps the texture; it does not rotate the card. Cards in this
+	 * scene never rotate as part of a reveal (see this app's CLAUDE.md,
+	 * which records that a rotation-based design was removed on explicit
+	 * feedback), and a player asking to read the other side wants to read
+	 * it, not watch it spin. */
+	showOtherFace?: boolean;
 }
 
 /** A single face-up card. Always static in place — no flip, no rotation as
@@ -235,10 +263,17 @@ export function Card3D({
 	onClick,
 	interactive = true,
 	alwaysOnTop = false,
+	showOtherFace = false,
 }: Card3DProps) {
 	const group = useRef<Group>(null);
 	const lightDir = useRef({ x: 0, y: 0 });
 	const reducedMotion = usePrefersReducedMotion();
+	// Falls back to the front whenever there is no other face to show, so a
+	// stale flip can never blank a single-faced card.
+	const faceUrl =
+		showOtherFace && card.backImageUrl !== null
+			? card.backImageUrl
+			: card.imageUrl;
 
 	useFrame((state) => {
 		if (reducedMotion) {
@@ -273,10 +308,11 @@ export function Card3D({
 		<group ref={group}>
 			<mesh onClick={onClick} renderOrder={alwaysOnTop ? 1 : 0}>
 				<planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
-				{card.imageUrl !== null ? (
+				{faceUrl !== null ? (
 					<RealCardFace
 						card={card}
-						imageUrl={card.imageUrl}
+						imageUrl={faceUrl}
+						fallbackImageUrl={faceUrl === card.imageUrl ? null : card.imageUrl}
 						lightDirRef={lightDir}
 						alwaysOnTop={alwaysOnTop}
 					/>

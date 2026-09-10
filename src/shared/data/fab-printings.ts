@@ -73,6 +73,13 @@ export interface FabPrinting {
 	 * printingImageUrl() below for the one thing this is used for, and why
 	 * it's scoped to Marvel printings only. */
 	artSlug: string | null;
+	/** The slug of the OTHER face's artwork, when this printing is one face
+	 * of a double-faced card, otherwise null. Resolved at build time
+	 * against the whole upstream dataset (see scripts/build-pack-data.ts's
+	 * backSlugFor, which explains why it cannot be derived from `id` at
+	 * runtime). Set on both faces, so a pack that draws either one can
+	 * still show the other. */
+	backSlug: string | null;
 }
 
 export interface FabSetPrintings {
@@ -108,6 +115,18 @@ export interface FabSetPrintings {
 export function printingImageUrl(printing: FabPrinting): string {
 	const isMarvel = printing.rarity === "marvel";
 	const slug = isMarvel && printing.artSlug ? printing.artSlug : printing.id;
+	return cardArtUrl(slug);
+}
+
+/** The other face of a double-faced card, or null when it has only one.
+ * The slug is already resolved (see FabPrinting.backSlug), so this is only
+ * the URL shape — deliberately the same one printingImageUrl uses, rather
+ * than a second host or path to keep in step. */
+export function printingBackImageUrl(printing: FabPrinting): string | null {
+	return printing.backSlug ? cardArtUrl(printing.backSlug) : null;
+}
+
+function cardArtUrl(slug: string): string {
 	return `https://content.fabrary.net/cards/${slug}.webp`;
 }
 

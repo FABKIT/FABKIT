@@ -10,6 +10,8 @@
 		"summary_title": "Your pulls in this booster",
 		"packs_opened_session": "Packs opened this session: {{count}}",
 		"marvel_badge": "Marvel",
+		"flip_card": "Show the other side",
+		"other_side": "Other side",
 		"treatment_name": {
 			"rainbow": "Rainbow Foil",
 			"cold": "Cold Foil",

@@ -1,6 +1,7 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
+import { RotateCw } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -28,6 +29,10 @@ export function RevealCaption() {
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
+	const showingOtherFace = usePackOpenerStore(
+		(state) => state.showingOtherFace,
+	);
+	const flipCard = usePackOpenerStore((state) => state.flipCard);
 
 	const activeIndex =
 		revisitIndex !== null && phase === "done" ? revisitIndex : revealIndex;
@@ -50,8 +55,26 @@ export function RevealCaption() {
 		<div className="flex flex-col items-center gap-1">
 			{/* Card names in the real FAB card-name face — section 3.7's
 			    "the game's own face for the game's own content". */}
-			<span className="font-card-name text-lg text-heading">
-				{resolved.name}
+			{/* The flip control sits beside the name rather than over the card
+			    so it can never cover the artwork it exists to reveal, and
+			    appears only for the double-faced cards that actually have
+			    another side (see card-resolver.ts's backImageUrl). */}
+			<span className="flex items-center gap-2">
+				<span className="font-card-name text-lg text-heading">
+					{resolved.name}
+				</span>
+				{resolved.backImageUrl !== null && (
+					<button
+						type="button"
+						onClick={flipCard}
+						aria-pressed={showingOtherFace}
+						title={t("page.flip_card")}
+						aria-label={t("page.flip_card")}
+						className="rounded-full border border-border-primary p-1.5 text-muted transition-colors hover:bg-primary hover:text-white"
+					>
+						<RotateCw className="h-4 w-4" aria-hidden="true" />
+					</button>
+				)}
 			</span>
 			<p className="font-card-stat flex items-center gap-2 text-sm text-muted">
 				{/* Rarity symbol sits directly next to its own label (the C
@@ -64,6 +87,9 @@ export function RevealCaption() {
 					className="h-4 w-4"
 				/>
 				<span>{t(CardRarities[resolved.rarity].label)}</span>
+				{showingOtherFace && resolved.backImageUrl !== null && (
+					<span className="text-subtle">{t("page.other_side")}</span>
+				)}
 				{resolved.rarity === "marvel" && (
 					<span className="font-bold text-pack-marvel">
 						{t("page.marvel_badge")}
