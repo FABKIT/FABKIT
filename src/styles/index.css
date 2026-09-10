@@ -161,22 +161,36 @@
  * outside with !important. It is not hidden anywhere: FABKIT depends on
  * donations, and it stays reachable on every screen size.
  *
- * On phones it was 180x50 in the bottom-left corner, which sat exactly on
- * top of the pack opener's "Open Another Pack" button. That was not merely
- * visual overlap: a tap on the button's centre landed on the Ko-fi iframe
- * instead, so the primary action of that whole screen could not be pressed.
+ * Desktop is untouched. There it sits in the bottom-left corner over the
+ * sidebar, where nothing else is.
  *
- * Two changes, both needed. Scaling alone was measured and was NOT enough:
- * even at 62% the widget's corner still covered the left-hand button.
- * So it is also lifted above the phone action row (107px tall, see
- * PackOpenerPage.tsx) rather than only made smaller. It keeps its familiar
- * bottom-left corner, just clear of the controls. Ko-fi positions the
- * widget from its own stylesheet, hence the !important on each. */
+ * Phones have no sidebar, so that same corner is live page content, and the
+ * widget landed exactly on top of the pack opener's "Open Another Pack"
+ * button. That was not merely visual overlap: a tap on the button's centre
+ * hit the Ko-fi iframe, so the primary action of the screen could not be
+ * pressed. Scaling alone was measured and was not enough; even at 62% the
+ * corner still covered it.
+ *
+ * So on phones it moves into the empty right-hand end of the mobile header
+ * bar, which is 4rem tall and otherwise carries only the menu button and
+ * the page title. Nothing scrolls under it there, so it cannot end up over
+ * a control on this or any other page. Scaled to fit inside that bar, and
+ * anchored from its own top-right corner so the scale does not walk it back
+ * out of position. */
 @media (max-width: 767px) {
 	.floatingchat-container-wrap,
 	.floatingchat-container-wrap-mobi {
-		bottom: 124px !important;
-		transform: scale(0.7) !important;
-		transform-origin: bottom left !important;
+		top: 10px !important;
+		right: 12px !important;
+		bottom: auto !important;
+		left: auto !important;
+		/* The wrapper has no width of its own: Ko-fi sizes it by setting
+		 * both left and right, and its only child is absolutely positioned,
+		 * so dropping `left` collapsed it to zero and the scale then
+		 * anchored at the wrong point, pushing the button off the right
+		 * edge. Matching the inner iframe's own 195px puts it back. */
+		width: 195px !important;
+		transform: scale(0.62) !important;
+		transform-origin: top right !important;
 	}
 }
