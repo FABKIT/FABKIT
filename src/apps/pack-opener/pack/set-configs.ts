@@ -49,12 +49,11 @@ import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
  */
 export const PUBLISHED_COLD_FOIL_CHANCE = 1 / 24;
 
-/** Used only where a page prints "1 per ??? packs" for Marvel. It is the
- * middle of the three rates LSS does publish anywhere (High Seas 1 per 60,
- * Part the Mistveil 1 per 100, Heavy Hitters 1 per 192), so it sits in the
- * right order of magnitude without pretending to be sourced. The
- * pull-rates dialog already tells players some rates are estimates; this
- * is one of them. */
+/** Used only where a set has real Marvel printings but no published rate
+ * for them. Eight sets do publish one (1 per 60, 96, 96, 100, 100, 110,
+ * 192 and 390 packs); this is their median, so it sits in the right place
+ * without pretending to be sourced. The pull-rates dialog already tells
+ * players some rates are estimates; this is one of them. */
 const ESTIMATED_MARVEL_CHANCE = 1 / 100;
 
 // ---------------------------------------------------------------------------
@@ -200,8 +199,9 @@ const UPRISING: PackConfig = {
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "token",
-	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
-	marvelChance: ESTIMATED_MARVEL_CHANCE,
+	// The Collectors Centre page prints "1 per ??? packs", but LSS has
+	// since published Uprising's Marvel rate as 1 per 110 packs.
+	marvelChance: 1 / 110,
 };
 
 // ---------------------------------------------------------------------------
@@ -265,8 +265,9 @@ const DYNASTY: PackConfig = {
 	// till Dawn below. That target is an inference; the rate is published.
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "rare",
-	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
-	marvelChance: ESTIMATED_MARVEL_CHANCE,
+	// The Collectors Centre page prints "1 per ??? packs", but LSS has
+	// since published Dynasty's Marvel rate as 1 per 96 packs.
+	marvelChance: 1 / 96,
 };
 
 // ---------------------------------------------------------------------------
@@ -327,8 +328,9 @@ const DUSK_TILL_DAWN: PackConfig = {
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "rare",
-	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
-	marvelChance: ESTIMATED_MARVEL_CHANCE,
+	// The Collectors Centre page prints "1 per ??? packs", but LSS has
+	// since published Dusk till Dawn's Marvel rate as 1 per 100 packs.
+	marvelChance: 1 / 100,
 };
 
 // ---------------------------------------------------------------------------
@@ -495,8 +497,13 @@ const THE_HUNTED = buildHvyFamilyConfig("HNT", 1.54, ESTIMATED_MARVEL_CHANCE);
 // are honoured in total.
 //
 // This set's base Majestic has no published rate at all, only the premium
-// slot's 1 per 22, so the app now deals Majestics far less often than it
-// used to. That is the published position, not a tuning choice.
+// slot's 1 per 22. The gap is filled from OBSERVED data rather than a
+// published figure, and is the one number in this file that is: counting a
+// display box gives about 10 Majestics per 24 packs, i.e. 0.417 a pack in
+// total. The published Set (1 per 8) and Expansion (1 per 6) content plus
+// the premium slot's 1 per 22 account for 0.337 of that, so the wildcard
+// slot carries the remaining 0.08 as ordinary Majestic. Basic gives up the
+// weight for it, Basic being the one rarity here with no published rate.
 const supRareOrHigherTable = [
 	{ rarity: "superrare" as const, weight: 459 },
 	{ rarity: "rare" as const, weight: 420 },
@@ -536,14 +543,18 @@ const SUPER_SLAM: PackConfig = {
 			kind: "basic-or-wildcard",
 			count: 1,
 			rarityTable: [
-				{ rarity: "basic", weight: 829 },
+				{ rarity: "basic", weight: 749 },
 				{ rarity: "majestic", weight: 171, expansionSlot: true },
+				{ rarity: "majestic", weight: 80 },
 			],
 		},
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "basic-or-wildcard",
-	marvelChance: 0,
+	// This set prints 23 Marvels but its page never mentions them, so
+	// there is no rate to carry. Left at 0 they would be unpullable,
+	// which is worse than an openly flagged estimate.
+	marvelChance: ESTIMATED_MARVEL_CHANCE,
 };
 
 // ---------------------------------------------------------------------------
@@ -1265,8 +1276,9 @@ const OUTSIDERS: PackConfig = {
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "token",
-	// Printed "1 per ??? packs" - see ESTIMATED_MARVEL_CHANCE.
-	marvelChance: ESTIMATED_MARVEL_CHANCE,
+	// The Collectors Centre page prints "1 per ??? packs", but LSS has
+	// since published Outsiders's Marvel rate as 1 per 390 packs.
+	marvelChance: 1 / 390,
 };
 
 // ---------------------------------------------------------------------------

@@ -169,9 +169,17 @@ describe("frequency calibration", () => {
 	// to publish a Marvel rate; Rosetta and The Hunted print "1 per ???"
 	// and carry the estimate instead, which is not a published figure and
 	// so is deliberately not asserted here.
-	it("the two published Marvel rates are matched", () => {
+	// Every set whose Marvel rate LSS has published. The rest carry
+	// ESTIMATED_MARVEL_CHANCE, which is not a published figure and so is
+	// deliberately not asserted anywhere.
+	it("the published Marvel rates are matched", () => {
 		expectRate("HVY", "marvel", 1 / 192);
 		expectRate("MST", "marvel", 1 / 100);
+		expectRate("SEA", "marvel", 1 / 60);
+		expectRate("UPR", "marvel", 1 / 110);
+		expectRate("DYN", "marvel", 1 / 96);
+		expectRate("DTD", "marvel", 1 / 100);
+		expectRate("OUT", "marvel", 1 / 390);
 	});
 
 	// Super Slam. Majestic is not asserted: its base breakdown lists 42
@@ -184,6 +192,9 @@ describe("frequency calibration", () => {
 		expectRate("SUP", "rare", 1.42 + 4 / 24);
 		expectRate("SUP", "superrare", 1 / 2.18 + 1 / 13);
 		expectRate("SUP", "legendary", 1 / 94);
+		// Observed rather than published: about 10 Majestics per 24-pack
+		// display. See set-configs.ts's SUP comment.
+		expectRate("SUP", "majestic", 10 / 24);
 	});
 
 	// High Seas: the first set modelled entirely from its Collectors Centre
