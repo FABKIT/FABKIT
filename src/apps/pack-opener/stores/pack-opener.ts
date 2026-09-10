@@ -95,6 +95,18 @@ function preloadPackTextures(
  * several pack fronts (Welcome to Rathe has four, one per hero) and seeing
  * the same one every visit made a set with four artworks look like a set
  * with one. */
+/** Picks a fresh artwork for a set code and starts loading it, or null if
+ * the set has none uploaded (or is not in the index yet). The single place
+ * that turns "which set" into "which pack front", shared by openPack,
+ * selectSet and initializeSetArt so the three cannot drift apart. */
+function rollPackArt(setCode: string | null): string | null {
+	if (!setCode) return null;
+	const entry = getSetIndex().find((set) => set.code === setCode);
+	const url = entry ? pickPackArt(entry) : null;
+	if (url) useTexture.preload(url);
+	return url;
+}
+
 function pickPackArt(entry: SetIndexEntry): string | null {
 	if (entry.packArt.length === 0) return null;
 	const index = Math.floor(Math.random() * entry.packArt.length);
@@ -256,6 +268,15 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				const { phase, selectedSet } = get();
 				if (phase !== "idle" && phase !== "done") return;
 
+				// "Open Another Pack" should feel like reaching into the box
+				// again, so it draws a different one of the set's pack fronts.
+				// Only from `done` though: from `idle` the closed pack is
+				// already on screen and being looked at, and swapping its
+				// artwork at the instant it is tapped would read as a glitch
+				// rather than as a new pack.
+				const rolledArt =
+					phase === "done" ? rollPackArt(selectedSet) : get().packArtUrl;
+
 				const packConfig = config ?? getPackConfig(selectedSet ?? undefined);
 				clearCardTextureCache();
 				const pack = orderForReveal(generatePack(packConfig));
@@ -263,6 +284,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				set(
 					{
 						phase: "tearing",
+						packArtUrl: rolledArt,
 						pack,
 						revealIndex: -1,
 						phaseStartedAt: Date.now(),
@@ -382,9 +404,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				// it already resets pack/phase/revealIndex cleanly below, which is
 				// exactly "discard the pack" — so there is nothing else to guard
 				// here once the UI has confirmed the player wants that.
-				const entry = getSetIndex().find((set) => set.code === setCode);
-				const packArtUrl = entry ? pickPackArt(entry) : null;
-				if (packArtUrl) useTexture.preload(packArtUrl);
+				const packArtUrl = rollPackArt(setCode);
 				// Warm the set's own printing pool ahead of the next openPack()
 				// call, same spirit as the pack-art preload above — see
 				// card-resolver.ts's fabPrintingsCardResolver, which needs this
@@ -429,8 +449,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				if (!selectedSet) {
 					const latest = sets[sets.length - 1];
 					writeStoredSelectedSet(latest.code);
-					const url = pickPackArt(latest);
-					if (url) useTexture.preload(url);
+					const url = rollPackArt(latest.code);
 					loadSetPrintings(latest.code).catch(() => {});
 					loadSetPrices(latest.code).catch(() => {});
 					set(
@@ -449,10 +468,11 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				loadSetPrintings(selectedSet).catch(() => {});
 				loadSetPrices(selectedSet).catch(() => {});
 
-				const entry = sets.find((set) => set.code === selectedSet);
-				const url = entry ? pickPackArt(entry) : null;
-				if (url) useTexture.preload(url);
-				set({ packArtUrl: url }, undefined, "pack-opener/initializeSetArt");
+				set(
+					{ packArtUrl: rollPackArt(selectedSet) },
+					undefined,
+					"pack-opener/initializeSetArt",
+				);
 			},
 
 			flipCard() {
