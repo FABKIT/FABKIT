@@ -295,6 +295,14 @@ interface RawPrinting {
 	 * is SEA001-MV). Optional/nullable defensively: not every printing in
 	 * the upstream data is guaranteed to carry one. */
 	image_url?: string | null;
+	/** Present only on the ~500 booster-set printings that are one face of
+	 * a double-faced card. `other_face_unique_id` addresses the OTHER
+	 * face's printing, which is what backSlugFor() below resolves. */
+	double_sided_card_info?: {
+		other_face_unique_id: string;
+		is_front: boolean;
+		is_DFC: boolean;
+	}[];
 }
 
 interface RawCard {
@@ -407,6 +415,51 @@ interface SetMeta {
  * editions with distinct release dates, e.g. Alpha vs Unlimited). Use the
  * earliest release date, and the logo attached to that same entry, falling
  * back to any entry that does carry a logo. */
+/**
+ * The slug the OTHER face of a double-faced card renders from, or null when
+ * this printing has only one face.
+ *
+ * is_DFC is the whole gate, and it is not a formality. Of the 506
+ * booster-set printings carrying double_sided_card_info, only 148 are
+ * genuinely two faces of one card. The other 358 set is_DFC to false: they
+ * are separate cards that merely share a print sheet, so Welcome to Rathe's
+ * WTR040 "Anothos" lists WTR077 "Katsu", WTR113 "Dorinthea Ironsong" and
+ * WTR225 "Quicken" as related printings. Taking the first entry regardless
+ * would have offered players a flip to a completely unrelated card.
+ *
+ * The slug itself is this printing's OWN front slug plus "_BACK", not the
+ * other face's id. Both faces of a real double-faced card share one
+ * collector number (DTD005 is both sides of Suraya), so using the other
+ * face's id would have returned the front's own slug and shown the same
+ * picture twice. Verified across all 148: the back's filename is always
+ * the front's filename plus that suffix, DTD005 to DTD005_BACK and
+ * DTD005-MV to DTD005-MV_BACK.
+ *
+ * Deriving it from the front slug rather than reading the other printing's
+ * image_url also inherits printingImageUrl's rule for free (see
+ * fab-printings.ts): plain collector id for everything, artSlug only for
+ * Marvel. Reading the other face's own image_url would have pulled in
+ * foil-baked artwork for foil printings, which doubles up with this app's
+ * own foil shader.
+ *
+ * The 148 are worth having: Commons, Rares, Majestics, Legendaries, Fabled
+ * and Marvels, no tokens.
+ */
+const BACK_SUFFIX = "_BACK";
+
+function backSlugFor(raw: RawPrinting, frontSlug: string): string | null {
+	const info = raw.double_sided_card_info?.find((entry) => entry.is_DFC);
+	if (!info?.other_face_unique_id) return null;
+	// Toggle the suffix rather than append it, because a pack can draw
+	// either face. A printing whose own artwork is already the back (the
+	// Marvel back-face printings, whose slug ends in the suffix) has the
+	// FRONT as its other side; appending blindly produced
+	// "DTD005-MV_BACK_BACK", which is not an image that exists.
+	return frontSlug.endsWith(BACK_SUFFIX)
+		? frontSlug.slice(0, -BACK_SUFFIX.length)
+		: `${frontSlug}${BACK_SUFFIX}`;
+}
+
 function toSetMeta(raw: RawSet): SetMeta {
 	const dated = raw.printings
 		.filter((p): p is RawSetPrinting & { initial_release_date: string } =>
@@ -550,6 +603,14 @@ function buildSetPrintings(
 				types: card.types,
 				artVariations: raw.art_variations ?? [],
 				artSlug: toArtSlug(raw.image_url),
+				// The same slug printingImageUrl() would build for the front,
+				// which is what the back is derived from — see backSlugFor.
+				backSlug: backSlugFor(
+					raw,
+					rarity === "marvel" && toArtSlug(raw.image_url)
+						? (toArtSlug(raw.image_url) as string)
+						: raw.id,
+				),
 			};
 		})
 		.filter((printing): printing is FabPrinting => printing !== null)

@@ -28,6 +28,9 @@ export function CardStack3D() {
 	const phase = usePackOpenerStore((state) => state.phase);
 	const phaseStartedAt = usePackOpenerStore((state) => state.phaseStartedAt);
 	const advanceReveal = usePackOpenerStore((state) => state.advanceReveal);
+	const showingOtherFace = usePackOpenerStore(
+		(state) => state.showingOtherFace,
+	);
 	const reducedMotion = usePrefersReducedMotion();
 	const revealStartedAt = usePackOpenerStore((state) => state.revealStartedAt);
 
@@ -123,8 +126,13 @@ export function CardStack3D() {
 						<LegendaryFireworks tier={celebrationTier} />
 					</>
 				)}
+				{/* Only the ACTIVE card can be turned over. The outgoing card
+				    below is a snapshot of what the player already looked at,
+				    and flipping it mid-slide would be a change they did not
+				    ask for. */}
 				<Card3D
 					card={resolvedCard}
+					showOtherFace={showingOtherFace}
 					onClick={() =>
 						!isRevisiting && phase === "revealing" && advanceReveal()
 					}
