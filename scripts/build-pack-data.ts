@@ -1,4 +1,4 @@
-import { mkdir, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { KNOWN_SETS } from "@fabkit/apps/pack-opener/config/known-sets";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
@@ -440,6 +440,31 @@ function splitOutputSets(
 		productKind,
 		printings: byCode.get(split.code) ?? [],
 	}));
+}
+
+/** Hand-made set logos, for the sets Legend Story Studios' own data has
+ * no logo for (also checked in, not build output). Same idea as
+ * PACK_ART_DIR above: drop a file in, rebuild, done. */
+const SET_LOGO_DIR = join("public", "img", "pack-opener", "logos");
+
+/** The logo to show for one set: a checked-in file if there is one, and
+ * otherwise whatever the card data carries.
+ *
+ * Local wins on purpose. The common case is a set the data has no logo
+ * for at all (Compendium of Rathe, all five GEM Packs), but the same
+ * folder then doubles as the fix for a logo that exists upstream and is
+ * simply wrong or unusable, with no code change needed either way. */
+async function resolveSetLogo(
+	code: string,
+	upstreamLogo: string | null,
+): Promise<string | null> {
+	const local = join(SET_LOGO_DIR, `${code}.webp`);
+	try {
+		await stat(local);
+		return `/img/pack-opener/logos/${code}.webp`;
+	} catch {
+		return upstreamLogo;
+	}
 }
 
 /** A booster-shaped candidate needs at least this many distinct printings
@@ -887,7 +912,7 @@ async function main() {
 			code,
 			name: output.name,
 			releaseDate: output.releaseDate,
-			setLogo: output.setLogo,
+			setLogo: await resolveSetLogo(code, output.setLogo),
 			printingCount: setPrintings.printings.length,
 			productKind: output.productKind,
 			packArt,
