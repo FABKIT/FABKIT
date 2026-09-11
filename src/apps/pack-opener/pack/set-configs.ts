@@ -1404,8 +1404,8 @@ const COMPENDIUM_OF_RATHE: PackConfig = {
 	coldFoilReplaces: "rare-or-super-rare-plus",
 	// Published as 1 per 96 packs.
 	marvelChance: PUBLISHED_RATES.PEN.marvel,
-	// Compendium of Rathe prints no Fabled card at all, so there is nothing for a Fabled roll
-	// to resolve to.
+	// Compendium of Rathe prints no Fabled card at all, so there is
+	// nothing for a Fabled roll to resolve to.
 	fabledChance: 0,
 };
 
