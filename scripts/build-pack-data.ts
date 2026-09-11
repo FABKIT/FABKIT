@@ -9,6 +9,11 @@ import type {
 	FabSetPrintings,
 	FoilTreatment,
 } from "@fabkit/shared/data/fab-printings";
+import {
+	buildCardmarketSnapshot,
+	type CardmarketCatalog,
+	fetchCardmarketCatalog,
+} from "./cardmarket";
 
 /**
  * Builds the pack opener's per-set card and price data from the-fab-cube's
@@ -20,6 +25,9 @@ import type {
  *   public/data/pack-opener/sets/<CODE>.json    one file per included set
  *   public/data/pack-opener/prices/<CODE>.json  one file per set with a
  *                                                resolved tcgcsv group
+ *   public/data/pack-opener/prices-cm/<CODE>.json  the same in euros, from
+ *                                                Cardmarket (see
+ *                                                scripts/cardmarket.ts)
  *   public/data/pack-opener/index.json          set list + metadata
  *
  * This script is safe to run locally any time: `bun run build-pack-data`. A
@@ -867,6 +875,23 @@ async function main() {
 
 	await mkdir(join(OUTPUT_DIR, "sets"), { recursive: true });
 	await mkdir(join(OUTPUT_DIR, "prices"), { recursive: true });
+	await mkdir(join(OUTPUT_DIR, "prices-cm"), { recursive: true });
+
+	// Cardmarket's two daily files, fetched once for every set. A failure
+	// here must not fail the build: euro prices are an addition to the
+	// dollar ones, so losing them for a deploy is a degrade, not a break.
+	console.log("Fetching Cardmarket catalogue...");
+	let cardmarket: CardmarketCatalog | null = null;
+	try {
+		cardmarket = await fetchCardmarketCatalog();
+		console.log(
+			`  Cardmarket catalogue of ${cardmarket.priceByProduct.size} priced products, updated ${cardmarket.sourceUpdatedAt}`,
+		);
+	} catch (error) {
+		console.warn(
+			`  Cardmarket fetch failed (${error instanceof Error ? error.message : error}) — euro prices unavailable this build`,
+		);
+	}
 
 	console.log("Fetching tcgcsv group list...");
 	const groups = await fetchTcgcsv<{ results: TcgcsvGroup[] }>("/groups");
@@ -920,6 +945,9 @@ async function main() {
 
 		const group = resolveGroup(code, output.name, groups.results);
 		let priceLogSuffix = "no prices";
+		// Kept for the Cardmarket build below, which scores candidate
+		// expansions by how well their euros agree with these dollars.
+		let tcgCardPrices: Record<string, number> = {};
 		if (group !== null) {
 			try {
 				const snapshot = await buildSetPriceSnapshot(
@@ -932,6 +960,7 @@ async function main() {
 					JSON.stringify(snapshot),
 					"utf-8",
 				);
+				tcgCardPrices = snapshot.cardPrices;
 				priceLogSuffix = `${Object.keys(snapshot.cardPrices).length} card prices`;
 			} catch (error) {
 				// A price fetch failing must not fail the whole build (or drop a
@@ -944,8 +973,36 @@ async function main() {
 			}
 		}
 
+		// Euro prices. Deliberately after the dollar ones, which it uses to
+		// tell 1st Edition and Unlimited listings apart — see cardmarket.ts's
+		// chooseExpansion.
+		let cardmarketLogSuffix = "";
+		if (cardmarket) {
+			const { snapshot, coverage } = buildCardmarketSnapshot(
+				setPrintings.printings,
+				tcgCardPrices,
+				cardmarket,
+			);
+			await writeFile(
+				join(OUTPUT_DIR, "prices-cm", `${code}.json`),
+				JSON.stringify(snapshot),
+				"utf-8",
+			);
+			const pct =
+				coverage.versions > 0
+					? Math.round((100 * coverage.priced) / coverage.versions)
+					: 0;
+			cardmarketLogSuffix =
+				`, EUR ${coverage.priced}/${coverage.versions} versions (${pct}%` +
+				(coverage.ambiguous > 0 ? `, ${coverage.ambiguous} ambiguous` : "") +
+				(coverage.ratio !== null
+					? `, EUR/USD ${coverage.ratio.toFixed(2)}`
+					: "") +
+				")";
+		}
+
 		console.log(
-			`  ${code}: ${setPrintings.printings.length} printings, ${packArt.length} pack artwork(s), ${priceLogSuffix}`,
+			`  ${code}: ${setPrintings.printings.length} printings, ${packArt.length} pack artwork(s), ${priceLogSuffix}${cardmarketLogSuffix}`,
 		);
 	}
 
