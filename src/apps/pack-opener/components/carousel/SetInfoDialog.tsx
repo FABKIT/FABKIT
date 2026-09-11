@@ -63,6 +63,7 @@ const SLOT_LABEL_KEYS: Record<PackSlotKind, string> = {
 	"generic-common": "dialog.slot.generic-common",
 	"class-common": "dialog.slot.class-common",
 	equipment: "dialog.slot.equipment",
+	promo: "dialog.slot.promo",
 };
 
 /** Reuses the Headless UI Dialog pattern from

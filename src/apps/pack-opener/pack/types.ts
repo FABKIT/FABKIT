@@ -15,7 +15,12 @@ export type PackSlotKind =
 	| "basic-or-wildcard"
 	| "generic-common"
 	| "class-common"
-	| "equipment";
+	| "equipment"
+	/** One promo card, in a product whose every card is a promo — the GEM
+	 * Packs handed out at Armory events. Those have no rarity structure at
+	 * all (every printing is Promo), so what distinguishes their two slots
+	 * is FOILING, not rarity: a regular print and a premium foil. */
+	| "promo";
 
 export interface RarityWeight {
 	rarity: CardRarity;
