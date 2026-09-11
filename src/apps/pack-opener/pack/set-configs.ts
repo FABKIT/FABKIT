@@ -1656,61 +1656,75 @@ const MASTERY_PACK_GUARDIAN: PackConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// GEM Packs (GEM) — the prize support handed out free at Armory events.
-// Configuration from https://fabtcg.com/articles/gem_pack_faq/ :
+// GEM Packs (GEM1 to GEM5) — the prize support handed out free at Armory
+// events. Configuration from https://fabtcg.com/articles/gem_pack_faq/ :
 //   "3 cards per pack: 1 regular print, 1 premium foil (Rainbow Foil, Cold
 //   Foil or Marvel), 1 art card"
 //
-// The odd one out in this file, twice over.
+// FIVE products, one per booster set, each with its own wrapper art and its
+// own card list. the-fab-cube files all of them under one set code, so
+// scripts/build-pack-data.ts cuts them apart by collector number before the
+// app ever sees them (see SET_SPLITS there). Everything below is therefore
+// written once and stamped out per pack.
 //
-// First, it has no rarity structure at all: all 308 printings are Promo.
-// Every other config tells its slots apart by rarity; this one tells them
-// apart by FOILING, which is why it uses the "promo" slot kind and why
-// both its tables hold the single rarity this product prints.
+// The odd ones out in this file, twice over.
 //
-// Second, it deals TWO cards rather than the published three. The art card
-// is not in the-fab-cube's data in any form — all 308 printings are real
-// cards with real types — so there is nothing to draw for that slot.
-// Dealing two real cards and saying so is better than inventing a third or
-// showing a blank, but it does mean this is the one product whose pack
-// size deliberately does not match its published one.
+// First, they have no rarity structure at all: every GEM printing is Promo.
+// Every other config tells its slots apart by rarity; these tell them apart
+// by FOILING, which is why they use the "promo" slot kind and why both
+// tables hold the single rarity this line prints.
 //
-// Marvel is named in the FAQ's premium slot, but this set prints no
+// Second, they deal TWO cards rather than the published three. The art card
+// is not in the-fab-cube's data in any form — every GEM printing is a real
+// card with real types — so there is nothing to draw for that slot. Dealing
+// two real cards and saying so is better than inventing a third or showing
+// a blank, but it does mean these are the only products whose pack size
+// deliberately does not match their published one.
+//
+// Marvel is named in the FAQ's premium slot, but this line prints no
 // Marvel-RARITY card: its Marvel-treatment promos are recorded as Promo
-// rarity with Cold Foil, which the cold-foil roll below already covers.
+// rarity with Cold Foil, which the cold-foil roll already covers.
 // marvelChance stays 0 so nothing draws from an empty pool.
 //
-// Roughly 38% of its printings carry a TCGplayer id, so a GEM card is much
+// Roughly 38% of GEM printings carry a TCGplayer id, so a GEM card is much
 // likelier than a booster card to show no price.
 // ---------------------------------------------------------------------------
 const gemPromoTable = [{ rarity: "promo" as const, weight: 1 }];
 
-const GEM_PACK: PackConfig = {
-	id: "GEM",
-	cardsPerPack: 2,
-	slots: [
-		{ kind: "promo", count: 1, rarityTable: gemPromoTable },
-		{
-			kind: "premium-foil",
-			count: 1,
-			fixedTreatment: "rainbow",
-			rarityTable: gemPromoTable,
-		},
-	],
-	// How often the premium card is Cold Foil instead of Rainbow, as this
-	// set's own Cold-to-Rainbow printing ratio. A population share standing
-	// in for a pull rate LSS does not publish.
-	coldFoilChance:
-		PUBLISHED_RATES.GEM.popCold /
-		(PUBLISHED_RATES.GEM.popCold + PUBLISHED_RATES.GEM.popRainbow),
-	coldFoilReplaces: "premium-foil",
-	// No Marvel-rarity or Fabled printing exists in this product.
-	marvelChance: 0,
-	fabledChance: 0,
-};
+function gemPack(
+	id: string,
+	population: { popCold: number; popRainbow: number },
+): PackConfig {
+	return {
+		id,
+		cardsPerPack: 2,
+		slots: [
+			{ kind: "promo", count: 1, rarityTable: gemPromoTable },
+			{
+				kind: "premium-foil",
+				count: 1,
+				fixedTreatment: "rainbow",
+				rarityTable: gemPromoTable,
+			},
+		],
+		// How often the premium card is Cold Foil instead of Rainbow, as this
+		// pack's own Cold-to-Rainbow printing ratio. A population share
+		// standing in for a pull rate LSS does not publish.
+		coldFoilChance:
+			population.popCold / (population.popCold + population.popRainbow),
+		coldFoilReplaces: "premium-foil",
+		// No Marvel-rarity or Fabled printing exists in this line.
+		marvelChance: 0,
+		fabledChance: 0,
+	};
+}
 
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
-	GEM: GEM_PACK,
+	GEM1: gemPack("GEM1", PUBLISHED_RATES.GEM1),
+	GEM2: gemPack("GEM2", PUBLISHED_RATES.GEM2),
+	GEM3: gemPack("GEM3", PUBLISHED_RATES.GEM3),
+	GEM4: gemPack("GEM4", PUBLISHED_RATES.GEM4),
+	GEM5: gemPack("GEM5", PUBLISHED_RATES.GEM5),
 	MPG: MASTERY_PACK_GUARDIAN,
 	EVR: EVERFEST,
 	UPR: UPRISING,

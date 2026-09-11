@@ -104,7 +104,12 @@ function resolveGroup(
 ): TcgcsvGroup | null {
 	const byAbbreviation = groups.find((g) => g.abbreviation === code);
 	if (byAbbreviation) return byAbbreviation;
-	const byName = groups.find((g) => g.name === setName);
+	// Case-insensitively, because tcgcsv's own naming is not consistent:
+	// its groups read "GEM Pack 1" through "GEM Pack 4" and then "Gem Pack
+	// 5". An exact match would silently leave that one product with no
+	// prices at all, which is the quietest possible way for this to break.
+	const wanted = setName.toLowerCase();
+	const byName = groups.find((g) => g.name.toLowerCase() === wanted);
 	if (byName) return byName;
 	console.warn(
 		`  ${code}: no tcgcsv group matched by abbreviation or exact name ("${setName}") — prices unavailable`,
@@ -262,6 +267,161 @@ async function resolvePackArt(code: string): Promise<string[]> {
 		urls.push(`/img/pack-opener/packs/${code}/${expected}.webp`);
 	}
 	return urls;
+}
+
+/** Upstream sets that are really SEVERAL products sharing one set code,
+ * and how to cut them apart.
+ *
+ * the-fab-cube files every GEM Pack card under the single set "GEM", but
+ * GEM Packs ship one per booster set, each with its own wrapper art, its
+ * own card list and its own TCGplayer group. Treating them as one pool
+ * would deal a Pack 1 card out of a Pack 5 wrapper, so each becomes its
+ * own app-level set instead, cut by collector number.
+ *
+ * The ranges come from LSS's own Card Vault API, which lists each pack's
+ * contents exactly:
+ *   https://api.cardvault.fabtcg.com/carddb/api/v1/product-cards/gem-pack-1/
+ * They are hardcoded rather than fetched at build time on purpose. A new
+ * GEM Pack needs a wrapper-art folder and a pack configuration before it
+ * can ship anyway, so fetching would save none of the work that actually
+ * blocks one, and it would put a third external service in front of a
+ * build that already gates CI. What stands in for the fetch is the check
+ * in splitOutputSets() below: the build fails loudly the moment upstream
+ * has printings this table does not account for.
+ *
+ * Names must match the TCGplayer group name, since that is how prices are
+ * resolved — see resolveGroup above. */
+const SET_SPLITS: Record<
+	string,
+	ReadonlyArray<{
+		code: string;
+		name: string;
+		/** ISO, to match the release dates the-fab-cube carries for whole
+		 * sets, since both shapes end up in the same index. */
+		releaseDate: string;
+		/** Inclusive collector-number range, e.g. GEM001 to GEM032. */
+		from: number;
+		to: number;
+	}>
+> = {
+	GEM: [
+		{
+			code: "GEM1",
+			name: "GEM Pack 1",
+			releaseDate: "2025-02-01T00:00:00.000Z",
+			from: 1,
+			to: 32,
+		},
+		{
+			code: "GEM2",
+			name: "GEM Pack 2",
+			releaseDate: "2025-06-06T00:00:00.000Z",
+			from: 33,
+			to: 68,
+		},
+		{
+			code: "GEM3",
+			name: "GEM Pack 3",
+			releaseDate: "2025-10-01T00:00:00.000Z",
+			from: 69,
+			to: 104,
+		},
+		{
+			code: "GEM4",
+			name: "GEM Pack 4",
+			releaseDate: "2026-02-13T00:00:00.000Z",
+			from: 105,
+			to: 140,
+		},
+		{
+			code: "GEM5",
+			name: "GEM Pack 5",
+			releaseDate: "2026-06-05T00:00:00.000Z",
+			from: 141,
+			to: 183,
+		},
+	],
+};
+
+/** One set as the APP sees it, which is usually one upstream set but can
+ * be a slice of one (see SET_SPLITS). */
+interface OutputSet {
+	code: string;
+	name: string;
+	releaseDate: string | null;
+	setLogo: string | null;
+	productKind: "booster-set" | "supplemental";
+	printings: RawPrinting[];
+}
+
+/** The collector number inside a printing id ("GEM012" -> 12), or null
+ * when the id is not shaped that way. */
+function collectorNumber(printingId: string, setCode: string): number | null {
+	const match = printingId.match(new RegExp(`^${setCode}(\\d+)`));
+	return match ? Number(match[1]) : null;
+}
+
+/** Expands one included upstream set into the app-level sets it produces:
+ * normally exactly itself, but a set listed in SET_SPLITS becomes several.
+ *
+ * Throws when a printing falls outside every range, which is how a newly
+ * released GEM Pack announces itself: the fix is one more row in
+ * SET_SPLITS, a wrapper-art folder, and a pack configuration. */
+function splitOutputSets(
+	code: string,
+	meta: SetMeta,
+	rawPrintings: RawPrinting[],
+	productKind: "booster-set" | "supplemental",
+): OutputSet[] {
+	const splits = SET_SPLITS[code];
+	if (!splits) {
+		return [
+			{
+				code,
+				name: meta.name,
+				releaseDate: meta.releaseDate,
+				setLogo: meta.setLogo,
+				productKind,
+				printings: rawPrintings,
+			},
+		];
+	}
+
+	const unaccounted: string[] = [];
+	const byCode = new Map(splits.map((s) => [s.code, [] as RawPrinting[]]));
+	for (const printing of rawPrintings) {
+		const number = collectorNumber(printing.id, code);
+		const split =
+			number === null
+				? undefined
+				: splits.find((s) => number >= s.from && number <= s.to);
+		if (!split) {
+			unaccounted.push(printing.id);
+			continue;
+		}
+		byCode.get(split.code)?.push(printing);
+	}
+
+	if (unaccounted.length > 0) {
+		const sample = [...new Set(unaccounted)].sort().slice(0, 10).join(", ");
+		throw new Error(
+			`${unaccounted.length} printing(s) in set "${code}" fall outside every ` +
+				`range in SET_SPLITS (e.g. ${sample}).\n\n` +
+				"This normally means a new product in that line has been released. " +
+				"Add its range to SET_SPLITS in scripts/build-pack-data.ts, add a " +
+				"pack configuration in src/apps/pack-opener/pack/set-configs.ts, and " +
+				"create public/img/pack-opener/packs/<CODE>/ for its wrapper art.",
+		);
+	}
+
+	return splits.map((split) => ({
+		code: split.code,
+		name: split.name,
+		releaseDate: split.releaseDate,
+		setLogo: meta.setLogo,
+		productKind,
+		printings: byCode.get(split.code) ?? [],
+	}));
 }
 
 /** A booster-shaped candidate needs at least this many distinct printings
@@ -678,15 +838,25 @@ async function main() {
 		packArt: string[];
 	}> = [];
 
-	for (const code of includedCodes) {
-		const rawPrintings = printingsBySetCode.get(code) ?? [];
+	const outputSets = includedCodes.flatMap((code) => {
 		const meta = setMetaByCode.get(code);
 		if (!meta) {
 			throw new Error(`No set metadata found for included code "${code}"`);
 		}
+		return splitOutputSets(
+			code,
+			meta,
+			printingsBySetCode.get(code) ?? [],
+			KNOWN_SETS.find((decision) => decision.code === code)?.kind ??
+				"booster-set",
+		);
+	});
+
+	for (const output of outputSets) {
+		const code = output.code;
 		const setPrintings = buildSetPrintings(
 			code,
-			rawPrintings,
+			output.printings,
 			cardByPrintingId,
 		);
 		await writeFile(
@@ -697,17 +867,15 @@ async function main() {
 		const packArt = await resolvePackArt(code);
 		indexEntries.push({
 			code,
-			name: meta.name,
-			releaseDate: meta.releaseDate,
-			setLogo: meta.setLogo,
+			name: output.name,
+			releaseDate: output.releaseDate,
+			setLogo: output.setLogo,
 			printingCount: setPrintings.printings.length,
-			productKind:
-				KNOWN_SETS.find((decision) => decision.code === code)?.kind ??
-				"booster-set",
+			productKind: output.productKind,
 			packArt,
 		});
 
-		const group = resolveGroup(code, meta.name, groups.results);
+		const group = resolveGroup(code, output.name, groups.results);
 		let priceLogSuffix = "no prices";
 		if (group !== null) {
 			try {
@@ -738,17 +906,25 @@ async function main() {
 		);
 	}
 
-	indexEntries.sort((a, b) =>
-		// Mainline booster sets first, in release order, then the
-		// supplementary products in theirs. Release order alone put Mastery
-		// Pack Guardian between High Seas and Super Slam, where a 13-card
-		// single-class product reads as just another booster set.
-		a.productKind === b.productKind
-			? (a.releaseDate ?? "").localeCompare(b.releaseDate ?? "")
-			: a.productKind === "booster-set"
-				? -1
-				: 1,
-	);
+	indexEntries.sort((a, b) => {
+		// Mainline booster sets first, then the supplementary products.
+		// Release order alone put Mastery Pack Guardian between High Seas
+		// and Super Slam, where a 13-card single-class product reads as just
+		// another booster set.
+		if (a.productKind !== b.productKind) {
+			return a.productKind === "booster-set" ? -1 : 1;
+		}
+		// Booster sets go in release order, the way people talk about them.
+		if (a.productKind === "booster-set") {
+			return (a.releaseDate ?? "").localeCompare(b.releaseDate ?? "");
+		}
+		// The supplementary products go by NAME instead, so that a product
+		// LINE stays together: GEM Packs 1 to 5 ship alongside the booster
+		// sets, so release order would deal them out one at a time between
+		// the Mastery Packs. Numeric collation so GEM Pack 10 lands after
+		// GEM Pack 9 rather than after GEM Pack 1.
+		return a.name.localeCompare(b.name, "en", { numeric: true });
+	});
 
 	await writeFile(
 		join(OUTPUT_DIR, "index.json"),

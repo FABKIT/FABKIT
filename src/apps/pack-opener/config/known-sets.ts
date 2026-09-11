@@ -159,7 +159,12 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"card. Every printing is Promo rarity, so unlike every other product " +
 			"here its slots are told apart by FOILING rather than by rarity. The " +
 			"art card is not in the-fab-cube's data at all, so a pack deals the " +
-			"two real cards; see the GEM entry in pack/set-configs.ts.",
+			"two real cards; see the GEM entries in pack/set-configs.ts.\n\n" +
+			"This one decision ships FIVE sets. A new GEM Pack comes out " +
+			"alongside each booster set, each with its own wrapper, card list " +
+			"and TCGplayer group, but upstream files them all under the single " +
+			"set code GEM. scripts/build-pack-data.ts cuts them back apart by " +
+			"collector number into GEM1 through GEM5 — see SET_SPLITS there.",
 	},
 	{
 		code: "TCC",
@@ -187,26 +192,28 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"Mastery Pack Warrior — the same kind of product as Mastery Pack " +
 			"Guardian above, and its page publishes the same shape of " +
 			"configuration, so it belongs here in principle. Held back on DATA, " +
-			"not on principle: its page states 156 cards in the set but " +
-			"the-fab-cube lists only 62 printings for it, and not one of them " +
-			"carries a TCGplayer product id, so a pack would deal from a third of " +
-			"the set and every card would read as unpriced. It released on 7 " +
-			"August 2026; flip this to include once upstream has caught up.",
+			"not on principle, and the gap is not a near miss. Its page states " +
+			"156 cards; the-fab-cube carries 62 printings covering 34 distinct " +
+			"cards, and by rarity those are 3 Common, 8 Rare, 7 Majestic, 3 " +
+			"Legendary, 6 Basic and 5 Marvel. A pack deals 8 Commons, so every " +
+			"pack would show the same three Commons over and over. On top of " +
+			"that not one printing carries a TCGplayer product id, so every card " +
+			"would read as unpriced. Released 7 August 2026; re-check upstream " +
+			"and flip this to include once the Common pool can fill a pack.",
 	},
 	{
 		code: "TNP",
 		decision: "exclude",
 		reason:
-			"Tournament Pack — wanted, but there is nothing published to build " +
-			"it from. Unlike GEM Packs, which have a configuration on " +
-			"fabtcg.com/articles/gem_pack_faq/, this product has no page on " +
-			"fabtcg.com at all: /products/product/tournament-pack/ is a 404, it " +
-			"is absent from the product listing, and no card count or contents " +
-			"breakdown could be found anywhere. Its data is thin to match: 30 " +
-			"printings, all Promo rarity and all Cold Foil, none carrying a " +
-			"TCGplayer id, so every card would show no price. Flip this the " +
-			"moment LSS publishes a configuration, or if the product owner wants " +
-			"a stated-and-flagged guess instead.",
+			"Tournament Pack — wanted, but not out yet. LSS's own Card Vault " +
+			"API gives its release date as 12 February 2027, which explains " +
+			"everything else about it: fabtcg.com has no product page for it " +
+			"(/products/product/tournament-pack/ is a 404), there is no " +
+			"published configuration to build a pack from, and the 30 printings " +
+			"upstream carries are all Promo rarity, all Cold Foil, and none " +
+			"carry a TCGplayer id, so every card would show no price. Same " +
+			"shape as the Usurp the Shadow Throne entry below: revisit when it " +
+			"ships and LSS publishes a configuration.",
 	},
 	{
 		code: "WIN",

@@ -300,22 +300,24 @@ export const PUBLISHED_RATES = {
 	},
 
 	// -----------------------------------------------------------------
-	// GEM Packs. PUBLISHED configuration, from the GEM Pack FAQ:
+	// GEM Packs 1 to 5. PUBLISHED configuration, from the GEM Pack FAQ,
+	// and the same for every pack in the line:
 	//   3 cards per pack: 1 regular print, 1 premium foil (Rainbow Foil,
 	//   Cold Foil or Marvel), 1 art card.
-	// The only product here with no rarity structure whatsoever: every one
-	// of its 308 printings is Promo. So its slots are told apart by
-	// FOILING, and the only number to tune is how often the premium card
-	// is Cold Foil rather than Rainbow.
+	// The only products here with no rarity structure whatsoever: every
+	// GEM printing is Promo. So their slots are told apart by FOILING, and
+	// the only number to tune is how often the premium card is Cold Foil
+	// rather than Rainbow.
 	//
-	// POPULATION: LSS publishes no split for that, and the set prints 139
-	// Rainbow Foil against 44 Cold Foil, so Cold takes 44 of those 183.
-	// That is a card-population share, not a pull rate, and it is the best
-	// available here.
-	GEM: {
-		popRainbow: 139,
-		popCold: 44,
-	},
+	// POPULATION: LSS publishes no split for that, so each pack uses its
+	// OWN Cold-to-Rainbow printing count. A card-population share standing
+	// in for a pull rate, which is the best available here, but at least
+	// it is each product's own share rather than the whole line's.
+	GEM1: { popRainbow: 22, popCold: 10 },
+	GEM2: { popRainbow: 26, popCold: 9 },
+	GEM3: { popRainbow: 28, popCold: 8 },
+	GEM4: { popRainbow: 28, popCold: 8 },
+	GEM5: { popRainbow: 35, popCold: 9 },
 
 	// -----------------------------------------------------------------
 	// Compendium of Rathe. PUBLISHED: Legendary 1 per 140, Majestic
