@@ -21,7 +21,7 @@ export const CARD_HEIGHT = CARD_WIDTH * (628 / 450);
  * offline, and it removes a third-party dependency from a core piece of
  * UI. Preloaded by the route loader (src/routes/pack-opener.tsx) so it's
  * normally already cached by the time any real card needs it as a stand-in
- * — see CardBackFace below, RealCardFace's only consumer of it. */
+ * — see RealCardFace, which shows it while a card's art loads. */
 export const CARD_BACK_URL = "/img/pack-opener/card-back.webp";
 
 const MAX_TILT_RAD = (CARD_TILT_MAX_DEG * Math.PI) / 180;
@@ -109,32 +109,6 @@ function CardFaceMaterial({
 	);
 }
 
-/** Stand-in shown while a real card's own image is still loading — see the
- * execution plan, section 5, fix 3: staggering the pack's texture preload
- * (stores/pack-opener.ts) makes hitting this state a real possibility now,
- * not a rare edge case, so it needs to look intentional rather than
- * leaving the card blank. A face-down card waiting to be turned over is
- * exactly the right metaphor. Uses useSafeTexture rather than drei's
- * Suspense-based useTexture for the same reason RealCardFace does: this
- * renders INSIDE another still-loading branch, so suspending here would
- * escalate to the shared Suspense boundary in PackOpenerCanvas.tsx and
- * blank the whole scene, defeating the point. In the rare case this local
- * asset hasn't loaded yet either, it just renders nothing for a moment —
- * CARD_BACK_URL is preloaded by the route loader well ahead of any pack
- * being opened, so this should be instant in practice. */
-function CardBackFace({ alwaysOnTop }: { alwaysOnTop: boolean }) {
-	const state = useSafeTexture(CARD_BACK_URL);
-	if (state.status !== "loaded") return null;
-	return (
-		<meshBasicMaterial
-			map={state.texture}
-			alphaTest={0.5}
-			depthTest={!alwaysOnTop}
-			depthWrite={!alwaysOnTop}
-		/>
-	);
-}
-
 /** A real FAB card's own image already is the full rendered card face — no
  * canvas frame-drawing needed, just load it as a texture (preloaded ahead
  * of time by the store when a pack opens, see stores/pack-opener.ts, so
@@ -164,6 +138,10 @@ function RealCardFace({
 	alwaysOnTop: boolean;
 }) {
 	const state = useSafeTexture(imageUrl);
+	// The stand-in shown while the real art loads. Loaded here rather than
+	// in a separate component on purpose — see below.
+	const placeholder = useSafeTexture(CARD_BACK_URL);
+
 	if (state.status === "error") {
 		if (fallbackImageUrl) {
 			return (
@@ -183,12 +161,45 @@ function RealCardFace({
 			/>
 		);
 	}
-	if (state.status === "loading") {
-		return <CardBackFace alwaysOnTop={alwaysOnTop} />;
-	}
+
+	/**
+	 * ONE material element, whose texture changes. Never two alternatives
+	 * swapped for each other.
+	 *
+	 * This used to return a separate <CardBackFace> component while
+	 * loading and <CardFaceMaterial> once loaded. Both of those render a
+	 * material, so React saw two different component types in the same
+	 * child position and did an unmount-plus-mount rather than a prop
+	 * update. A material is attached to its parent mesh imperatively
+	 * (r3f's `attach`, which also restores the previous material on
+	 * unmount), and across that swap the mesh kept the OLD material: the
+	 * card back stayed on screen permanently, even though the real
+	 * texture had downloaded and the component had re-rendered.
+	 *
+	 * Measured, not theorised: on a fresh page, turning over a
+	 * double-faced card fetched the back image in 233ms and then showed
+	 * the card-back stand-in indefinitely — still there 20 seconds later.
+	 * Turning to the front and back again fixed it, because by then the
+	 * texture was cached and the loading branch never ran. That is exactly
+	 * the bug report.
+	 *
+	 * `treatment` deliberately reads from the card, not from whether the
+	 * art has arrived, so the material TYPE (plain vs. the foil shader,
+	 * see CardFaceMaterial) is fixed for the life of a card and the
+	 * arriving texture is only ever a prop change.
+	 */
+	const texture =
+		state.status === "loaded"
+			? state.texture
+			: placeholder.status === "loaded"
+				? placeholder.texture
+				: null;
+	// Only before the locally-bundled card back has itself loaded, which
+	// the route loader warms long before any pack is opened.
+	if (texture === null) return null;
 	return (
 		<CardFaceMaterial
-			texture={state.texture}
+			texture={texture}
 			treatment={card.treatment}
 			isMarvel={card.rarity === "marvel"}
 			lightDirRef={lightDirRef}

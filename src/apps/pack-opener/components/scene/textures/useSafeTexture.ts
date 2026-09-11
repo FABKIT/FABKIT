@@ -47,17 +47,23 @@ export function useSafeTexture(url: string): SafeTextureState {
 		if (resolveCached(url).status !== "loading") return;
 
 		let cancelled = false;
+		// The result is cached even when this effect has been cleaned up.
+		// `cancelled` only suppresses the re-render, which would be on an
+		// unmounted component; throwing away a download that already
+		// finished just means the next card to ask for it pays for it
+		// again. React's StrictMode makes that the common case in
+		// development, since it runs every effect twice.
 		loader.load(
 			url,
 			(texture) => {
-				if (cancelled) return;
 				textureCache.set(url, texture);
+				if (cancelled) return;
 				onLoaded();
 			},
 			undefined,
 			() => {
-				if (cancelled) return;
 				failedUrls.add(url);
+				if (cancelled) return;
 				onLoaded();
 			},
 		);
