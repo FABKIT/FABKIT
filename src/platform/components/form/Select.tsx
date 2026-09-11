@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 /**
  * Select Dropdown Component
  *
@@ -62,6 +63,18 @@ export interface SelectOption<T extends string> {
 
 	/** Small trailing pill, for marking an option's provenance (e.g. "custom"). */
 	badge?: string;
+
+	/**
+	 * Renders a small non-selectable heading directly ABOVE this option,
+	 * turning a flat list into labelled runs. Set it on the first option of
+	 * each run and leave it off everywhere else.
+	 *
+	 * Deliberately a property of the option rather than a separate "groups"
+	 * prop: every existing caller passes a flat array and keeps working
+	 * untouched, and a caller that wants headings does not have to
+	 * restructure its data to get them.
+	 */
+	sectionLabel?: string;
 }
 
 /**
@@ -185,43 +198,57 @@ export default function Select<T extends string>({
 						const isAction = option.variant === "action";
 						const Icon = option.icon;
 						return (
-							<ListboxOption
-								key={option.value}
-								value={option.value}
-								className={
-									isAction
-										? "relative flex items-center gap-2 mb-1 px-3 py-2 cursor-pointer select-none border-b border-border-primary bg-primary/10 text-primary font-semibold leading-snug data-focus:bg-primary/20 transition-colors"
-										: "relative px-3 py-2 cursor-pointer select-none text-body data-focus:bg-surface-muted data-selected:bg-primary/5 transition-colors"
-								}
-							>
-								{({ selected }) =>
-									isAction ? (
-										<>
-											{Icon && <Icon className="w-4 h-4 shrink-0" />}
-											<span>{option.label}</span>
-										</>
-									) : (
-										<>
-											<span
-												className={selected ? "font-medium" : "font-normal"}
-											>
-												{option.label}
-											</span>
-											{option.badge && (
-												<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
-													{option.badge}
+							<Fragment key={`${option.value}-group`}>
+								{option.sectionLabel && (
+									// Not a ListboxOption: a heading must not be
+									// selectable or sit in the keyboard order.
+									// aria-hidden because the options below it
+									// already carry their own accessible names.
+									<div
+										aria-hidden="true"
+										className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-subtle"
+									>
+										{option.sectionLabel}
+									</div>
+								)}
+								<ListboxOption
+									key={option.value}
+									value={option.value}
+									className={
+										isAction
+											? "relative flex items-center gap-2 mb-1 px-3 py-2 cursor-pointer select-none border-b border-border-primary bg-primary/10 text-primary font-semibold leading-snug data-focus:bg-primary/20 transition-colors"
+											: "relative px-3 py-2 cursor-pointer select-none text-body data-focus:bg-surface-muted data-selected:bg-primary/5 transition-colors"
+									}
+								>
+									{({ selected }) =>
+										isAction ? (
+											<>
+												{Icon && <Icon className="w-4 h-4 shrink-0" />}
+												<span>{option.label}</span>
+											</>
+										) : (
+											<>
+												<span
+													className={selected ? "font-medium" : "font-normal"}
+												>
+													{option.label}
 												</span>
-											)}
-											{selected && (
-												<Check
-													className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary"
-													strokeWidth={2.5}
-												/>
-											)}
-										</>
-									)
-								}
-							</ListboxOption>
+												{option.badge && (
+													<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
+														{option.badge}
+													</span>
+												)}
+												{selected && (
+													<Check
+														className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary"
+														strokeWidth={2.5}
+													/>
+												)}
+											</>
+										)
+									}
+								</ListboxOption>
+							</Fragment>
 						);
 					})}
 				</ListboxOptions>

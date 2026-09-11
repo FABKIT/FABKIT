@@ -228,6 +228,12 @@ export interface SetIndexEntry {
 	 * fallback (see SetCarousel.tsx). */
 	setLogo: string | null;
 	printingCount: number;
+	/** Whether this is a mainline booster set or a supplementary sealed
+	 * product (a Mastery Pack, an event prize pack). Decided in the pack
+	 * opener's config/known-sets.ts and written into the index at build
+	 * time; the set picker groups on it rather than listing everything in
+	 * one undifferentiated chronological run. */
+	productKind: "booster-set" | "supplemental";
 	/** URLs of this set's uploaded 3D pack-front artwork
 	 * (public/img/pack-opener/packs/<CODE>/1.webp, 2.webp, ...), in upload
 	 * order — see the execution plan, section 7.1. Empty until the product
