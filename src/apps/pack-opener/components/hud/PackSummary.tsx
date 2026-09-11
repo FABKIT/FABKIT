@@ -32,7 +32,9 @@ export function PackSummary() {
 	const openedPacksThisSession = usePackOpenerStore(
 		(state) => state.openedPacksThisSession,
 	);
-	const openPack = usePackOpenerStore((state) => state.openPack);
+	const readyAnotherPack = usePackOpenerStore(
+		(state) => state.readyAnotherPack,
+	);
 	const revisitCard = usePackOpenerStore((state) => state.revisitCard);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
@@ -336,7 +338,7 @@ export function PackSummary() {
 				<div className="flex w-full shrink-0 justify-center gap-2 md:w-auto">
 					<button
 						type="button"
-						onClick={() => openPack()}
+						onClick={() => readyAnotherPack()}
 						className="min-w-0 flex-1 truncate rounded-full bg-heading px-4 py-2.5 text-sm font-semibold text-surface shadow-lg transition hover:opacity-90 md:flex-none md:px-6 md:text-base"
 					>
 						{t("page.open_another")}

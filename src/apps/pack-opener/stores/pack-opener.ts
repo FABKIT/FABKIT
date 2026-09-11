@@ -236,6 +236,18 @@ export interface PackOpenerActions {
 	 * another side. No-ops for everything else, so the caller does not have
 	 * to check first. */
 	flipCard(): void;
+	/** Clears a finished pack away and brings out the next closed one, in
+	 * a fresh one of the set's pack fronts, WITHOUT opening it.
+	 *
+	 * This is what "Open Another Pack" does now. It used to call openPack()
+	 * directly, which tore the new pack open on its own the moment the
+	 * button was pressed. Opening a booster is the thing the player came to
+	 * do, and it was happening to them rather than being done by them; it
+	 * also meant the new pack's artwork was only ever glimpsed for the
+	 * fraction of a second before the tear started. Now the pack is put in
+	 * front of them closed and waits to be tapped, exactly as it does on a
+	 * first visit. */
+	readyAnotherPack(): void;
 }
 
 const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
@@ -517,6 +529,28 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					{ showingOtherFace: !get().showingOtherFace },
 					undefined,
 					"pack-opener/flipCard",
+				);
+			},
+
+			readyAnotherPack() {
+				if (get().phase !== "done") return;
+				set(
+					{
+						phase: "idle",
+						// Rolled HERE rather than at the tap, so the player sees
+						// which pack front they are about to open. openPack()
+						// deliberately keeps whatever art is on screen when it
+						// starts from idle, so the two do not fight.
+						packArtUrl: rollPackArt(get().selectedSet),
+						pack: null,
+						revealIndex: -1,
+						revisitIndex: null,
+						showingOtherFace: false,
+						phaseStartedAt: Date.now(),
+						revealStartedAt: null,
+					},
+					undefined,
+					"pack-opener/readyAnotherPack",
 				);
 			},
 
