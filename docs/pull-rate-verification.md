@@ -24,25 +24,27 @@ a set prints at a rarity rather than by how often that rarity is inserted.
 High Seas was the extreme case: a Marvel every 2 packs against a published 1
 per 60.
 
-Two sets are still unverified: **Compendium of Rathe (PEN)** and **Omens of
-the Third Age (OMN)**. Their pages render the breakdown behind JavaScript
-tabs rather than in the page text, so the scrape never captured them and
-their configs are untouched, still derived from product-page slot lists.
+All twenty sets are covered. Compendium of Rathe and Omens of the Third Age
+came last: their pages render the breakdown behind JavaScript tabs rather
+than in the page text, so the scrape never captured them and the product
+owner read both off the live pages by hand. Their figures are recorded below
+with the rest.
 
 ## What is published and what is not
 
 Where a page prints "1 per ??? packs", there is no number to use and none was
 invented.
 
-- **Fabled is unpublished on every set.** None of the rewritten configs
-  draws it, so a set's one Fabled card is not pullable there. That is
-  deliberate. Omens of the Third Age is the exception and still draws it at
-  a population weight, because that set was never verified (see above).
-- **Marvel is published for exactly three sets**: High Seas (1 per 60), Part
-  the Mistveil (1 per 100), Heavy Hitters (1 per 192). Sets whose page prints
-  "1 per ??? packs" use `ESTIMATED_MARVEL_CHANCE`, a documented estimate at 1
-  per 100, which is the middle of those three. History Pack 1 stays at zero:
-  its Marvels are Black Label product, not boosters.
+- **Fabled is unpublished on every set**, so its rate is not sourced. It is
+  set at half the set's Marvel rate on the product owner's instruction, so
+  that a set's Fabled card stays pullable rather than being unreachable.
+- **Marvel is published for eight sets**: High Seas 1 per 60, Dynasty and
+  Compendium of Rathe 1 per 96, Part the Mistveil and Dusk till Dawn 1 per
+  100, Uprising 1 per 110, Heavy Hitters 1 per 192, Outsiders 1 per 390.
+  Bright Lights, The Hunted, Rosetta, Omens and Super Slam have real Marvel
+  printings but no published rate, and use `ESTIMATED_MARVEL_CHANCE`, a
+  flagged estimate at 1 per 100, the median of the eight. History Pack 1
+  stays at zero: its Marvels are Black Label product, not boosters.
 - **Super Slam publishes no base Majestic rate**, only its Premium Foil
   slot's 1 per 22. Its Majestic total therefore comes from that plus its
   published Set (1 per 8) and Expansion (1 per 6) content, which is Majestic
@@ -380,3 +382,47 @@ Source: https://fabtcg.com/collectors-centre/super-slam/
 Not captured. Both pages render their breakdown behind JavaScript tabs
 ("ESTIMATED RARITY BREAKDOWN - EN") rather than in the page text. They need a
 manual visit.
+
+### PEN : Compendium of Rathe
+Source: https://fabtcg.com/collectors-centre/compendium-of-rathe/ , read off
+the live page by hand (JavaScript tabs).
+```
+8 Legendary (1 per 140 packs)
+59 Majestic (1 per 3.15 packs)
+124 Rare (2.55 per pack)
+142 Common (5 per pack)
+1 Premium Foil (1 per pack)
+    30 Majestic (1 per 24 packs)
+    59 Rare (5 per 24 packs)
+    140 Common (18 per 24 packs)
+Cold Foil (1 per 8 packs)
+    21 Majestic
+    60 Rare
+23 Marvel (1 per 96 packs)
+```
+
+### OMN : Omens of the Third Age
+Source: https://fabtcg.com/collectors-centre/omens-of-the-third-age/ , read
+off the live page by hand (JavaScript tabs).
+```
+1 Fabled
+5 Legendary
+37 Majestic
+    15 Set (1 per 8 packs)
+    22 Expansion (1 per 7 packs)
+60 Rare (1.88 per pack)
+134 Common (11 per pack)
+14 Basic (1.8 per pack)
+1 Premium Foil (1 per pack)
+    1 Fabled (1 per ??? packs)
+    5 Legendary (1 per 96 packs)
+    14 Majestic (1 per 42 packs)
+    59 Rare (5.5 per 24 packs)
+    105 Common (18 per 24 packs)
+Cold Foil (1 per 24 packs)
+    1 Fabled
+    5 Legendary
+    20 Majestic
+    12 Common
+    12 Marvel
+```

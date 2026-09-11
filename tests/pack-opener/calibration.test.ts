@@ -182,6 +182,29 @@ describe("frequency calibration", () => {
 		expectRate("OUT", "marvel", 1 / 390);
 	});
 
+	// Compendium of Rathe. Its Collectors Centre breakdown renders behind
+	// JavaScript tabs and was read off the live page by hand rather than
+	// scraped, which is why this set arrived after the rest.
+	it("Compendium of Rathe matches its published rates", () => {
+		expectRate("PEN", "common", 5 + 18 / 24);
+		expectRate("PEN", "rare", 2.55 + 5 / 24);
+		expectRate("PEN", "majestic", 1 / 3.15 + 1 / 24);
+		expectRate("PEN", "legendary", 1 / 140);
+		expectRate("PEN", "marvel", 1 / 96);
+	});
+
+	// Omens of the Third Age, same provenance. Majestic here is the sum of
+	// the two published expansion-content rates (Set 1 per 8, Expansion
+	// 1 per 7) plus the premium slot's 1 per 42: this set publishes no
+	// standalone Majestic rate of its own.
+	it("Omens of the Third Age matches its published rates", () => {
+		expectRate("OMN", "common", 11 + 18 / 24);
+		expectRate("OMN", "rare", 1.88 + 5.5 / 24);
+		expectRate("OMN", "majestic", 1 / 8 + 1 / 7 + 1 / 42);
+		expectRate("OMN", "legendary", 1 / 96);
+		expectRate("OMN", "basic", 1.8);
+	});
+
 	// Super Slam. Majestic is not asserted: its base breakdown lists 42
 	// Majestics with no rate at all, and the only published Majestic rate
 	// is the Premium Foil slot's 1 per 22. The set's expansion-slot content
