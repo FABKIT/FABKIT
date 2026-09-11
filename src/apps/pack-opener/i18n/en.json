@@ -73,7 +73,8 @@
 			"basic-or-wildcard": "Basic or Wildcard",
 			"generic-common": "Generic Common",
 			"class-common": "Class Common",
-			"equipment": "Equipment"
+			"equipment": "Equipment",
+			"promo": "Promo card"
 		}
 	},
 	"stats": {

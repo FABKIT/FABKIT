@@ -300,6 +300,24 @@ export const PUBLISHED_RATES = {
 	},
 
 	// -----------------------------------------------------------------
+	// GEM Packs. PUBLISHED configuration, from the GEM Pack FAQ:
+	//   3 cards per pack: 1 regular print, 1 premium foil (Rainbow Foil,
+	//   Cold Foil or Marvel), 1 art card.
+	// The only product here with no rarity structure whatsoever: every one
+	// of its 308 printings is Promo. So its slots are told apart by
+	// FOILING, and the only number to tune is how often the premium card
+	// is Cold Foil rather than Rainbow.
+	//
+	// POPULATION: LSS publishes no split for that, and the set prints 139
+	// Rainbow Foil against 44 Cold Foil, so Cold takes 44 of those 183.
+	// That is a card-population share, not a pull rate, and it is the best
+	// available here.
+	GEM: {
+		popRainbow: 139,
+		popCold: 44,
+	},
+
+	// -----------------------------------------------------------------
 	// Compendium of Rathe. PUBLISHED: Legendary 1 per 140, Majestic
 	// 1 per 3.15, Rare 2.55, Common 5, Marvel 1 per 96, Cold Foil 1 per 8
 	// (the most frequent of any set here), and a premium slot of Majestic

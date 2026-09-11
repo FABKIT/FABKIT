@@ -149,16 +149,17 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 	},
 	{
 		code: "GEM",
-		decision: "exclude",
+		decision: "include",
+		kind: "supplemental",
 		reason:
-			"GEM Packs — free Armory prize support rather than a product anyone " +
-			"buys, and the one candidate here that could not be modelled even if " +
-			"we wanted to. fabtcg.com/articles/gem_pack_faq/ gives the " +
-			"configuration as 3 cards: 1 regular print, 1 premium foil (Rainbow, " +
-			"Cold Foil or Marvel), 1 art card. But every one of its 308 printings " +
-			"is promo rarity, so there is no rarity table to weight, LSS publishes " +
-			"no split for the premium card, only 38% carry a TCGplayer id, and art " +
-			"cards are not in the card data at all. Revisit only if that changes.",
+			"GEM Packs — the free prize support handed out at Armory events. " +
+			"Not sold, but sealed and randomised, and fabtcg.com/articles/" +
+			"gem_pack_faq/ publishes a configuration: 3 cards, being 1 regular " +
+			"print, 1 premium foil (Rainbow Foil, Cold Foil or Marvel) and 1 art " +
+			"card. Every printing is Promo rarity, so unlike every other product " +
+			"here its slots are told apart by FOILING rather than by rarity. The " +
+			"art card is not in the-fab-cube's data at all, so a pack deals the " +
+			"two real cards; see the GEM entry in pack/set-configs.ts.",
 	},
 	{
 		code: "TCC",
@@ -196,10 +197,16 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 		code: "TNP",
 		decision: "exclude",
 		reason:
-			"Tournament Pack — tournament prize support, not a product anyone " +
-			"opens. All 30 of its printings are promo rarity and Cold Foil, with " +
-			"no TCGplayer ids and so no prices, and there is no rarity structure " +
-			"to build a pack out of.",
+			"Tournament Pack — wanted, but there is nothing published to build " +
+			"it from. Unlike GEM Packs, which have a configuration on " +
+			"fabtcg.com/articles/gem_pack_faq/, this product has no page on " +
+			"fabtcg.com at all: /products/product/tournament-pack/ is a 404, it " +
+			"is absent from the product listing, and no card count or contents " +
+			"breakdown could be found anywhere. Its data is thin to match: 30 " +
+			"printings, all Promo rarity and all Cold Foil, none carrying a " +
+			"TCGplayer id, so every card would show no price. Flip this the " +
+			"moment LSS publishes a configuration, or if the product owner wants " +
+			"a stated-and-flagged guess instead.",
 	},
 	{
 		code: "WIN",

@@ -127,7 +127,7 @@ export function RevealCaption() {
 				<span
 					className={price === null ? "text-subtle" : "font-bold text-heading"}
 				>
-					{price === null ? t("summary.price_unavailable") : formatUsd(price)}
+					{price === null ? t("page.price_unavailable") : formatUsd(price)}
 				</span>
 			</p>
 			{/* Reveal-only. Once the pack is done there is nothing left to tap
