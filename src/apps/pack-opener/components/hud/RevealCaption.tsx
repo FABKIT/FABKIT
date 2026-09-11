@@ -1,6 +1,8 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
+import { getCardPrice } from "@fabkit/shared/data/fab-prices";
 import { FlipHorizontal2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -47,6 +49,24 @@ export function RevealCaption() {
 				? activeCardResolver.resolve(drawn, packSetCode ?? undefined)
 				: null,
 		[drawn, packSetCode],
+	);
+
+	/** The same build-time snapshot the summary totals up, read one card
+	 * at a time (see shared/data/fab-prices.ts). Keyed by printing and
+	 * foiling, so the Red of a card and its Yellow are priced separately,
+	 * as are a standard copy and its Rainbow Foil. No price is a real and
+	 * fairly common state — roughly one printing in twenty-five is not in
+	 * the snapshot — so it says so rather than showing a zero. */
+	const price = useMemo(
+		() =>
+			resolved?.tcgplayerProductId && packSetCode
+				? getCardPrice(
+						packSetCode,
+						resolved.tcgplayerProductId,
+						resolved.treatment,
+					)
+				: null,
+		[resolved, packSetCode],
 	);
 
 	if (!resolved || !pack) return null;
@@ -96,6 +116,19 @@ export function RevealCaption() {
 						{t(`page.treatment_name.${resolved.treatment}`)}
 					</span>
 				)}
+				{/* Price rides on the rarity line rather than getting a line of
+				    its own: this block sits in a fixed-height slot owned by
+				    PackOpenerPage, and adding a line would resize the canvas
+				    above it and change the card's size mid-pack. The separator
+				    keeps it from reading as part of the rarity itself. */}
+				<span className="text-subtle" aria-hidden="true">
+					·
+				</span>
+				<span
+					className={price === null ? "text-subtle" : "font-bold text-heading"}
+				>
+					{price === null ? t("summary.price_unavailable") : formatUsd(price)}
+				</span>
 			</p>
 			{/* Reveal-only. Once the pack is done there is nothing left to tap
 			    through, and the summary below carries the count instead. There
