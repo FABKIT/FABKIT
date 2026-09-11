@@ -133,9 +133,23 @@ export function SetCarousel() {
 	const current =
 		currentIndex >= 0 ? sets[currentIndex] : sets[sets.length - 1];
 
-	const dropdownOptions = sets.map((set) => ({
+	// Headings on the first entry of each run, so the list reads as
+	// "Booster sets ... / Other products ..." rather than as one flat
+	// chronological column. The index already orders it that way (see
+	// scripts/build-pack-data.ts), so this only has to notice where the
+	// kind changes. Nothing is hardcoded to a set code: a product's kind
+	// is declared once, in config/known-sets.ts.
+	const dropdownOptions = sets.map((set, index) => ({
 		value: set.code,
 		label: set.name,
+		sectionLabel:
+			index === 0 || sets[index - 1].productKind !== set.productKind
+				? t(
+						set.productKind === "supplemental"
+							? "carousel.group_other_products"
+							: "carousel.group_booster_sets",
+					)
+				: undefined,
 	}));
 
 	return (

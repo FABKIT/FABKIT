@@ -19,9 +19,23 @@
 
 export type KnownSetDecisionKind = "include" | "exclude";
 
+/** What KIND of product a set is, as distinct from whether it ships.
+ *
+ * "booster-set" is a mainline Flesh and Blood booster set: the numbered
+ * releases people draft and buy displays of. "supplemental" is everything
+ * else that still comes in a sealed randomised pack — single-class Mastery
+ * Packs, event prize packs, and so on. They open the same way but they are
+ * not the same thing, and listing them interleaved by release date among
+ * the mainline sets makes the set picker read as one long undifferentiated
+ * list. The pack opener groups on this (see SetCarousel.tsx). */
+export type ProductKind = "booster-set" | "supplemental";
+
 export interface KnownSetDecision {
 	code: string;
 	decision: KnownSetDecisionKind;
+	/** Defaults to "booster-set" when omitted, since most entries here are
+	 * one. Only meaningful on an "include". */
+	kind?: ProductKind;
 	/** Why. Shows up next to the code, so future maintainers don't have to
 	 * re-derive the reasoning from scratch. */
 	reason: string;
@@ -156,6 +170,7 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 	{
 		code: "MPG",
 		decision: "include",
+		kind: "supplemental",
 		reason:
 			"Mastery Pack Guardian — a real booster product, despite what this " +
 			"entry used to say. fabtcg.com/products/product/mastery-pack-guardian/ " +

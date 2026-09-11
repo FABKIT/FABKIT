@@ -674,6 +674,7 @@ async function main() {
 		releaseDate: string | null;
 		setLogo: string | null;
 		printingCount: number;
+		productKind: "booster-set" | "supplemental";
 		packArt: string[];
 	}> = [];
 
@@ -700,6 +701,9 @@ async function main() {
 			releaseDate: meta.releaseDate,
 			setLogo: meta.setLogo,
 			printingCount: setPrintings.printings.length,
+			productKind:
+				KNOWN_SETS.find((decision) => decision.code === code)?.kind ??
+				"booster-set",
 			packArt,
 		});
 
@@ -735,7 +739,15 @@ async function main() {
 	}
 
 	indexEntries.sort((a, b) =>
-		(a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""),
+		// Mainline booster sets first, in release order, then the
+		// supplementary products in theirs. Release order alone put Mastery
+		// Pack Guardian between High Seas and Super Slam, where a 13-card
+		// single-class product reads as just another booster set.
+		a.productKind === b.productKind
+			? (a.releaseDate ?? "").localeCompare(b.releaseDate ?? "")
+			: a.productKind === "booster-set"
+				? -1
+				: 1,
 	);
 
 	await writeFile(
