@@ -16,12 +16,11 @@ packs/WTR/3.webp
 
 A set with several pack arts gets several files, and the opener picks one at
 random each time a pack is opened. A set with one art just has `1.webp`. A set
-with none falls back to the placeholder pack, which is fine and is what the
-seven empty folders show today: `GEM1` to `GEM5`, `MPG` and `MPW`.
+with none falls back to the placeholder pack. Every set has artwork today, so
+nothing is falling back.
 
 Each GEM Pack is its own product with its own wrapper, so Pack 1's wrappers go
-in `GEM1`, Pack 2's in `GEM2`, and so on. Pack 1 has three wrappers, so that
-folder wants `1.webp`, `2.webp` and `3.webp`.
+in `GEM1`, Pack 2's in `GEM2`, and so on.
 
 **Format is `.webp`.** Keep the numbering unbroken: the build script stops at
 the first missing number, so a folder holding `1.webp` and `3.webp` will only

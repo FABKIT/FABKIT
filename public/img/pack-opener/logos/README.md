@@ -20,16 +20,14 @@ logos/GEM1.webp
 The set code is the same one the pack artwork folders use, so a set's logo and
 its pack fronts are always named the same thing.
 
-## Missing today
+## What is here today
 
 | File | Set |
 |------|-----|
 | `PEN.webp` | Compendium of Rathe |
-| `GEM1.webp` | GEM Pack 1 |
-| `GEM2.webp` | GEM Pack 2 |
-| `GEM3.webp` | GEM Pack 3 |
-| `GEM4.webp` | GEM Pack 4 |
-| `GEM5.webp` | GEM Pack 5 |
+| `GEM1.webp` to `GEM5.webp` | GEM Packs 1 to 5 |
+
+Every other set's logo comes from LSS.
 
 ## Size and shape
 
