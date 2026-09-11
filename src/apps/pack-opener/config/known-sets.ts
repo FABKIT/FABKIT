@@ -187,19 +187,18 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 	},
 	{
 		code: "MPW",
-		decision: "exclude",
+		decision: "include",
+		kind: "supplemental",
 		reason:
 			"Mastery Pack Warrior — the same kind of product as Mastery Pack " +
 			"Guardian above, and its page publishes the same shape of " +
-			"configuration, so it belongs here in principle. Held back on DATA, " +
-			"not on principle, and the gap is not a near miss. Its page states " +
-			"156 cards; the-fab-cube carries 62 printings covering 34 distinct " +
-			"cards, and by rarity those are 3 Common, 8 Rare, 7 Majestic, 3 " +
-			"Legendary, 6 Basic and 5 Marvel. A pack deals 8 Commons, so every " +
-			"pack would show the same three Commons over and over. On top of " +
-			"that not one printing carries a TCGplayer product id, so every card " +
-			"would read as unpriced. Released 7 August 2026; re-check upstream " +
-			"and flip this to include once the Common pool can fill a pack.",
+			"configuration. This was excluded for a while on DATA rather than " +
+			"principle: the-fab-cube had 34 of its 156 cards, including only 3 " +
+			"distinct Commons for a slot that deals 8, so every pack would have " +
+			"shown the same three Commons over and over. That was a property of " +
+			"the source, not of the product, and the build now reads fabrary's " +
+			"copy instead, which has all 156 with prices — see the comment on " +
+			"CARD_JSON_URL in scripts/build-pack-data.ts.",
 	},
 	{
 		code: "TNP",
