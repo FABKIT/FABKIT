@@ -58,6 +58,16 @@ export const ESTIMATED_MARVEL_CHANCE = 1 / 100;
  * its own gets half of ESTIMATED_MARVEL_CHANCE. */
 export const FABLED_SHARE_OF_MARVEL = 0.5;
 
+/** A set's Fabled chance per pack, from its own Marvel chance. Sets that
+ * print no Marvel at all (the five oldest) fall back to the Marvel
+ * estimate, so their Fabled still lands at one per 200 packs rather than
+ * at zero. The two sets whose boosters contain no Fabled printing pass 0
+ * explicitly instead of calling this. */
+export function fabledChanceFor(marvelChance: number): number {
+	const basis = marvelChance > 0 ? marvelChance : ESTIMATED_MARVEL_CHANCE;
+	return basis * FABLED_SHARE_OF_MARVEL;
+}
+
 /** How much of a set's Majestic rate is expansion-slot content, where the
  * set prints such cards and LSS publishes no separate rate for them.
  * Expansion-slot printings are Majestic rarity, so they come OUT of the

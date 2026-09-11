@@ -260,3 +260,31 @@ describe("expected counts agree with the engine", () => {
 		});
 	}
 });
+
+/**
+ * Fabled is the one rarity with no published rate anywhere: every
+ * Collectors Centre page prints "1 per ??? packs" for it. It is set at half
+ * the set's own Marvel chance (pack/published-rates.ts's
+ * FABLED_SHARE_OF_MARVEL) so a set's single rarest card stays reachable
+ * instead of being unpullable, which is what it was before. There is
+ * nothing published to calibrate against, so this asserts the rule rather
+ * than a source: that it is drawn at all, and at half of Marvel.
+ */
+describe("Fabled", () => {
+	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
+		if (config.fabledChance <= 0) continue;
+		it(`${code} deals a Fabled at half its Marvel rate`, () => {
+			const observed = simulateRatePerPack(code, "fabled");
+			expect(observed).toBeGreaterThan(0);
+			expect(Math.abs(observed - config.fabledChance)).toBeLessThan(0.004);
+		});
+	}
+
+	// The two sets that must never deal one: History Pack 1's Fabled cards
+	// are Black Label product rather than booster content, and Compendium
+	// of Rathe prints none at all.
+	it("is never dealt by the two sets whose boosters have none", () => {
+		expect(simulateRatePerPack("1HP", "fabled")).toBe(0);
+		expect(simulateRatePerPack("PEN", "fabled")).toBe(0);
+	});
+});

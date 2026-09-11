@@ -72,6 +72,20 @@ export interface PackConfig {
 	 * Everfest case where the target already has a fixedTreatment. */
 	coldFoilReplaces?: PackSlotKind;
 	/** Chance, applied to the premium slot's draw, that its rarity is bumped
+	 * to "fabled" — a set's single rarest card. No set publishes a rate for
+	 * it (every Collectors Centre page prints "1 per ??? packs"), so this is
+	 * derived from the set's Marvel rate; see pack/published-rates.ts's
+	 * FABLED_SHARE_OF_MARVEL. 0 for the two sets whose boosters contain no
+	 * Fabled printing at all.
+	 *
+	 * Rolled before marvelChance and winning outright when both hit, so the
+	 * two rolls can never both land on one card. Unlike Marvel, a Fabled
+	 * draw keeps the premium slot's own treatment: real Fabled printings are
+	 * Rainbow Foil, Cold Foil, or both depending on the set, so the printing
+	 * decides rather than the engine (see cards/card-resolver.ts's
+	 * resolveTreatment, which already does this for Legendary). */
+	fabledChance: number;
+	/** Chance, applied to the premium slot's draw, that its rarity is bumped
 	 * to "marvel". Only used by sets that don't publish Marvel as its own
 	 * slot entry — most modern sets fold Marvel into a wildcard slot's own
 	 * rarityTable instead (see odds.ts), in which case this is 0. */

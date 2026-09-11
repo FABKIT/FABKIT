@@ -1,6 +1,7 @@
 import {
 	COLD_FOIL_PER_DISPLAY,
 	EXPANSION_SHARE_OF_MAJESTIC,
+	fabledChanceFor,
 	HVY_FAMILY_RATES,
 	PUBLISHED_RATES,
 } from "@fabkit/apps/pack-opener/pack/published-rates";
@@ -118,6 +119,7 @@ const EVERFEST: PackConfig = {
 	coldFoilChance: PUBLISHED_RATES.EVR.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
+	fabledChance: fabledChanceFor(0),
 };
 
 // ---------------------------------------------------------------------------
@@ -210,6 +212,7 @@ const UPRISING: PackConfig = {
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Uprising's Marvel rate as 1 per 110 packs.
 	marvelChance: PUBLISHED_RATES.UPR.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.UPR.marvel),
 };
 
 // ---------------------------------------------------------------------------
@@ -278,6 +281,7 @@ const DYNASTY: PackConfig = {
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Dynasty's Marvel rate as 1 per 96 packs.
 	marvelChance: PUBLISHED_RATES.DYN.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.DYN.marvel),
 };
 
 // ---------------------------------------------------------------------------
@@ -346,6 +350,7 @@ const DUSK_TILL_DAWN: PackConfig = {
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Dusk till Dawn's Marvel rate as 1 per 100 packs.
 	marvelChance: PUBLISHED_RATES.DTD.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.DTD.marvel),
 };
 
 // ---------------------------------------------------------------------------
@@ -479,6 +484,7 @@ function buildHvyFamilyConfig(
 		coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 		coldFoilReplaces: "token",
 		marvelChance,
+		fabledChance: fabledChanceFor(marvelChance),
 	};
 }
 
@@ -630,6 +636,7 @@ const SUPER_SLAM: PackConfig = {
 	// there is no rate to carry. Left at 0 they would be unpullable,
 	// which is worse than an openly flagged estimate.
 	marvelChance: PUBLISHED_RATES.SUP.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.SUP.marvel),
 };
 
 // ---------------------------------------------------------------------------
@@ -734,6 +741,7 @@ const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 	coldFoilReplaces: "basic",
 	// Listed in the Cold Foil block with no rate attached.
 	marvelChance: PUBLISHED_RATES.OMN.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.OMN.marvel),
 };
 // ---------------------------------------------------------------------------
 // Welcome to Rathe (WTR) — 16 cards.
@@ -835,6 +843,7 @@ const WELCOME_TO_RATHE: PackConfig = {
 	coldFoilChance: PUBLISHED_RATES.WTR.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
+	fabledChance: fabledChanceFor(0),
 };
 
 // ---------------------------------------------------------------------------
@@ -901,6 +910,7 @@ const ARCANE_RISING: PackConfig = {
 	coldFoilChance: PUBLISHED_RATES.ARC.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
+	fabledChance: fabledChanceFor(0),
 };
 
 // ---------------------------------------------------------------------------
@@ -970,6 +980,7 @@ const CRUCIBLE_OF_WAR: PackConfig = {
 	coldFoilChance: PUBLISHED_RATES.CRU.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
+	fabledChance: fabledChanceFor(0),
 };
 
 // ---------------------------------------------------------------------------
@@ -1049,6 +1060,7 @@ const MONARCH: PackConfig = {
 	coldFoilChance: PUBLISHED_RATES.MON.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
+	fabledChance: fabledChanceFor(0),
 };
 
 // ---------------------------------------------------------------------------
@@ -1115,6 +1127,7 @@ const TALES_OF_ARIA: PackConfig = {
 	coldFoilChance: PUBLISHED_RATES.ELE.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
+	fabledChance: fabledChanceFor(0),
 };
 
 // ---------------------------------------------------------------------------
@@ -1201,6 +1214,7 @@ const BRIGHT_LIGHTS: PackConfig = {
 	coldFoilChance: PUBLISHED_RATES.EVO.coldFoil,
 	coldFoilReplaces: "token",
 	marvelChance: PUBLISHED_RATES.EVO.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.EVO.marvel),
 };
 
 // ---------------------------------------------------------------------------
@@ -1307,6 +1321,7 @@ const HIGH_SEAS: PackConfig = {
 	// Marvel is published as a Premium Foil outcome above, so it is drawn
 	// from that slot's table rather than rolled separately.
 	marvelChance: 0,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.SEA.premiumMarvel),
 };
 
 // ---------------------------------------------------------------------------
@@ -1389,6 +1404,9 @@ const COMPENDIUM_OF_RATHE: PackConfig = {
 	coldFoilReplaces: "rare-or-super-rare-plus",
 	// Published as 1 per 96 packs.
 	marvelChance: PUBLISHED_RATES.PEN.marvel,
+	// Compendium of Rathe prints no Fabled card at all, so there is nothing for a Fabled roll
+	// to resolve to.
+	fabledChance: 0,
 };
 
 // ---------------------------------------------------------------------------
@@ -1495,6 +1513,7 @@ const OUTSIDERS: PackConfig = {
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Outsiders's Marvel rate as 1 per 390 packs.
 	marvelChance: PUBLISHED_RATES.OUT.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.OUT.marvel),
 };
 
 // ---------------------------------------------------------------------------
@@ -1552,6 +1571,10 @@ const HISTORY_PACK_1: PackConfig = {
 	],
 	coldFoilChance: PUBLISHED_RATES["1HP"].coldFoil,
 	marvelChance: PUBLISHED_RATES["1HP"].marvel,
+	// History Pack 1's three Fabled cards are Black Label
+	// product, not boosters, so there is nothing for a Fabled roll
+	// to resolve to.
+	fabledChance: 0,
 };
 
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {

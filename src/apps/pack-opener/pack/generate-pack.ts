@@ -30,8 +30,15 @@ export function generatePack(
 			const picked = weightedPick(slot.rarityTable, rng);
 			let rarity = picked.rarity;
 			let treatment: FoilTreatment = slot.fixedTreatment ?? "standard";
-			if (slot.kind === "premium-foil" && rng() < config.marvelChance) {
-				rarity = "marvel";
+			if (slot.kind === "premium-foil") {
+				// Fabled first, and exclusive: it is the rarer of the two, and
+				// rolling it second would let a Marvel be overwritten by it (or
+				// the reverse) depending on order. One premium card, one upgrade.
+				if (rng() < config.fabledChance) {
+					rarity = "fabled";
+				} else if (rng() < config.marvelChance) {
+					rarity = "marvel";
+				}
 			}
 			// Real Marvel cards are exclusively printed Cold Foil — see
 			// pack/types.ts's DrawnCard comment. This has to override
