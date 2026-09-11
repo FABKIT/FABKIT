@@ -430,3 +430,46 @@ Cold Foil (1 per 24 packs)
     12 Common
     12 Marvel
 ```
+
+### ANQ : Compendium of Rathe - Antiquity Pack
+Source: LSS's published "Estimated Rarity Breakdown - EN", supplied by the
+product owner. Not captured by the scrape for the same reason PEN and OMN
+were not.
+```
+1 Marvel (1 per 800 packs)
+3 Fabled (1 per 45 packs)
+7 Legendary (1 per 20 packs)
+17 Majestic
+    17 Regular (7 per 8 packs)
+    17 Cold Foil (1 per 8 packs)
+10 Rare (1 per pack)
+3 Puzzles, 9 cards per puzzle (1 per pack)
+```
+Carrying LSS's own disclaimer, which applies to every figure in this file:
+"Stated card drop frequencies are an approximate average across the entire
+production of a product, and are not guaranteed to exist in any given pack,
+display, or case of product. Due to variations that may occur in the
+manufacturing process, final distributions of cards may differ from those
+stated above."
+
+Two things about this one differ from every other set here.
+
+**It is the only set with a published Fabled rate.** Every Collectors Centre
+page prints "1 per ??? packs" for Fabled, which is why the rest are ESTIMATED
+at half the set's Marvel rate. This one states 1 per 45, and at 1 per 800
+Marvel it is nowhere near half — so it is used as published, and the estimate
+rule does not apply to it.
+
+**The puzzle slot is not modelled.** Its 27 puzzle cards (3 puzzles of 9) are
+in no card dataset this app builds from, under any set code, so there is
+nothing to deal for that slot. The other 55 cards above are all present, and
+55 is exactly what upstream carries for ANQ. So the pack opens as two cards
+rather than three. Legendary, which LSS deals out of the puzzle slot, is
+folded into the Rare slot instead at its published 1 per 20, so the rate a
+player actually experiences is preserved rather than dropped along with the
+puzzles.
+
+**The Rare slot's 10 cards** are filed upstream as 6 Common and 4 Rare. LSS
+counts all 10 as "Rare". The config weights them 6 to 4 so each of the 10 is
+equally likely, which is the only split the published "1 per pack" supports
+without inventing one.

@@ -1,8 +1,8 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
-import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
+import { formatMoney } from "@fabkit/apps/pack-opener/lib/currency";
+import { cardPrice } from "@fabkit/apps/pack-opener/lib/pricing";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
-import { getCardPrice } from "@fabkit/shared/data/fab-prices";
 import { FlipHorizontal2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -31,6 +31,7 @@ export function RevealCaption() {
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
+	const currency = usePackOpenerStore((state) => state.currency);
 	const showingOtherFace = usePackOpenerStore(
 		(state) => state.showingOtherFace,
 	);
@@ -52,21 +53,15 @@ export function RevealCaption() {
 	);
 
 	/** The same build-time snapshot the summary totals up, read one card
-	 * at a time (see shared/data/fab-prices.ts). Keyed by printing and
-	 * foiling, so the Red of a card and its Yellow are priced separately,
-	 * as are a standard copy and its Rainbow Foil. No price is a real and
-	 * fairly common state — roughly one printing in twenty-five is not in
-	 * the snapshot — so it says so rather than showing a zero. */
+	 * at a time, in whichever currency is selected (see lib/pricing.ts).
+	 * Each marketplace prices a specific printing, so the Red of a card and
+	 * its Yellow are priced separately, as are a standard copy and its
+	 * Rainbow Foil. No price is a real and fairly common state — a few
+	 * printings in every hundred are in neither snapshot — so it says so
+	 * rather than showing a zero. */
 	const price = useMemo(
-		() =>
-			resolved?.tcgplayerProductId && packSetCode
-				? getCardPrice(
-						packSetCode,
-						resolved.tcgplayerProductId,
-						resolved.treatment,
-					)
-				: null,
-		[resolved, packSetCode],
+		() => (resolved ? cardPrice(currency, packSetCode, resolved) : null),
+		[resolved, packSetCode, currency],
 	);
 
 	if (!resolved || !pack) return null;
@@ -127,7 +122,9 @@ export function RevealCaption() {
 				<span
 					className={price === null ? "text-subtle" : "font-bold text-heading"}
 				>
-					{price === null ? t("page.price_unavailable") : formatUsd(price)}
+					{price === null
+						? t("page.price_unavailable")
+						: formatMoney(price, currency)}
 				</span>
 			</p>
 			{/* Reveal-only. Once the pack is done there is nothing left to tap

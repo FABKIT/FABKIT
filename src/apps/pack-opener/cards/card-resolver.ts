@@ -48,6 +48,13 @@ export interface ResolvedCard {
 	 * printing, not just a card name. Used by the price snapshot (see the
 	 * execution plan, section 4.4) to match a pulled card to a price. */
 	tcgplayerProductId: string | null;
+	/** The-fab-cube's own id for this exact printing, null in the same two
+	 * cases as tcgplayerProductId above. This is what the euro price
+	 * snapshot is keyed by rather than a TCGplayer id (see
+	 * shared/data/fab-prices-cm.ts): Cardmarket is a different marketplace
+	 * with its own product ids, and several sets Cardmarket prices well
+	 * carry no TCGplayer id at all. */
+	printingId: string | null;
 }
 
 export interface CardResolver {
@@ -72,6 +79,7 @@ export const mockCardResolver: CardResolver = {
 			power: mock.power,
 			defense: mock.defense,
 			tcgplayerProductId: null,
+			printingId: null,
 		};
 	},
 };
@@ -133,6 +141,7 @@ function toResolvedCardFromFabCard(
 		power: real.power,
 		defense: real.defense,
 		tcgplayerProductId: null,
+		printingId: null,
 	};
 }
 
@@ -222,6 +231,7 @@ function toResolvedCardFromPrinting(
 		power: printing.power,
 		defense: printing.defense,
 		tcgplayerProductId: printing.tcgplayerProductId,
+		printingId: printing.uniqueId,
 	};
 }
 

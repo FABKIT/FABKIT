@@ -36,8 +36,8 @@
 	},
 	"dialog": {
 		"cards_per_pack_title": "Cards per pack",
-		"cards_per_pack_with_token": "{{cards}} (+ {{count}} token)",
-		"cards_per_pack_with_token_plural": "{{cards}} (+ {{count}} tokens)",
+		"cards_per_pack_with_token_one": "{{cards}} (+ {{count}} token)",
+		"cards_per_pack_with_token_other": "{{cards}} (+ {{count}} tokens)",
 		"cards_per_pack_note": "The printed pack counts the cards only. Legend Story Studios counts the token too, which is why their product page says {{total}}.",
 		"pull_rates_title": "Pull rates",
 		"rate_odds": "About 1 in {{odds}} packs",
@@ -75,7 +75,8 @@
 			"class-common": "Class Common",
 			"equipment": "Equipment",
 			"promo": "Promo card"
-		}
+		},
+		"price_source_cm": "Market prices come from Cardmarket's daily price guide."
 	},
 	"stats": {
 		"open_button": "Session stats",
@@ -100,5 +101,17 @@
 			"promo": "Promo",
 			"marvel": "Marvel"
 		}
+	},
+	"currency": {
+		"switch_to_eur": "Show prices in euros (Cardmarket)",
+		"switch_to_usd": "Show prices in dollars (TCGplayer)"
+	},
+	"reset": {
+		"open_button": "Reset this session",
+		"title": "Reset this session?",
+		"body_one": "This clears the {{count}} pack you have opened and the totals that go with it, and starts you again at pack one. There is no way to get it back.",
+		"body_other": "This clears the {{count}} packs you have opened and the totals that go with them, and starts you again at pack one. There is no way to get them back.",
+		"confirm": "Reset session",
+		"cancel": "Keep my session"
 	}
 }

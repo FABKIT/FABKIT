@@ -33,6 +33,13 @@ const MAX_TILT_RAD = (CARD_TILT_MAX_DEG * Math.PI) / 180;
  * instead: "a fixed, gentle sheen rather than an animated one." */
 const REDUCED_MOTION_LIGHT_DIR = { x: 0.35, y: 0.25 };
 
+/** The instant of the cold foil's drift cycle held still when
+ * prefers-reduced-motion is on (see foilMaterial.ts, which normally sweeps
+ * the reflection across the card on its own). Chosen because it puts the
+ * band ON the card rather than just off its edge, so a visitor who has
+ * asked for no animation still sees a foil rather than a plain card. */
+const REDUCED_MOTION_FOIL_TIME = 2;
+
 const TREATMENT_CODE: Record<ResolvedCard["treatment"], number> = {
 	standard: 0,
 	rainbow: 1,
@@ -75,16 +82,29 @@ function CardFaceMaterial({
 	alwaysOnTop,
 }: CardFaceMaterialProps) {
 	const foilMaterial = useMemo(() => new FoilMaterialImpl(), []);
+	const reducedMotion = usePrefersReducedMotion();
 
-	useFrame(() => {
+	useFrame((state) => {
 		if (treatment === "standard") return;
 		foilMaterial.uBaseTexture = texture;
 		foilMaterial.uTreatment = TREATMENT_CODE[treatment];
-		// Retuned for the additive combine (see foilMaterial.ts): under the
-		// old mix() these were how much of the art to REPLACE, now they are
-		// how much light to ADD, so the same numbers would blow out.
+		// How much light the foil returns, not how much of the art to
+		// replace — see foilMaterial.ts, where both branches only ever
+		// brighten. Marvel gets more because a Marvel is a Cold Foil card
+		// people are meant to notice across a room.
 		foilMaterial.uIntensity = isMarvel ? 0.7 : 0.45;
 		foilMaterial.uLightDir = [lightDirRef.current.x, lightDirRef.current.y];
+		// Wall-clock seconds, and the one timer in this scene that
+		// deliberately does NOT read off the store's phaseStartedAt (see the
+		// app's CLAUDE.md). That rule exists so the tear and the reveal can
+		// never restart or disagree with each other; this is an ambient
+		// surface property of a card rather than a step in that sequence,
+		// it must not restart when a new card becomes active, and it has to
+		// keep moving while nothing else is happening at all. Frozen for a
+		// visitor who asked for reduced motion.
+		foilMaterial.uTime = reducedMotion
+			? REDUCED_MOTION_FOIL_TIME
+			: state.clock.elapsedTime;
 	});
 
 	// Unlit on purpose: a card's own image is meant to be viewed true-to-source

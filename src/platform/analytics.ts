@@ -110,7 +110,9 @@ type AnalyticsEvent =
 			name: "pack_opener_card_revealed";
 			data: { rarity: string; treatment: string };
 	  }
-	| { name: "pack_opener_pack_completed" };
+	| { name: "pack_opener_pack_completed" }
+	| { name: "pack_opener_currency_changed"; data: { currency: string } }
+	| { name: "pack_opener_session_reset" };
 
 /**
  * Providers only accept text, numbers and booleans. An event value that is

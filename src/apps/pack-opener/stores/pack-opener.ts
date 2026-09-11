@@ -8,6 +8,8 @@ import {
 	TEAR_START_DELAY_MS,
 	TEAR_TAIL_MS,
 } from "@fabkit/apps/pack-opener/config/scene";
+import type { Currency } from "@fabkit/apps/pack-opener/lib/currency";
+import { warmPrices } from "@fabkit/apps/pack-opener/lib/pricing";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import {
 	DEFAULT_PACK_CONFIG,
@@ -20,7 +22,6 @@ import type {
 } from "@fabkit/apps/pack-opener/pack/types";
 import type { OpenedPackRecord } from "@fabkit/apps/pack-opener/stats/session-stats";
 import { trackEvent } from "@fabkit/platform/analytics";
-import { loadSetPrices } from "@fabkit/shared/data/fab-prices";
 import {
 	getSetIndex,
 	loadSetPrintings,
@@ -202,6 +203,13 @@ export interface PackOpenerState {
 	 * summary ledger to look at that card again — read-only, doesn't touch
 	 * `revealIndex` or re-roll anything. Null means "not revisiting". */
 	revisitIndex: number | null;
+	/** Which marketplace's prices every price surface shows — TCGplayer
+	 * dollars or Cardmarket euros. Lives in the store rather than in the
+	 * summary component because three separate surfaces read it (the pack
+	 * ledger, the session stats dialog, the set info dialog) and they must
+	 * never disagree about which currency is on screen. Persisted, see
+	 * CURRENCY_STORAGE_KEY. */
+	currency: Currency;
 	/** The set `pack` was actually generated for (packConfig.id at the time
 	 * openPack() ran) — recorded separately from `selectedSet` so card
 	 * resolution stays correct even after selectedSet moves on, and so
@@ -236,6 +244,13 @@ export interface PackOpenerActions {
 	 * another side. No-ops for everything else, so the caller does not have
 	 * to check first. */
 	flipCard(): void;
+	/** Switches which marketplace's prices are shown, and remembers it. */
+	setCurrency(currency: Currency): void;
+	/** Throws away everything opened so far and starts counting from pack
+	 * one again, without touching the chosen set or reloading the page.
+	 * Destructive on purpose (the session ledger is the only record of a
+	 * run), so the UI confirms first — see ResetSessionDialog.tsx. */
+	resetSession(): void;
 	/** Clears a finished pack away and brings out the next closed one, in
 	 * a fresh one of the set's pack fronts, WITHOUT opening it.
 	 *
@@ -251,6 +266,7 @@ export interface PackOpenerActions {
 }
 
 const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
+const CURRENCY_STORAGE_KEY = "pack-opener:currency";
 
 /** Deliberately not a shared safeStorage util (see Fabble's
  * src/apps/fabble/game/storage.ts) — apps can't import each other, and
@@ -273,6 +289,26 @@ function writeStoredSelectedSet(setCode: string): void {
 	}
 }
 
+/** Dollars unless this visitor has said otherwise. Deliberately not guessed
+ * from the browser's locale: a euro price here is a Cardmarket price, and
+ * a visitor's language says nothing about which marketplace they buy from.
+ * They pick once and it sticks. */
+function readStoredCurrency(): Currency {
+	try {
+		return localStorage.getItem(CURRENCY_STORAGE_KEY) === "EUR" ? "EUR" : "USD";
+	} catch {
+		return "USD";
+	}
+}
+
+function writeStoredCurrency(currency: Currency): void {
+	try {
+		localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
+	} catch {
+		// Same fine degrade as the set selection above.
+	}
+}
+
 const initialState: PackOpenerState = {
 	phase: "idle",
 	pack: null,
@@ -283,6 +319,7 @@ const initialState: PackOpenerState = {
 	packsOpenedThisSession: 0,
 	openedPacksThisSession: [],
 	selectedSet: readStoredSelectedSet(),
+	currency: readStoredCurrency(),
 	packArtUrl: null,
 	revisitIndex: null,
 	packSetCode: null,
@@ -461,10 +498,10 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				// cross-set. Errors swallowed like every other loader here; a
 				// slow/failed load just means that fallback kicks in instead.
 				loadSetPrintings(setCode).catch(() => {});
-				// Same for the price snapshot — a set with no price file (or a
+				// Same for both price snapshots — a set with no price file (or a
 				// failed fetch) just shows dashes everywhere a price would go,
 				// see PackSummary.tsx and SetInfoDialog.tsx.
-				loadSetPrices(setCode).catch(() => {});
+				warmPrices(setCode);
 
 				writeStoredSelectedSet(setCode);
 				set(
@@ -500,7 +537,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					writeStoredSelectedSet(latest.code);
 					const url = rollPackArt(latest.code);
 					loadSetPrintings(latest.code).catch(() => {});
-					loadSetPrices(latest.code).catch(() => {});
+					warmPrices(latest.code);
 					set(
 						{ selectedSet: latest.code, packArtUrl: url },
 						undefined,
@@ -510,12 +547,12 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				}
 
 				// Always warm the returning visitor's already-selected set's
-				// printing pool and price snapshot too, even when packArtUrl below
+				// printing pool and price snapshots too, even when packArtUrl below
 				// short-circuits — this runs once per mount either way (see this
-				// action's own doc comment) and both loaders are idempotent per
+				// action's own doc comment) and every loader is idempotent per
 				// set code.
 				loadSetPrintings(selectedSet).catch(() => {});
-				loadSetPrices(selectedSet).catch(() => {});
+				warmPrices(selectedSet);
 
 				set(
 					{ packArtUrl: rollPackArt(selectedSet) },
@@ -530,6 +567,45 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					undefined,
 					"pack-opener/flipCard",
 				);
+			},
+
+			setCurrency(currency) {
+				if (get().currency === currency) return;
+				writeStoredCurrency(currency);
+				set({ currency }, undefined, "pack-opener/setCurrency");
+				trackEvent({
+					name: "pack_opener_currency_changed",
+					data: { currency },
+				});
+			},
+
+			resetSession() {
+				// Everything the session ledger is built from goes, and the
+				// player is put back in front of a closed pack of the set they
+				// were already on — the same place readyAnotherPack leaves
+				// them, so a reset feels like starting the visit again rather
+				// than landing somewhere new. selectedSet and its artwork are
+				// explicitly kept rather than reset to initialState's values,
+				// which would drop the pack front back to the mock one and
+				// re-read the set from localStorage.
+				set(
+					{
+						phase: "idle",
+						pack: null,
+						revealIndex: -1,
+						phaseStartedAt: Date.now(),
+						revealStartedAt: null,
+						showingOtherFace: false,
+						revisitIndex: null,
+						packSetCode: null,
+						packsOpenedThisSession: 0,
+						openedPacksThisSession: [],
+						packArtUrl: rollPackArt(get().selectedSet),
+					},
+					undefined,
+					"pack-opener/resetSession",
+				);
+				trackEvent({ name: "pack_opener_session_reset" });
 			},
 
 			readyAnotherPack() {

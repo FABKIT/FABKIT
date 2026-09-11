@@ -1,10 +1,12 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
-import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
+import type { Currency } from "@fabkit/apps/pack-opener/lib/currency";
+import { formatMoney } from "@fabkit/apps/pack-opener/lib/currency";
+import { cardPrice, packPrice } from "@fabkit/apps/pack-opener/lib/pricing";
 import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
 import type { OpenedPackRecord } from "@fabkit/apps/pack-opener/stats/session-stats";
 import { computeSessionStats } from "@fabkit/apps/pack-opener/stats/session-stats";
+import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
-import { getCardPrice, getSetPrices } from "@fabkit/shared/data/fab-prices";
 import { getSetIndex } from "@fabkit/shared/data/fab-printings";
 import {
 	Dialog,
@@ -23,13 +25,16 @@ export interface SessionStatsDialogProps {
 }
 
 /** Totals value pulled and value spent across the whole session, resolving
- * each drawn card to its printing (same activeCardResolver + getCardPrice
+ * each drawn card to its printing (same activeCardResolver + lib/pricing
  * pattern PackSummary.tsx uses per pack) rather than folding this into the
  * pure stats module — see session-stats.ts's own doc comment on why price
  * lookups stay in the component. Null when nothing at all is priced yet;
  * "partial" when some but not all of what should be summed is known,
  * mirroring PackSummary.tsx's own partial-total handling. */
-function computeValueTotals(openedPacks: OpenedPackRecord[]) {
+function computeValueTotals(
+	openedPacks: OpenedPackRecord[],
+	currency: Currency,
+) {
 	let pulledValue = 0;
 	let knownCardCount = 0;
 	let totalCardCount = 0;
@@ -40,19 +45,15 @@ function computeValueTotals(openedPacks: OpenedPackRecord[]) {
 		totalCardCount += record.cards.length;
 		for (const card of record.cards) {
 			const resolved = activeCardResolver.resolve(card, record.setCode);
-			const price = getCardPrice(
-				record.setCode,
-				resolved.tcgplayerProductId,
-				resolved.treatment,
-			);
+			const price = cardPrice(currency, record.setCode, resolved);
 			if (price !== null) {
 				pulledValue += price;
 				knownCardCount += 1;
 			}
 		}
-		const packPrice = getSetPrices(record.setCode)?.packMarketPrice ?? null;
-		if (packPrice !== null) {
-			spent += packPrice;
+		const sealedPrice = packPrice(currency, record.setCode);
+		if (sealedPrice !== null) {
+			spent += sealedPrice;
 			knownPackCount += 1;
 		}
 	}
@@ -79,14 +80,15 @@ export function SessionStatsDialog({
 }: SessionStatsDialogProps) {
 	const { t } = useTranslation("pack-opener");
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
+	const currency = usePackOpenerStore((state) => state.currency);
 
 	const stats = useMemo(
 		() => computeSessionStats(openedPacks, getPackConfig),
 		[openedPacks],
 	);
 	const valueTotals = useMemo(
-		() => computeValueTotals(openedPacks),
-		[openedPacks],
+		() => computeValueTotals(openedPacks, currency),
+		[openedPacks, currency],
 	);
 	const setNames = useMemo(() => {
 		const names = new Map<string, string>();
@@ -139,7 +141,7 @@ export function SessionStatsDialog({
 									</span>
 									<span className="font-card-stat text-body">
 										{valueTotals.pulledValue !== null
-											? formatUsd(valueTotals.pulledValue)
+											? formatMoney(valueTotals.pulledValue, currency)
 											: t("page.price_unavailable")}
 									</span>
 								</div>
@@ -147,7 +149,7 @@ export function SessionStatsDialog({
 									<span className="text-muted">{t("stats.spent_label")}</span>
 									<span className="font-card-stat text-body">
 										{valueTotals.spent !== null
-											? formatUsd(valueTotals.spent)
+											? formatMoney(valueTotals.spent, currency)
 											: t("page.price_unavailable")}
 									</span>
 								</div>

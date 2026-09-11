@@ -385,4 +385,39 @@ export const PUBLISHED_RATES = {
 		marvel: ESTIMATED_MARVEL_CHANCE,
 		coldFoil: 1 / 24,
 	},
+
+	// -----------------------------------------------------------------
+	// Compendium of Rathe - Antiquity Pack. The 3-card bonus pack bundled
+	// one per Compendium of Rathe booster box. PUBLISHED by LSS as an
+	// "Estimated Rarity Breakdown", their own wording, transcribed in
+	// docs/pull-rate-verification.md:
+	//   1 Marvel (1 per 800 packs)
+	//   3 Fabled (1 per 45 packs)
+	//   7 Legendary (1 per 20 packs)
+	//   17 Majestic: 17 Regular (7 per 8 packs), 17 Cold Foil (1 per 8)
+	//   10 Rare (1 per pack)
+	//   3 Puzzles, 9 cards per puzzle (1 per pack)
+	//
+	// THE PUZZLE SLOT IS NOT MODELLED, on Louis's instruction, and it could
+	// not be anyway: the 27 puzzle cards do not exist in the upstream card
+	// data under any set code, so there would be nothing to deal. Every
+	// other card above does exist — 1 + 3 + 7 + 17 + 17 + 10 is exactly the
+	// 55 printings upstream carries for this set. So this opens as a
+	// TWO-card pack, the real product minus a slot we have no cards for.
+	//
+	// That leaves Legendary without its home: LSS deals it out of the
+	// puzzle slot ("Rainbow Foil Puzzle Piece or Rainbow Foil Antiquity
+	// Legendary"). Folding it into the Rare slot instead keeps the number a
+	// player actually feels — one Legendary every 20 packs — which dropping
+	// it with the puzzles would not. See set-configs.ts's ANTIQUITY_PACK.
+	ANQ: {
+		marvel: 1 / 800,
+		fabled: 1 / 45,
+		legendary: 1 / 20,
+		// The whole Majestic slot, regular and Cold Foil together: 7/8 + 1/8.
+		majestic: 1,
+		// Cold Foil is published as an outcome of the Majestic slot itself,
+		// not of a separate one, so that is the card it upgrades.
+		coldFoil: 1 / 8,
+	},
 } as const;

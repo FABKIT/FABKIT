@@ -78,13 +78,16 @@ export function PackOpenerPage() {
 			    `md` (see PackSummary.tsx). Measured 57px at 768 and above,
 			    107px from 320 to 767. Re-measure these if that component's
 			    chrome changes: a slot shorter than its content clips the
-			    buttons, a taller one is dead space taken from the card. */}
-			<div
-				className={`h-[107px] shrink-0 md:h-[57px] ${
-					phase === "done" ? "" : "invisible"
-				}`}
-				aria-hidden={phase !== "done"}
-			>
+			    buttons, a taller one is dead space taken from the card.
+
+			    The slot used to be `invisible` in every phase but `done`,
+			    which hid the session controls (currency, session stats,
+			    reset) along with the pack summary they happen to sit beside.
+			    Those are about the session rather than the finished pack, so
+			    PackSummary decides for itself what to show in which phase
+			    now, and this slot simply stays visible. Its height does not
+			    change either way, so the canvas still never resizes. */}
+			<div className="h-[107px] shrink-0 md:h-[57px]">
 				<PackSummary />
 			</div>
 		</div>

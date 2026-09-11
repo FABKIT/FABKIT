@@ -1803,7 +1803,60 @@ const MASTERY_PACK_WARRIOR: PackConfig = {
 	fabledChance: 0,
 };
 
+/** The Antiquity slot's Legendary weight.
+ *
+ * The slot deals one card from a pool of 10 that LSS calls "Rare" and the
+ * upstream data files as 6 Common and 4 Rare. Adding Legendary at weight w
+ * makes its share w / (10 + w), so the published 1 in 20 needs w = 10/19.
+ * Written as the arithmetic rather than 0.526 so the published rate it
+ * comes from stays visible. */
+const ANQ_LEGENDARY_WEIGHT = 10 / 19;
+
+/** Compendium of Rathe - Antiquity Pack: the 3-card bonus pack bundled one
+ * per Compendium of Rathe booster box, opened here as TWO cards.
+ *
+ * Read published-rates.ts's ANQ block first — it carries the transcription
+ * and the reasoning. In short: the third card is a puzzle piece, the 27
+ * puzzle cards are in no card dataset we build from, so there is nothing to
+ * deal for that slot and it is left out rather than faked.
+ *
+ * The Antiquity slot is `premium-foil` because that is the slot kind
+ * generate-pack.ts applies fabledChance and marvelChance to, and this is
+ * the slot LSS upgrades to Fabled and Marvel. It carries no fixedTreatment:
+ * its card starts out a regular Majestic and the pack-level Cold Foil roll
+ * is what turns it, which is exactly the published "7 per 8 regular, 1 per
+ * 8 Cold Foil" split. */
+const ANTIQUITY_PACK: PackConfig = {
+	id: "ANQ",
+	cardsPerPack: 2,
+	slots: [
+		{
+			kind: "premium-foil",
+			count: 1,
+			rarityTable: [{ rarity: "majestic", weight: 1 }],
+		},
+		{
+			// POPULATION weights: LSS publishes this as one 10-card "Rare"
+			// slot at 1 per pack and says nothing about the split within it,
+			// so each of the 10 is equally likely — which, against the
+			// upstream labelling of 6 Common and 4 Rare, is these weights.
+			kind: "rare",
+			count: 1,
+			rarityTable: [
+				{ rarity: "common", weight: 6 },
+				{ rarity: "rare", weight: 4 },
+				{ rarity: "legendary", weight: ANQ_LEGENDARY_WEIGHT },
+			],
+		},
+	],
+	coldFoilChance: PUBLISHED_RATES.ANQ.coldFoil,
+	coldFoilReplaces: "premium-foil",
+	fabledChance: PUBLISHED_RATES.ANQ.fabled,
+	marvelChance: PUBLISHED_RATES.ANQ.marvel,
+};
+
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
+	ANQ: ANTIQUITY_PACK,
 	GEM1: gemPack("GEM1", PUBLISHED_RATES.GEM1),
 	GEM2: gemPack("GEM2", PUBLISHED_RATES.GEM2),
 	GEM3: gemPack("GEM3", PUBLISHED_RATES.GEM3),
@@ -1842,6 +1895,7 @@ export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
  * (frequently stale or null) product_page field — see each set's comment
  * above for why. */
 export const SET_SOURCE_URLS: Record<string, string> = {
+	ANQ: "https://cardvault.fabtcg.com/products/compendium-of-rathe-antiquity-pack",
 	EVR: "https://fabtcg.com/products/booster-set/everfest/",
 	UPR: "https://fabtcg.com/products/booster-set/uprising/",
 	DYN: "https://fabtcg.com/products/booster-set/dynasty/",
