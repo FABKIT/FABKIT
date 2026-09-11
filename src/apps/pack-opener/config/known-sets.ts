@@ -137,9 +137,14 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 		code: "GEM",
 		decision: "exclude",
 		reason:
-			'set.json names this "GEM Pack Promos" — a promo insert product, not a ' +
-			"booster set. (It also currently carries no initial_release_date, so " +
-			"the automatic rule already excludes it independently of this line.)",
+			"GEM Packs — free Armory prize support rather than a product anyone " +
+			"buys, and the one candidate here that could not be modelled even if " +
+			"we wanted to. fabtcg.com/articles/gem_pack_faq/ gives the " +
+			"configuration as 3 cards: 1 regular print, 1 premium foil (Rainbow, " +
+			"Cold Foil or Marvel), 1 art card. But every one of its 308 printings " +
+			"is promo rarity, so there is no rarity table to weight, LSS publishes " +
+			"no split for the premium card, only 38% carry a TCGplayer id, and art " +
+			"cards are not in the card data at all. Revisit only if that changes.",
 	},
 	{
 		code: "TCC",
@@ -150,17 +155,44 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 	},
 	{
 		code: "MPG",
-		decision: "exclude",
+		decision: "include",
 		reason:
-			"Mastery Pack Guardian — a single-class supplementary product, not a " +
-			"booster set.",
+			"Mastery Pack Guardian — a real booster product, despite what this " +
+			"entry used to say. fabtcg.com/products/product/mastery-pack-guardian/ " +
+			'gives its product type as "Booster Pack" and publishes a full ' +
+			"configuration: 13 cards per pack, 12 packs per display, 8 displays " +
+			"per case, with a stated rarity distribution. Single-class is what it " +
+			"is ABOUT, not what kind of product it is.",
 	},
 	{
 		code: "MPW",
 		decision: "exclude",
 		reason:
-			"Mastery Pack Warrior — a single-class supplementary product, not a " +
-			"booster set.",
+			"Mastery Pack Warrior — the same kind of product as Mastery Pack " +
+			"Guardian above, and its page publishes the same shape of " +
+			"configuration, so it belongs here in principle. Held back on DATA, " +
+			"not on principle: its page states 156 cards in the set but " +
+			"the-fab-cube lists only 62 printings for it, and not one of them " +
+			"carries a TCGplayer product id, so a pack would deal from a third of " +
+			"the set and every card would read as unpriced. It released on 7 " +
+			"August 2026; flip this to include once upstream has caught up.",
+	},
+	{
+		code: "TNP",
+		decision: "exclude",
+		reason:
+			"Tournament Pack — tournament prize support, not a product anyone " +
+			"opens. All 30 of its printings are promo rarity and Cold Foil, with " +
+			"no TCGplayer ids and so no prices, and there is no rarity structure " +
+			"to build a pack out of.",
+	},
+	{
+		code: "WIN",
+		decision: "exclude",
+		reason:
+			"Worlds / Pro Tour Prize Cards — prize cards awarded at events, not a " +
+			"sealed product. Same shape as TNP above: 45 printings, all promo, " +
+			"all Cold Foil, no prices.",
 	},
 	{
 		code: "ANQ",

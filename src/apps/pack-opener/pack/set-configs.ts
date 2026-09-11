@@ -1577,7 +1577,86 @@ const HISTORY_PACK_1: PackConfig = {
 	fabledChance: 0,
 };
 
+// ---------------------------------------------------------------------------
+// Mastery Pack Guardian (MPG) — 13 cards. Sourced from
+// https://fabtcg.com/products/product/mastery-pack-guardian/ , which is a
+// product page rather than a Collectors Centre page: it states each slot's
+// MEMBERSHIP and the set's composition, but no per-pack rates. So this is
+// the one modern config weighted by population, the way Welcome to Rathe
+// and its neighbours were before their rates were found.
+//   Common 9 / Rare or Majestic 1 / Equipment 1 / Token 1 /
+//   "Token or higher, Rainbow Foil or Cold Foil" 1  = 13 cards.
+//
+// The last slot is this set's premium card. Modelled Common-primary with a
+// Legendary sliver, the same shape as every other set whose premium slot
+// has no published breakdown. Marvel rides on it too, as the cold-foil
+// upgrade roll, which matches the slot's own "Rainbow Foil or Cold Foil"
+// wording and the fact that every one of this set's 17 Marvel printings is
+// Cold Foil.
+//
+// Equipment is Common or Rare here. Legendary equipment exists (3 of the
+// set's 4 Legendary printings are Equipment) but is left out of that slot
+// deliberately: population-weighting it there would deal a Legendary in
+// roughly one pack in ten, and the premium slot is already its channel.
+//
+// No Fabled printing exists in this set, so fabledChance is 0.
+// ---------------------------------------------------------------------------
+const mpgRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: PUBLISHED_RATES.MPG.popRare },
+	{ rarity: "majestic" as const, weight: PUBLISHED_RATES.MPG.popMajestic },
+];
+const mpgEquipmentTable = [
+	{
+		rarity: "common" as const,
+		weight: PUBLISHED_RATES.MPG.popEquipmentCommon,
+		requiresType: "Equipment",
+	},
+	{
+		rarity: "rare" as const,
+		weight: PUBLISHED_RATES.MPG.popEquipmentRare,
+		requiresType: "Equipment",
+	},
+];
+const mpgPremiumTable = slotTable(
+	"Mastery Pack Guardian's Premium Foil slot",
+	[{ rarity: "legendary", perPack: PUBLISHED_RATES.MPG.premiumLegendary }],
+	"common",
+);
+
+const MASTERY_PACK_GUARDIAN: PackConfig = {
+	id: "MPG",
+	cardsPerPack: 13,
+	slots: [
+		{
+			kind: "common",
+			count: 9,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: mpgRareOrMajesticTable,
+		},
+		{ kind: "equipment", count: 1, rarityTable: mpgEquipmentTable },
+		{ kind: "token", count: 1, rarityTable: [{ rarity: "token", weight: 1 }] },
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: mpgPremiumTable,
+		},
+	],
+	// No published rate; the slot only says the premium card may be Cold
+	// Foil. Takes the one-per-display default every other set confirms.
+	coldFoilChance: PUBLISHED_RATES.MPG.coldFoil,
+	coldFoilReplaces: "premium-foil",
+	marvelChance: PUBLISHED_RATES.MPG.marvel,
+	// This set prints no Fabled card.
+	fabledChance: 0,
+};
+
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
+	MPG: MASTERY_PACK_GUARDIAN,
 	EVR: EVERFEST,
 	UPR: UPRISING,
 	DYN: DYNASTY,

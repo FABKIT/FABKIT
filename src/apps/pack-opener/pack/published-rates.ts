@@ -29,6 +29,9 @@
  *   PUBLISHED  printed on the set's own page
  *   OBSERVED   counted from real product, not published by LSS
  *   ESTIMATED  no number exists anywhere; a documented guess
+ *   POPULATION how many cards the set prints at a rarity, used only where
+ *              LSS states which rarities a slot can hold but never how
+ *              often each one comes up
  *
  * ---------------------------------------------------------------------
  * WHAT HAPPENS IF YOU CHANGE ONE
@@ -268,6 +271,32 @@ export const PUBLISHED_RATES = {
 		premiumRare: 4 / 24,
 		marvel: ESTIMATED_MARVEL_CHANCE,
 		coldFoil: 1 / 24,
+	},
+
+	// -----------------------------------------------------------------
+	// Mastery Pack Guardian. The one set here sourced from a product page
+	// rather than a Collectors Centre page, because it has no Collectors
+	// Centre page: LSS states which rarities each slot can hold but never
+	// how often. PUBLISHED configuration, 13 cards a pack:
+	//   Common 9 per pack / Rare or Majestic 1 per pack /
+	//   Equipment 1 per pack / Token 1 per pack /
+	//   Token or higher, Rainbow Foil or Cold Foil, 1 per pack
+	// PUBLISHED set composition: 3 Legendary, 16 Majestic, 30 Rare,
+	// 76 Common, 3 Token, 12 Marvel.
+	//
+	// POPULATION weights below carry the two slots whose split LSS does not
+	// give. ESTIMATED: Legendary, Marvel and Cold Foil, none of which this
+	// product publishes a rate for at all. Legendary takes the 1 per 96 that
+	// almost every set with a published Legendary rate uses, which is a
+	// borrowed figure, not this set's own.
+	MPG: {
+		popRare: 30,
+		popMajestic: 16,
+		popEquipmentCommon: 21,
+		popEquipmentRare: 8,
+		premiumLegendary: 1 / 96,
+		marvel: ESTIMATED_MARVEL_CHANCE,
+		coldFoil: COLD_FOIL_PER_DISPLAY,
 	},
 
 	// -----------------------------------------------------------------
