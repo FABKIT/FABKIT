@@ -50,6 +50,15 @@ export interface FabPrinting {
 	name: string;
 	rarity: CardRarity;
 	foiling: FoilTreatment;
+	/** Which print run this printing belongs to, verbatim from upstream:
+	 * "A" Alpha, "F" First Edition, "U" Unlimited, "N" for the single-run
+	 * sets that make up most of the game. The five oldest sets shipped the
+	 * same card twice, in different foilings per run — Welcome to Rathe's
+	 * Fyendal's Spring Tunic is a Cold Foil in Alpha and a Rainbow Foil in
+	 * Unlimited — which is why a set's printings cannot be treated as one
+	 * flat list when matching them against a marketplace that sells one run
+	 * at a time. See scripts/cardmarket.ts's editionForExpansion. */
+	edition: string;
 	expansionSlot: boolean;
 	/** Null when the-fab-cube has no TCGplayer mapping for this printing. */
 	tcgplayerProductId: string | null;

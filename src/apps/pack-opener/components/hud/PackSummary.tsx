@@ -1,21 +1,37 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { ResetSessionDialog } from "@fabkit/apps/pack-opener/components/hud/ResetSessionDialog";
 import { SessionStatsDialog } from "@fabkit/apps/pack-opener/components/hud/SessionStatsDialog";
 import { SWIPE_THRESHOLD_PX } from "@fabkit/apps/pack-opener/config/scene";
-import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
+import { formatMoney } from "@fabkit/apps/pack-opener/lib/currency";
+import {
+	cardPrice,
+	packPrice as packPriceFor,
+	priceCapturedAt,
+	priceSourceKey,
+} from "@fabkit/apps/pack-opener/lib/pricing";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
-import { getCardPrice, getSetPrices } from "@fabkit/shared/data/fab-prices";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, DollarSign, Euro, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 /** A finished pack resolves into an ordered, legible ledger — one row per
  * card, tappable to look at that specific card again in the 3D scene (see
  * stores/pack-opener.ts's revisitIndex, and RevealCaption.tsx's
- * "back to summary" affordance). Prices are USD market prices from the
- * build-time snapshot (see shared/data/fab-prices.ts); a card with no
- * available price shows a neutral dash, never a zero — see the execution
- * plan, sections 4.4 and 8.6.
+ * "back to summary" affordance). Prices come from whichever marketplace
+ * the currency switch is on (see lib/pricing.ts): TCGplayer dollars or
+ * Cardmarket euros, never one converted into the other. A card that
+ * marketplace has no price for shows a neutral dash, never a zero — see
+ * the execution plan, sections 4.4 and 8.6.
+ *
+ * The ledger itself, its header bar and "Next Pack" only exist once a pack
+ * is finished. The session controls beside them — currency, session stats,
+ * reset — are on screen in EVERY phase, including while a pack is being
+ * torn open and revealed: they are about the session rather than about the
+ * pack in front of you, and having to finish a pack before you could change
+ * currency or look at your totals was an artefact of them sharing this
+ * component, not a decision. The slot's height is reserved by
+ * PackOpenerPage.tsx either way, so nothing moves as they come and go.
  *
  * The ledger/breakdown collapses independently of the header (see
  * `expanded` below) — the execution plan, section 4.1: swipe or tap the
@@ -38,7 +54,11 @@ export function PackSummary() {
 	const revisitCard = usePackOpenerStore((state) => state.revisitCard);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
+	const currency = usePackOpenerStore((state) => state.currency);
+	const setCurrency = usePackOpenerStore((state) => state.setCurrency);
+	const resetSession = usePackOpenerStore((state) => state.resetSession);
 	const [statsOpen, setStatsOpen] = useState(false);
+	const [resetOpen, setResetOpen] = useState(false);
 	const [expandedByChoice, setExpandedByChoice] = useState(true);
 	const panelRef = useRef<HTMLDivElement>(null);
 	const touchStartY = useRef<number | null>(null);
@@ -67,13 +87,8 @@ export function PackSummary() {
 	);
 
 	const cardPrices = useMemo(
-		() =>
-			resolvedCards.map((card) =>
-				packSetCode
-					? getCardPrice(packSetCode, card.tcgplayerProductId, card.treatment)
-					: null,
-			),
-		[resolvedCards, packSetCode],
+		() => resolvedCards.map((card) => cardPrice(currency, packSetCode, card)),
+		[resolvedCards, packSetCode, currency],
 	);
 	const knownPrices = cardPrices.filter(
 		(price): price is number => price !== null,
@@ -84,10 +99,10 @@ export function PackSummary() {
 			: null;
 	const isPartialTotal =
 		knownPrices.length > 0 && knownPrices.length < resolvedCards.length;
-	const setPrices = packSetCode ? getSetPrices(packSetCode) : null;
-	const packPrice = setPrices?.packMarketPrice ?? null;
-	const capturedDate = setPrices
-		? new Date(setPrices.capturedAt).toLocaleDateString(undefined, {
+	const packPrice = packPriceFor(currency, packSetCode);
+	const capturedAt = priceCapturedAt(currency, packSetCode);
+	const capturedDate = capturedAt
+		? new Date(capturedAt).toLocaleDateString(undefined, {
 				year: "numeric",
 				month: "short",
 				day: "numeric",
@@ -138,7 +153,9 @@ export function PackSummary() {
 		return () => document.removeEventListener("pointerdown", handlePointerDown);
 	}, [expanded, phase]);
 
-	if (!pack) return null;
+	// The pack half of this component. The session controls below render
+	// regardless, so this is not an early return any more.
+	const showsLedger = pack !== null && phase === "done";
 
 	return (
 		<div className="pointer-events-auto flex shrink-0 flex-col items-center px-4 pb-2">
@@ -158,201 +175,254 @@ export function PackSummary() {
 			    `bottom-full` anchors to, so the ledger spans the full row. */}
 			<div
 				ref={panelRef}
-				className="relative flex w-full max-w-4xl flex-col items-stretch gap-2 md:flex-row md:items-center"
+				className={`relative flex w-full max-w-4xl flex-col items-stretch gap-2 md:flex-row md:items-center ${
+					// With no bar to push them along the row, the controls
+					// centre themselves under the card instead of hugging its
+					// left edge.
+					showsLedger ? "" : "md:justify-center"
+				}`}
 			>
-				{/* The ledger opens UPWARD, over the canvas, rather than pushing the
+				{showsLedger && (
+					<>
+						{/* The ledger opens UPWARD, over the canvas, rather than pushing the
 			    layout around — that is what keeps the card exactly one size
 			    whether the summary is open or shut (see PackOpenerPage.tsx).
 			    Collapsed it has no height at all: the border and background sit
 			    on the inner element so nothing shows as a stray line above the
 			    header. */}
-				<div className="absolute inset-x-0 bottom-full">
-					<div
-						className={`grid w-full transition-[grid-template-rows] duration-300 motion-reduce:transition-none ${
-							expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-						}`}
-					>
-						<div className="overflow-hidden">
-							{/* Near-opaque on purpose: the card behind it is full size
+						<div className="absolute inset-x-0 bottom-full">
+							<div
+								className={`grid w-full transition-[grid-template-rows] duration-300 motion-reduce:transition-none ${
+									expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+								}`}
+							>
+								<div className="overflow-hidden">
+									{/* Near-opaque on purpose: the card behind it is full size
 						    for the whole done phase, so a lightly tinted panel let
 						    bright card art bleed through and made prices hard to
 						    read. */}
-							<div className="rounded-t-2xl border border-b-0 border-border-primary bg-surface/95 px-4 pt-4 shadow-xl backdrop-blur-md">
-								<ul className="flex max-h-64 flex-col gap-1 overflow-y-auto">
-									{resolvedCards.map((card, index) => {
-										const price = cardPrices[index];
-										const isShowing = revisitIndex === index;
-										return (
-											<li key={card.id}>
-												{/* The row whose card is currently on screen stays
+									<div className="rounded-t-2xl border border-b-0 border-border-primary bg-surface/95 px-4 pt-4 shadow-xl backdrop-blur-md">
+										<ul className="flex max-h-64 flex-col gap-1 overflow-y-auto">
+											{resolvedCards.map((card, index) => {
+												const price = cardPrices[index];
+												const isShowing = revisitIndex === index;
+												return (
+													<li key={card.id}>
+														{/* The row whose card is currently on screen stays
 											    marked, so reopening the ledger shows at a
 											    glance which one you were looking at. */}
-												<button
-													type="button"
-													onClick={() => showCard(index)}
-													className={`flex w-full items-center gap-3 rounded-lg border px-2 py-1.5 text-left transition hover:border-border-primary hover:bg-surface-muted ${
-														isShowing
-															? "border-border-primary bg-surface-active"
-															: "border-transparent"
-													}`}
-												>
-													<img
-														src={CardRarities[card.rarity].icon}
-														alt={t(CardRarities[card.rarity].label)}
-														className="h-5 w-5 shrink-0"
-													/>
-													<span className="font-card-name flex-1 truncate text-sm text-body">
-														{card.name}
-													</span>
-													{card.rarity === "marvel" && (
-														<span className="shrink-0 text-xs font-bold text-pack-marvel">
-															{t("page.marvel_badge")}
-														</span>
-													)}
-													{card.rarity !== "marvel" &&
-														card.treatment !== "standard" && (
-															<span className="shrink-0 text-xs font-bold text-pack-foil">
-																{t(`page.treatment_name.${card.treatment}`)}
+														<button
+															type="button"
+															onClick={() => showCard(index)}
+															className={`flex w-full items-center gap-3 rounded-lg border px-2 py-1.5 text-left transition hover:border-border-primary hover:bg-surface-muted ${
+																isShowing
+																	? "border-border-primary bg-surface-active"
+																	: "border-transparent"
+															}`}
+														>
+															<img
+																src={CardRarities[card.rarity].icon}
+																alt={t(CardRarities[card.rarity].label)}
+																className="h-5 w-5 shrink-0"
+															/>
+															<span className="font-card-name flex-1 truncate text-sm text-body">
+																{card.name}
 															</span>
-														)}
-													<span className="font-card-stat shrink-0 text-sm text-subtle">
-														{price !== null
-															? formatUsd(price)
-															: t("page.price_unavailable")}
-													</span>
-												</button>
-											</li>
-										);
-									})}
-								</ul>
-								<div className="mt-3 flex flex-col gap-1.5 border-t border-border-primary pt-3">
-									<div className="flex items-center justify-between">
-										<span className="text-sm font-semibold text-heading">
-											{t("page.value_pulled_label")}
-										</span>
-										<span className="font-card-stat text-base text-body">
-											{pulledTotal !== null
-												? formatUsd(pulledTotal)
-												: t("page.price_unavailable")}
-										</span>
-									</div>
-									{isPartialTotal && (
-										<p className="text-right text-xs text-subtle">
-											{t("page.partial_total_note")}
-										</p>
-									)}
-									<div className="flex items-center justify-between">
-										<span className="text-sm text-muted">
-											{t("page.pack_price_label")}
-										</span>
-										<span className="font-card-stat text-sm text-muted">
-											{packPrice !== null
-												? formatUsd(packPrice)
-												: t("page.price_unavailable")}
-										</span>
-									</div>
-									{/* Same provenance the pull-rates dialog carries, on the
+															{card.rarity === "marvel" && (
+																<span className="shrink-0 text-xs font-bold text-pack-marvel">
+																	{t("page.marvel_badge")}
+																</span>
+															)}
+															{card.rarity !== "marvel" &&
+																card.treatment !== "standard" && (
+																	<span className="shrink-0 text-xs font-bold text-pack-foil">
+																		{t(`page.treatment_name.${card.treatment}`)}
+																	</span>
+																)}
+															<span className="font-card-stat shrink-0 text-sm text-subtle">
+																{price !== null
+																	? formatMoney(price, currency)
+																	: t("page.price_unavailable")}
+															</span>
+														</button>
+													</li>
+												);
+											})}
+										</ul>
+										<div className="mt-3 flex flex-col gap-1.5 border-t border-border-primary pt-3">
+											<div className="flex items-center justify-between">
+												<span className="text-sm font-semibold text-heading">
+													{t("page.value_pulled_label")}
+												</span>
+												<span className="font-card-stat text-base text-body">
+													{pulledTotal !== null
+														? formatMoney(pulledTotal, currency)
+														: t("page.price_unavailable")}
+												</span>
+											</div>
+											{isPartialTotal && (
+												<p className="text-right text-xs text-subtle">
+													{t("page.partial_total_note")}
+												</p>
+											)}
+											<div className="flex items-center justify-between">
+												<span className="text-sm text-muted">
+													{t("page.pack_price_label")}
+												</span>
+												<span className="font-card-stat text-sm text-muted">
+													{packPrice !== null
+														? formatMoney(packPrice, currency)
+														: t("page.price_unavailable")}
+												</span>
+											</div>
+											{/* Same provenance the pull-rates dialog carries, on the
 								    same two translation keys rather than a second copy
 								    of the wording: every money figure a player sees
 								    should say where it came from and how old it is, not
 								    only the ones inside a dialog they had to go looking
 								    for. */}
-									{capturedDate && (
-										<p className="text-right text-xs text-subtle">
-											{t("dialog.price_captured", { date: capturedDate })}
+											{capturedDate && (
+												<p className="text-right text-xs text-subtle">
+													{t("dialog.price_captured", { date: capturedDate })}
+												</p>
+											)}
+											<p className="text-right text-xs text-subtle">
+												{t(priceSourceKey(currency))}
+											</p>
+										</div>
+										<p className="mt-3 pb-4 text-center text-xs text-subtle">
+											{t("page.packs_opened_session", {
+												count: packsOpenedThisSession,
+											})}
 										</p>
-									)}
-									<p className="text-right text-xs text-subtle">
-										{t("dialog.price_source")}
-									</p>
+									</div>
 								</div>
-								<p className="mt-3 pb-4 text-center text-xs text-subtle">
-									{t("page.packs_opened_session", {
-										count: packsOpenedThisSession,
-									})}
-								</p>
 							</div>
 						</div>
-					</div>
-				</div>
 
-				{/* The header bar itself stays in flow, directly under the card's
+						{/* The header bar itself stays in flow, directly under the card's
 			    details, so it never covers the card. Squared off at the top
 			    while open so it reads as one panel with the ledger above. */}
-				<div
-					className={`min-w-0 flex-1 border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md ${
-						expanded ? "rounded-b-2xl border-t-0" : "rounded-2xl"
-					}`}
-				>
-					{/* The heading wraps the button (rather than sitting inside it,
+						<div
+							className={`min-w-0 flex-1 border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md ${
+								expanded ? "rounded-b-2xl border-t-0" : "rounded-2xl"
+							}`}
+						>
+							{/* The heading wraps the button (rather than sitting inside it,
 				    which HTML doesn't allow — a <button> can only hold phrasing
 				    content, not a heading) so the summary title stays in the
 				    document outline for screen readers while the whole header is
 				    still one native, keyboard-operable toggle. Standard
 				    WAI-ARIA disclosure/accordion pattern. */}
-					<h2 className="text-lg font-semibold text-heading">
-						<button
-							type="button"
-							aria-expanded={expanded}
-							onClick={() => setExpandedByChoice(!expanded)}
-							onTouchStart={(event) => {
-								touchStartY.current = event.touches[0].clientY;
-							}}
-							onTouchEnd={(event) => {
-								if (touchStartY.current === null) return;
-								const delta =
-									event.changedTouches[0].clientY - touchStartY.current;
-								touchStartY.current = null;
-								if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
-								// A real swipe, not a tap — stop the browser's own
-								// synthesized click from also firing right after this
-								// and toggling the state a second time.
-								event.preventDefault();
-								setExpandedByChoice(delta < 0);
-							}}
-							className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-left"
-						>
-							<span className="truncate">{t("page.summary_title")}</span>
-							<span className="flex shrink-0 items-center gap-2">
-								<span className="font-card-stat text-base text-body">
-									{pulledTotal !== null
-										? formatUsd(pulledTotal)
-										: t("page.price_unavailable")}
-								</span>
-								<ChevronDown
-									className={`h-5 w-5 text-muted transition-transform ${
-										expanded ? "rotate-180" : ""
-									}`}
-									aria-hidden="true"
-								/>
-							</span>
-						</button>
-					</h2>
-				</div>
+							<h2 className="text-lg font-semibold text-heading">
+								<button
+									type="button"
+									aria-expanded={expanded}
+									onClick={() => setExpandedByChoice(!expanded)}
+									onTouchStart={(event) => {
+										touchStartY.current = event.touches[0].clientY;
+									}}
+									onTouchEnd={(event) => {
+										if (touchStartY.current === null) return;
+										const delta =
+											event.changedTouches[0].clientY - touchStartY.current;
+										touchStartY.current = null;
+										if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
+										// A real swipe, not a tap — stop the browser's own
+										// synthesized click from also firing right after this
+										// and toggling the state a second time.
+										event.preventDefault();
+										setExpandedByChoice(delta < 0);
+									}}
+									className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-left"
+								>
+									<span className="truncate">{t("page.summary_title")}</span>
+									<span className="flex shrink-0 items-center gap-2">
+										<span className="font-card-stat text-base text-body">
+											{pulledTotal !== null
+												? formatMoney(pulledTotal, currency)
+												: t("page.price_unavailable")}
+										</span>
+										<ChevronDown
+											className={`h-5 w-5 text-muted transition-transform ${
+												expanded ? "rotate-180" : ""
+											}`}
+											aria-hidden="true"
+										/>
+									</span>
+								</button>
+							</h2>
+						</div>
+					</>
+				)}
 
-				{/* Below md the two actions share the row width and shrink to fit
+				{/* Below md the actions share the row width and shrink to fit
 				    rather than wrapping onto a third line: wrapping made the
 				    reserved slot taller on the narrowest phones only, which would
-				    have needed its own height stop. Above md they take their
-				    natural width beside the bar. */}
+				    have needed its own height stop. That is also why the two
+				    session controls are icon-only squares rather than labelled
+				    buttons — four labelled buttons cannot sit on one phone-width
+				    row, and their labels live in the tooltip and the accessible
+				    name instead. Above md they all take their natural width
+				    beside the bar. */}
 				<div className="flex w-full shrink-0 justify-center gap-2 md:w-auto">
+					{showsLedger && (
+						<button
+							type="button"
+							onClick={() => readyAnotherPack()}
+							className="min-w-0 flex-1 truncate rounded-full bg-heading px-4 py-2.5 text-sm font-semibold text-surface shadow-lg transition hover:opacity-90 md:flex-none md:px-6 md:text-base"
+						>
+							{t("page.open_another")}
+						</button>
+					)}
+					{/* Always here, in every phase and from the very first visit,
+				    even with nothing opened yet — the dialog has its own empty
+				    state telling you to open a pack, which is a better answer
+				    than a button that is not there. It used to appear only once
+				    a pack had been completed, so a player mid-pack could not
+				    check the totals they were adding to.
+
+				    Fills with the brand colour and flips the label white on
+				    hover, matching the pull-rates button. */}
 					<button
 						type="button"
-						onClick={() => readyAnotherPack()}
-						className="min-w-0 flex-1 truncate rounded-full bg-heading px-4 py-2.5 text-sm font-semibold text-surface shadow-lg transition hover:opacity-90 md:flex-none md:px-6 md:text-base"
+						onClick={() => setStatsOpen(true)}
+						className="min-w-0 flex-1 truncate rounded-full border border-primary bg-surface/80 px-4 py-2.5 text-sm font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white md:flex-none md:px-6 md:text-base"
 					>
-						{t("page.open_another")}
+						{t("stats.open_button")}
 					</button>
-					{/* Fills with the brand colour and flips the label white on
-				    hover, matching the pull-rates button. It previously only
-				    shifted its background, leaving the label washing into it. */}
+					{/* One button carrying the currency that is ON, which flips to
+				    the other when pressed — the marketplace the prices above it
+				    came from, in one glyph. */}
+					<button
+						type="button"
+						onClick={() => setCurrency(currency === "USD" ? "EUR" : "USD")}
+						aria-label={t(
+							`currency.switch_to_${currency === "USD" ? "eur" : "usd"}`,
+						)}
+						title={t(
+							`currency.switch_to_${currency === "USD" ? "eur" : "usd"}`,
+						)}
+						className="grid size-11 shrink-0 place-items-center rounded-full border border-primary bg-surface/80 text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white"
+					>
+						{currency === "USD" ? (
+							<DollarSign className="size-5" aria-hidden="true" />
+						) : (
+							<Euro className="size-5" aria-hidden="true" />
+						)}
+					</button>
+					{/* Reset, unlike the stats button beside it, appears only once
+				    there is actually a session to throw away: a button whose
+				    only outcome is "nothing happened" is worse than no button. */}
 					{packsOpenedThisSession > 0 && (
 						<button
 							type="button"
-							onClick={() => setStatsOpen(true)}
-							className="min-w-0 flex-1 truncate rounded-full border border-primary bg-surface/80 px-4 py-2.5 text-sm font-semibold text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white md:flex-none md:px-6 md:text-base"
+							onClick={() => setResetOpen(true)}
+							aria-label={t("reset.open_button")}
+							title={t("reset.open_button")}
+							className="grid size-11 shrink-0 place-items-center rounded-full border border-primary bg-surface/80 text-primary shadow-lg backdrop-blur transition-colors hover:bg-primary hover:text-white"
 						>
-							{t("stats.open_button")}
+							<RotateCcw className="size-5" aria-hidden="true" />
 						</button>
 					)}
 				</div>
@@ -362,6 +432,16 @@ export function PackSummary() {
 				open={statsOpen}
 				onClose={() => setStatsOpen(false)}
 				openedPacks={openedPacksThisSession}
+			/>
+
+			<ResetSessionDialog
+				open={resetOpen}
+				packsOpened={packsOpenedThisSession}
+				onCancel={() => setResetOpen(false)}
+				onConfirm={() => {
+					setResetOpen(false);
+					resetSession();
+				}}
 			/>
 		</div>
 	);

@@ -75,6 +75,22 @@ export interface SelectOption<T extends string> {
 	 * restructure its data to get them.
 	 */
 	sectionLabel?: string;
+
+	/**
+	 * Tints the section heading above this option, so a heading reads as a
+	 * divider between two kinds of thing rather than as a faint label. Only
+	 * meaningful alongside `sectionLabel`, and so set on the same option.
+	 *
+	 * Deliberately the heading alone and NOT the options beneath it: tinting
+	 * the whole run made the list read as two competing panels and drew more
+	 * attention to the individual entries than to the break between them.
+	 *
+	 * Equally deliberately a neutral "this is a different kind of thing"
+	 * tint from the shared surface tokens rather than a colour a caller
+	 * picks — the point is to separate runs, and letting each caller choose
+	 * its own would make the same control look different in every app.
+	 */
+	sectionTinted?: boolean;
 }
 
 /**
@@ -206,7 +222,9 @@ export default function Select<T extends string>({
 									// already carry their own accessible names.
 									<div
 										aria-hidden="true"
-										className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-subtle"
+										className={`px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-subtle ${
+											option.sectionTinted ? "bg-surface-muted" : ""
+										}`}
 									>
 										{option.sectionLabel}
 									</div>

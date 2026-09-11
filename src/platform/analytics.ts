@@ -91,7 +91,9 @@ type AnalyticsEvent =
 			name: "pack_opener_card_revealed";
 			data: { rarity: string; treatment: string };
 	  }
-	| { name: "pack_opener_pack_completed" };
+	| { name: "pack_opener_pack_completed" }
+	| { name: "pack_opener_currency_changed"; data: { currency: string } }
+	| { name: "pack_opener_session_reset" };
 
 export function trackEvent(event: AnalyticsEvent): void {
 	activeProvider.track(event.name, "data" in event ? event.data : undefined);

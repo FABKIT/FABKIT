@@ -262,8 +262,47 @@ describe("expected counts agree with the engine", () => {
 });
 
 /**
- * Fabled is the one rarity with no published rate anywhere: every
- * Collectors Centre page prints "1 per ??? packs" for it. It is set at half
+ * Compendium of Rathe - Antiquity Pack. The only product here whose source
+ * is LSS's own "Estimated Rarity Breakdown" (their wording), pasted into
+ * docs/pull-rate-verification.md: Marvel 1 per 800, Fabled 1 per 45,
+ * Legendary 1 per 20, Majestic 1 per pack across its regular and Cold Foil
+ * halves, and a 10-card Rare slot at 1 per pack.
+ *
+ * The Rare slot is the one figure that cannot be asserted as published.
+ * LSS counts all 10 of those cards as "Rare"; the upstream data files 6 of
+ * them as Common, and the pack generator deals by the rarity the data
+ * carries. So the published "1 per pack" is checked across both rarities
+ * together, which is the same claim measured the only way this engine can
+ * express it. It is a hair under 1 because Legendary is folded into this
+ * slot — see set-configs.ts's ANTIQUITY_PACK for why it lives here.
+ */
+describe("Antiquity Pack", () => {
+	it("matches its published rarity breakdown", () => {
+		expectRate("ANQ", "majestic", 1);
+		expectRate("ANQ", "legendary", 1 / 20);
+		expectRate("ANQ", "fabled", 1 / 45);
+		expectRate("ANQ", "marvel", 1 / 800);
+	});
+
+	it("deals its 10-card Rare slot once per pack", () => {
+		const rares =
+			simulateRatePerPack("ANQ", "rare") + simulateRatePerPack("ANQ", "common");
+		expect(rares).toBeGreaterThan(0.9);
+		expect(rares).toBeLessThan(1);
+	});
+
+	it("deals exactly two cards, the puzzle slot being unmodelled", () => {
+		expect(REAL_SET_PACK_CONFIGS.ANQ.cardsPerPack).toBe(2);
+		expect(generatePack(REAL_SET_PACK_CONFIGS.ANQ, mulberry32(5))).toHaveLength(
+			2,
+		);
+	});
+});
+
+/**
+ * Fabled is, for every set but the Antiquity Pack above, a rarity with no
+ * published rate anywhere: every Collectors Centre page prints
+ * "1 per ??? packs" for it. It is set at half
  * the set's own Marvel chance (pack/published-rates.ts's
  * FABLED_SHARE_OF_MARVEL) so a set's single rarest card stays reachable
  * instead of being unpullable, which is what it was before. There is
@@ -273,7 +312,7 @@ describe("expected counts agree with the engine", () => {
 describe("Fabled", () => {
 	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
 		if (config.fabledChance <= 0) continue;
-		it(`${code} deals a Fabled at half its Marvel rate`, () => {
+		it(`${code} deals a Fabled at its configured rate`, () => {
 			const observed = simulateRatePerPack(code, "fabled");
 			expect(observed).toBeGreaterThan(0);
 			expect(Math.abs(observed - config.fabledChance)).toBeLessThan(0.004);

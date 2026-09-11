@@ -24,7 +24,11 @@ src/apps/pack-opener/
     rarity-icon-cache.ts  Preloads the 10 shared rarity SVGs once (called from the route loader)
     mock-card-texture.ts  drawMockCardFace() — canvas-drawn FAB-style placeholder card face,
                       used only by the mock-fallback rendering path (see "Card data")
-  stores/pack-opener.ts   Zustand store — the idle/tearing/revealing/done state machine
+  lib/               currency.ts (the Currency type + per-market formatting),
+                      pricing.ts (the ONE place a component asks what something
+                      costs — see "Prices and currency"), easing.ts
+  stores/pack-opener.ts   Zustand store — the idle/tearing/revealing/done state machine,
+                      plus the persisted currency preference and resetSession()
   components/
     scene/           react-three-fiber scene: PackOpenerCanvas, CameraRig (scripted, no
                       OrbitControls), PackMesh (top-seal tear animation), TearBurst,
@@ -38,8 +42,9 @@ src/apps/pack-opener/
                       constructed — real card images load via drei's useTexture instead,
                       see "Card data")
     hud/             2D page chrome BELOW the canvas, not overlaid on it (IdleOverlay,
-                      RevealCaption, PackSummary, SessionStatsDialog), driven purely by
-                      store state and composed directly by PackOpenerPage
+                      RevealCaption, PackSummary, SessionStatsDialog,
+                      ResetSessionDialog), driven purely by store state and composed
+                      directly by PackOpenerPage
   config/scene.ts     Animation durations, easing, camera targets/punch-per-slot
   i18n/en.json        Namespace "pack-opener" — carries its own card.rarity.* block since
                       rarity labels are per-app translations, not centrally shared (see
@@ -82,6 +87,23 @@ blacks and most FAB pack fronts are largely black behind the character art.
 
 Removing `<Environment>` also removed an HDRI download and, with it, a measured ~300ms
 where the canvas rendered nothing at all on first load while that texture resolved.
+
+The one thing that DOES respond to light is the cold foil, and it makes its
+own. `materials/foilMaterial.ts` models the actual printing process: a
+mirror-bright metallic layer under the card, with the artwork printed on top
+in translucent ink, so ink density alone decides where the foil shows
+through. One broad soft reflection sweeps across it as the card tilts.
+Achromatic at every angle, which is the property that separates cold foil
+from Rainbow Foil. No mask, no surface normal, no grain — the card is flat
+and the foil is smooth, so there is no texture to give it. No scene lights
+and no environment map either: three.js metalness with nothing to reflect
+renders black, and the alternative was re-adding the HDRI this section
+exists to explain the removal of.
+
+Read that file's header before changing any of it. It records two earlier
+versions that both looked plausible in a still frame and were both wrong —
+a swept highlight that read as a torch shone on paper, and a brushed satin
+metal that read as a texture cold foil does not have.
 
 **The transparent queue is the trap in this scene.** three.js draws every transparent
 material after every opaque one, whatever `renderOrder` says. The card is opaque (it cuts
@@ -159,6 +181,37 @@ breakdown behind JavaScript tabs.
 Cold foil is a published per-set rate (usually 1 per 24 packs, one display) applied as a
 pack-level upgrade roll rather than a slot. `pack/odds.ts`'s DEFAULT_* constants are now
 community estimates used only by the mock config.
+
+## Prices and currency
+
+Two marketplaces, never one converted into the other. USD prices are TCGplayer's,
+mirrored by tcgcsv.com (`src/shared/data/fab-prices.ts`, keyed by
+`tcgplayerProductId:treatment`); EUR prices are Cardmarket's own daily catalogue
+(`src/shared/data/fab-prices-cm.ts`, keyed by a printing's `uniqueId`, which is why
+`ResolvedCard` carries `printingId` as well). Both are build-time snapshots written by
+`scripts/build-pack-data.ts` into `public/data/pack-opener/prices/` and `prices-cm/`;
+neither can be fetched live from a browser.
+
+**Components never touch either module directly — they call `lib/pricing.ts`.** That
+file takes the currency and hands back a number or null, so the two different keying
+schemes stay in one place and every surface (the pack ledger, the reveal caption, the
+session totals, the set info dialog) can never end up showing different marketplaces at
+once. The currency itself lives in the store (persisted per device) for the same reason.
+
+A missing price is normal and shows a dash, never a zero and never the other currency's
+figure. About 4% of card versions have no euro price at all, on purpose: see
+`scripts/cardmarket.ts`, which pairs our printings against Cardmarket's products only
+when the two counts agree exactly and writes nothing when they do not. That file's header
+is the full story, including why the two catalogues disagree about cards like Crucible of
+War's Mandible Claw.
+
+## Session
+
+`packsOpenedThisSession` and `openedPacksThisSession` are in-memory only and reset on
+reload. `resetSession()` clears both and puts a closed pack back on the counter, keeping
+the selected set and its artwork; it is destructive with no undo, so `ResetSessionDialog`
+confirms first, the same gate `LeavePackDialog` puts in front of discarding an in-flight
+pack.
 
 ## Import Rules
 

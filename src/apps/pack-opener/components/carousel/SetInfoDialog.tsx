@@ -1,4 +1,10 @@
-import { formatUsd } from "@fabkit/apps/pack-opener/lib/currency";
+import { formatMoney } from "@fabkit/apps/pack-opener/lib/currency";
+import {
+	boxPrice,
+	packPrice,
+	priceCapturedAt,
+	priceSourceKey,
+} from "@fabkit/apps/pack-opener/lib/pricing";
 import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
 import {
 	guaranteedTokenCount,
@@ -11,15 +17,15 @@ import type {
 	PackSlotKind,
 	RarityWeight,
 } from "@fabkit/apps/pack-opener/pack/types";
+import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
-import { getSetPrices } from "@fabkit/shared/data/fab-prices";
 import {
 	Dialog,
 	DialogBackdrop,
 	DialogPanel,
 	DialogTitle,
 } from "@headlessui/react";
-import { ExternalLink, TriangleAlert, X } from "lucide-react";
+import { DollarSign, Euro, ExternalLink, TriangleAlert, X } from "lucide-react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -97,9 +103,17 @@ export function SetInfoDialog({
 	const sourceUrl = SET_SOURCE_URLS[setCode];
 	const rates = pullRateRows(config);
 	const tokenCount = guaranteedTokenCount(config);
-	const prices = getSetPrices(setCode);
-	const capturedDate = prices
-		? new Date(prices.capturedAt).toLocaleDateString(undefined, {
+	// This dialog can be opened before a single pack is, which is the one
+	// place a player sees prices while the summary bar (and its currency
+	// switch) is nowhere on screen — so it carries its own switch, writing
+	// the same single store preference rather than a second one of its own.
+	const currency = usePackOpenerStore((state) => state.currency);
+	const setCurrency = usePackOpenerStore((state) => state.setCurrency);
+	const sealedPackPrice = packPrice(currency, setCode);
+	const sealedBoxPrice = boxPrice(currency, setCode);
+	const capturedAt = priceCapturedAt(currency, setCode);
+	const capturedDate = capturedAt
+		? new Date(capturedAt).toLocaleDateString(undefined, {
 				year: "numeric",
 				month: "short",
 				day: "numeric",
@@ -250,22 +264,41 @@ export function SetInfoDialog({
 					</section>
 
 					<section className="space-y-1.5">
-						<h3 className="font-semibold text-body">
-							{t("dialog.price_title")}
-						</h3>
+						<div className="flex items-center justify-between gap-3">
+							<h3 className="font-semibold text-body">
+								{t("dialog.price_title")}
+							</h3>
+							<button
+								type="button"
+								onClick={() => setCurrency(currency === "USD" ? "EUR" : "USD")}
+								aria-label={t(
+									`currency.switch_to_${currency === "USD" ? "eur" : "usd"}`,
+								)}
+								title={t(
+									`currency.switch_to_${currency === "USD" ? "eur" : "usd"}`,
+								)}
+								className="grid size-8 shrink-0 place-items-center rounded-full border border-primary text-primary transition-colors hover:bg-primary hover:text-white"
+							>
+								{currency === "USD" ? (
+									<DollarSign className="size-4" aria-hidden="true" />
+								) : (
+									<Euro className="size-4" aria-hidden="true" />
+								)}
+							</button>
+						</div>
 						<div className="flex items-center justify-between text-sm">
 							<span className="text-muted">{t("dialog.pack_price_label")}</span>
 							<span className="font-card-stat text-body">
-								{prices?.packMarketPrice != null
-									? formatUsd(prices.packMarketPrice)
+								{sealedPackPrice !== null
+									? formatMoney(sealedPackPrice, currency)
 									: t("page.price_unavailable")}
 							</span>
 						</div>
 						<div className="flex items-center justify-between text-sm">
 							<span className="text-muted">{t("dialog.box_price_label")}</span>
 							<span className="font-card-stat text-body">
-								{prices?.boxMarketPrice != null
-									? formatUsd(prices.boxMarketPrice)
+								{sealedBoxPrice !== null
+									? formatMoney(sealedBoxPrice, currency)
 									: t("page.price_unavailable")}
 							</span>
 						</div>
@@ -277,7 +310,7 @@ export function SetInfoDialog({
 						{/* Says where the money numbers actually come from. Players
 						    reasonably want to know a price is a real market figure
 						    and not something this app invented. */}
-						<p className="text-xs text-subtle">{t("dialog.price_source")}</p>
+						<p className="text-xs text-subtle">{t(priceSourceKey(currency))}</p>
 					</section>
 
 					{sourceUrl && (

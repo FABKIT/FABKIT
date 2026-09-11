@@ -224,10 +224,18 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 	},
 	{
 		code: "ANQ",
-		decision: "exclude",
+		decision: "include",
+		kind: "supplemental",
 		reason:
-			"Compendium of Rathe - Antiquity Pack — a bonus insert bundled with " +
-			"PEN, not its own booster set.",
+			"Compendium of Rathe - Antiquity Pack — a sealed 3-card pack bundled " +
+			"one per Compendium of Rathe booster box. Previously excluded as 'a " +
+			"bonus insert, not its own booster set', which is true of how it is " +
+			"sold and beside the point of what it is: it is a randomised sealed " +
+			"pack with its own published rarity breakdown, which is the thing " +
+			"this app opens. LSS publishes that breakdown; it is transcribed in " +
+			"docs/pull-rate-verification.md and applied in pack/set-configs.ts. " +
+			"Opens as two cards rather than three — see that config for why the " +
+			"puzzle slot is left out.",
 	},
 	{
 		code: "IAR",

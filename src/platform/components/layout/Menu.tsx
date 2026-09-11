@@ -15,7 +15,6 @@ import {
 	Map as MapIcon,
 	Menu as MenuIcon,
 	MessageCircle,
-	PackageOpen,
 	Paintbrush,
 	X,
 } from "lucide-react";
@@ -24,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import FabkitLogo from "../../../assets/Fabkitlogo.svg";
 import FabkitLogoNotext from "../../../assets/Fabkitlogo_notext.svg";
 import { Fabble } from "../icons/Fabble.tsx";
+import { Square2Stack } from "../icons/Square2Stack.tsx";
 import { LanguageToggle } from "./LanguageToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
@@ -59,7 +59,7 @@ const navigation: NavItem[] = [
 		],
 	},
 	{ nameKey: "nav.fabble", route: "/fabble", icon: Fabble },
-	{ nameKey: "nav.pack_opener", route: "/pack-opener", icon: PackageOpen },
+	{ nameKey: "nav.pack_opener", route: "/pack-opener", icon: Square2Stack },
 	{ nameKey: "nav.roadmap", route: "/roadmap", icon: MapIcon },
 	{ nameKey: "nav.contact", route: "/contact", icon: MessageCircle },
 ];

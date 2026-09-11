@@ -491,6 +491,8 @@ interface RawPrinting {
 	set_id: string;
 	rarity: string;
 	foiling: string;
+	/** "A" / "F" / "U" / "N" — carried through as FabPrinting.edition. */
+	edition: string;
 	expansion_slot: boolean;
 	tcgplayer_product_id: string | null;
 	/** This printing's own true identity — unlike `id` (the collector
@@ -805,6 +807,7 @@ function buildSetPrintings(
 				name: card.name,
 				rarity,
 				foiling,
+				edition: raw.edition ?? "N",
 				expansionSlot: raw.expansion_slot,
 				tcgplayerProductId: raw.tcgplayer_product_id || null,
 				pitch: toPitch(card.pitch),
@@ -979,6 +982,7 @@ async function main() {
 		let cardmarketLogSuffix = "";
 		if (cardmarket) {
 			const { snapshot, coverage } = buildCardmarketSnapshot(
+				code,
 				setPrintings.printings,
 				tcgCardPrices,
 				cardmarket,
@@ -995,9 +999,16 @@ async function main() {
 			cardmarketLogSuffix =
 				`, EUR ${coverage.priced}/${coverage.versions} versions (${pct}%` +
 				(coverage.ambiguous > 0 ? `, ${coverage.ambiguous} ambiguous` : "") +
+				(coverage.refinedPairings > 0
+					? `, ${coverage.refinedPairings} refined`
+					: "") +
+				(coverage.edition !== null ? `, ${coverage.edition} run` : "") +
 				(coverage.ratio !== null
 					? `, EUR/USD ${coverage.ratio.toFixed(2)}`
 					: "") +
+				(snapshot.packPrice !== null
+					? `, pack EUR ${snapshot.packPrice.toFixed(2)}`
+					: ", no EUR pack price") +
 				")";
 		}
 
