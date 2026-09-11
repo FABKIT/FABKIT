@@ -564,17 +564,43 @@ const SUPER_SLAM: PackConfig = {
 // Majestic); Rainbow Foil - 1 per pack; Basic - 2 per pack (1 Basic + 1
 // Basic, Expansion Slot, Legendary, Marvel, or Fabled). Sum: 11 + 2 + 1
 // (separate Rainbow Foil, same as Super Slam above) + 2 = 16.
-// Real population: rare 60, majestic 15, legendary 4, basic 14, marvel 9,
-// fabled 1 (this is the one set here whose page explicitly lists Fabled as
-// a reachable outcome, and it does have exactly one real Fabled printing).
-// Premium Foil modelled as Common only — same reasoning as Super Slam
-// above (Legendary already has its own channel, the wildcard slot below).
+//
+// Rates, from this set's Collectors Centre breakdown (read off the live
+// page by hand; it renders behind JavaScript tabs):
+//   1 Fabled / 5 Legendary / 37 Majestic, being
+//     15 Set (1 per 8 packs) and 22 Expansion (1 per 7 packs)
+//   60 Rare (1.88 per pack) / 134 Common (11 per pack) /
+//   14 Basic (1.8 per pack) / 1 Premium Foil (1 per pack), itself being
+//     1 Fabled (1 per ???) / 5 Legendary (1 per 96) /
+//     14 Majestic (1 per 42) / 59 Rare (5.5 per 24) / 105 Common (18 per 24)
+//   Cold Foil (1 per 24 packs), being Fabled / Legendary / Majestic /
+//   Common / 12 Marvel
+// The premium block sums to 1.01, the usual tell that it describes one
+// card. Base sum: 0.125 + 0.143 + 1.88 + 11 + 1.8 + 1 = 15.95, the 16-card
+// pack.
+//
+// This set publishes no standalone Majestic rate: its Majestics are Set
+// and Expansion content, both of which DO have rates, so its whole base
+// Majestic figure is expansion-slot content (same shape as Super Slam).
+// Those two rates total 0.268 a pack, which is more than the one
+// Rare-or-Majestic slot can carry alongside 0.88 Rare, so the remainder
+// rides in the Basic wildcard - which is where this set's own page says
+// Expansion Slot content appears anyway.
+//
+// Marvel is listed in the Cold Foil block with no rate, so it takes the
+// estimate.
 // ---------------------------------------------------------------------------
 const omnRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 60 },
-	{ rarity: "majestic" as const, weight: 15 },
+	{ rarity: "rare" as const, weight: 88 },
+	{ rarity: "majestic" as const, weight: 12, expansionSlot: true },
 ];
-const omnPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+// The published premium breakdown over 10,000 packs.
+const omnPremiumTable = [
+	{ rarity: "common" as const, weight: 7500 },
+	{ rarity: "rare" as const, weight: 2292 },
+	{ rarity: "majestic" as const, weight: 238 },
+	{ rarity: "legendary" as const, weight: 104 },
+];
 
 const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 	id: "OMN",
@@ -602,17 +628,16 @@ const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 			kind: "basic-or-wildcard",
 			count: 1,
 			rarityTable: [
-				{ rarity: "basic", weight: 14 },
-				{ rarity: "majestic", weight: 22, expansionSlot: true },
-				{ rarity: "legendary", weight: 4 },
-				{ rarity: "marvel", weight: 9 },
-				{ rarity: "fabled", weight: 1 },
+				{ rarity: "basic", weight: 800 },
+				{ rarity: "majestic", weight: 148, expansionSlot: true },
+				{ rarity: "common", weight: 52 },
 			],
 		},
 	],
 	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "basic",
-	marvelChance: 0,
+	// Listed in the Cold Foil block with no rate attached.
+	marvelChance: ESTIMATED_MARVEL_CHANCE,
 };
 // ---------------------------------------------------------------------------
 // Welcome to Rathe (WTR) — 16 cards.
@@ -1134,23 +1159,41 @@ const HIGH_SEAS: PackConfig = {
 // 1 Rare, Majestic, Legendary, or Marvel); Common - 5 per pack." Sum:
 // 1 + 3 + 5 = 9 — Rainbow Foil is a separate card here too (matches the
 // modern-era pattern; 3 + 5 = 8 without it, one short of the stated 9).
-// Real population: rare 124, majestic 58, legendary 8, marvel 23 — this
-// is the only set in this file whose own page names Marvel directly
-// inside a rarity table rather than leaving it to a wildcard slot or
-// marvelChance.
-// Premium Foil modelled as Common only, same reasoning as every set here
-// whose named slot(s) already cover Legendary/Marvel on their own.
-// Cold Foil: "1 per 8 packs (replaces a Rare)" — the highest published
-// cold foil rate of any set in this file, and the only one that replaces
-// one of the *pure* guaranteed Rare cards specifically (there are 2 here).
+//
+// Rates, from this set's Collectors Centre breakdown (its page renders
+// behind JavaScript tabs, so this was read off the live page by hand
+// rather than scraped):
+//   8 Legendary (1 per 140 packs) / 59 Majestic (1 per 3.15 packs) /
+//   124 Rare (2.55 per pack) / 142 Common (5 per pack) /
+//   1 Premium Foil (1 per pack), itself being
+//     30 Majestic (1 per 24) / 59 Rare (5 per 24) / 140 Common (18 per 24)
+//   Cold Foil (1 per 8 packs), being 21 Majestic / 60 Rare
+//   23 Marvel (1 per 96 packs)
+// The premium block sums to exactly 1.00, confirming it describes that one
+// card rather than more pack-wide rates.
+// Base sum: 0.007 + 0.318 + 2.55 + 5 + 1 = 8.87, i.e. the 9-card pack.
+// Two guaranteed Rares leave 0.55 Rare for the third slot, which also
+// carries the whole of Majestic and Legendary, with Common taking the
+// 0.125 of slack the published rounding leaves.
+//
+// The Cold Foil block lists only Majestic and Rare, no Common, and at 1 per
+// 8 packs it is by far the most frequent in this file. The engine upgrades
+// an existing card's treatment rather than changing its rarity, so it is
+// pointed at the third slot, whose draw is already Rare or Majestic about
+// 87% of the time - the closest that mechanism gets to the published block.
 // ---------------------------------------------------------------------------
+// Weights are the published rates over 10,000 draws.
 const penRareOrHigherWildcardTable = [
-	{ rarity: "rare" as const, weight: 124 },
-	{ rarity: "majestic" as const, weight: 58 },
-	{ rarity: "legendary" as const, weight: 8 },
-	{ rarity: "marvel" as const, weight: 23 },
+	{ rarity: "rare" as const, weight: 5500 },
+	{ rarity: "majestic" as const, weight: 3175 },
+	{ rarity: "common" as const, weight: 1254 },
+	{ rarity: "legendary" as const, weight: 71 },
 ];
-const penPremiumTable = [{ rarity: "common" as const, weight: 1 }];
+const penPremiumTable = [
+	{ rarity: "common" as const, weight: 750 },
+	{ rarity: "rare" as const, weight: 208 },
+	{ rarity: "majestic" as const, weight: 42 },
+];
 
 const COMPENDIUM_OF_RATHE: PackConfig = {
 	id: "PEN",
@@ -1175,8 +1218,9 @@ const COMPENDIUM_OF_RATHE: PackConfig = {
 		},
 	],
 	coldFoilChance: 1 / 8,
-	coldFoilReplaces: "rare",
-	marvelChance: 0,
+	coldFoilReplaces: "rare-or-super-rare-plus",
+	// Published as 1 per 96 packs.
+	marvelChance: 1 / 96,
 };
 
 // ---------------------------------------------------------------------------
