@@ -101,8 +101,15 @@ function preloadPackTextures(
 ): void {
 	const end = Math.min(fromIndex + count, pack.length);
 	for (let i = fromIndex; i < end; i++) {
-		const imageUrl = activeCardResolver.resolve(pack[i], setCode).imageUrl;
-		if (imageUrl) preloadSafeTexture(imageUrl);
+		const resolved = activeCardResolver.resolve(pack[i], setCode);
+		if (resolved.imageUrl) preloadSafeTexture(resolved.imageUrl);
+		// The other face of a double-faced card, warmed with the front.
+		// Only a handful of cards in a handful of sets have one, so this
+		// costs almost nothing, and without it turning a card over is
+		// always a cold fetch: the player waits, watching the card-back
+		// stand-in, for art the pack could have fetched while they were
+		// still clicking through commons.
+		if (resolved.backImageUrl) preloadSafeTexture(resolved.backImageUrl);
 	}
 }
 
@@ -122,9 +129,19 @@ function preloadPackTextures(
 function rollPackArt(setCode: string | null): string | null {
 	if (!setCode) return null;
 	const entry = getSetIndex().find((set) => set.code === setCode);
-	const url = entry ? pickPackArt(entry) : null;
-	if (url) useTexture.preload(url);
-	return url;
+	if (!entry) return null;
+	// Every artwork this set has, not just the one being used now.
+	//
+	// PackMesh reads its texture through drei's useTexture, which is
+	// Suspense-based: an artwork that is not already cached suspends the
+	// whole canvas and the player sees nothing at all until it arrives.
+	// Since a fresh artwork is rolled on every "Open Another Pack", a set
+	// with four pack fronts was a cold fetch three times out of four, no
+	// matter how many packs had been opened. Warming the set's whole
+	// (small, local, 1 to 4 file) collection on selection means the roll
+	// is always a cache hit by the time anyone opens anything.
+	for (const artUrl of entry.packArt) useTexture.preload(artUrl);
+	return pickPackArt(entry);
 }
 
 function pickPackArt(entry: SetIndexEntry): string | null {
