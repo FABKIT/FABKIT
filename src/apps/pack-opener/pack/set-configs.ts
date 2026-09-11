@@ -1,3 +1,10 @@
+import {
+	COLD_FOIL_PER_DISPLAY,
+	EXPANSION_SHARE_OF_MAJESTIC,
+	HVY_FAMILY_RATES,
+	PUBLISHED_RATES,
+} from "@fabkit/apps/pack-opener/pack/published-rates";
+import { slotTable } from "@fabkit/apps/pack-opener/pack/slot-table";
 import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
 
 /**
@@ -47,14 +54,7 @@ import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
  * that a display is 24 packs — more precise than DEFAULT_COLD_FOIL_CHANCE's
  * general 1/22 community estimate, which is kept only for the mock config.
  */
-export const PUBLISHED_COLD_FOIL_CHANCE = 1 / 24;
-
-/** Used only where a set has real Marvel printings but no published rate
- * for them. Eight sets do publish one (1 per 60, 96, 96, 100, 100, 110,
- * 192 and 390 packs); this is their median, so it sits in the right place
- * without pretending to be sourced. The pull-rates dialog already tells
- * players some rates are estimates; this is one of them. */
-const ESTIMATED_MARVEL_CHANCE = 1 / 100;
+export const PUBLISHED_COLD_FOIL_CHANCE = COLD_FOIL_PER_DISPLAY;
 
 // ---------------------------------------------------------------------------
 // Everfest (EVR) — 10 cards. fabtcg.com/products/booster-set/everfest/
@@ -79,12 +79,16 @@ const ESTIMATED_MARVEL_CHANCE = 1 / 100;
 // those rates halved over a denominator of 2000 draws, with Common taking
 // up the small slack the published rounding leaves.
 // Fabled is omitted: its rate is printed "1 per ??? packs".
-const evrRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 1650 },
-	{ rarity: "majestic" as const, weight: 250 },
-	{ rarity: "common" as const, weight: 94 },
-	{ rarity: "legendary" as const, weight: 6 },
-];
+const evrRareOrHigherTable = slotTable(
+	"Everfest's two Rare-or-higher slots",
+	[
+		{ rarity: "rare", perPack: PUBLISHED_RATES.EVR.rare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.EVR.majestic },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.EVR.legendary },
+	],
+	"common",
+	2,
+);
 const evrPremiumTable = [{ rarity: "common" as const, weight: 1 }];
 
 const EVERFEST: PackConfig = {
@@ -111,7 +115,7 @@ const EVERFEST: PackConfig = {
 	// slot's existing fixedTreatment (see generate-pack.ts).
 	// Published as "Cold Foil (1 per 16 packs)" on this set's Collectors
 	// Centre page: the one set here that is not the 1-per-display 1/24.
-	coldFoilChance: 1 / 16,
+	coldFoilChance: PUBLISHED_RATES.EVR.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
 };
@@ -161,18 +165,22 @@ const EVERFEST: PackConfig = {
 // all in the-fab-cube's data (tests/pack-opener/pool-viability.test.ts
 // catches it), so the published Majestic rate stays whole rather than
 // being split with an expansion entry.
-const uprRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 75 },
-	{ rarity: "majestic" as const, weight: 25 },
-];
-const uprPremiumTable = [
-	{ rarity: "common" as const, weight: 1975 },
-	{ rarity: "legendary" as const, weight: 25 },
-];
-const uprTokenTable = [
-	{ rarity: "token" as const, weight: 875 },
-	{ rarity: "common" as const, weight: 125 },
-];
+const uprRareOrMajesticTable = slotTable(
+	"Uprising's Rare-or-Majestic slot",
+	[{ rarity: "majestic", perPack: PUBLISHED_RATES.UPR.majestic }],
+	"rare",
+);
+const uprPremiumTable = slotTable(
+	"Uprising's Premium Foil slot",
+	[{ rarity: "legendary", perPack: PUBLISHED_RATES.UPR.premiumLegendary }],
+	"common",
+);
+const uprTokenTable = slotTable(
+	"Uprising's two Token slots",
+	[{ rarity: "token", perPack: PUBLISHED_RATES.UPR.token }],
+	"common",
+	2,
+);
 
 const UPRISING: PackConfig = {
 	id: "UPR",
@@ -197,11 +205,11 @@ const UPRISING: PackConfig = {
 		},
 		{ kind: "token", count: 2, rarityTable: uprTokenTable },
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.UPR.coldFoil,
 	coldFoilReplaces: "token",
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Uprising's Marvel rate as 1 per 110 packs.
-	marvelChance: 1 / 110,
+	marvelChance: PUBLISHED_RATES.UPR.marvel,
 };
 
 // ---------------------------------------------------------------------------
@@ -228,15 +236,17 @@ const UPRISING: PackConfig = {
 // all in the-fab-cube's data (tests/pack-opener/pool-viability.test.ts
 // catches it), so the published Majestic rate stays whole rather than
 // being split with an expansion entry.
-const dynRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 75 },
-	{ rarity: "majestic" as const, weight: 25 },
-];
+const dynRareOrMajesticTable = slotTable(
+	"Dynasty's Rare-or-Majestic slot",
+	[{ rarity: "majestic", perPack: PUBLISHED_RATES.DYN.majestic }],
+	"rare",
+);
 // Legendary at the published Rainbow Foil rate of 1 per 88 packs.
-const dynPremiumTable = [
-	{ rarity: "common" as const, weight: 87 },
-	{ rarity: "legendary" as const, weight: 1 },
-];
+const dynPremiumTable = slotTable(
+	"Dynasty's Premium Foil slot",
+	[{ rarity: "legendary", perPack: PUBLISHED_RATES.DYN.premiumLegendary }],
+	"common",
+);
 
 const DYNASTY: PackConfig = {
 	id: "DYN",
@@ -263,11 +273,11 @@ const DYNASTY: PackConfig = {
 	// The page publishes "Cold Foil (1:24)" but not what it replaces. This
 	// pack has no token or basic slot, so it targets the Rare, same as Dusk
 	// till Dawn below. That target is an inference; the rate is published.
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.DYN.coldFoil,
 	coldFoilReplaces: "rare",
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Dynasty's Marvel rate as 1 per 96 packs.
-	marvelChance: 1 / 96,
+	marvelChance: PUBLISHED_RATES.DYN.marvel,
 };
 
 // ---------------------------------------------------------------------------
@@ -293,16 +303,21 @@ const DYNASTY: PackConfig = {
 // all in the-fab-cube's data (tests/pack-opener/pool-viability.test.ts
 // catches it), so the published Majestic rate stays whole rather than
 // being split with an expansion entry.
-const dtdRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 68 },
-	{ rarity: "majestic" as const, weight: 25 },
-	{ rarity: "common" as const, weight: 7 },
-];
+const dtdRareOrMajesticTable = slotTable(
+	"Dusk till Dawn's Rare-or-Majestic slot",
+	[
+		// One of the published 1.68 Rares is the guaranteed slot before this.
+		{ rarity: "rare", perPack: PUBLISHED_RATES.DTD.rare - 1 },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.DTD.majestic },
+	],
+	"common",
+);
 // Legendary at the published 1 per 64 packs.
-const dtdPremiumTable = [
-	{ rarity: "common" as const, weight: 63 },
-	{ rarity: "legendary" as const, weight: 1 },
-];
+const dtdPremiumTable = slotTable(
+	"Dusk till Dawn's Premium Foil slot",
+	[{ rarity: "legendary", perPack: PUBLISHED_RATES.DTD.premiumLegendary }],
+	"common",
+);
 
 const DUSK_TILL_DAWN: PackConfig = {
 	id: "DTD",
@@ -326,11 +341,11 @@ const DUSK_TILL_DAWN: PackConfig = {
 			rarityTable: dtdPremiumTable,
 		},
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.DTD.coldFoil,
 	coldFoilReplaces: "rare",
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Dusk till Dawn's Marvel rate as 1 per 100 packs.
-	marvelChance: 1 / 100,
+	marvelChance: PUBLISHED_RATES.DTD.marvel,
 };
 
 // ---------------------------------------------------------------------------
@@ -383,21 +398,34 @@ const DUSK_TILL_DAWN: PackConfig = {
  * over a common denominator of 1440 packs. Fabled is omitted — every page
  * prints "1 per ??? packs" for it, and an invented rate is worse than an
  * unpullable card. */
-const hvyFamilyPremiumTable = [
-	{ rarity: "common" as const, weight: 1080 },
-	{ rarity: "rare" as const, weight: 300 },
-	{ rarity: "majestic" as const, weight: 80 },
-	{ rarity: "legendary" as const, weight: 15 },
-];
+const hvyFamilyPremiumTable = slotTable(
+	"the Heavy Hitters family's Premium Foil slot",
+	[
+		{ rarity: "rare", perPack: HVY_FAMILY_RATES.premiumRare },
+		{ rarity: "majestic", perPack: HVY_FAMILY_RATES.premiumMajestic },
+		{ rarity: "legendary", perPack: HVY_FAMILY_RATES.premiumLegendary },
+	],
+	"common",
+);
 
 /** The published Majestic rate (1 per 4 packs) split 4:1 between ordinary
  * and expansion-slot printings. The split is ours; the total is LSS's, and
  * the total is what tests/pack-opener/calibration.test.ts asserts. */
-const hvyFamilyRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 15 },
-	{ rarity: "majestic" as const, weight: 4 },
-	{ rarity: "majestic" as const, weight: 1, expansionSlot: true },
-];
+const hvyFamilyRareOrMajesticTable = slotTable(
+	"the Heavy Hitters family's Rare-or-Majestic slot",
+	[
+		{
+			rarity: "majestic",
+			perPack: HVY_FAMILY_RATES.majestic * (1 - EXPANSION_SHARE_OF_MAJESTIC),
+		},
+		{
+			rarity: "majestic",
+			perPack: HVY_FAMILY_RATES.majestic * EXPANSION_SHARE_OF_MAJESTIC,
+			expansionSlot: true,
+		},
+	],
+	"rare",
+);
 
 function buildHvyFamilyConfig(
 	id: string,
@@ -411,7 +439,11 @@ function buildHvyFamilyConfig(
 	// Two token slots, one of them guaranteed, so the second lands on a
 	// token often enough to make up the published rate and on a Common the
 	// rest of the time.
-	const secondTokenWeight = Math.round((tokenRate - 1) * 100);
+	const secondTokenTable = slotTable(
+		`${id}'s second Token slot`,
+		[{ rarity: "token", perPack: tokenRate - 1 }],
+		"common",
+	);
 	return {
 		id,
 		cardsPerPack: 16,
@@ -441,10 +473,7 @@ function buildHvyFamilyConfig(
 			{
 				kind: "token-or-wildcard",
 				count: 1,
-				rarityTable: [
-					{ rarity: "token", weight: secondTokenWeight },
-					{ rarity: "common", weight: 100 - secondTokenWeight },
-				],
+				rarityTable: secondTokenTable,
 			},
 		],
 		coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
@@ -453,10 +482,26 @@ function buildHvyFamilyConfig(
 	};
 }
 
-const HEAVY_HITTERS = buildHvyFamilyConfig("HVY", 1.85, 1 / 192);
-const PART_THE_MISTVEIL = buildHvyFamilyConfig("MST", 1.84, 1 / 100);
-const ROSETTA = buildHvyFamilyConfig("ROS", 1.54, ESTIMATED_MARVEL_CHANCE);
-const THE_HUNTED = buildHvyFamilyConfig("HNT", 1.54, ESTIMATED_MARVEL_CHANCE);
+const HEAVY_HITTERS = buildHvyFamilyConfig(
+	"HVY",
+	PUBLISHED_RATES.HVY.token,
+	PUBLISHED_RATES.HVY.marvel,
+);
+const PART_THE_MISTVEIL = buildHvyFamilyConfig(
+	"MST",
+	PUBLISHED_RATES.MST.token,
+	PUBLISHED_RATES.MST.marvel,
+);
+const ROSETTA = buildHvyFamilyConfig(
+	"ROS",
+	PUBLISHED_RATES.ROS.token,
+	PUBLISHED_RATES.ROS.marvel,
+);
+const THE_HUNTED = buildHvyFamilyConfig(
+	"HNT",
+	PUBLISHED_RATES.HNT.token,
+	PUBLISHED_RATES.HNT.marvel,
+);
 
 // ---------------------------------------------------------------------------
 // Super Slam (SUP) — 15 cards.
@@ -504,19 +549,53 @@ const THE_HUNTED = buildHvyFamilyConfig("HNT", 1.54, ESTIMATED_MARVEL_CHANCE);
 // the premium slot's 1 per 22 account for 0.337 of that, so the wildcard
 // slot carries the remaining 0.08 as ordinary Majestic. Basic gives up the
 // weight for it, Basic being the one rarity here with no published rate.
-const supRareOrHigherTable = [
-	{ rarity: "superrare" as const, weight: 459 },
-	{ rarity: "rare" as const, weight: 420 },
-	{ rarity: "majestic" as const, weight: 121, expansionSlot: true },
-];
+const supRareOrHigherTable = slotTable(
+	"Super Slam's Rare-or-higher slot",
+	[
+		{ rarity: "superrare", perPack: PUBLISHED_RATES.SUP.superRare },
+		// The published "Set" content, as distinct from the "Expansion"
+		// content, which rides in the wildcard slot below.
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.SUP.set,
+			expansionSlot: true,
+		},
+	],
+	"rare",
+);
 // The published premium breakdown over 10,000 packs.
-const supPremiumTable = [
-	{ rarity: "common" as const, weight: 7083 },
-	{ rarity: "rare" as const, weight: 1667 },
-	{ rarity: "superrare" as const, weight: 769 },
-	{ rarity: "majestic" as const, weight: 455 },
-	{ rarity: "legendary" as const, weight: 106 },
-];
+const supPremiumTable = slotTable(
+	"Super Slam's Premium Foil slot",
+	[
+		{ rarity: "rare", perPack: PUBLISHED_RATES.SUP.premiumRare },
+		{ rarity: "superrare", perPack: PUBLISHED_RATES.SUP.premiumSuperRare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.SUP.premiumMajestic },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.SUP.premiumLegendary },
+	],
+	"common",
+);
+
+/** Whatever the observed Majestic total leaves once the published Set,
+ * Expansion and Premium Foil Majestics are accounted for. See the SUP
+ * entry in pack/published-rates.ts for where 10 per 24 packs comes from. */
+const supOrdinaryMajestic =
+	PUBLISHED_RATES.SUP.majesticTotal -
+	PUBLISHED_RATES.SUP.set -
+	PUBLISHED_RATES.SUP.expansion -
+	PUBLISHED_RATES.SUP.premiumMajestic;
+
+const supWildcardTable = slotTable(
+	"Super Slam's Basic wildcard slot",
+	[
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.SUP.expansion,
+			expansionSlot: true,
+		},
+		{ rarity: "majestic", perPack: supOrdinaryMajestic },
+	],
+	"basic",
+);
 
 const SUPER_SLAM: PackConfig = {
 	id: "SUP",
@@ -542,19 +621,15 @@ const SUPER_SLAM: PackConfig = {
 		{
 			kind: "basic-or-wildcard",
 			count: 1,
-			rarityTable: [
-				{ rarity: "basic", weight: 749 },
-				{ rarity: "majestic", weight: 171, expansionSlot: true },
-				{ rarity: "majestic", weight: 80 },
-			],
+			rarityTable: supWildcardTable,
 		},
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.SUP.coldFoil,
 	coldFoilReplaces: "basic-or-wildcard",
 	// This set prints 23 Marvels but its page never mentions them, so
 	// there is no rate to carry. Left at 0 they would be unpullable,
 	// which is worse than an openly flagged estimate.
-	marvelChance: ESTIMATED_MARVEL_CHANCE,
+	marvelChance: PUBLISHED_RATES.SUP.marvel,
 };
 
 // ---------------------------------------------------------------------------
@@ -590,17 +665,42 @@ const SUPER_SLAM: PackConfig = {
 // Marvel is listed in the Cold Foil block with no rate, so it takes the
 // estimate.
 // ---------------------------------------------------------------------------
-const omnRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 88 },
-	{ rarity: "majestic" as const, weight: 12, expansionSlot: true },
-];
+const omnRareOrMajesticTable = slotTable(
+	"Omens of the Third Age's Rare-or-Majestic slot",
+	[
+		// The published "Set" content; "Expansion" rides in the wildcard.
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.OMN.set,
+			expansionSlot: true,
+		},
+	],
+	"rare",
+);
 // The published premium breakdown over 10,000 packs.
-const omnPremiumTable = [
-	{ rarity: "common" as const, weight: 7500 },
-	{ rarity: "rare" as const, weight: 2292 },
-	{ rarity: "majestic" as const, weight: 238 },
-	{ rarity: "legendary" as const, weight: 104 },
-];
+const omnPremiumTable = slotTable(
+	"Omens of the Third Age's Premium Foil slot",
+	[
+		{ rarity: "rare", perPack: PUBLISHED_RATES.OMN.premiumRare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.OMN.premiumMajestic },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.OMN.premiumLegendary },
+	],
+	"common",
+);
+
+const omnWildcardTable = slotTable(
+	"Omens of the Third Age's Basic wildcard slot",
+	[
+		// One of the published 1.8 Basics is the guaranteed slot before this.
+		{ rarity: "basic", perPack: PUBLISHED_RATES.OMN.basic - 1 },
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.OMN.expansion,
+			expansionSlot: true,
+		},
+	],
+	"common",
+);
 
 const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 	id: "OMN",
@@ -627,17 +727,13 @@ const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 		{
 			kind: "basic-or-wildcard",
 			count: 1,
-			rarityTable: [
-				{ rarity: "basic", weight: 800 },
-				{ rarity: "majestic", weight: 148, expansionSlot: true },
-				{ rarity: "common", weight: 52 },
-			],
+			rarityTable: omnWildcardTable,
 		},
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.OMN.coldFoil,
 	coldFoilReplaces: "basic",
 	// Listed in the Cold Foil block with no rate attached.
-	marvelChance: ESTIMATED_MARVEL_CHANCE,
+	marvelChance: PUBLISHED_RATES.OMN.marvel,
 };
 // ---------------------------------------------------------------------------
 // Welcome to Rathe (WTR) — 16 cards.
@@ -686,16 +782,26 @@ const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 // from Unlimited print runs, so this technically over-applies to
 // Unlimited packs too — a real simplification, not a sourced choice).
 // ---------------------------------------------------------------------------
-const wtrRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 9 },
-	{ rarity: "superrare" as const, weight: 2 },
-	{ rarity: "majestic" as const, weight: 1 },
-];
+const wtrRareOrHigherTable = slotTable(
+	"WTR's Rare-or-higher slot",
+	[
+		{ rarity: "superrare", perPack: PUBLISHED_RATES.WTR.superRare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.WTR.majestic },
+	],
+	"rare",
+);
 const wtrPremiumTable = [{ rarity: "common" as const, weight: 1 }];
-const wtrEquipmentTable = [
-	{ rarity: "legendary" as const, weight: 1, requiresType: "Equipment" },
-	{ rarity: "common" as const, weight: 95, requiresType: "Equipment" },
-];
+const wtrEquipmentTable = slotTable(
+	"WTR's Equipment slot",
+	[
+		{
+			rarity: "legendary",
+			perPack: PUBLISHED_RATES.WTR.equipmentLegendary,
+			requiresType: "Equipment",
+		},
+	],
+	{ rarity: "common", requiresType: "Equipment" },
+);
 
 const WELCOME_TO_RATHE: PackConfig = {
 	id: "WTR",
@@ -726,7 +832,7 @@ const WELCOME_TO_RATHE: PackConfig = {
 			rarityTable: wtrPremiumTable,
 		},
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.WTR.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
 };
@@ -742,16 +848,26 @@ const WELCOME_TO_RATHE: PackConfig = {
 // Rathe applies to the split between the "1 Rare/Super Rare/Majestic"
 // slot and the Premium Foil slot — see that set's comment above.
 // ---------------------------------------------------------------------------
-const arcRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 9 },
-	{ rarity: "superrare" as const, weight: 2 },
-	{ rarity: "majestic" as const, weight: 1 },
-];
+const arcRareOrHigherTable = slotTable(
+	"ARC's Rare-or-higher slot",
+	[
+		{ rarity: "superrare", perPack: PUBLISHED_RATES.ARC.superRare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.ARC.majestic },
+	],
+	"rare",
+);
 const arcPremiumTable = [{ rarity: "common" as const, weight: 1 }];
-const arcEquipmentTable = [
-	{ rarity: "legendary" as const, weight: 1, requiresType: "Equipment" },
-	{ rarity: "common" as const, weight: 95, requiresType: "Equipment" },
-];
+const arcEquipmentTable = slotTable(
+	"ARC's Equipment slot",
+	[
+		{
+			rarity: "legendary",
+			perPack: PUBLISHED_RATES.ARC.equipmentLegendary,
+			requiresType: "Equipment",
+		},
+	],
+	{ rarity: "common", requiresType: "Equipment" },
+);
 
 const ARCANE_RISING: PackConfig = {
 	id: "ARC",
@@ -782,7 +898,7 @@ const ARCANE_RISING: PackConfig = {
 			rarityTable: arcPremiumTable,
 		},
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.ARC.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
 };
@@ -819,11 +935,14 @@ const ARCANE_RISING: PackConfig = {
 // attached to the Premium Foil line, so coldFoilReplaces targets it, by
 // the same inference used for Welcome to Rathe's Alpha cold foil.
 // ---------------------------------------------------------------------------
-const cruRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 180 },
-	{ rarity: "majestic" as const, weight: 60 },
-	{ rarity: "legendary" as const, weight: 1 },
-];
+const cruRareOrHigherTable = slotTable(
+	"Crucible of War's Rare-or-higher slot",
+	[
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.CRU.majestic },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.CRU.legendary },
+	],
+	"rare",
+);
 const cruPremiumTable = [{ rarity: "common" as const, weight: 1 }];
 
 const CRUCIBLE_OF_WAR: PackConfig = {
@@ -848,7 +967,7 @@ const CRUCIBLE_OF_WAR: PackConfig = {
 			rarityTable: cruPremiumTable,
 		},
 	],
-	coldFoilChance: 1 / 22,
+	coldFoilChance: PUBLISHED_RATES.CRU.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
 };
@@ -885,15 +1004,23 @@ const CRUCIBLE_OF_WAR: PackConfig = {
 // Cold Foil: "First Edition containing 1 Cold Foil every 22 packs",
 // attached to the Premium Foil slot as with Crucible of War.
 // ---------------------------------------------------------------------------
-const monRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 3 },
-	{ rarity: "majestic" as const, weight: 1 },
-];
+const monRareOrMajesticTable = slotTable(
+	"Monarch's Rare-or-Majestic slot",
+	[{ rarity: "majestic", perPack: PUBLISHED_RATES.MON.majestic }],
+	"rare",
+);
 const monPremiumTable = [{ rarity: "common" as const, weight: 1 }];
-const monEquipmentTable = [
-	{ rarity: "legendary" as const, weight: 1, requiresType: "Equipment" },
-	{ rarity: "common" as const, weight: 95, requiresType: "Equipment" },
-];
+const monEquipmentTable = slotTable(
+	"Monarch's Equipment slot",
+	[
+		{
+			rarity: "legendary",
+			perPack: PUBLISHED_RATES.MON.equipmentLegendary,
+			requiresType: "Equipment",
+		},
+	],
+	{ rarity: "common", requiresType: "Equipment" },
+);
 
 const MONARCH: PackConfig = {
 	id: "MON",
@@ -919,7 +1046,7 @@ const MONARCH: PackConfig = {
 			rarityTable: [{ rarity: "common", weight: 1 }],
 		},
 	],
-	coldFoilChance: 1 / 22,
+	coldFoilChance: PUBLISHED_RATES.MON.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
 };
@@ -951,14 +1078,16 @@ const MONARCH: PackConfig = {
 // Cold Foil: "First Edition also containing 1 Cold Foil every 20 packs" -
 // attached to the Premium Foil slot, same pattern as every set here.
 // ---------------------------------------------------------------------------
-const eleRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 3 },
-	{ rarity: "majestic" as const, weight: 1 },
-];
-const elePremiumTable = [
-	{ rarity: "legendary" as const, weight: 1 },
-	{ rarity: "common" as const, weight: 87 },
-];
+const eleRareOrMajesticTable = slotTable(
+	"Tales of Aria's Rare-or-Majestic slot",
+	[{ rarity: "majestic", perPack: PUBLISHED_RATES.ELE.majestic }],
+	"rare",
+);
+const elePremiumTable = slotTable(
+	"Tales of Aria's Premium Foil slot",
+	[{ rarity: "legendary", perPack: PUBLISHED_RATES.ELE.premiumLegendary }],
+	"common",
+);
 
 const TALES_OF_ARIA: PackConfig = {
 	id: "ELE",
@@ -983,7 +1112,7 @@ const TALES_OF_ARIA: PackConfig = {
 		},
 		{ kind: "token", count: 1, rarityTable: [{ rarity: "token", weight: 1 }] },
 	],
-	coldFoilChance: 1 / 20,
+	coldFoilChance: PUBLISHED_RATES.ELE.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
 };
@@ -1011,17 +1140,35 @@ const TALES_OF_ARIA: PackConfig = {
 //
 // Marvel is printed as "1 per ??? packs" here, so it takes the estimate.
 // ---------------------------------------------------------------------------
-const evoRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 68 },
-	{ rarity: "majestic" as const, weight: 20 },
-	{ rarity: "majestic" as const, weight: 5, expansionSlot: true },
-	{ rarity: "common" as const, weight: 7 },
-];
+const evoRareOrMajesticTable = slotTable(
+	"Bright Lights' Rare-or-Majestic slot",
+	[
+		// One of the published 1.68 Rares is the guaranteed slot before this.
+		{ rarity: "rare", perPack: PUBLISHED_RATES.EVO.rare - 1 },
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.EVO.majestic * (1 - EXPANSION_SHARE_OF_MAJESTIC),
+		},
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.EVO.majestic * EXPANSION_SHARE_OF_MAJESTIC,
+			expansionSlot: true,
+		},
+	],
+	"common",
+);
 // Legendary at the published 1 per 70 packs, over a denominator of 700.
-const evoPremiumTable = [
-	{ rarity: "common" as const, weight: 690 },
-	{ rarity: "legendary" as const, weight: 10 },
-];
+const evoTokenTable = slotTable(
+	"Bright Lights' second Token slot",
+	// One of the published 1.8 Tokens is the guaranteed slot before this.
+	[{ rarity: "token", perPack: PUBLISHED_RATES.EVO.token - 1 }],
+	"common",
+);
+const evoPremiumTable = slotTable(
+	"Bright Lights' Premium Foil slot",
+	[{ rarity: "legendary", perPack: PUBLISHED_RATES.EVO.premiumLegendary }],
+	"common",
+);
 
 const BRIGHT_LIGHTS: PackConfig = {
 	id: "EVO",
@@ -1048,15 +1195,12 @@ const BRIGHT_LIGHTS: PackConfig = {
 		{
 			kind: "token-or-wildcard",
 			count: 1,
-			rarityTable: [
-				{ rarity: "token", weight: 80 },
-				{ rarity: "common", weight: 20 },
-			],
+			rarityTable: evoTokenTable,
 		},
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.EVO.coldFoil,
 	coldFoilReplaces: "token",
-	marvelChance: ESTIMATED_MARVEL_CHANCE,
+	marvelChance: PUBLISHED_RATES.EVO.marvel,
 };
 
 // ---------------------------------------------------------------------------
@@ -1094,19 +1238,39 @@ const BRIGHT_LIGHTS: PackConfig = {
 // Fabled is deliberately absent: both blocks print "1 per ??? packs" for
 // it, and an invented rate is worse than an unpullable card.
 // ---------------------------------------------------------------------------
-const seaRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 4 },
-	{ rarity: "majestic" as const, weight: 1 },
-];
+const seaRareOrMajesticTable = slotTable(
+	"High Seas' Rare-or-Majestic slot",
+	[
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.SEA.majestic * (1 - EXPANSION_SHARE_OF_MAJESTIC),
+		},
+	],
+	"rare",
+);
 // Weights are the published premium rates over a common denominator of
 // 1440 packs: 1/96, 1/18, 5/24, 18/24, 1/60.
-const seaPremiumTable = [
-	{ rarity: "common" as const, weight: 1080 },
-	{ rarity: "rare" as const, weight: 300 },
-	{ rarity: "majestic" as const, weight: 80 },
-	{ rarity: "marvel" as const, weight: 24 },
-	{ rarity: "legendary" as const, weight: 15 },
-];
+const seaWildcardTable = slotTable(
+	"High Seas' Basic wildcard slot",
+	[
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.SEA.majestic * EXPANSION_SHARE_OF_MAJESTIC,
+			expansionSlot: true,
+		},
+	],
+	"basic",
+);
+const seaPremiumTable = slotTable(
+	"High Seas' Premium Foil slot",
+	[
+		{ rarity: "rare", perPack: PUBLISHED_RATES.SEA.premiumRare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.SEA.premiumMajestic },
+		{ rarity: "marvel", perPack: PUBLISHED_RATES.SEA.premiumMarvel },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.SEA.premiumLegendary },
+	],
+	"common",
+);
 
 const HIGH_SEAS: PackConfig = {
 	id: "SEA",
@@ -1133,16 +1297,13 @@ const HIGH_SEAS: PackConfig = {
 		{
 			kind: "basic-or-wildcard",
 			count: 1,
-			rarityTable: [
-				{ rarity: "basic", weight: 19 },
-				{ rarity: "majestic", weight: 1, expansionSlot: true },
-			],
+			rarityTable: seaWildcardTable,
 		},
 	],
 	// No Cold Foil line anywhere on this set's page, unlike every other
 	// same-era set. Modelled as 0 to match what is actually published
 	// rather than assuming the family default.
-	coldFoilChance: 0,
+	coldFoilChance: PUBLISHED_RATES.SEA.coldFoil,
 	// Marvel is published as a Premium Foil outcome above, so it is drawn
 	// from that slot's table rather than rolled separately.
 	marvelChance: 0,
@@ -1183,17 +1344,24 @@ const HIGH_SEAS: PackConfig = {
 // 87% of the time - the closest that mechanism gets to the published block.
 // ---------------------------------------------------------------------------
 // Weights are the published rates over 10,000 draws.
-const penRareOrHigherWildcardTable = [
-	{ rarity: "rare" as const, weight: 5500 },
-	{ rarity: "majestic" as const, weight: 3175 },
-	{ rarity: "common" as const, weight: 1254 },
-	{ rarity: "legendary" as const, weight: 71 },
-];
-const penPremiumTable = [
-	{ rarity: "common" as const, weight: 750 },
-	{ rarity: "rare" as const, weight: 208 },
-	{ rarity: "majestic" as const, weight: 42 },
-];
+const penRareOrHigherWildcardTable = slotTable(
+	"Compendium of Rathe's third Rare-or-higher slot",
+	[
+		// Two of the published 2.55 Rares are guaranteed slots before this.
+		{ rarity: "rare", perPack: PUBLISHED_RATES.PEN.rare - 2 },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.PEN.majestic },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.PEN.legendary },
+	],
+	"common",
+);
+const penPremiumTable = slotTable(
+	"Compendium of Rathe's Premium Foil slot",
+	[
+		{ rarity: "rare", perPack: PUBLISHED_RATES.PEN.premiumRare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.PEN.premiumMajestic },
+	],
+	"common",
+);
 
 const COMPENDIUM_OF_RATHE: PackConfig = {
 	id: "PEN",
@@ -1217,10 +1385,10 @@ const COMPENDIUM_OF_RATHE: PackConfig = {
 			rarityTable: penPremiumTable,
 		},
 	],
-	coldFoilChance: 1 / 8,
+	coldFoilChance: PUBLISHED_RATES.PEN.coldFoil,
 	coldFoilReplaces: "rare-or-super-rare-plus",
 	// Published as 1 per 96 packs.
-	marvelChance: 1 / 96,
+	marvelChance: PUBLISHED_RATES.PEN.marvel,
 };
 
 // ---------------------------------------------------------------------------
@@ -1282,18 +1450,22 @@ const COMPENDIUM_OF_RATHE: PackConfig = {
 // and are unchanged. Token was not: two guaranteed token slots deal 2.00 a
 // pack against a published 1.75, so the second one now lands on a Common
 // the remaining eighth of the time.
-const outRareOrMajesticTable = [
-	{ rarity: "rare" as const, weight: 4 },
-	{ rarity: "majestic" as const, weight: 1 },
-];
-const outTokenTable = [
-	{ rarity: "token" as const, weight: 875 },
-	{ rarity: "common" as const, weight: 125 },
-];
-const outPremiumTable = [
-	{ rarity: "legendary" as const, weight: 1 },
-	{ rarity: "common" as const, weight: 69 },
-];
+const outRareOrMajesticTable = slotTable(
+	"Outsiders' Rare-or-Majestic slot",
+	[{ rarity: "majestic", perPack: PUBLISHED_RATES.OUT.majestic }],
+	"rare",
+);
+const outTokenTable = slotTable(
+	"Outsiders' two Token slots",
+	[{ rarity: "token", perPack: PUBLISHED_RATES.OUT.token }],
+	"common",
+	2,
+);
+const outPremiumTable = slotTable(
+	"Outsiders' Premium Foil slot",
+	[{ rarity: "legendary", perPack: PUBLISHED_RATES.OUT.premiumLegendary }],
+	"common",
+);
 
 const OUTSIDERS: PackConfig = {
 	id: "OUT",
@@ -1318,11 +1490,11 @@ const OUTSIDERS: PackConfig = {
 		},
 		{ kind: "token", count: 2, rarityTable: outTokenTable },
 	],
-	coldFoilChance: PUBLISHED_COLD_FOIL_CHANCE,
+	coldFoilChance: PUBLISHED_RATES.OUT.coldFoil,
 	coldFoilReplaces: "token",
 	// The Collectors Centre page prints "1 per ??? packs", but LSS has
 	// since published Outsiders's Marvel rate as 1 per 390 packs.
-	marvelChance: 1 / 390,
+	marvelChance: PUBLISHED_RATES.OUT.marvel,
 };
 
 // ---------------------------------------------------------------------------
@@ -1351,12 +1523,16 @@ const OUTSIDERS: PackConfig = {
 // Rare 1.65 is the one guaranteed Rare plus 0.65 from the second slot;
 // Majestic and Legendary make up most of the rest of it, with Common
 // taking the last 2%. Weights are those rates over 10,000 draws.
-const hpRareOrHigherTable = [
-	{ rarity: "rare" as const, weight: 6500 },
-	{ rarity: "majestic" as const, weight: 3175 },
-	{ rarity: "common" as const, weight: 203 },
-	{ rarity: "legendary" as const, weight: 122 },
-];
+const hpRareOrHigherTable = slotTable(
+	"History Pack 1's second Rare-or-higher slot",
+	[
+		// One of the two published Rares is the guaranteed slot before this.
+		{ rarity: "rare", perPack: PUBLISHED_RATES["1HP"].rare - 1 },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES["1HP"].majestic },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES["1HP"].legendary },
+	],
+	"common",
+);
 
 const HISTORY_PACK_1: PackConfig = {
 	id: "1HP",
@@ -1374,8 +1550,8 @@ const HISTORY_PACK_1: PackConfig = {
 			rarityTable: hpRareOrHigherTable,
 		},
 	],
-	coldFoilChance: 0,
-	marvelChance: 0,
+	coldFoilChance: PUBLISHED_RATES["1HP"].coldFoil,
+	marvelChance: PUBLISHED_RATES["1HP"].marvel,
 };
 
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
