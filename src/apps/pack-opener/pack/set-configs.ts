@@ -1719,6 +1719,90 @@ function gemPack(
 	};
 }
 
+// ---------------------------------------------------------------------------
+// Mastery Pack Warrior (MPW) — 13 cards. Sourced from
+// https://fabtcg.com/products/product/mastery-pack-warrior/ , a product
+// page rather than a Collectors Centre page, so it states each slot's
+// MEMBERSHIP and the set's composition but no per-pack rates:
+//   Common 8 / Rare 1 / Rare or Majestic 1 / Rainbow Foil 1 /
+//   Basic 1 / "Basic, Legendary, Cold Foil, or Marvel" 1  = 13 cards.
+//
+// Note how this differs from Mastery Pack Guardian, which is otherwise the
+// same kind of product: Guardian deals an Equipment and a Token and hangs
+// its premium card off a "Token or higher" slot, where Warrior deals two
+// Basics and hangs Legendary, Marvel and Cold Foil off the second of them.
+// Same 13 cards, different shape, so the two configs are written out
+// separately rather than sharing a helper.
+//
+// The Rainbow Foil slot is weighted by this set's own Rainbow Foil
+// printings (46 Common, 31 Rare, 16 Majestic). Legendary is left out of it
+// on purpose even though Rainbow Foil Legendaries exist, because LSS lists
+// Legendary as an outcome of the Basic slot instead; carrying it in both
+// would deal it twice as often as the page states.
+//
+// Marvel sits in the Basic slot's own table rather than riding on
+// marvelChance, because that is where the published text puts it, and
+// generate-pack forces any Marvel to Cold Foil regardless of the slot.
+//
+// This set prints no Fabled and no Token card.
+// ---------------------------------------------------------------------------
+const mpwRareOrMajesticTable = [
+	{ rarity: "rare" as const, weight: PUBLISHED_RATES.MPW.popRare },
+	{ rarity: "majestic" as const, weight: PUBLISHED_RATES.MPW.popMajestic },
+];
+const mpwRainbowTable = [
+	{ rarity: "common" as const, weight: PUBLISHED_RATES.MPW.popRainbowCommon },
+	{ rarity: "rare" as const, weight: PUBLISHED_RATES.MPW.popRainbowRare },
+	{
+		rarity: "majestic" as const,
+		weight: PUBLISHED_RATES.MPW.popRainbowMajestic,
+	},
+];
+const mpwBasicWildcardTable = slotTable(
+	"Mastery Pack Warrior's Basic / Legendary / Marvel slot",
+	[
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.MPW.legendary },
+		{ rarity: "marvel", perPack: PUBLISHED_RATES.MPW.marvel },
+	],
+	"basic",
+);
+
+const MASTERY_PACK_WARRIOR: PackConfig = {
+	id: "MPW",
+	cardsPerPack: 13,
+	slots: [
+		{
+			kind: "common",
+			count: 8,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{ kind: "rare-or-majestic", count: 1, rarityTable: mpwRareOrMajesticTable },
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: mpwRainbowTable,
+		},
+		{ kind: "basic", count: 1, rarityTable: [{ rarity: "basic", weight: 1 }] },
+		{
+			kind: "basic-or-wildcard",
+			count: 1,
+			rarityTable: mpwBasicWildcardTable,
+		},
+	],
+	// Cold Foil is published as an outcome of the Basic wildcard slot, not
+	// of the Rainbow Foil one, so that is the card it upgrades. No rate is
+	// published for it; takes the same one-per-display default as Guardian.
+	coldFoilChance: PUBLISHED_RATES.MPW.coldFoil,
+	coldFoilReplaces: "basic-or-wildcard",
+	// Marvel is an entry in the wildcard slot's own table above, which is
+	// where the product page puts it, so nothing rides on marvelChance.
+	marvelChance: 0,
+	// This set prints no Fabled card.
+	fabledChance: 0,
+};
+
 export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	GEM1: gemPack("GEM1", PUBLISHED_RATES.GEM1),
 	GEM2: gemPack("GEM2", PUBLISHED_RATES.GEM2),
@@ -1726,6 +1810,7 @@ export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	GEM4: gemPack("GEM4", PUBLISHED_RATES.GEM4),
 	GEM5: gemPack("GEM5", PUBLISHED_RATES.GEM5),
 	MPG: MASTERY_PACK_GUARDIAN,
+	MPW: MASTERY_PACK_WARRIOR,
 	EVR: EVERFEST,
 	UPR: UPRISING,
 	DYN: DYNASTY,

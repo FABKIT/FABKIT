@@ -300,6 +300,41 @@ export const PUBLISHED_RATES = {
 	},
 
 	// -----------------------------------------------------------------
+	// Mastery Pack Warrior. Like its Guardian sibling above, sourced from a
+	// product page rather than a Collectors Centre page, so LSS states what
+	// each slot can hold but not how often. PUBLISHED configuration, 13
+	// cards a pack, from fabtcg.com/products/product/mastery-pack-warrior/:
+	//   Common 8 per pack
+	//   Rare or Majestic 2 per pack (1 Rare + 1 Rare or Majestic)
+	//   Rainbow Foil 1 per pack
+	//   Basic 2 per pack (1 Basic + 1 Basic, Legendary, Cold Foil or Marvel)
+	// PUBLISHED set composition: 9 Marvel, 4 Legendary, 20 Majestic,
+	// 40 Rare, 80 Common, 10 Basic.
+	//
+	// POPULATION weights carry the two slots whose split LSS does not give:
+	// the second Rare-or-Majestic card, weighted by the set's own Rare and
+	// Majestic counts, and the Rainbow Foil card, weighted by how many
+	// Rainbow Foil printings this set actually has at each rarity. That
+	// second one is deliberately Common/Rare/Majestic only: Rainbow Foil
+	// Legendaries exist, but LSS lists Legendary as an outcome of the Basic
+	// slot, so putting it in both would deal it twice as often as stated.
+	//
+	// ESTIMATED: Legendary, Marvel and Cold Foil, none of which this product
+	// publishes a rate for. They take the same figures as Mastery Pack
+	// Guardian, which is the closest comparable product, rather than
+	// anything specific to this set.
+	MPW: {
+		popRare: 40,
+		popMajestic: 20,
+		popRainbowCommon: 46,
+		popRainbowRare: 31,
+		popRainbowMajestic: 16,
+		legendary: 1 / 96,
+		marvel: ESTIMATED_MARVEL_CHANCE,
+		coldFoil: COLD_FOIL_PER_DISPLAY,
+	},
+
+	// -----------------------------------------------------------------
 	// GEM Packs 1 to 5. PUBLISHED configuration, from the GEM Pack FAQ,
 	// and the same for every pack in the line:
 	//   3 cards per pack: 1 regular print, 1 premium foil (Rainbow Foil,
