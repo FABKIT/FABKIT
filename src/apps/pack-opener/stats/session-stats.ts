@@ -45,9 +45,11 @@ export interface SessionStats {
 /** Expected number of cards of each rarity in a single pack from `config`,
  * derived the same way generate-pack.ts actually draws (weight / total
  * weight per slot, times the slot's card count) — see that file's
- * weightedPick. Also folds in the premium-foil slot's marvelChance upgrade,
- * since that measurably shifts its slot's real rarity mix. This is an
- * expectation, not a guarantee — real packs vary, which is the whole point
+ * weightedPick. Also folds in the premium-foil slot's fabledChance and
+ * marvelChance upgrades, since those measurably shift its slot's real
+ * rarity mix — and since they are the only way either rarity is dealt at
+ * all, leaving them out would hide Fabled and Marvel from the pull-rates
+ * dialog entirely. This is an expectation, not a guarantee — real packs vary, which is the whole point
  * of showing it next to what was actually pulled.
  *
  * Exported for pack/pull-rates.ts too, which turns these same expected
@@ -67,14 +69,26 @@ export function expectedRarityCounts(
 			0,
 		);
 		if (totalWeight === 0) continue;
-		const isPremiumFoil =
-			slot.kind === "premium-foil" && config.marvelChance > 0;
+		// The premium slot's two upgrade rolls, in generate-pack.ts's own
+		// order: Fabled is rolled first and wins outright, so Marvel only
+		// gets its roll when Fabled misses. Mirrored exactly here rather
+		// than approximated, so this and the engine cannot disagree — it
+		// costs Marvel about half a percent of its stated chance, and this
+		// is the number the pull-rates dialog shows, so it should be the
+		// one actually dealt.
+		const isPremiumFoil = slot.kind === "premium-foil";
+		const fabledShare = isPremiumFoil ? config.fabledChance : 0;
+		const marvelShare = isPremiumFoil
+			? (1 - fabledShare) * config.marvelChance
+			: 0;
+		const ordinaryShare = 1 - fabledShare - marvelShare;
 		for (const entry of slot.rarityTable) {
-			let expected = (entry.weight / totalWeight) * slot.count;
-			if (isPremiumFoil) expected *= 1 - config.marvelChance;
+			const expected =
+				(entry.weight / totalWeight) * slot.count * ordinaryShare;
 			add(entry.rarity, expected);
 		}
-		if (isPremiumFoil) add("marvel", slot.count * config.marvelChance);
+		if (fabledShare > 0) add("fabled", slot.count * fabledShare);
+		if (marvelShare > 0) add("marvel", slot.count * marvelShare);
 	}
 
 	return counts;
