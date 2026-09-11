@@ -78,6 +78,35 @@ describe("pool viability", () => {
 				expect(empty).toEqual([]);
 			});
 
+			/**
+			 * marvelChance and fabledChance are pack-level rolls applied to
+			 * the premium slot's draw, so neither appears in any
+			 * rarityTable and the check above cannot see them. A nonzero
+			 * chance on a set that prints none of that rarity would deal a
+			 * card with no pool behind it, which is exactly what this whole
+			 * file exists to stop. History Pack 1's Fabled and Marvel cards
+			 * are Black Label product and Compendium of Rathe prints no
+			 * Fabled at all; both are 0 for that reason, and this is what
+			 * keeps them that way.
+			 */
+			it("its pack-level Marvel and Fabled rolls have a pool behind them", () => {
+				const unbacked: string[] = [];
+				const rolls = [
+					["marvel", config.marvelChance],
+					["fabled", config.fabledChance],
+				] as const;
+				for (const [rarity, chance] of rolls) {
+					if (chance <= 0) continue;
+					if (poolSize(data, rarity, false, undefined, undefined) > 0) {
+						continue;
+					}
+					unbacked.push(
+						`${rarity}Chance is ${chance} but this set prints no ${rarity}`,
+					);
+				}
+				expect(unbacked).toEqual([]);
+			});
+
 			it("its declared slot counts sum to its own cardsPerPack", () => {
 				const sum = config.slots.reduce((total, slot) => total + slot.count, 0);
 				expect(sum).toBe(config.cardsPerPack);

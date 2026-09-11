@@ -62,6 +62,9 @@ export const DEFAULT_PACK_CONFIG: PackConfig = {
 	coldFoilChance: DEFAULT_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "basic-or-token",
 	marvelChance: DEFAULT_MARVEL_CHANCE,
+	// The mock config's pool is drawn, not real, and has no Fabled card
+	// to resolve to.
+	fabledChance: 0,
 };
 
 export const PackConfigsBySet: Record<string, PackConfig> = {

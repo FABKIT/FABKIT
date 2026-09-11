@@ -35,9 +35,13 @@ with the rest.
 Where a page prints "1 per ??? packs", there is no number to use and none was
 invented.
 
-- **Fabled is unpublished on every set**, so its rate is not sourced. It is
-  set at half the set's Marvel rate on the product owner's instruction, so
-  that a set's Fabled card stays pullable rather than being unreachable.
+- **Fabled is unpublished on every set**: every page prints "1 per ???
+  packs". It is ESTIMATED at half the set's own Marvel rate, on the product
+  owner's instruction, so a set's single rarest card stays reachable rather
+  than unpullable. That lands between 1 per 120 packs (High Seas) and 1 per
+  780 (Outsiders), 1 per 200 for the sets with no Marvel rate of their own.
+  History Pack 1 and Compendium of Rathe deal none: the first's Fabled cards
+  are Black Label product, the second prints none at all.
 - **Marvel is published for eight sets**: High Seas 1 per 60, Dynasty and
   Compendium of Rathe 1 per 96, Part the Mistveil and Dusk till Dawn 1 per
   100, Uprising 1 per 110, Heavy Hitters 1 per 192, Outsiders 1 per 390.
