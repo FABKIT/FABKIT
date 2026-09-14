@@ -999,6 +999,9 @@ async function main() {
 			cardmarketLogSuffix =
 				`, EUR ${coverage.priced}/${coverage.versions} versions (${pct}%` +
 				(coverage.ambiguous > 0 ? `, ${coverage.ambiguous} ambiguous` : "") +
+				(coverage.priceOrderMismatch > 0
+					? `, ${coverage.priceOrderMismatch} order-mismatch`
+					: "") +
 				(coverage.refinedPairings > 0
 					? `, ${coverage.refinedPairings} refined`
 					: "") +
