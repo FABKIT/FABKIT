@@ -7,6 +7,7 @@ import {
 	NormalDentedTokenRenderConfigPreset,
 	NormalDentedWeaponRenderConfigPreset,
 	NormalFlatEquipmentRenderConfigPreset,
+	NormalFlatEvoRenderConfigPreset,
 	NormalFlatHeroRenderConfigPreset,
 	NormalFlatRenderConfigPreset,
 	NormalFlatTokenRenderConfigPreset,
@@ -25,6 +26,7 @@ export const AllRenderConfigVariations: Record<string, CardRenderConfig> = {
 	normal_flat_weapon: NormalFlatWeaponRenderConfigPreset,
 	normal_flat_equipment: NormalFlatEquipmentRenderConfigPreset,
 	normal_flat_token: NormalFlatTokenRenderConfigPreset,
+	normal_flat_evo: NormalFlatEvoRenderConfigPreset,
 	meld_flat: MeldFlatRenderConfigPreset,
 };
 

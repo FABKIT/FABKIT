@@ -43,6 +43,8 @@ src/apps/card-creator/
 - `CardBackRight` — right-half card back for hybrid frames (`CardBack | null`); non-null
   is what makes a card hybrid, there is no separate boolean flag. Excluded for meld.
 - `CardBackStyle` — visual style variant (`CardStyle`)
+- `CardBackSplit`, `CardBackBlend` — hybrid seam position (fraction of width) and
+  softness (0..1)
 - `CardArtwork`, `CardArtPosition` — artwork blob and position/scale
 - `CardArtworkCredits`, `CardSetNumber` — text fields (uppercased)
 - `CardTextHTML`, `CardTextNode` — rich text in HTML and Tiptap Content forms
@@ -50,6 +52,15 @@ src/apps/card-creator/
 - `CardOverlay`, `CardOverlayOpacity` — optional overlay image
 - `meldActiveHalf`, `meldHalfA`, `meldHalfB` — meld card state (`MeldHalf`)
 - `__version` — UUID updated on reset; used for persistence cache-busting
+
+## Card Type Families (variant dropdown)
+
+`src/shared/config/cards/type_families.ts` groups related `CardType`s into a
+family + variant pair for the card type selector (e.g. Equipment's variants are
+Normal Equipment, Action Equipment (EVO), Instant Equipment (EVO)). This is
+**presentation only** — picking a variant still just calls `setCardType` with a
+real `CardType`; nothing about the grouping itself is stored anywhere. See that
+file's module doc for the full rationale before adding a new family.
 
 ## Import Rules
 
