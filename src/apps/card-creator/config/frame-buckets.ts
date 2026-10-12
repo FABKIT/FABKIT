@@ -49,6 +49,7 @@ const FAMILY_ORDER = [
 	"general",
 	"hero",
 	"equipment",
+	"evo",
 	"weapon",
 	"token",
 	"resource",

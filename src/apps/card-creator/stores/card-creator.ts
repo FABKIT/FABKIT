@@ -20,6 +20,7 @@ import {
 	CardFormFields,
 	type CardFormFieldValue,
 } from "@fabkit/shared/config/cards/form_fields.ts";
+import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
 import type { Content } from "@tiptap/react";
 import { v4 as uuid } from "uuid";
@@ -75,6 +76,8 @@ export const MELD_EXCLUDED_TYPES: CardType[] = [
 	"weapon",
 	"demi_hero",
 	"weapon_equipment",
+	"action_equipment",
+	"instant_equipment",
 	"meld",
 	"event",
 	"macro",
@@ -547,6 +550,19 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					if (!isFieldVisible(field, cardType)) {
 						Object.assign(result, { [field]: null });
 					}
+				}
+
+				// CardSubType stays *visible* across type changes, so the loop above
+				// never clears it — but each type has its own disjoint subtype pool
+				// (e.g. equipment's "head" vs action_equipment's "evo_head"). A value
+				// that doesn't exist for the new type would fall through
+				// useCardBottomText's `CardSubtypes[CardType]?.[CardSubType] ||
+				// CardSubType` fallback and print the raw stored key on the card.
+				if (
+					state.CardSubType &&
+					!(state.CardSubType in CardSubtypes[cardType])
+				) {
+					result.CardSubType = null;
 				}
 
 				if (cardType === "meld" && state.CardType !== cardType) {

@@ -70,6 +70,9 @@ export function getCardBackTypesForCardType(type: CardType): string[] {
 	if (type === "weapon_equipment") {
 		return ["weapon"];
 	}
+	if (type === "action_equipment" || type === "instant_equipment") {
+		return ["evo"];
+	}
 	return ["general"];
 }
 
