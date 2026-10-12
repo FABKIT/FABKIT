@@ -205,6 +205,22 @@ describe("frequency calibration", () => {
 		expectRate("OMN", "basic", 1.8);
 	});
 
+	// Usurp the Shadow Throne. This set has no Collectors Centre page of its
+	// own yet (see set-configs.ts's USURP_THE_SHADOW_THRONE comment and
+	// docs/pull-rate-verification.md's IAR section), so its config runs on
+	// Omens of the Third Age's rates, borrowed. This test therefore guards
+	// the derivation against Omens' own numbers — the same expectations as
+	// the block above — not against a published truth of this set's own.
+	// Replace these expectations with IAR's real figures the day its
+	// Collectors Centre page goes live.
+	it("Usurp the Shadow Throne matches its borrowed (Omens) rates", () => {
+		expectRate("IAR", "common", 11 + 18 / 24);
+		expectRate("IAR", "rare", 1.88 + 5.5 / 24);
+		expectRate("IAR", "majestic", 1 / 8 + 1 / 7 + 1 / 42);
+		expectRate("IAR", "legendary", 1 / 96);
+		expectRate("IAR", "basic", 1.8);
+	});
+
 	// Super Slam. Majestic is not asserted: its base breakdown lists 42
 	// Majestics with no rate at all, and the only published Majestic rate
 	// is the Premium Foil slot's 1 per 22. The set's expansion-slot content

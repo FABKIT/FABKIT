@@ -744,6 +744,111 @@ const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 	fabledChance: fabledChanceFor(PUBLISHED_RATES.OMN.marvel),
 };
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Usurp the Shadow Throne (IAR) — 16 cards.
+// fabtcg.com/products/booster-set/iar/, "Rarity Distribution" (quoted
+// verbatim, captured 2026-09-15, ten days ahead of this set's 2026-09-25
+// release): "Cold Foil - 1 per 24 packs (replaces a Basic); Rainbow Foil
+// - 1 per pack; Common - 11 per pack; Rare or Majestic - 2 per pack (1
+// Rare + 1 Rare or Majestic); Basic - 2 per pack (1 Basic + 1 Basic,
+// Expansion Slot, Legendary, Marvel, or Fabled)." Sum: 11 + 2 + 1 + 2 =
+// 16. Structurally IDENTICAL to Omens of the Third Age above, slot for
+// slot. The same page's "Set Composition" gives this set's real printed
+// population: 2 Fabled, 27 Marvel, 5 Legendary, 40 Majestic (20 Core + 20
+// Expansion), 66 Rare, 133 Common, 16 Basic — close enough to Omens' own
+// 1 / (Marvel unstated) / 5 / 37 / 60 / 134 / 14 that borrowing its rates
+// is a reasonable estimate rather than a guess out of nowhere.
+//
+// THERE IS NO COLLECTORS CENTRE PAGE FOR THIS SET YET (both
+// fabtcg.com/collectors-centre/iar/ and
+// /collectors-centre/usurp-the-shadow-throne/ 404 as of 2026-09-15), so
+// unlike every other config in this file there is no per-rarity rate of
+// this set's OWN to transcribe. Every rate PUBLISHED_RATES.IAR carries is
+// Omens' rate, copied over — see that entry's comment for the full
+// reasoning and the ESTIMATED flag. This is the one config in the file
+// running on another set's numbers rather than its own; replace
+// PUBLISHED_RATES.IAR (and this comment) the day fabtcg.com publishes
+// this set's actual breakdown, and update
+// tests/pack-opener/calibration.test.ts and docs/pull-rate-verification.md
+// in the same commit.
+//
+// Card data for this set doesn't come from the usual the-fab-cube feed
+// either, for the same "not released yet" reason: see the
+// PRE_RELEASE_SETS bridge in scripts/build-pack-data.ts.
+// ---------------------------------------------------------------------------
+const iarRareOrMajesticTable = slotTable(
+	"Usurp the Shadow Throne's Rare-or-Majestic slot",
+	[
+		// The published (borrowed) "Set" content; "Expansion" rides in the
+		// wildcard, same split as Omens above.
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.IAR.set,
+			expansionSlot: true,
+		},
+	],
+	"rare",
+);
+const iarPremiumTable = slotTable(
+	"Usurp the Shadow Throne's Premium Foil slot",
+	[
+		{ rarity: "rare", perPack: PUBLISHED_RATES.IAR.premiumRare },
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.IAR.premiumMajestic },
+		{ rarity: "legendary", perPack: PUBLISHED_RATES.IAR.premiumLegendary },
+	],
+	"common",
+);
+
+const iarWildcardTable = slotTable(
+	"Usurp the Shadow Throne's Basic wildcard slot",
+	[
+		// One of the (borrowed) published 1.8 Basics is the guaranteed slot
+		// before this.
+		{ rarity: "basic", perPack: PUBLISHED_RATES.IAR.basic - 1 },
+		{
+			rarity: "majestic",
+			perPack: PUBLISHED_RATES.IAR.expansion,
+			expansionSlot: true,
+		},
+	],
+	"common",
+);
+
+const USURP_THE_SHADOW_THRONE: PackConfig = {
+	id: "IAR",
+	cardsPerPack: 16,
+	slots: [
+		{
+			kind: "common",
+			count: 11,
+			rarityTable: [{ rarity: "common", weight: 1 }],
+		},
+		{ kind: "rare", count: 1, rarityTable: [{ rarity: "rare", weight: 1 }] },
+		{
+			kind: "rare-or-majestic",
+			count: 1,
+			rarityTable: iarRareOrMajesticTable,
+		},
+		{
+			kind: "premium-foil",
+			count: 1,
+			fixedTreatment: "rainbow",
+			rarityTable: iarPremiumTable,
+		},
+		{ kind: "basic", count: 1, rarityTable: [{ rarity: "basic", weight: 1 }] },
+		{
+			kind: "basic-or-wildcard",
+			count: 1,
+			rarityTable: iarWildcardTable,
+		},
+	],
+	coldFoilChance: PUBLISHED_RATES.IAR.coldFoil,
+	coldFoilReplaces: "basic",
+	marvelChance: PUBLISHED_RATES.IAR.marvel,
+	fabledChance: fabledChanceFor(PUBLISHED_RATES.IAR.marvel),
+};
+// ---------------------------------------------------------------------------
 // Welcome to Rathe (WTR) — 16 cards.
 // fabtcg.com/products/booster-set/welcome-to-rathe/ (the-fab-cube's own
 // product_page URL for this set 404s — this is the live page, found by
@@ -1874,6 +1979,7 @@ export const REAL_SET_PACK_CONFIGS: Record<string, PackConfig> = {
 	HNT: THE_HUNTED,
 	SUP: SUPER_SLAM,
 	OMN: OMENS_OF_THE_THIRD_AGE,
+	IAR: USURP_THE_SHADOW_THRONE,
 	WTR: WELCOME_TO_RATHE,
 	ARC: ARCANE_RISING,
 	CRU: CRUCIBLE_OF_WAR,
@@ -1906,6 +2012,7 @@ export const SET_SOURCE_URLS: Record<string, string> = {
 	HNT: "https://fabtcg.com/products/product/the-hunted/",
 	SUP: "https://fabtcg.com/en/products/booster-set/super-slam/",
 	OMN: "https://fabtcg.com/products/booster-set/omen/",
+	IAR: "https://fabtcg.com/products/booster-set/iar/",
 	WTR: "https://fabtcg.com/products/booster-set/welcome-to-rathe/",
 	ARC: "https://fabtcg.com/products/booster-set/arcane-rising/",
 	CRU: "https://fabtcg.com/products/booster-set/crucible-of-war/",

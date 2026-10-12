@@ -11,9 +11,11 @@ import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs
  * "15-Card Booster Pack", and 16 minus its 1 token slot is 15. */
 describe("guaranteedTokenCount", () => {
 	it("leaves a set with no token slot at its published count", () => {
-		// High Seas and Omen declare no token slot at all, so their printed
-		// count and fabtcg's should be the same number.
-		for (const code of ["SEA", "OMN"]) {
+		// High Seas, Omen and Usurp the Shadow Throne (structurally identical
+		// to Omen, and prints no Token rarity at all) declare no token slot
+		// at all, so their printed count and fabtcg's should be the same
+		// number.
+		for (const code of ["SEA", "OMN", "IAR"]) {
 			expect(guaranteedTokenCount(REAL_SET_PACK_CONFIGS[code])).toBe(0);
 		}
 	});
