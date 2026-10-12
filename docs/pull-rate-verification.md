@@ -16,7 +16,10 @@ where they are applied, one comment per set citing the lines it used.
 **Every set with a readable Collectors Centre page now deals its published
 rates**, verified by `tests/pack-opener/calibration.test.ts`, which simulates
 200,000 packs per set and asserts each rarity within 20% of the figure
-published here.
+published here. **Usurp the Shadow Throne (IAR) is the one exception**: it
+has no Collectors Centre page at all yet (it hasn't released), so its config
+runs on Omens of the Third Age's rates, borrowed rather than published. See
+its own section below.
 
 Before this, Majestics, Legendaries and Marvels all came up far more often
 than they should, because most slots were weighted by how many distinct cards
@@ -24,11 +27,11 @@ a set prints at a rarity rather than by how often that rarity is inserted.
 High Seas was the extreme case: a Marvel every 2 packs against a published 1
 per 60.
 
-All twenty sets are covered. Compendium of Rathe and Omens of the Third Age
-came last: their pages render the breakdown behind JavaScript tabs rather
-than in the page text, so the scrape never captured them and the product
-owner read both off the live pages by hand. Their figures are recorded below
-with the rest.
+All twenty sets with a Collectors Centre page are covered. Compendium of
+Rathe and Omens of the Third Age came last: their pages render the breakdown
+behind JavaScript tabs rather than in the page text, so the scrape never
+captured them and the product owner read both off the live pages by hand.
+Their figures are recorded below with the rest.
 
 ## What is published and what is not
 
@@ -45,10 +48,11 @@ invented.
 - **Marvel is published for eight sets**: High Seas 1 per 60, Dynasty and
   Compendium of Rathe 1 per 96, Part the Mistveil and Dusk till Dawn 1 per
   100, Uprising 1 per 110, Heavy Hitters 1 per 192, Outsiders 1 per 390.
-  Bright Lights, The Hunted, Rosetta, Omens and Super Slam have real Marvel
-  printings but no published rate, and use `ESTIMATED_MARVEL_CHANCE`, a
-  flagged estimate at 1 per 100, the median of the eight. History Pack 1
-  stays at zero: its Marvels are Black Label product, not boosters.
+  Bright Lights, The Hunted, Rosetta, Omens, Super Slam and Usurp the
+  Shadow Throne have real Marvel printings but no published rate, and use
+  `ESTIMATED_MARVEL_CHANCE`, a flagged estimate at 1 per 100, the median of
+  the eight. History Pack 1 stays at zero: its Marvels are Black Label
+  product, not boosters.
 - **Super Slam publishes no base Majestic rate**, only its Premium Foil
   slot's 1 per 22. Its Majestic total therefore comes from that plus its
   published Set (1 per 8) and Expansion (1 per 6) content, which is Majestic
@@ -473,3 +477,69 @@ puzzles.
 counts all 10 as "Rare". The config weights them 6 to 4 so each of the 10 is
 equally likely, which is the only split the published "1 per pack" supports
 without inventing one.
+
+### IAR : Usurp the Shadow Throne
+
+This set is the one entry in this document with **no Collectors Centre page
+to transcribe**. Both plausible URLs 404 as of 2026-09-15, ten days ahead of
+its 2026-09-25 release:
+<https://fabtcg.com/collectors-centre/iar/> and
+<https://fabtcg.com/collectors-centre/usurp-the-shadow-throne/>.
+
+What DOES exist is the product page,
+<https://fabtcg.com/products/booster-set/iar/> (note the `/iar/` slug — the
+name slug 404s too), which publishes a full pack structure, quoted verbatim:
+
+```
+Product Configuration:
+  263 cards in set
+  16 cards per pack
+  24 booster packs per display
+  4 displays per case
+Set Composition:
+  2 Fabled
+  27 Marvel
+  5 Legendary
+  40 Majestic (20 Core + 20 Expansion)
+  66 Rare
+  133 Common
+  16 Basic
+Rarity Distribution:
+  Cold Foil - 1 per 24 packs (replaces a Basic)
+  Rainbow Foil - 1 per pack
+  Common - 11 per pack
+  Rare or Majestic - 2 per pack (1 Rare + 1 Rare or Majestic)
+  Basic - 2 per pack (1 Basic + 1 Basic, Expansion Slot, Legendary, Marvel, or Fabled)
+```
+
+That structure is **identical, slot for slot**, to Omens of the Third Age's
+above. The set compositions are close too (this set's 133/66/40/16/5/2/27
+against Omens' 134/60/37/14/5/1/unstated), close enough that borrowing
+Omens' per-rarity rates is a reasonable estimate rather than a guess out of
+nowhere.
+
+So that's what `PUBLISHED_RATES.IAR` in
+`src/apps/pack-opener/pack/published-rates.ts` does: it carries the exact
+same numbers as `PUBLISHED_RATES.OMN`, copied rather than aliased (so a
+later correction to one set's figures can never silently move the other),
+and flagged ESTIMATED throughout. `pack/set-configs.ts`'s
+`USURP_THE_SHADOW_THRONE` is built from it the same way
+`OMENS_OF_THE_THIRD_AGE` is built from `PUBLISHED_RATES.OMN`.
+`tests/pack-opener/calibration.test.ts`'s IAR block asserts against those
+same borrowed numbers, so it guards the derivation, not a published truth —
+worth remembering if that test ever looks like it's asserting something LSS
+never said.
+
+**When fabtcg.com publishes this set's own Collectors Centre page**, replace
+`PUBLISHED_RATES.IAR`, this section, and the calibration test's expectations
+with the real figures, in one commit. Until then this set is the one
+declared exception named in Status above.
+
+This set's card data has a second, unrelated wrinkle worth noting here since
+it's the same "not released yet" root cause: the-fab-cube's own feed
+(`Released/card.json`) only carries 11 preview printings for it, so
+`scripts/build-pack-data.ts` reads the full 516 from a different fabrary
+pipeline instead, temporarily — see that script's `PRE_RELEASE_SETS` comment.
+That is a data-sourcing detail, separate from the rates question this section
+is about; the odds engine sees the same `RawPrinting`/`RawCard` shapes either
+way.

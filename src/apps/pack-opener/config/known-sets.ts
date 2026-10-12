@@ -210,9 +210,11 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"(/products/product/tournament-pack/ is a 404), there is no " +
 			"published configuration to build a pack from, and the 30 printings " +
 			"upstream carries are all Promo rarity, all Cold Foil, and none " +
-			"carry a TCGplayer id, so every card would show no price. Same " +
-			"shape as the Usurp the Shadow Throne entry below: revisit when it " +
-			"ships and LSS publishes a configuration.",
+			"carry a TCGplayer id, so every card would show no price. Unlike " +
+			"Usurp the Shadow Throne below, fabtcg.com has no product page for " +
+			"this one at all — nothing published to build a pack from — so it " +
+			"stays excluded rather than shipping on estimated odds. Revisit " +
+			"when it ships and LSS publishes a configuration.",
 	},
 	{
 		code: "WIN",
@@ -239,14 +241,23 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 	},
 	{
 		code: "IAR",
-		decision: "exclude",
+		decision: "include",
 		reason:
-			"Usurp the Shadow Throne — not released yet. A set with no published " +
-			"odds and no market prices has nothing to show. The automatic rule " +
-			"already excludes it (set.json carries no initial_release_date for " +
-			"it); this line just records the decision so it isn't rediscovered as " +
-			'an "unknown set" once upstream does add a date, and someone has to ' +
-			"re-derive whether it belongs. Flip this to include once it has " +
-			"actually shipped.",
+			"Usurp the Shadow Throne — mainline booster set, releases 2026-09-25. " +
+			"fabtcg.com/products/booster-set/iar/ publishes a full pack " +
+			"configuration (16 cards, structurally identical to Omens of the " +
+			"Third Age's), so unlike TNP and WIN above this one has something to " +
+			"build from before it even ships. The automatic candidate rule " +
+			"can't surface it on its own (the-fab-cube's set.json carries no " +
+			"release date for it yet), so it ships purely on this manual " +
+			"include, the same escape hatch 1HP uses. Two things about it are " +
+			"temporary and self-correcting, not permanent departures from how " +
+			"every other set here works: the card data comes via the " +
+			"PRE_RELEASE_SETS bridge in scripts/build-pack-data.ts (fabrary's " +
+			"Released data only has 11 preview printings for it) until " +
+			"the-fab-cube catches up, and the odds in pack/set-configs.ts are " +
+			"Omens' own rates borrowed as an estimate until fabtcg.com publishes " +
+			"this set's Collectors Centre page. See that config's own comment " +
+			"and docs/pull-rate-verification.md's IAR section.",
 	},
 ];

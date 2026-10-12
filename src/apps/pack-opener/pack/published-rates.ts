@@ -386,6 +386,38 @@ export const PUBLISHED_RATES = {
 		coldFoil: 1 / 24,
 	},
 
+	// Usurp the Shadow Throne. NOTHING HERE IS PUBLISHED FOR THIS SET YET.
+	// fabtcg.com/products/booster-set/iar/ publishes the pack structure —
+	// Common 11, Rare or Majestic 2 (1 Rare + 1 Rare or Majestic), Rainbow
+	// Foil 1, Basic 2 (1 Basic + 1 Basic/Expansion/Legendary/Marvel/
+	// Fabled), Cold Foil 1 per 24 replacing a Basic — and it is IDENTICAL
+	// to Omens of the Third Age's structure above. No Collectors Centre
+	// page exists as of 2026-09-15 (fabtcg.com/collectors-centre/iar/ and
+	// /collectors-centre/usurp-the-shadow-throne/ both 404), so there is no
+	// per-rarity rate to transcribe the way every other set here has one.
+	//
+	// Every value below is OMENS' OWN rate, copied rather than aliased so a
+	// future correction to one set can never silently move the other,
+	// borrowed on the strength of the identical structure plus a close set
+	// composition (this set: 133 Common / 66 Rare / 40 Majestic / 16 Basic
+	// / 5 Legendary / 2 Fabled / 27 Marvel, against Omens' 134 / 60 / 37 /
+	// 14 / 5 / 1). ESTIMATED, all of it, and flagged as the one exception
+	// in docs/pull-rate-verification.md's Status section. Replace with
+	// this set's own figures the day its Collectors Centre page goes live,
+	// and update tests/pack-opener/calibration.test.ts and that doc in the
+	// same commit — see set-configs.ts's USURP_THE_SHADOW_THRONE comment.
+	IAR: {
+		rare: 1.88,
+		basic: 1.8,
+		set: 1 / 8,
+		expansion: 1 / 7,
+		premiumLegendary: 1 / 96,
+		premiumMajestic: 1 / 42,
+		premiumRare: 5.5 / 24,
+		marvel: ESTIMATED_MARVEL_CHANCE,
+		coldFoil: 1 / 24,
+	},
+
 	// -----------------------------------------------------------------
 	// Compendium of Rathe - Antiquity Pack. The 3-card bonus pack bundled
 	// one per Compendium of Rathe booster box. PUBLISHED by LSS as an

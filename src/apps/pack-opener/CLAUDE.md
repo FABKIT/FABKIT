@@ -124,6 +124,21 @@ that set's own rarity, foil treatments, and TCGplayer product id. `loadSetPrinti
 is called whenever a set is selected (`stores/pack-opener.ts`'s `selectSet` and
 `initializeSetArt`), warming that set's pool ahead of the next `openPack()`.
 
+**A set that hasn't been picked up by the-fab-cube yet can still ship** via a
+self-retiring bridge in `build-pack-data.ts`: `PRE_RELEASE_SETS` lists sets
+whose card data instead comes from `@flesh-and-blood/cards` (fabrary's own
+compiled pre-release feed, pinned exactly as a devDependency), mapped onto
+the same `RawCard`/`RawPrinting` shapes the-fab-cube's data already produces
+so nothing downstream — `buildSetPrintings`, `fab-printings.ts`, the card
+resolver, any of it — has to know the difference. Usurp the Shadow Throne
+(IAR) is the first case: the-fab-cube's `Released/card.json` only carries 11
+preview printings for it as of writing. The bridge only takes over while
+that stays true — the moment Released's own count for a bridged code
+overtakes the bridge's, `bun run build-pack-data` logs that the entry is no
+longer needed and stops using it on its own, no build failure either way.
+See that table's own comment for the full reasoning and the field-by-field
+schema mapping.
+
 `fabPrintingsCardResolver` (`cards/card-resolver.ts`, the `activeCardResolver` swap
 point) picks a real printing from the pack's own set (`packSetCode` in the store) whose
 rarity, expansion-slot flag, required type and class-restriction all match what was
