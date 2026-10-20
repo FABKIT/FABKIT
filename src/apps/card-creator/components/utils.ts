@@ -2,18 +2,20 @@
  * Shared Component Utilities
  *
  * Provides field visibility logic for the card creator form.
- * Different card types (hero, action, weapon, etc.) have different
- * visible fields based on their configuration.
+ * Different card types (hero, action, weapon, etc.) and their variants have
+ * different visible fields based on their configuration.
  */
 
+import { getCardFields } from "@fabkit/shared/config/cards/card_definition.ts";
 import type { CardFormField } from "@fabkit/shared/config/cards/form_fields.ts";
-import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
+import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
 import { useMemo } from "react";
 import { useCardCreator } from "../stores/card-creator.ts";
 
 /**
- * React hook to check if a field should be visible for the current card type.
- * Subscribes to card type changes in the store.
+ * React hook to check if a field should be visible for the current card type
+ * and variant. Subscribes to card type and variant changes in the store.
  *
  * @param field - Form field to check (e.g., "CardPower", "CardDefense")
  * @returns true if field should be rendered, false otherwise
@@ -24,14 +26,13 @@ import { useCardCreator } from "../stores/card-creator.ts";
  */
 export function useIsFieldVisible(field: CardFormField): boolean {
 	const cardType = useCardCreator((state) => state.CardType);
+	const cardVariant = useCardCreator((state) => state.CardVariant);
 
 	return useMemo(() => {
 		if (!cardType) return false;
 
-		return (CardTypes[cardType].fields as readonly CardFormField[]).includes(
-			field,
-		);
-	}, [cardType, field]);
+		return getCardFields(cardType, cardVariant).includes(field);
+	}, [cardType, cardVariant, field]);
 }
 
 /**
@@ -40,20 +41,20 @@ export function useIsFieldVisible(field: CardFormField): boolean {
  *
  * @param field - Form field to check
  * @param cardType - Card type to check against (or null)
- * @returns true if field should be visible for this card type
+ * @param cardVariant - Variant of that card type (null = standard version)
+ * @returns true if field should be visible for this card type and variant
  *
  * @example
- * if (!isFieldVisible("CardDefense", "hero")) {
+ * if (!isFieldVisible("CardDefense", "hero", null)) {
  *   // Defense field not needed for heroes
  * }
  */
 export function isFieldVisible(
 	field: CardFormField,
 	cardType: CardType | null,
+	cardVariant: CardVariant | null,
 ): boolean {
 	if (!cardType) return false;
 
-	return (CardTypes[cardType].fields as readonly CardFormField[]).includes(
-		field,
-	);
+	return getCardFields(cardType, cardVariant).includes(field);
 }

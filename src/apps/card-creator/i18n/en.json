@@ -21,9 +21,6 @@
 			"event": "Event",
 			"meld": "Meld"
 		},
-		"family": {
-			"equipment": "Equipment"
-		},
 		"variant": {
 			"equipment_normal": "Normal Equipment",
 			"action_equipment_evo": "Action Equipment (EVO)",

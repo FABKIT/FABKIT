@@ -13,11 +13,12 @@ import { useAvailableCardBacks } from "../hooks/useAvailableCardBacks.ts";
 export function HybridCardBackField() {
 	const { t } = useTranslation("card-creator");
 	const CardType = useCardCreator((state) => state.CardType);
+	const CardVariant = useCardCreator((state) => state.CardVariant);
 	const CardBackStyle = useCardCreator((state) => state.CardBackStyle);
 	const CardBackRight = useCardCreator((state) => state.CardBackRight);
 	const toggleHybrid = useCardCreator((state) => state.toggleHybrid);
 
-	const available = useAvailableCardBacks(CardType, CardBackStyle);
+	const available = useAvailableCardBacks(CardType, CardVariant, CardBackStyle);
 
 	if (CardType === "meld") return null;
 

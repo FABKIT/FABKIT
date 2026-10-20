@@ -12,6 +12,10 @@ import {
 	getSuggestedCardBack,
 } from "@fabkit/shared/config/cards/card_backs.ts";
 import {
+	getCardSubtypes,
+	normalizeVariant,
+} from "@fabkit/shared/config/cards/card_definition.ts";
+import {
 	type CardStyle,
 	CardStyles,
 } from "@fabkit/shared/config/cards/card_styles.ts";
@@ -20,8 +24,8 @@ import {
 	CardFormFields,
 	type CardFormFieldValue,
 } from "@fabkit/shared/config/cards/form_fields.ts";
-import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
 import type { Content } from "@tiptap/react";
 import { v4 as uuid } from "uuid";
 import { create } from "zustand";
@@ -76,8 +80,6 @@ export const MELD_EXCLUDED_TYPES: CardType[] = [
 	"weapon",
 	"demi_hero",
 	"weapon_equipment",
-	"action_equipment",
-	"instant_equipment",
 	"meld",
 	"event",
 	"macro",
@@ -143,6 +145,15 @@ export interface CardCreatorState extends FormFieldValues {
 
 	/** Selected card type (action, hero, weapon, etc.) - determines which fields are visible */
 	CardType: CardType | null;
+
+	/**
+	 * Which variant of the card type this is (e.g. "evo_action" on an
+	 * equipment card). Null means the standard version, which is every card
+	 * unless the card type has variants (see shared/config/cards/variants.ts).
+	 * Only meaningful together with CardType, and always valid for it: it's
+	 * set through setCardType, which normalizes it.
+	 */
+	CardVariant: CardVariant | null;
 
 	// ─── Meld card state ────────────────────────────────────────────────────────
 
@@ -224,11 +235,16 @@ export interface CardCreatorState extends FormFieldValues {
  */
 export interface CardCreatorActions {
 	/**
-	 * Sets the card type and handles side effects:
+	 * Sets the card type and its variant (null = the standard version) and
+	 * handles side effects:
 	 * - Validates/updates card back compatibility
-	 * - Clears fields that aren't visible for the new type
+	 * - Clears fields that aren't visible for the new type/variant
+	 * - Resets a subtype the new type/variant doesn't offer
+	 *
+	 * Switching only the variant (e.g. Normal Equipment to an Evo variant) goes
+	 * through here too, so it gets all of the above.
 	 */
-	setCardType: (cardType: CardType) => void;
+	setCardType: (cardType: CardType, variant: CardVariant | null) => void;
 
 	// ─── Meld actions ───────────────────────────────────────────────────────────
 
@@ -417,12 +433,13 @@ export interface CardCreatorActions {
 const defaultCardType: CardType = "action";
 const defaultCardStyle: CardStyle = "dented";
 const defaultCardBack = (getSuggestedCardBack(
-	getCardBacksForTypeAndStyle(defaultCardType, defaultCardStyle),
+	getCardBacksForTypeAndStyle(defaultCardType, null, defaultCardStyle),
 ) ?? CardBacks[0]) as CardCreatorCardBack;
 
 const initialState: CardCreatorState = {
 	__version: uuid(),
 	CardType: defaultCardType,
+	CardVariant: null,
 	CardBack: defaultCardBack,
 	CardBackRight: null,
 	CardBackSplit: HYBRID_SPLIT_DEFAULT,
@@ -465,13 +482,19 @@ const initialState: CardCreatorState = {
  *
  * @example
  * const { CardType, setCardType } = useCardCreator();
- * setCardType('hero');
+ * setCardType('hero', null);
  */
 export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 	devtools((set, _, store) => ({
 		...initialState,
-		setCardType: (cardType: CardType) =>
+		setCardType: (cardType: CardType, variant: CardVariant | null) =>
 			set((state) => {
+				// From here on, use `cardVariant` — the cleaned-up NEW variant — and
+				// never `state.CardVariant`, which is the OLD one. Using the old one
+				// would, for example, check Normal Equipment's field list while
+				// switching to an Evo variant and wipe the user's Pitch and Cost.
+				const cardVariant = normalizeVariant(cardType, variant);
+
 				// When selecting a new card type, make sure that either:
 				// - the current card back is valid for that card type
 				// - we select the first available card back for that card type
@@ -485,6 +508,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				let available = getAvailableCardBacks(
 					customFrames,
 					cardType,
+					cardVariant,
 					state.CardBackStyle,
 				);
 				let cardStyle = state.CardBackStyle;
@@ -492,6 +516,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 					resolveCardBackKeepingMissing(
 						state.CardBack,
 						cardType,
+						cardVariant,
 						cardStyle,
 						() =>
 							state.CardBack !== null &&
@@ -504,7 +529,12 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 
 				if (null === cardBack) {
 					for (const style of CardStyles) {
-						available = getAvailableCardBacks(customFrames, cardType, style);
+						available = getAvailableCardBacks(
+							customFrames,
+							cardType,
+							cardVariant,
+							style,
+						);
 
 						if (available.length > 0)
 							cardBack = getSuggestedCardBack(
@@ -527,6 +557,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 						: resolveCardBackKeepingMissing(
 								state.CardBackRight,
 								cardType,
+								cardVariant,
 								cardStyle,
 								() =>
 									state.CardBackRight === null
@@ -541,26 +572,31 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				// All fields that are not visible for the new card type are set to null.
 				const result: Partial<CardCreatorState> = {
 					CardType: cardType,
+					CardVariant: cardVariant,
 					CardBack: cardBack,
 					CardBackRight: cardBackRight,
 					CardBackStyle: cardStyle,
 				};
 
 				for (const field of CardFormFields) {
-					if (!isFieldVisible(field, cardType)) {
+					if (!isFieldVisible(field, cardType, cardVariant)) {
 						Object.assign(result, { [field]: null });
 					}
 				}
 
-				// CardSubType stays *visible* across type changes, so the loop above
-				// never clears it — but each type has its own disjoint subtype pool
-				// (e.g. equipment's "head" vs action_equipment's "evo_head"). A value
-				// that doesn't exist for the new type would fall through
-				// useCardBottomText's `CardSubtypes[CardType]?.[CardSubType] ||
-				// CardSubType` fallback and print the raw stored key on the card.
+				// CardSubType stays *visible* across type and variant changes, so the
+				// loop above never clears it — but each type/variant has its own
+				// subtype pool (e.g. plain equipment's "head" vs an Evo variant's
+				// "evo_head"). A value that doesn't exist for the new type/variant
+				// would fall through useCardBottomText's subtype fallback and print
+				// the raw stored key on the card. Switching only the variant counts
+				// too, since it changes the pool without changing CardType.
 				if (
 					state.CardSubType &&
-					!(state.CardSubType in CardSubtypes[cardType])
+					!Object.hasOwn(
+						getCardSubtypes(cardType, cardVariant),
+						state.CardSubType,
+					)
 				) {
 					result.CardSubType = null;
 				}
@@ -601,6 +637,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				const available = getAvailableCardBacks(
 					getCustomFramesSnapshot(),
 					state.CardType,
+					state.CardVariant,
 					state.CardBackStyle,
 				);
 				if (available.length < 2) return {};
@@ -624,12 +661,14 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				const available = getAvailableCardBacks(
 					getCustomFramesSnapshot(),
 					state.CardType,
+					state.CardVariant,
 					backType,
 				);
 
 				const cardBack = resolveCardBackKeepingMissing(
 					state.CardBack,
 					state.CardType,
+					state.CardVariant,
 					backType,
 					() =>
 						state.CardBack !== null &&
@@ -644,6 +683,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 				const cardBackRight = resolveCardBackKeepingMissing(
 					state.CardBackRight,
 					state.CardType,
+					state.CardVariant,
 					backType,
 					() =>
 						state.CardBackRight === null
@@ -894,6 +934,7 @@ onCustomFramesRemoved((removedIds) => {
 		patch.CardBack = makeMissingFramePlaceholder(
 			state.CardBack.id,
 			state.CardType,
+			state.CardVariant,
 			state.CardBackStyle,
 		);
 	}
@@ -905,6 +946,7 @@ onCustomFramesRemoved((removedIds) => {
 		patch.CardBackRight = makeMissingFramePlaceholder(
 			state.CardBackRight.id,
 			state.CardType,
+			state.CardVariant,
 			state.CardBackStyle,
 		);
 	}

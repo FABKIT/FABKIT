@@ -1,8 +1,8 @@
 import {
 	FrameFamilies,
-	getCardTypesForFamily,
+	getCardKindsForFamily,
 } from "@fabkit/apps/card-creator/config/frame-buckets.ts";
-import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
+import { getCardTypeLabel } from "@fabkit/shared/config/cards/card_definition.ts";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -36,8 +36,8 @@ export function FrameAvailabilityPicker({
 	return (
 		<div className="space-y-4">
 			{FrameFamilies.map((family) => {
-				const coveredTypes = getCardTypesForFamily(family.type)
-					.map((cardType) => t(CardTypes[cardType].label))
+				const coveredTypes = getCardKindsForFamily(family.type)
+					.map((kind) => t(getCardTypeLabel(kind.type, kind.variant)))
 					.join(", ");
 
 				return (

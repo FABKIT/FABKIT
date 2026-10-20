@@ -35,13 +35,14 @@ export function CardBackField() {
 		back?.missing ? t("card_creator.missing_frame_label") : back?.name;
 
 	const CardType = useCardCreator((state) => state.CardType);
+	const CardVariant = useCardCreator((state) => state.CardVariant);
 	const CardBack = useCardCreator((state) => state.CardBack);
 	const CardBackRight = useCardCreator((state) => state.CardBackRight);
 	const CardBackStyle = useCardCreator((state) => state.CardBackStyle);
 	const setCardBack = useCardCreator((state) => state.setCardBack);
 	const setCardBackRight = useCardCreator((state) => state.setCardBackRight);
 
-	const options = useAvailableCardBacks(CardType, CardBackStyle);
+	const options = useAvailableCardBacks(CardType, CardVariant, CardBackStyle);
 
 	const [isCustomFrameDialogOpen, setIsCustomFrameDialogOpen] = useState(false);
 

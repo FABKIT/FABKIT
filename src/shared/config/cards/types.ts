@@ -19,27 +19,6 @@ export const CardTypes = {
 			"CardLife",
 		],
 	},
-	// Evo equipment: played from hand like an action/instant, then equipped.
-	// Carries pitch + cost like a deck card, unlike plain equipment. No power,
-	// life or intellect — no Evo equipment prints any of those.
-	// See src/shared/config/cards/type_families.ts — these two types are
-	// presented as "variants" of Equipment in the card type selector, but
-	// nothing about that grouping is persisted; this is the real stored type.
-	action_equipment: {
-		label: "card.type.action_equipment",
-		fields: [
-			"CardPitch",
-			"CardName",
-			"CardResource",
-			"CardText",
-			"CardTalent",
-			"CardClass",
-			"CardSecondaryClass",
-			"CardSubType",
-			"CardRarity",
-			"CardDefense",
-		],
-	},
 	attack_reaction: {
 		label: "card.type.attack_reaction",
 		fields: [
@@ -127,22 +106,6 @@ export const CardTypes = {
 	},
 	instant: {
 		label: "card.type.instant",
-		fields: [
-			"CardPitch",
-			"CardName",
-			"CardResource",
-			"CardText",
-			"CardTalent",
-			"CardClass",
-			"CardSecondaryClass",
-			"CardSubType",
-			"CardRarity",
-			"CardDefense",
-		],
-	},
-	// Evo equipment, instant variant. See action_equipment's comment above.
-	instant_equipment: {
-		label: "card.type.instant_equipment",
 		fields: [
 			"CardPitch",
 			"CardName",

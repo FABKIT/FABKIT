@@ -70,6 +70,7 @@ function RouteComponent() {
 	const reset = useCardCreator((state) => state.reset);
 	const setCardType = useCardCreator((state) => state.setCardType);
 	const currentCardType = useCardCreator((state) => state.CardType);
+	const currentCardVariant = useCardCreator((state) => state.CardVariant);
 	const CardBack = useCardCreator((state) => state.CardBack);
 
 	const handleShareClick = () => {
@@ -80,7 +81,7 @@ function RouteComponent() {
 		if (state.CardType) {
 			trackEvent({
 				name: "preset_link_created",
-				data: { cardType: state.CardType },
+				data: { cardType: state.CardType, cardVariant: state.CardVariant },
 			});
 		}
 	};
@@ -275,7 +276,8 @@ function RouteComponent() {
 								className="inline-flex items-center justify-center rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 								onClick={() => {
 									reset();
-									if (currentCardType) setCardType(currentCardType);
+									if (currentCardType)
+										setCardType(currentCardType, currentCardVariant);
 									setShowResetDialog(false);
 								}}
 							>

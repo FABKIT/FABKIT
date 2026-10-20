@@ -1,9 +1,14 @@
 import { base64ToBlob, blobToBase64 } from "@fabkit/shared/blob";
 import { compressJSON } from "@fabkit/shared/compression";
 import { CardBacks } from "@fabkit/shared/config/cards/card_backs.ts";
+import {
+	normalizeCardType,
+	normalizeVariant,
+} from "@fabkit/shared/config/cards/card_definition.ts";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
 import type { CardFormFieldValue } from "@fabkit/shared/config/cards/form_fields.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
 import type { Content } from "@tiptap/react";
 import semver from "semver";
 import { v4 as uuid } from "uuid";
@@ -120,6 +125,12 @@ export type SerializedMeldHalf = Omit<MeldHalf, "CardArtwork"> & {
 export interface SerializedCardState {
 	__version: string;
 	CardType: CardType | null;
+	/**
+	 * Which variant of the card type this is (e.g. "evo_action" on an equipment
+	 * card). Null means the standard version. Absent on records written before
+	 * variants existed, which reads as null.
+	 */
+	CardVariant: CardVariant | null;
 	CardBack: number | null;
 	/** Right-half card back id for hybrid frames. Null (or absent, on older records) means not hybrid. */
 	CardBackRight: number | null;
@@ -278,6 +289,7 @@ export function serializeCardState(
 	return {
 		__version: state.__version,
 		CardType: state.CardType,
+		CardVariant: state.CardVariant,
 		CardBack: state.CardBack?.id || null,
 		CardBackRight: state.CardBackRight?.id ?? null,
 		CardBackSplit: state.CardBackSplit,
@@ -322,10 +334,12 @@ export function serializeCardState(
 function resolveCustomFrameOrPlaceholder(
 	id: number,
 	cardType: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack {
 	return (
-		getCustomFrameById(id) ?? makeMissingFramePlaceholder(id, cardType, style)
+		getCustomFrameById(id) ??
+		makeMissingFramePlaceholder(id, cardType, variant, style)
 	);
 }
 
@@ -342,10 +356,11 @@ function resolveCustomFrameOrPlaceholder(
 export function resolveStoredCardBack(
 	id: number | null,
 	cardType: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack {
 	if (id !== null && id < 0) {
-		return resolveCustomFrameOrPlaceholder(id, cardType, style);
+		return resolveCustomFrameOrPlaceholder(id, cardType, variant, style);
 	}
 	return (CardBacks.find((back) => back.id === id) ||
 		CardBacks[0]) as CardCreatorCardBack;
@@ -363,10 +378,11 @@ export function resolveStoredCardBack(
 export function resolveStoredCardBackRight(
 	id: number | null,
 	cardType: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack | null {
 	if (id !== null && id < 0) {
-		return resolveCustomFrameOrPlaceholder(id, cardType, style);
+		return resolveCustomFrameOrPlaceholder(id, cardType, variant, style);
 	}
 	return (
 		(CardBacks.find((back) => back.id === id) as
@@ -378,11 +394,27 @@ export function resolveStoredCardBackRight(
 export function deserializeCardState(
 	stored: SerializedCardState,
 ): Partial<CardCreatorState> {
+	// Saved cards, imported files and bug reports are untrusted input. An
+	// unknown card type (a damaged or hand-edited file) opens as "action"
+	// rather than crashing the editor where its config can't be found, and a
+	// variant the type doesn't have reads as the standard version. Records
+	// written before variants existed have no CardVariant key at all, which
+	// is the standard version too — same idea as the CardBackSplit fallback
+	// below, so no migration is needed.
+	const cardType = normalizeCardType(stored.CardType);
+	const cardVariant =
+		cardType === null
+			? null
+			: normalizeVariant(cardType, stored.CardVariant ?? null);
+
 	return {
 		...stored,
+		CardType: cardType,
+		CardVariant: cardVariant,
 		CardBack: resolveStoredCardBack(
 			stored.CardBack,
-			stored.CardType,
+			cardType,
+			cardVariant,
 			stored.CardBackStyle,
 		),
 		// Deliberately no CardBacks[0] fallback here — unlike CardBack, an
@@ -392,11 +424,12 @@ export function deserializeCardState(
 		// from hybrid entirely, and a hand-edited or stale record could
 		// otherwise render two meld frames spliced together.
 		CardBackRight:
-			stored.CardType === "meld"
+			cardType === "meld"
 				? null
 				: resolveStoredCardBackRight(
 						stored.CardBackRight,
-						stored.CardType,
+						cardType,
+						cardVariant,
 						stored.CardBackStyle,
 					),
 		// Seam settings postdate the first hybrid release, so records written in

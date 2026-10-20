@@ -1,77 +1,80 @@
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { trackEvent } from "@fabkit/platform/analytics";
 import Select from "@fabkit/platform/components/form/Select";
-import {
-	CardTypeFamilies,
-	type CardTypeFamily,
-	getDefaultVariantForFamily,
-	getFamilyForCardType,
-	getTypeSelectorEntries,
-} from "@fabkit/shared/config/cards/type_families.ts";
-import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import { getVariantOptions } from "@fabkit/shared/config/cards/card_definition.ts";
+import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 /**
- * A family entry and a plain-type entry share one dropdown, so both need a
- * single string value space. A family's representative value is its own key
- * (e.g. "equipment"); a plain type's is the CardType itself. These never
- * collide — getTypeSelectorEntries() excludes any CardType that belongs to a
- * family from the plain-type list.
+ * Stand-in for "no variant" in the variant dropdown, whose option values must
+ * be strings.
+ *
+ * It is never stored: it is mapped back to `null` BEFORE setCardType is
+ * called, so it can never reach the store or the serializer. It must not
+ * collide with any variant key in CardVariants (shared/config/cards/variants.ts).
  */
-type TopLevelValue = CardTypeFamily | CardType;
+const STANDARD_VARIANT = "standard";
 
 export function CardTypeField() {
 	const { t } = useTranslation("card-creator");
-	const { CardType, setCardType } = useCardCreator();
+	const CardType = useCardCreator((state) => state.CardType);
+	const CardVariant = useCardCreator((state) => state.CardVariant);
+	const setCardType = useCardCreator((state) => state.setCardType);
 
 	// TODO: invalidate memo when `t`'s language changes?
-	const topLevelOptions = useMemo(() => {
-		return getTypeSelectorEntries()
-			.map((entry) => ({
-				value: entry.kind === "family" ? entry.family : entry.type,
-				label: t(entry.label),
-			}))
-			.sort((a, b) => a.label.localeCompare(b.label));
-	}, [t]);
+	const typeOptions = useMemo(
+		() =>
+			(Object.keys(CardTypes) as CardType[])
+				.map((key) => ({
+					value: key,
+					label: t(CardTypes[key].label),
+				}))
+				.sort((a, b) => a.label.localeCompare(b.label)),
+		[t],
+	);
 
-	const currentFamily = CardType ? getFamilyForCardType(CardType) : null;
-	const topLevelValue: TopLevelValue | null = currentFamily ?? CardType;
-
+	// Empty for a card type with no variants, which is what hides the dropdown.
 	const variantOptions = useMemo(() => {
-		if (!currentFamily) return [];
-		return CardTypeFamilies[currentFamily].variants.map((variant) => ({
-			value: variant.type,
-			label: t(variant.label),
+		if (!CardType) return [];
+		return getVariantOptions(CardType).map((option) => ({
+			value: option.variant ?? STANDARD_VARIANT,
+			label: t(option.label),
 		}));
-	}, [currentFamily, t]);
+	}, [CardType, t]);
 
-	const handleTopLevelChange = (value: TopLevelValue) => {
-		const nextType =
-			value in CardTypeFamilies
-				? getDefaultVariantForFamily(value as CardTypeFamily)
-				: (value as CardType);
-		setCardType(nextType);
-		trackEvent({ name: "card_type_selected", data: { cardType: nextType } });
+	// Picking a type always lands on its standard version.
+	const handleTypeChange = (value: CardType) => {
+		setCardType(value, null);
+		trackEvent({
+			name: "card_type_selected",
+			data: { cardType: value, cardVariant: null },
+		});
 	};
 
-	const handleVariantChange = (value: CardType) => {
-		setCardType(value);
-		trackEvent({ name: "card_type_selected", data: { cardType: value } });
+	const handleVariantChange = (value: string) => {
+		if (!CardType) return;
+		const variant = value === STANDARD_VARIANT ? null : (value as CardVariant);
+		setCardType(CardType, variant);
+		trackEvent({
+			name: "card_type_selected",
+			data: { cardType: CardType, cardVariant: variant },
+		});
 	};
 
 	return (
 		<div className="space-y-4">
 			<Select
 				label={t("card_creator.type_label")}
-				value={topLevelValue}
-				onChange={handleTopLevelChange}
-				options={topLevelOptions}
+				value={CardType}
+				onChange={handleTypeChange}
+				options={typeOptions}
 			/>
-			{currentFamily && (
+			{variantOptions.length > 0 && (
 				<Select
 					label={t("card_creator.variant_label")}
-					value={CardType}
+					value={CardVariant ?? STANDARD_VARIANT}
 					onChange={handleVariantChange}
 					options={variantOptions}
 				/>

@@ -3,12 +3,14 @@ import type { CardCreatorCardBack } from "@fabkit/apps/card-creator/config/rende
 import { useCustomFrames } from "@fabkit/apps/card-creator/stores/custom-frames.ts";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
 import { useMemo } from "react";
 
 /**
- * Stock-then-custom merged card-back list for a type/style, recomputed
- * whenever the custom-frames registry changes (a new upload, or the registry
- * finishing its initial hydrate) — not just when type/style change.
+ * Stock-then-custom merged card-back list for a type/variant/style,
+ * recomputed whenever the custom-frames registry changes (a new upload, or
+ * the registry finishing its initial hydrate) — not just when
+ * type/variant/style change.
  *
  * `customFrames` is passed into getAvailableCardBacks explicitly, rather
  * than having it read the registry internally, so the real dependency is
@@ -19,11 +21,12 @@ import { useMemo } from "react";
  */
 export function useAvailableCardBacks(
 	type: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack[] {
 	const customFrames = useCustomFrames();
 	return useMemo(
-		() => getAvailableCardBacks(customFrames, type, style),
-		[type, style, customFrames],
+		() => getAvailableCardBacks(customFrames, type, variant, style),
+		[type, variant, style, customFrames],
 	);
 }

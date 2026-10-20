@@ -19,8 +19,12 @@ import {
 	UserField,
 } from "@fabkit/platform/components/bug-report-viewer";
 import { decompressFile } from "@fabkit/shared/compression";
+import {
+	normalizeCardType,
+	normalizeVariant,
+} from "@fabkit/shared/config/cards/card_definition";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles";
-import type { CardType } from "@fabkit/shared/config/cards/types";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertTriangle,
@@ -172,7 +176,17 @@ async function restoreStore(raw: unknown): Promise<void> {
 				: Promise.resolve(null),
 		]);
 
-	const cardType = (s.CardType as CardType | undefined) ?? null;
+	// A bug report is untrusted input like any saved card: an unknown card type
+	// opens as "action" instead of crashing, and a variant the type doesn't
+	// have reads as the standard version (see deserializeCardState).
+	const cardType = normalizeCardType(s.CardType);
+	const cardVariant =
+		cardType === null
+			? null
+			: normalizeVariant(
+					cardType,
+					(s.CardVariant as CardVariant | undefined) ?? null,
+				);
 	const cardBackStyle = (s.CardBackStyle as CardStyle | undefined) ?? "dented";
 
 	// describeCardBackForReport (index.ts) serializes CardBack/CardBackRight
@@ -188,7 +202,12 @@ async function restoreStore(raw: unknown): Promise<void> {
 	const cardBackRaw = s.CardBack as { id: number } | null;
 	const cardBackRightRaw = s.CardBackRight as { id: number } | null;
 	const cardBack = cardBackRaw
-		? resolveStoredCardBack(cardBackRaw.id, cardType, cardBackStyle)
+		? resolveStoredCardBack(
+				cardBackRaw.id,
+				cardType,
+				cardVariant,
+				cardBackStyle,
+			)
 		: null;
 	const cardBackRight =
 		cardType === "meld" || !cardBackRightRaw
@@ -196,11 +215,14 @@ async function restoreStore(raw: unknown): Promise<void> {
 			: resolveStoredCardBackRight(
 					cardBackRightRaw.id,
 					cardType,
+					cardVariant,
 					cardBackStyle,
 				);
 
 	useCardCreator.getState().loadCard({
 		...(s as Partial<CardCreatorState>),
+		CardType: cardType,
+		CardVariant: cardVariant,
 		CardArtwork: artwork,
 		CardOverlay: overlay,
 		CardBack: cardBack,

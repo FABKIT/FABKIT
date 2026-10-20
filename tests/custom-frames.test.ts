@@ -3,7 +3,7 @@ import { getAvailableCardBacks } from "../src/apps/card-creator/config/card-back
 import {
 	FrameBuckets,
 	getBucketKeyForFrame,
-	getCardTypesForFamily,
+	getCardKindsForFamily,
 } from "../src/apps/card-creator/config/frame-buckets.ts";
 import {
 	addCustomFrameMirror,
@@ -463,16 +463,16 @@ describe("custom-frames registry", () => {
 		const frames = getCustomFramesSnapshot();
 
 		expect(
-			getCustomFramesForTypeAndStyle(frames, "resource", "dented").length,
+			getCustomFramesForTypeAndStyle(frames, "resource", null, "dented").length,
 		).toBe(1);
 		expect(
-			getCustomFramesForTypeAndStyle(frames, "resource", "flat").length,
+			getCustomFramesForTypeAndStyle(frames, "resource", null, "flat").length,
 		).toBe(0);
 		expect(
-			getCustomFramesForTypeAndStyle(frames, "general", "dented").length,
+			getCustomFramesForTypeAndStyle(frames, "general", null, "dented").length,
 		).toBe(0);
 		expect(
-			getCustomFramesForTypeAndStyle(frames, "meld", "dented").length,
+			getCustomFramesForTypeAndStyle(frames, "meld", null, "dented").length,
 		).toBe(0);
 	});
 
@@ -564,6 +564,53 @@ describe("custom-frames registry", () => {
 		expect(after?.images[0]?.objectUrl).toBe(beforeUrl); // same URL string
 	});
 
+	it("a custom frame in the evo family is offered to the Evo variants only", async () => {
+		await addFrameImageAndMirrors(
+			{
+				payloadHash: "evo-hash",
+				sourceHash: "evo-src",
+				normVersion: 1,
+				image: blob(50),
+				preview: blob(10),
+				byteSize: 50,
+			},
+			[
+				{
+					name: "EvoCustom",
+					type: "evo",
+					dented: false,
+					renderer: "normal_flat_evo",
+					mirrorsCardBackId: 1,
+				},
+			],
+		);
+		await reloadCustomFrames();
+		const frames = getCustomFramesSnapshot();
+
+		const isEvoCustom = (frame: { name: string }) => frame.name === "EvoCustom";
+		expect(
+			getAvailableCardBacks(frames, "equipment", "evo_action", "flat").some(
+				isEvoCustom,
+			),
+		).toBe(true);
+		expect(
+			getAvailableCardBacks(frames, "equipment", "evo_instant", "flat").some(
+				isEvoCustom,
+			),
+		).toBe(true);
+		expect(
+			getAvailableCardBacks(frames, "equipment", null, "flat").some(
+				isEvoCustom,
+			),
+		).toBe(false);
+		// Evo frames exist in flat style only, so dented offers none of them.
+		expect(
+			getAvailableCardBacks(frames, "equipment", "evo_action", "dented").some(
+				isEvoCustom,
+			),
+		).toBe(false);
+	});
+
 	it("getAvailableCardBacks merges stock and custom, stock first", async () => {
 		await addFrameImageAndMirrors(
 			{
@@ -589,6 +636,7 @@ describe("custom-frames registry", () => {
 		const available = getAvailableCardBacks(
 			getCustomFramesSnapshot(),
 			"action",
+			null,
 			"dented",
 		);
 		const stockCount = CardBacks.filter(
@@ -927,16 +975,32 @@ describe("frame buckets", () => {
 		);
 	});
 
-	it("getCardTypesForFamily never includes meld, and general covers action-family types", () => {
-		const generalTypes = getCardTypesForFamily("general");
+	it("getCardKindsForFamily never includes meld, and general covers action-family types", () => {
+		const generalTypes = getCardKindsForFamily("general").map(
+			(kind) => kind.type,
+		);
 		expect(generalTypes).not.toContain("meld");
 		expect(generalTypes).toContain("action");
 		expect(generalTypes).toContain("attack_reaction");
 	});
 
 	it("ally resolves through both the token and hero families", () => {
-		expect(getCardTypesForFamily("token")).toContain("ally");
-		expect(getCardTypesForFamily("hero")).toContain("ally");
+		expect(getCardKindsForFamily("token").map((kind) => kind.type)).toContain(
+			"ally",
+		);
+		expect(getCardKindsForFamily("hero").map((kind) => kind.type)).toContain(
+			"ally",
+		);
+	});
+
+	it("the evo family covers exactly the Evo variants, and the equipment family only plain equipment", () => {
+		expect(getCardKindsForFamily("evo")).toEqual([
+			{ type: "equipment", variant: "evo_action" },
+			{ type: "equipment", variant: "evo_instant" },
+		]);
+		expect(getCardKindsForFamily("equipment")).toEqual([
+			{ type: "equipment", variant: null },
+		]);
 	});
 });
 

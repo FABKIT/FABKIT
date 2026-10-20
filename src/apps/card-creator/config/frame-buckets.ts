@@ -17,9 +17,12 @@ import {
 	CardBacks,
 	getCardBackTypesForCardType,
 } from "@fabkit/shared/config/cards/card_backs.ts";
+import {
+	type CardKind,
+	getAllCardKinds,
+} from "@fabkit/shared/config/cards/card_definition.ts";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
 import { CardStyles } from "@fabkit/shared/config/cards/card_styles.ts";
-import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import type {
 	CardCreatorCardBack,
 	RenderConfigVariation,
@@ -124,7 +127,7 @@ export function getBucketKeyForFrame(frame: {
 }
 
 /**
- * Card types that resolve to this frame family, via
+ * Card types (and variants of them) that resolve to this frame family, via
  * getCardBackTypesForCardType's mapping — kept in sync with that function by
  * construction instead of being restated. Meld is excluded explicitly:
  * getCardBackTypesForCardType has no meld case and falls through to its
@@ -132,10 +135,10 @@ export function getBucketKeyForFrame(frame: {
  * special-casing meld before ever calling it. Without the same exclusion
  * here, "Meld" would wrongly appear in the Action family's caption.
  */
-export function getCardTypesForFamily(type: string): CardType[] {
-	return (Object.keys(CardTypes) as CardType[]).filter(
-		(cardType) =>
-			cardType !== "meld" &&
-			getCardBackTypesForCardType(cardType).includes(type),
+export function getCardKindsForFamily(type: string): CardKind[] {
+	return getAllCardKinds().filter(
+		(kind) =>
+			kind.type !== "meld" &&
+			getCardBackTypesForCardType(kind.type, kind.variant).includes(type),
 	);
 }

@@ -1,7 +1,9 @@
 // public/ has no alias — Vite serves it at the root URL and relative import is the only static option.
 import _CardBacks from "../../../../public/cardbacks/cardbacks.json";
+import { getVariantDefinition } from "./card_definition.ts";
 import type { CardStyle } from "./card_styles.ts";
 import type { CardType } from "./types.ts";
+import type { CardVariant } from "./variants.ts";
 
 export type CardBackImage = {
 	id: number;
@@ -47,15 +49,25 @@ export function isCustomCardBack(back: CardBack | null | undefined): boolean {
 export const CardBacks: CardBack[] = _CardBacks;
 
 /**
- * Maps a CardType to the CardBack.type value(s) that are compatible with it.
- * This mapping is NOT the identity function (e.g. "action" maps to
- * ["general"], "ally" maps to ["token", "hero"]) — any code that needs to
- * find CardBacks (stock OR custom) for a given card type must go through
- * this, not compare `back.type` against the CardType directly, or it will
- * silently find nothing for every type except the handful whose CardType
- * string happens to equal its CardBack.type string.
+ * Maps a CardType (and its variant) to the CardBack.type value(s) that are
+ * compatible with it. This mapping is NOT the identity function (e.g.
+ * "action" maps to ["general"], "ally" maps to ["token", "hero"]) — any code
+ * that needs to find CardBacks (stock OR custom) for a given card type must
+ * go through this, not compare `back.type` against the CardType directly, or
+ * it will silently find nothing for every type except the handful whose
+ * CardType string happens to equal its CardBack.type string.
+ *
+ * A variant that lists its own frame families (see variants.ts) uses those;
+ * otherwise the card type's mapping below applies.
  */
-export function getCardBackTypesForCardType(type: CardType): string[] {
+export function getCardBackTypesForCardType(
+	type: CardType,
+	variant: CardVariant | null,
+): string[] {
+	const variantDefinition = getVariantDefinition(type, variant);
+	if (variantDefinition) {
+		return [...variantDefinition.cardBackTypes];
+	}
 	if (type === "ally") {
 		return ["token", "hero"];
 	}
@@ -70,14 +82,12 @@ export function getCardBackTypesForCardType(type: CardType): string[] {
 	if (type === "weapon_equipment") {
 		return ["weapon"];
 	}
-	if (type === "action_equipment" || type === "instant_equipment") {
-		return ["evo"];
-	}
 	return ["general"];
 }
 
 export function getCardBacksForTypeAndStyle(
 	type: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardBack[] {
 	if (type === null) {
@@ -90,7 +100,7 @@ export function getCardBacksForTypeAndStyle(
 	}
 
 	const isDented = style === "dented";
-	const types = getCardBackTypesForCardType(type);
+	const types = getCardBackTypesForCardType(type, variant);
 
 	return CardBacks.filter(
 		(back) => types.includes(back.type) && back.dented === isDented,

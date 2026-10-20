@@ -30,6 +30,7 @@ function RouteComponent() {
 	const [isLandscape, setIsLandscape] = useState(false);
 	const [isExporting, setIsExporting] = useState(true);
 	const cardType = useCardCreator((state) => state.CardType);
+	const cardVariant = useCardCreator((state) => state.CardVariant);
 	const isMeldCard = cardType === "meld";
 	const cardFilename = useCardCreator((state) => {
 		if (state.CardType === "meld") {
@@ -107,6 +108,7 @@ function RouteComponent() {
 				name: "card_exported",
 				data: {
 					cardType,
+					cardVariant,
 					orientation: isMeldCard && isLandscape ? "landscape" : "portrait",
 				},
 			});

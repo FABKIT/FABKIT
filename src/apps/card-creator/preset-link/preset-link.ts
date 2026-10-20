@@ -66,6 +66,11 @@
  * card-creator's normal defaults (see `loadCard` in stores/card-creator.ts).
  *
  *   CardType            one of the keys of CardTypes (shared/config/cards/types.ts)
+ *   CardVariant         a variant that CardType actually has (see
+ *                       shared/config/cards/variants.ts), e.g. "evo_action"
+ *                       with CardType "equipment". Omitted, unknown, or not
+ *                       valid for CardType = the standard version. Ignored
+ *                       when CardType is omitted.
  *   CardPitch           1 | 2 | 3
  *   CardName            string
  *   CardResource        string
@@ -108,6 +113,7 @@
  */
 
 import { trackEvent } from "@fabkit/platform/analytics";
+import { normalizeVariant } from "@fabkit/shared/config/cards/card_definition.ts";
 import { CardStyles } from "@fabkit/shared/config/cards/card_styles.ts";
 import {
 	type CardClass,
@@ -122,6 +128,10 @@ import {
 	CardTalents,
 } from "@fabkit/shared/config/cards/talents.ts";
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
+import {
+	type CardVariant,
+	CardVariants,
+} from "@fabkit/shared/config/cards/variants.ts";
 import * as v from "valibot";
 import {
 	type CardCreatorState,
@@ -152,6 +162,11 @@ const optionalPicklist = <const T extends readonly (string | number)[]>(
 ) => v.fallback(v.optional(v.picklist(options)), undefined);
 
 const CARD_TYPE_KEYS = Object.keys(CardTypes) as CardType[];
+// Derived from the config, like CARD_TYPE_KEYS, so a new variant is accepted
+// here without touching this file.
+const CARD_VARIANT_KEYS = Object.values(CardVariants).flatMap((group) =>
+	Object.keys(group.variants),
+) as CardVariant[];
 const CARD_CLASS_KEYS = Object.keys(CardClasses) as CardClass[];
 const CARD_TALENT_KEYS = Object.keys(CardTalents) as CardTalent[];
 const CARD_RARITY_KEYS = Object.keys(CardRarities) as CardRarity[];
@@ -194,6 +209,7 @@ const MeldHalfRefSchema = v.fallback(MeldHalfSchema, EMPTY_MELD_HALF);
  * nested object (meldHalfA/meldHalfB), which are parsed separately below. */
 const PresetStateSchema = v.object({
 	CardType: optionalPicklist(CARD_TYPE_KEYS),
+	CardVariant: optionalPicklist(CARD_VARIANT_KEYS),
 	CardPitch: optionalPicklist([1, 2, 3] as const),
 	CardName: optionalString(),
 	CardResource: optionalString(),
@@ -270,7 +286,19 @@ export async function loadPresetLink(
 	// `raw` is already known to be a plain object, so this can't fail —
 	// every field's own fallback absorbs the rest.
 	const flat = v.parse(PresetStateSchema, raw);
-	const partial: Partial<CardCreatorState> = definedEntries(flat);
+	const { CardVariant: presetVariant, ...flatFields } = flat;
+	const partial: Partial<CardCreatorState> = definedEntries(flatFields);
+
+	// A variant only means something next to its card type, and only if that
+	// type really has it. With no CardType there is nothing to check it
+	// against, so it is dropped; otherwise anything the type doesn't have
+	// becomes the standard version.
+	if (partial.CardType) {
+		partial.CardVariant = normalizeVariant(
+			partial.CardType,
+			presetVariant ?? null,
+		);
+	}
 
 	const text = v.parse(optionalString(), raw.CardText);
 	if (text !== undefined) {
@@ -328,7 +356,10 @@ export async function loadPresetLink(
 	if (partial.CardType) {
 		trackEvent({
 			name: "preset_link_opened",
-			data: { cardType: partial.CardType },
+			data: {
+				cardType: partial.CardType,
+				cardVariant: partial.CardVariant ?? null,
+			},
 		});
 	}
 }
