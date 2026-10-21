@@ -1,4 +1,5 @@
 ---
+
 name: new-app
 description: Step-by-step procedure for scaffolding a new FABKIT app in the multi-app platform. Covers directory structure, bug-report provider registration, routing, aliases, nav, and i18n. Invoke with /new-app.
 ---
@@ -27,8 +28,8 @@ In `src/apps/<name>/index.ts`:
 import { registerReportDataProvider } from "@fabkit/platform/bug-report";
 
 registerReportDataProvider("<name>", () => ({
-  state: useMyStore.getState(),
-  // add: gallery, rendering — only if the app has those concepts
+	state: useMyStore.getState(),
+	// add: gallery, rendering — only if the app has those concepts
 }));
 ```
 
@@ -55,7 +56,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MyAppPage } from "@fabkit/apps/<name>/components/MyAppPage";
 
 export const Route = createFileRoute("/<name>")({
-  component: MyAppPage,
+	component: MyAppPage,
 });
 ```
 
@@ -69,11 +70,11 @@ In `tsconfig.app.json` only (not `tsconfig.json`, not `vite.config.ts`):
 
 ```json
 {
-  "compilerOptions": {
-    "paths": {
-      "@fabkit/apps/<name>/*": ["./src/apps/<name>/*"]
-    }
-  }
+	"compilerOptions": {
+		"paths": {
+			"@fabkit/apps/<name>/*": ["./src/apps/<name>/*"]
+		}
+	}
 }
 ```
 

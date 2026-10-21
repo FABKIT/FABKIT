@@ -13,6 +13,7 @@ FABKIT is a community-driven toolkit for Flesh and Blood TCG players. It is a mu
 ## Apps
 
 ### Custom Card Creator
+
 - **Authentic Design**: Official fonts, symbols, and card layouts
 - **Comprehensive Card Types**: Actions, Equipment, Heroes, Weapons, and more
 - **Dynamic Styling**: Choose between classic "dented" and modern "flat" card styles
@@ -22,14 +23,17 @@ FABKIT is a community-driven toolkit for Flesh and Blood TCG players. It is a mu
 - **Current supported card types**: Action, Attack Reaction, Defense Reaction, Block, Hero/Demi-Hero, Equipment, Instant, Resource, Token, Weapon, Macro, Mentor, Weapon Equipment, Ally, Event, Meld
 
 ### Card Gallery
+
 - **Local Storage**: Cards are saved in your browser and persist between sessions
 - **Gallery View**: Browse all your saved cards with thumbnail previews
 - **Import/Export**: Export cards as `.fabkit` files (JSON with embedded artwork) and re-import them via drag-and-drop or file picker
 
-### Fabble *(coming soon)*
+### Fabble _(coming soon)_
+
 - A new tool for the FAB community — currently scaffolded and in early development.
 
 ### Key Highlights
+
 - **Browser-Based**: No downloads required, works entirely in your browser
 - **Offline Support**: Installable as a PWA — works without an internet connection
 - **Mobile Friendly**: Responsive design for desktop and tablet use
@@ -80,6 +84,7 @@ bun run build
 6. **Export**: Download your finished card as a high-resolution PNG
 
 ### FAB Symbol Integration
+
 Use our symbol buttons in the text editor to add official FAB symbols:
 - Resource symbols
 - Power symbols
@@ -89,6 +94,7 @@ Use our symbol buttons in the text editor to add official FAB symbols:
 - Tap/Untap symbols
 
 ## FABKIT Legacy
+
 Looking for the legacy version of FABKIT? You can find it on [legacy.fabkit.io](https://legacy.fabkit.io)
 
 ## Roadmap
@@ -100,6 +106,7 @@ Looking for the legacy version of FABKIT? You can find it on [legacy.fabkit.io](
 We welcome all contributions. Whether they're bug reports, code contributions or suggestions
 
 ### Ways to Contribute
+
 - [Report bugs](https://github.com/FABKIT/FABKIT/issues)
 - [Suggest features](https://github.com/FABKIT/FABKIT/issues)
 - Submit pull requests
@@ -107,6 +114,7 @@ We welcome all contributions. Whether they're bug reports, code contributions or
 - Share card designs and feedback
 
 ### Development Setup
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes and test thoroughly

@@ -6,11 +6,11 @@ Flesh and Blood TCG toolkit built with React, TanStack Router, and Tailwind CSS 
 
 Three-layer model — each layer may only import downward:
 
-| Layer | Path | Purpose |
-|-------|------|---------|
-| **Apps** | `src/apps/<name>/` | Self-contained feature apps (card-creator, fabble) |
-| **Platform** | `src/platform/` | Shell infrastructure: router, error boundary, bug report, shared UI primitives |
-| **Shared** | `src/shared/` | FAB domain data and generic utilities (no UI, no platform deps) |
+| Layer        | Path               | Purpose                                                                        |
+| ------------ | ------------------ | ------------------------------------------------------------------------------ |
+| **Apps**     | `src/apps/<name>/` | Self-contained feature apps (card-creator, fabble)                             |
+| **Platform** | `src/platform/`    | Shell infrastructure: router, error boundary, bug report, shared UI primitives |
+| **Shared**   | `src/shared/`      | FAB domain data and generic utilities (no UI, no platform deps)                |
 
 Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-creator/*`, `@fabkit/apps/fabble/*`
 
@@ -36,16 +36,16 @@ Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-cre
 
 ## Semantic Colors
 
-| Token | Purpose |
-|-------|---------|
-| `bg-surface` | Page/card backgrounds |
-| `bg-surface-muted` | Subtle backgrounds |
-| `bg-surface-active` | Active/selected states |
-| `text-heading` | Headings (brand color) |
-| `text-body` | Body text |
-| `text-muted` | Secondary text |
-| `text-subtle` | Tertiary text |
-| `text-faint` | Very subtle text |
+| Token                   | Purpose                |
+| ----------------------- | ---------------------- |
+| `bg-surface`            | Page/card backgrounds  |
+| `bg-surface-muted`      | Subtle backgrounds     |
+| `bg-surface-active`     | Active/selected states |
+| `text-heading`          | Headings (brand color) |
+| `text-body`             | Body text              |
+| `text-muted`            | Secondary text         |
+| `text-subtle`           | Tertiary text          |
+| `text-faint`            | Very subtle text       |
 | `border-border-primary` | Primary-tinted borders |
 
 ## Commands

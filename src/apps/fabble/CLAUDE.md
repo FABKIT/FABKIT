@@ -26,7 +26,7 @@ same schema instead — see `config.ts`'s `FABBLE_DATA_URL` for the swap.
 
 `FabbleSetPrinting.limitedPrint` (optional) flags Blitz Deck / Commander/CC Deck
 printings — real chronological printings (unlike `promo`, they still get normal
-Set-tile arrows) that should nonetheless never be picked as a card's *display*
+Set-tile arrows) that should nonetheless never be picked as a card's _display_
 printing on the end screen or Hint 2. `game/compare.ts`'s `earliestRegularPrinting`
 is a 3-tier fallback (main sets → non-promo incl. limitedPrint → everything incl.
 promo) and treats the field's absence as "no limited-print sets", so it's safe to
@@ -71,7 +71,6 @@ src/apps/fabble/
 ## Store Shape
 
 `useFabbleStore` (Zustand + devtools) top-level fields:
-
 - `dataset`, `cardsById`, `searchIndex` — set once via `ingestDataset()` from the
   route loader's data
 - `sessions: Partial<Record<FabbleMode, ModeSession>>` — one session per mode.

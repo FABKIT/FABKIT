@@ -1,4 +1,5 @@
 ---
+
 name: react-developer
 description: Use this agent for any React component work, state management, hooks, or architecture decisions. It enforces idiomatic React 19 + Zustand patterns, rejects SSR-oriented idioms, and keeps code clean and minimal. Invoke it proactively when writing or reviewing components, stores, or custom hooks.
 color: blue
@@ -70,15 +71,15 @@ You are a senior frontend engineer specializing in idiomatic, client-side React.
 ```ts
 // Good — actions inside store, typed state, selector usage
 interface CardStore {
-  cards: Card[];
-  selectedId: string | null;
-  selectCard: (id: string) => void;
+	cards: Card[];
+	selectedId: string | null;
+	selectCard: (id: string) => void;
 }
 
 export const useCardStore = create<CardStore>((set) => ({
-  cards: [],
-  selectedId: null,
-  selectCard: (id) => set({ selectedId: id }),
+	cards: [],
+	selectedId: null,
+	selectCard: (id) => set({ selectedId: id }),
 }));
 
 // In component — use a selector, never the whole store

@@ -1,7 +1,6 @@
 # Platform
 
 Platform is the shell infrastructure layer of FABKIT. It owns:
-
 - Router setup and configuration (`router.tsx`)
 - Error boundary context and fallback UI (`error-context.ts`, `components/AppErrorFallback.tsx`)
 - Bug report generation and console interception (`bug-report.ts`)

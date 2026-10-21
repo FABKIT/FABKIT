@@ -1,4 +1,5 @@
 ---
+
 name: commit
 description: Pre-commit pipeline for FABKIT. Runs format, build, reviews changed code, then generates and commits with a conventional commit message. Designed for non-technical contributors — one command does everything. Invoke with /commit or /commit <description>.
 model: claude-haiku-4-5-20251001
@@ -75,36 +76,36 @@ Optional body — only if the change is non-obvious or has important context.
 ```
 
 **Types:**
-| Type | Use when |
-|------|----------|
-| `feat` | Adding something new (a field, a card type, a page feature) |
-| `fix` | Correcting a bug or broken behaviour |
-| `refactor` | Restructuring code without changing behaviour |
-| `style` | Visual/UI-only changes with no logic change |
-| `chore` | Config, dependencies, tooling |
-| `i18n` | Translation additions or corrections |
-| `build` | Build config, Vite, tsconfig |
-| `docs` | README, comments, documentation only |
-| `perf` | Performance improvement |
+| Type       | Use when                                                    |
+| ---------- | ----------------------------------------------------------- |
+| `feat`     | Adding something new (a field, a card type, a page feature) |
+| `fix`      | Correcting a bug or broken behaviour                        |
+| `refactor` | Restructuring code without changing behaviour               |
+| `style`    | Visual/UI-only changes with no logic change                 |
+| `chore`    | Config, dependencies, tooling                               |
+| `i18n`     | Translation additions or corrections                        |
+| `build`    | Build config, Vite, tsconfig                                |
+| `docs`     | README, comments, documentation only                        |
+| `perf`     | Performance improvement                                     |
 
 **Scopes for this project:**
-| Scope | Use for changes in |
-|-------|--------------------|
-| `card-creator` | `src/apps/card-creator/`, `src/routes/card-creator.tsx` |
-| `renderer` | `src/apps/card-creator/components/card-creator/Renderer/` |
-| `fields` | `src/apps/card-creator/components/card-creator/fields/` |
-| `gallery` | `src/apps/card-creator/components/gallery/`, `src/routes/gallery.tsx` |
-| `store` | `src/apps/card-creator/stores/` |
-| `config` | `src/apps/card-creator/config/` |
-| `persistence` | `src/apps/card-creator/persistence/` |
-| `platform` | `src/platform/` |
-| `shared` | `src/shared/` |
-| `fabble` | `src/apps/fabble/` |
-| `i18n` | `src/platform/i18n/`, `src/apps/*/i18n/` |
-| `routing` | `src/routes/` (general routing changes) |
-| `ui` | `src/platform/components/form/`, `src/platform/components/layout/` |
-| `export` | `src/routes/export.tsx`, `src/shared/export.ts` |
-| `docs` | `README.md`, `CONTRIBUTING.md`, or any other documentation files |
+| Scope          | Use for changes in                                                    |
+| -------------- | --------------------------------------------------------------------- |
+| `card-creator` | `src/apps/card-creator/`, `src/routes/card-creator.tsx`               |
+| `renderer`     | `src/apps/card-creator/components/card-creator/Renderer/`             |
+| `fields`       | `src/apps/card-creator/components/card-creator/fields/`               |
+| `gallery`      | `src/apps/card-creator/components/gallery/`, `src/routes/gallery.tsx` |
+| `store`        | `src/apps/card-creator/stores/`                                       |
+| `config`       | `src/apps/card-creator/config/`                                       |
+| `persistence`  | `src/apps/card-creator/persistence/`                                  |
+| `platform`     | `src/platform/`                                                       |
+| `shared`       | `src/shared/`                                                         |
+| `fabble`       | `src/apps/fabble/`                                                    |
+| `i18n`         | `src/platform/i18n/`, `src/apps/*/i18n/`                              |
+| `routing`      | `src/routes/` (general routing changes)                               |
+| `ui`           | `src/platform/components/form/`, `src/platform/components/layout/`    |
+| `export`       | `src/routes/export.tsx`, `src/shared/export.ts`                       |
+| `docs`         | `README.md`, `CONTRIBUTING.md`, or any other documentation files      |
 
 Rules for the description:
 - Lowercase, no period at the end
