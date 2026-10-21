@@ -529,9 +529,8 @@ export const NormalFlatTokenRenderConfigPreset = {
  * neither. So this spreads from the base action/instant layout instead.
  *
  * Values below are measured directly off the real Evo frame art
- * (D:\Desktop\FaBFormed\New Card Backs\EVO\EVO_1_Flat.png, 450x628 — the
- * same size as this viewBox) against FABKIT's own normal_flat frame. See the
- * implementation plan for the full measurement table. CardName, clips.Title,
+ * (EVO_1_Flat.png, 450x628 — the same size as this viewBox) against
+ * FABKIT's own normal_flat frame. CardName, clips.Title,
  * CardResource and CardRarity are inherited unchanged — measured identical
  * on both frames.
  */
