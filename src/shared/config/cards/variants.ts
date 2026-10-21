@@ -117,3 +117,10 @@ export type CardVariant = Exclude<
 	}[keyof typeof CardVariants],
 	typeof STANDARD_VARIANT
 >;
+
+/**
+ * A variant, or `STANDARD_VARIANT` for "no variant". Use it only where a
+ * string must stand in for `null` (e.g. dropdown option values); comparing
+ * against `STANDARD_VARIANT` narrows it back to `CardVariant`.
+ */
+export type CardVariantOrStandard = CardVariant | typeof STANDARD_VARIANT;

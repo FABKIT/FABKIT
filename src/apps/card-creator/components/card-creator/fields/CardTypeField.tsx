@@ -1,10 +1,12 @@
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import { trackEvent } from "@fabkit/platform/analytics";
-import Select from "@fabkit/platform/components/form/Select";
+import Select, {
+	type SelectOption,
+} from "@fabkit/platform/components/form/Select";
 import { getVariantOptions } from "@fabkit/shared/config/cards/card_definition.ts";
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import {
-	type CardVariant,
+	type CardVariantOrStandard,
 	STANDARD_VARIANT,
 } from "@fabkit/shared/config/cards/variants.ts";
 import { useMemo } from "react";
@@ -31,10 +33,12 @@ export function CardTypeField() {
 	// Empty for a card type with no variants, which is what hides the dropdown.
 	const variantOptions = useMemo(() => {
 		if (!CardType) return [];
-		return getVariantOptions(CardType).map((option) => ({
-			value: option.variant ?? STANDARD_VARIANT,
-			label: t(option.label),
-		}));
+		return getVariantOptions(CardType).map(
+			(option): SelectOption<CardVariantOrStandard> => ({
+				value: option.variant ?? STANDARD_VARIANT,
+				label: t(option.label),
+			}),
+		);
 	}, [CardType, t]);
 
 	// Picking a type always lands on its standard version.
@@ -46,9 +50,9 @@ export function CardTypeField() {
 		});
 	};
 
-	const handleVariantChange = (value: string) => {
+	const handleVariantChange = (value: CardVariantOrStandard) => {
 		if (!CardType) return;
-		const variant = value === STANDARD_VARIANT ? null : (value as CardVariant);
+		const variant = value === STANDARD_VARIANT ? null : value;
 		setCardType(CardType, variant);
 		trackEvent({
 			name: "card_type_selected",
