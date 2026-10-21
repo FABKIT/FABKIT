@@ -20,6 +20,7 @@ bun run build
 ```
 
 ### Ways to Contribute
+
 - [Report bugs](https://github.com/FABKIT/FABKIT/issues)
 - [Suggest features](https://github.com/FABKIT/FABKIT/issues)
 - Submit pull requests
@@ -27,6 +28,7 @@ bun run build
 - Share card designs and feedback
 
 ### Development Setup
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes and test thoroughly

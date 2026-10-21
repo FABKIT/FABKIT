@@ -6,7 +6,6 @@
 > **Please do not report security vulnerabilities through public GitHub issues.**
 
 If you discover a security vulnerability in FABKIT, please report it privately through GitHub Security Advisories:
-
 1. Go to the [Security tab](https://github.com/FABKIT/FABKIT/security) of this repository
 2. Click "Report a vulnerability"
 3. Fill out the advisory form with details
@@ -14,7 +13,6 @@ If you discover a security vulnerability in FABKIT, please report it privately t
 ## What to Include
 
 When reporting a vulnerability, please include:
-
 - **Description** of the vulnerability
 - **Steps to reproduce** the issue
 - **Potential impact** and attack scenarios

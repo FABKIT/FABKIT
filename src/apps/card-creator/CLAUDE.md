@@ -37,7 +37,6 @@ src/apps/card-creator/
 ## Store Shape
 
 `useCardCreator` (Zustand + devtools) top-level fields:
-
 - `CardType` — selected card type (`CardType | null`)
 - `CardVariant` — which variant of that card type (`CardVariant | null`); `null` is the
   standard version. Only meaningful together with `CardType`; set through `setCardType`
@@ -61,7 +60,6 @@ A card is described by two coordinates: `CardType` ("what kind of card", e.g. eq
 and `CardVariant` ("which version of it", e.g. Evo action). `CardVariant` is `null` for the
 standard version, which is every card unless its type lists variants in
 `src/shared/config/cards/variants.ts`. Only Equipment has variants today (the two Evo ones).
-
 - Each variant carries what differs from its type's standard version: the word printed on the
   type line, the Variant dropdown label, form fields, subtypes and frame families.
 - Always ask through the helpers in `src/shared/config/cards/card_definition.ts`
@@ -97,7 +95,7 @@ standard version, which is every card unless its type lists variants in
    `defaultMeldHalf`, `MeldHalfFields.tsx`, `MeldRenderer.tsx`, the preset-link meld schema and
    a migration.
 6. Every card type is assumed to have a standard (`null`) version. A type that should exist
-   *only* as variants needs the model extended first.
+   _only_ as variants needs the model extended first.
 7. Run the tests. The data-driven ones adapt to the new entry by themselves; add a test for the
    new variant's own fields, subtypes and frames.
 
