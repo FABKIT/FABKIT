@@ -274,5 +274,26 @@
 			}
 		],
 		"renderer": "normal_flat_evo"
+	},
+	{
+		"id": 137,
+		"name": "Event",
+		"type": "event",
+		"dented": false,
+		"images": [
+			{
+				"id": 1320,
+				"pitch": 1,
+				"fileName": "\/generated\/Event-Flat-68d141914d345-69625e139e904.png"
+			}
+		],
+		"watermarkedImages": [
+			{
+				"id": 1321,
+				"pitch": 1,
+				"fileName": "\/generated\/Event-Flat-68d141914d345-69625e139e904.png"
+			}
+		],
+		"renderer": "normal_flat"
 	}
 ]
