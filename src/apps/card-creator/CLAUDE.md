@@ -75,8 +75,8 @@ standard version, which is every card unless its type lists variants in
   `normalizeCardType` / `normalizeVariant`, so an unknown type opens as Action and an invalid
   variant reads as the standard version. Records saved before variants existed simply have no
   `CardVariant` and read as `null`, so adding a variant needs no migration.
-- `STANDARD_VARIANT` in `CardTypeField.tsx` is a dropdown-only stand-in for `null`. It is
-  never stored.
+- `STANDARD_VARIANT` in `variants.ts` is a stand-in for `null` where a string is required
+  (the Variant dropdown's option values). It is never stored.
 
 ### Adding a variant to a card type
 
@@ -89,8 +89,8 @@ standard version, which is every card unless its type lists variants in
    named in `cardBackTypes`, with a `renderer` key that exists in `AllRenderConfigVariations`.
    **Register the renderer in the app before the frames go live**, or cards with that frame
    render blank.
-4. Variant keys must be unique within their card type, never be `"standard"` (reserved by the
-   Variant dropdown), and are permanent: they are saved in card files and share links.
+4. Variant keys must be unique within their card type, never be `STANDARD_VARIANT` (`"standard"`;
+   the compiler rejects it), and are permanent: they are saved in card files and share links.
 5. **Meld halves have no variant.** If the card type can be a meld half (it is not in
    `MELD_EXCLUDED_TYPES`), the new variant is not selectable inside a meld card until
    `MeldHalf` gets a `CardVariant` too. That is a separate change touching `MeldHalf`,

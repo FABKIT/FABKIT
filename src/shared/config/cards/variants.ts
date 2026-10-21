@@ -35,10 +35,22 @@ export interface VariantDefinition {
 	cardBackTypes: readonly string[];
 }
 
+/**
+ * Stand-in for "no variant" (`null`) wherever a string is required, such as the
+ * option values of the Variant dropdown. It is never stored: callers map it
+ * back to `null` before it reaches the store or the serializer.
+ *
+ * It is reserved: `VariantGroup` rejects it as a variant key at compile time,
+ * so it can never collide with a real variant.
+ */
+export const STANDARD_VARIANT = "standard";
+
 export interface VariantGroup {
 	/** i18n key for the Variant dropdown option that means "no variant". */
 	standardLabel: string;
-	variants: Record<string, VariantDefinition>;
+	variants: Record<string, VariantDefinition> & {
+		[STANDARD_VARIANT]?: never;
+	};
 }
 
 // Evo equipment is played from hand like an action or instant, then equipped.
@@ -97,7 +109,11 @@ export const CardVariants = {
  * Every variant key across every card type, derived from `CardVariants` above
  * rather than written out by hand, so adding a variant there is enough.
  * Variant keys are saved in card files and share links, so never rename one.
+ * `STANDARD_VARIANT` is excluded: it means "no variant", which is `null`.
  */
-export type CardVariant = {
-	[T in keyof typeof CardVariants]: keyof (typeof CardVariants)[T]["variants"];
-}[keyof typeof CardVariants];
+export type CardVariant = Exclude<
+	{
+		[T in keyof typeof CardVariants]: keyof (typeof CardVariants)[T]["variants"];
+	}[keyof typeof CardVariants],
+	typeof STANDARD_VARIANT
+>;

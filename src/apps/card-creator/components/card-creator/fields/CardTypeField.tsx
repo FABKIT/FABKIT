@@ -3,19 +3,12 @@ import { trackEvent } from "@fabkit/platform/analytics";
 import Select from "@fabkit/platform/components/form/Select";
 import { getVariantOptions } from "@fabkit/shared/config/cards/card_definition.ts";
 import { type CardType, CardTypes } from "@fabkit/shared/config/cards/types.ts";
-import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
+import {
+	type CardVariant,
+	STANDARD_VARIANT,
+} from "@fabkit/shared/config/cards/variants.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-
-/**
- * Stand-in for "no variant" in the variant dropdown, whose option values must
- * be strings.
- *
- * It is never stored: it is mapped back to `null` BEFORE setCardType is
- * called, so it can never reach the store or the serializer. It must not
- * collide with any variant key in CardVariants (shared/config/cards/variants.ts).
- */
-const STANDARD_VARIANT = "standard";
 
 export function CardTypeField() {
 	const { t } = useTranslation("card-creator");
