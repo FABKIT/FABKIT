@@ -2,6 +2,7 @@
 	"card": {
 		"type": {
 			"action": "Action",
+			"action_equipment": "Action Equipment",
 			"attack_reaction": "Attack Reaction",
 			"block": "Block",
 			"defense_reaction": "Defense Reaction",
@@ -9,6 +10,7 @@
 			"equipment": "Equipment",
 			"hero": "Hero",
 			"instant": "Instant",
+			"instant_equipment": "Instant Equipment",
 			"macro": "Macro",
 			"mentor": "Mentor",
 			"resource": "Resource",
@@ -18,6 +20,11 @@
 			"ally": "Ally",
 			"event": "Event",
 			"meld": "Meld"
+		},
+		"variant": {
+			"equipment_normal": "Normal Equipment",
+			"action_equipment_evo": "Action Equipment (EVO)",
+			"instant_equipment_evo": "Instant Equipment (EVO)"
 		},
 		"talent": {
 			"none": "None",
@@ -77,6 +84,18 @@
 			"arms": "Arms",
 			"legs": "Legs",
 			"base": "Base",
+			"base_head": "Base Head",
+			"base_chest": "Base Chest",
+			"base_arms": "Base Arms",
+			"base_legs": "Base Legs",
+			"evo_head": "Evo Head",
+			"evo_chest": "Evo Chest",
+			"evo_arms": "Evo Arms",
+			"evo_legs": "Evo Legs",
+			"evo_base_head": "Evo Base Head",
+			"evo_base_chest": "Evo Base Chest",
+			"evo_base_arms": "Evo Base Arms",
+			"evo_base_legs": "Evo Base Legs",
 			"off_hand": "Off-Hand",
 			"figment": "Figment",
 			"gem": "Gem",
@@ -119,6 +138,7 @@
 	"card_creator": {
 		"type_label": "Type",
 		"type_placeholder": "Select Card Type",
+		"variant_label": "Variant",
 		"pitch_label": "Pitch",
 		"name_label": "Name",
 		"resource_label": "Cost",
@@ -256,6 +276,7 @@
 			"general": "Action",
 			"hero": "Hero",
 			"equipment": "Equipment",
+			"evo": "Evo",
 			"weapon": "Weapon",
 			"token": "Token",
 			"resource": "Resource",

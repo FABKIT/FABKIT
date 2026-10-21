@@ -7,11 +7,11 @@
  * ## Flat Card Footer
  * Returns array [left, right]:
  * - Left: "SET001 | FABKIT | ARTIST NAME"
- * - Right: "FaB TCC BY LSS"
+ * - Right: "FaB TCG BY LSS"
  *
  * ## Dented Card Footer
  * Returns string or array [line1, line2]:
- * - If no custom fields: Single line "FABKIT - NOT LEGAL - FLESH AND BLOOD TCG BY LLS"
+ * - If no custom fields: Single line "FABKIT - NOT LEGAL - FLESH AND BLOOD TCG BY LSS"
  * - If custom fields: Two lines with set/artist on top, legal disclaimer below
  *
  * ## Legal Disclaimer
@@ -54,24 +54,24 @@ function generateDentedFooterText(
 	CardArtworkCredits: string | null,
 ): string | [string, string] {
 	if (CardSetNumber === null && CardArtworkCredits === null) {
-		return "FABKIT - NOT LEGAL - FLESH AND BLOOD TCG BY LLS";
+		return "FABKIT - NOT LEGAL - FLESH AND BLOOD TCG BY LSS";
 	}
 
 	if (CardSetNumber === null) {
 		return [
 			`FABKIT - ${CardArtworkCredits}`,
-			"NOT LEGAL - FLESH AND BLOOD TCG BY LLS",
+			"NOT LEGAL - FLESH AND BLOOD TCG BY LSS",
 		];
 	} else if (CardArtworkCredits === null) {
 		return [
 			`${CardSetNumber} - FABKIT`,
-			"NOT LEGAL - FLESH AND BLOOD TCG BY LLS",
+			"NOT LEGAL - FLESH AND BLOOD TCG BY LSS",
 		];
 	}
 
 	return [
 		`${CardSetNumber} - FABKIT - ${CardArtworkCredits}`,
-		"NOT LEGAL - FLESH AND BLOOD TCG BY LLS",
+		"NOT LEGAL - FLESH AND BLOOD TCG BY LSS",
 	];
 }
 
@@ -90,6 +90,6 @@ function generateFlatFooterText(
 		[CardSetNumber, "FABKIT", CardArtworkCredits]
 			.filter((value) => value?.trim()?.length)
 			.join(" | "),
-		"FaB TCC BY LSS",
+		"FaB TCG BY LSS",
 	];
 }

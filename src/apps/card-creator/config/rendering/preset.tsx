@@ -519,3 +519,94 @@ export const NormalFlatTokenRenderConfigPreset = {
 		},
 	},
 };
+
+/**
+ * Evo equipment (Action Equipment / Instant Equipment, the "evo_head" /
+ * "evo_base_head" / etc. subtypes). Unlike every other equipment-ish preset,
+ * this does NOT spread from NormalFlatEquipmentRenderConfigPreset — an Evo
+ * card has a pitch gem and cost pip, just like a plain action card, and the
+ * equipment preset's wider title exists specifically because equipment has
+ * neither. So this spreads from the base action/instant layout instead.
+ *
+ * Values below are measured directly off the real Evo frame art
+ * (EVO_1_Flat.png, 450x628 — the same size as this viewBox) against
+ * FABKIT's own normal_flat frame. CardName, clips.Title,
+ * CardResource and CardRarity are inherited unchanged — measured identical
+ * on both frames.
+ */
+export const NormalFlatEvoRenderConfigPreset = {
+	...NormalFlatRenderConfigPreset,
+	// The Evo frame's text panel sits 21 lower than an action frame's, so the
+	// artwork window extends further down. Stops just before CardText.y (414).
+	artworkDragZone: { x: 10, y: 10, width: 430, height: 394 },
+	clips: {
+		...NormalFlatRenderConfigPreset.clips,
+		// An Evo frame has no power socket bottom-left, so the type-line band
+		// runs all the way to the card edge. normal_flat is x=105 w=240.
+		BottomText: <rect x="30" y="560" width="312" height="25" />,
+	},
+	elements: {
+		...NormalFlatRenderConfigPreset.elements,
+		// Panel interior measured at y 397..548; normal_flat insets its text
+		// box 17 from the panel top and 14.5 from the bottom — applied
+		// identically here.
+		CardResource: {
+			...NormalFlatRenderConfigPreset.elements.CardResource,
+			y: 56.2,
+		},
+		CardName: {
+			...NormalFlatRenderConfigPreset.elements.CardName,
+			x: 225,
+			fontSize: 25.3,
+		},
+		CardText: {
+			...NormalFlatRenderConfigPreset.elements.CardText,
+			x: 54,
+			y: 414,
+			width: 344,
+			height: 119.5,
+			fontSize: 16.58,
+			minFontSize: 6,
+			overflowScalingFactor: 0.99,
+		},
+		CardBottomText: {
+			...NormalFlatRenderConfigPreset.elements.CardBottomText,
+			x: 186, // centre of the new 30..342 band (was 225.25)
+			y: 575.4,
+			maxWidth: 259, // was 223 — longest real type line is
+			// "Mechanologist Instant Equipment - Evo Base Arms"
+		},
+		// Defense socket measured ⌀43 centred at (404, 570), against the
+		// action frame's ⌀34 at (408.5, 570) — same symbol-to-socket ratio as
+		// normal_flat, scaled up.
+		CardDefenseImage: {
+			x: 385,
+			y: 548.2,
+			width: 36,
+			height: 36,
+		},
+		CardDefenseText: {
+			...NormalFlatRenderConfigPreset.elements.CardDefenseText,
+			x: 365, // centre of the 342..383 gap (was 375 for the action frame)
+			y: 574,
+			fontSize: 19.7,
+		},
+		CardRarity: {
+			...NormalFlatRenderConfigPreset.elements.CardRarity,
+			x: 31.3,
+			y: 595.7,
+			width: 11.5,
+			height: 11.5,
+		},
+		CardFooterTextLeft: {
+			...NormalFlatRenderConfigPreset.elements.CardFooterTextLeft,
+			x: 47.2,
+			y: 602.2,
+		},
+		CardFooterTextRight: {
+			...NormalFlatRenderConfigPreset.elements.CardFooterTextRight,
+			x: 419.1,
+			y: 602.2,
+		},
+	},
+};

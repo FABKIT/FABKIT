@@ -233,5 +233,67 @@
 			}
 		],
 		"renderer": "meld_flat"
+	},
+	{
+		"id": 158,
+		"name": "EVO",
+		"type": "evo",
+		"dented": false,
+		"images": [
+			{
+				"id": 1431,
+				"pitch": 1,
+				"fileName": "\/generated\/EVO-1-Flat-6acd21e744003.png"
+			},
+			{
+				"id": 1433,
+				"pitch": 2,
+				"fileName": "\/generated\/EVO-2-Flat-6acd21e74f93e.png"
+			},
+			{
+				"id": 1435,
+				"pitch": 3,
+				"fileName": "\/generated\/EVO-3-Flat-6acd21e7580e4.png"
+			}
+		],
+		"watermarkedImages": [
+			{
+				"id": 1432,
+				"pitch": 1,
+				"fileName": "\/generated\/EVO-1-Flat-6acd21e744003.png"
+			},
+			{
+				"id": 1434,
+				"pitch": 2,
+				"fileName": "\/generated\/EVO-2-Flat-6acd21e74f93e.png"
+			},
+			{
+				"id": 1436,
+				"pitch": 3,
+				"fileName": "\/generated\/EVO-3-Flat-6acd21e7580e4.png"
+			}
+		],
+		"renderer": "normal_flat_evo"
+	},
+	{
+		"id": 137,
+		"name": "Event",
+		"type": "event",
+		"dented": false,
+		"images": [
+			{
+				"id": 1320,
+				"pitch": 1,
+				"fileName": "\/generated\/Event-Flat-68d141914d345-69625e139e904.png"
+			}
+		],
+		"watermarkedImages": [
+			{
+				"id": 1321,
+				"pitch": 1,
+				"fileName": "\/generated\/Event-Flat-68d141914d345-69625e139e904.png"
+			}
+		],
+		"renderer": "normal_flat"
 	}
 ]

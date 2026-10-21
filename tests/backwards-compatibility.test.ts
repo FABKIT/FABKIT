@@ -23,9 +23,22 @@ import {
 	HYBRID_SPLIT_DEFAULT,
 	useCardCreator,
 } from "../src/apps/card-creator/stores/card-creator.ts";
-import { CardBacks } from "../src/shared/config/cards/card_backs.ts";
+import {
+	CardBacks,
+	getCardBackTypesForCardType,
+} from "../src/shared/config/cards/card_backs.ts";
+import {
+	getAllCardKinds,
+	getCardFields,
+	getCardSubtypes,
+	getCardTypeLabel,
+	getVariantOptions,
+	normalizeVariant,
+} from "../src/shared/config/cards/card_definition.ts";
 import { CardStyles } from "../src/shared/config/cards/card_styles.ts";
+import { CardSubtypes } from "../src/shared/config/cards/subtypes.ts";
 import { CardTypes } from "../src/shared/config/cards/types.ts";
+import { CardVariants } from "../src/shared/config/cards/variants.ts";
 
 const FIXTURES = join(import.meta.dir, "fixtures");
 
@@ -513,16 +526,19 @@ describe("custom-frame missing-frame placeholder", () => {
 		expect(state.CardBackRight).toBeNull();
 	});
 
-	it("derives a resolvable renderer for the placeholder across every card type and style", () => {
+	it("derives a resolvable renderer for the placeholder across every card type, variant and style", () => {
 		// getCardBacksForTypeAndStyle returns an empty list for event/dented,
-		// event/flat, weapon/flat and weapon_equipment/flat — derivation must
+		// event/flat, weapon/flat, weapon_equipment/flat and (in CI, where the
+		// manifest has no Evo frames) the Evo variants — derivation must
 		// hard-default rather than leave the renderer unset, or the card would
 		// render nothing at all instead of the placeholder image.
-		for (const cardType of Object.keys(
-			CardTypes,
-		) as (keyof typeof CardTypes)[]) {
+		for (const { type, variant } of getAllCardKinds()) {
 			for (const style of CardStyles) {
-				const { renderer } = derivePlaceholderPresentation(cardType, style);
+				const { renderer } = derivePlaceholderPresentation(
+					type,
+					variant,
+					style,
+				);
 				expect(AllRenderConfigVariations[renderer]).toBeDefined();
 			}
 		}
@@ -537,7 +553,7 @@ describe("custom-frame missing-frame placeholder", () => {
 		useCardCreator.setState({ ...useCardCreator.getState(), ...deserialized });
 		expect(useCardCreator.getState().CardBack?.id).toBe(-3);
 
-		useCardCreator.getState().setCardType("hero");
+		useCardCreator.getState().setCardType("hero", null);
 
 		expect(useCardCreator.getState().CardBack?.id).toBe(-3);
 		expect(useCardCreator.getState().CardBack?.missing).toBe(true);
@@ -559,5 +575,240 @@ describe("custom-frame missing-frame placeholder", () => {
 
 		expect(useCardCreator.getState().CardBack?.id).toBe(-3);
 		expect(useCardCreator.getState().CardBack?.missing).toBe(true);
+	});
+});
+
+// ─── Card variants ───────────────────────────────────────────────────────────
+
+/** The sample fixture's saved state, with fields overridden. */
+function sampleState(
+	overrides: Partial<SerializedCardState>,
+): SerializedCardState {
+	const file = JSON.parse(readFixture("sample.fabkit")) as FabkitFile;
+	return { ...(file.state as unknown as SerializedCardState), ...overrides };
+}
+
+/** Frame families each card type used before variants existed. */
+const FRAME_FAMILIES_BEFORE_VARIANTS: Record<string, string[]> = {
+	ally: ["token", "hero"],
+	equipment: ["equipment"],
+	hero: ["hero"],
+	weapon: ["weapon"],
+	token: ["token"],
+	resource: ["resource"],
+	event: ["event"],
+	demi_hero: ["hero"],
+	weapon_equipment: ["weapon"],
+};
+
+describe("card variants: saving and loading", () => {
+	it("keeps the variant through a save and load", () => {
+		const loaded = deserializeCardState(
+			sampleState({ CardType: "equipment", CardVariant: "evo_action" }),
+		);
+		expect(loaded.CardType).toBe("equipment");
+		expect(loaded.CardVariant).toBe("evo_action");
+
+		const saved = serializeCardState({
+			...useCardCreator.getState(),
+			...loaded,
+		});
+		expect(saved.CardType).toBe("equipment");
+		expect(saved.CardVariant).toBe("evo_action");
+		expect(deserializeCardState(saved).CardVariant).toBe("evo_action");
+	});
+
+	it("reads a card saved before variants existed as the standard version", () => {
+		const fixture = sampleState({});
+		// The fixture predates variants: it really has no CardVariant key.
+		expect("CardVariant" in fixture).toBe(false);
+		expect(deserializeCardState(fixture).CardVariant).toBeNull();
+	});
+
+	it("reads a variant the card type does not have as the standard version", () => {
+		const loaded = deserializeCardState(
+			sampleState({ CardType: "hero", CardVariant: "evo_action" }),
+		);
+		expect(loaded.CardType).toBe("hero");
+		expect(loaded.CardVariant).toBeNull();
+	});
+
+	it("never mistakes a prototype property for a variant", () => {
+		const loaded = deserializeCardState(
+			sampleState({
+				CardType: "equipment",
+				CardVariant: "constructor" as unknown as "evo_action",
+			}),
+		);
+		expect(loaded.CardVariant).toBeNull();
+	});
+
+	it("opens an unknown card type as an action card instead of crashing", () => {
+		const loaded = deserializeCardState(
+			sampleState({
+				CardType: "action_equipment" as unknown as "action",
+				CardVariant: null,
+			}),
+		);
+		expect(loaded.CardType).toBe("action");
+		expect(loaded.CardVariant).toBeNull();
+	});
+
+	it("keeps 'no card type' as no card type", () => {
+		const loaded = deserializeCardState(
+			sampleState({ CardType: null, CardVariant: "evo_action" }),
+		);
+		expect(loaded.CardType).toBeNull();
+		expect(loaded.CardVariant).toBeNull();
+	});
+});
+
+describe("card variants: the standard version of every card type is unchanged", () => {
+	// Deliberately driven by the config, never naming a card type that has
+	// variants, so these keep protecting every type when variants are added to
+	// other types later.
+	const types = Object.keys(CardTypes) as (keyof typeof CardTypes)[];
+
+	it("gives every card type's standard version the settings it always had", () => {
+		for (const type of types) {
+			expect(getCardFields(type, null)).toEqual(CardTypes[type].fields);
+			expect(getCardTypeLabel(type, null)).toBe(CardTypes[type].label);
+			expect(getCardSubtypes(type, null)).toEqual(CardSubtypes[type]);
+			expect(getCardBackTypesForCardType(type, null)).toEqual(
+				FRAME_FAMILIES_BEFORE_VARIANTS[type] ?? ["general"],
+			);
+		}
+	});
+
+	it("gives card types without variants no variants", () => {
+		const everyVariantKey = Object.values(CardVariants).flatMap((group) =>
+			Object.keys(group.variants),
+		);
+		for (const type of types) {
+			if (type in CardVariants) continue;
+			expect(getVariantOptions(type)).toEqual([]);
+			for (const key of everyVariantKey) {
+				expect(
+					normalizeVariant(type, key as Parameters<typeof normalizeVariant>[1]),
+				).toBeNull();
+			}
+		}
+	});
+
+	it("lists every card type once, plus one entry per configured variant", () => {
+		const kinds = getAllCardKinds();
+		const variantCount = Object.values(CardVariants).reduce(
+			(total, group) => total + Object.keys(group.variants).length,
+			0,
+		);
+		expect(kinds.length).toBe(types.length + variantCount);
+		for (const type of types) {
+			expect(kinds).toContainEqual({ type, variant: null });
+		}
+		expect(kinds).toContainEqual({ type: "equipment", variant: "evo_action" });
+		expect(kinds).toContainEqual({
+			type: "equipment",
+			variant: "evo_instant",
+		});
+	});
+});
+
+describe("card variants: Evo equipment", () => {
+	it("uses the evo frame family for both Evo variants, and equipment's own for the plain card", () => {
+		expect(getCardBackTypesForCardType("equipment", "evo_action")).toEqual([
+			"evo",
+		]);
+		expect(getCardBackTypesForCardType("equipment", "evo_instant")).toEqual([
+			"evo",
+		]);
+		expect(getCardBackTypesForCardType("equipment", null)).toEqual([
+			"equipment",
+		]);
+	});
+
+	it("prints each variant's own type word and offers the Evo subtypes", () => {
+		expect(getCardTypeLabel("equipment", "evo_action")).toBe(
+			"card.type.action_equipment",
+		);
+		expect(getCardTypeLabel("equipment", "evo_instant")).toBe(
+			"card.type.instant_equipment",
+		);
+		expect(Object.keys(getCardSubtypes("equipment", "evo_action"))).toContain(
+			"evo_base_head",
+		);
+		expect(Object.keys(getCardSubtypes("equipment", null))).not.toContain(
+			"evo_base_head",
+		);
+	});
+
+	it("offers the standard version first, then the two Evo variants, in order", () => {
+		expect(getVariantOptions("equipment").map((o) => o.variant)).toEqual([
+			null,
+			"evo_action",
+			"evo_instant",
+		]);
+	});
+
+	it("keeps Pitch and Cost when switching from plain equipment to an Evo variant", () => {
+		// Guards the easy mistake of checking the OLD variant's field list while
+		// switching, which would wipe fields the new variant shows.
+		useCardCreator.setState({
+			...useCardCreator.getInitialState(),
+			CardType: "equipment",
+			CardVariant: null,
+			CardPitch: 2,
+			CardResource: "3",
+		});
+
+		useCardCreator.getState().setCardType("equipment", "evo_action");
+
+		expect(useCardCreator.getState().CardVariant).toBe("evo_action");
+		expect(useCardCreator.getState().CardPitch).toBe(2);
+		expect(useCardCreator.getState().CardResource).toBe("3");
+	});
+
+	it("clears Pitch and Cost when switching from an Evo variant back to plain equipment", () => {
+		useCardCreator.setState({
+			...useCardCreator.getInitialState(),
+			CardType: "equipment",
+			CardVariant: "evo_action",
+			CardPitch: 2,
+			CardResource: "3",
+		});
+
+		useCardCreator.getState().setCardType("equipment", null);
+
+		expect(useCardCreator.getState().CardVariant).toBeNull();
+		expect(useCardCreator.getState().CardPitch).toBeNull();
+		expect(useCardCreator.getState().CardResource).toBeNull();
+	});
+
+	it("resets a subtype the new variant does not offer, and keeps one it does", () => {
+		useCardCreator.setState({
+			...useCardCreator.getInitialState(),
+			CardType: "equipment",
+			CardVariant: "evo_action",
+			CardSubType: "evo_base_head",
+		});
+
+		// Evo variant to the other Evo variant: same subtype list, so it stays.
+		useCardCreator.getState().setCardType("equipment", "evo_instant");
+		expect(useCardCreator.getState().CardSubType).toBe("evo_base_head");
+
+		// Evo variant to plain equipment: that subtype does not exist there.
+		useCardCreator.getState().setCardType("equipment", null);
+		expect(useCardCreator.getState().CardSubType).toBeNull();
+
+		// And back: plain equipment's "head" does not exist on an Evo variant.
+		useCardCreator.setState({ CardSubType: "head" });
+		useCardCreator.getState().setCardType("equipment", "evo_action");
+		expect(useCardCreator.getState().CardSubType).toBeNull();
+	});
+
+	it("falls back to the standard version when asked for a variant the type does not have", () => {
+		useCardCreator.setState(useCardCreator.getInitialState());
+		useCardCreator.getState().setCardType("hero", "evo_action");
+		expect(useCardCreator.getState().CardType).toBe("hero");
+		expect(useCardCreator.getState().CardVariant).toBeNull();
 	});
 });

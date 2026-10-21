@@ -31,6 +31,7 @@
 import { getCardBackTypesForCardType } from "@fabkit/shared/config/cards/card_backs.ts";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
 import { create } from "zustand";
 import type { CardCreatorCardBack } from "../config/rendering.ts";
 import {
@@ -274,6 +275,7 @@ export function getCustomFrameById(
 export function getCustomFramesForTypeAndStyle(
 	frames: CardCreatorCardBack[],
 	type: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack[] {
 	// Meld frames aren't supported for custom frames yet — MeldRenderer has no
@@ -285,7 +287,7 @@ export function getCustomFramesForTypeAndStyle(
 	// by getCardBackTypesForCardType's mapping, not equality. Comparing
 	// f.type === type directly would silently match nothing for every card
 	// type whose CardType string doesn't happen to equal its CardBack.type.
-	const compatibleTypes = getCardBackTypesForCardType(type);
+	const compatibleTypes = getCardBackTypesForCardType(type, variant);
 	const dented = style === "dented";
 	return frames.filter(
 		(f) => compatibleTypes.includes(f.type) && f.dented === dented,

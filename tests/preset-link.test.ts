@@ -299,3 +299,42 @@ describe("loadPresetLink", () => {
 		expect(state.meldHalfB.CardName).toBe("Tails");
 	});
 });
+
+describe("loadPresetLink: card variants", () => {
+	it("applies a variant that its card type has", () => {
+		loadPresetLink({ CardType: "equipment", CardVariant: "evo_action" });
+		const state = useCardCreator.getState();
+		expect(state.CardType).toBe("equipment");
+		expect(state.CardVariant).toBe("evo_action");
+	});
+
+	it("opens the standard version when no variant is given", () => {
+		loadPresetLink({ CardType: "equipment" });
+		expect(useCardCreator.getState().CardVariant).toBeNull();
+	});
+
+	it("drops a variant sent without a card type", () => {
+		loadPresetLink({ CardVariant: "evo_action", CardName: "No Type" });
+		const state = useCardCreator.getState();
+		expect(state.CardName).toBe("No Type");
+		expect(state.CardVariant).toBeNull();
+	});
+
+	it("falls back to the standard version for a variant the card type does not have", () => {
+		loadPresetLink({ CardType: "hero", CardVariant: "evo_action" });
+		const state = useCardCreator.getState();
+		expect(state.CardType).toBe("hero");
+		expect(state.CardVariant).toBeNull();
+	});
+
+	it("ignores a variant that does not exist at all, without losing the rest", () => {
+		loadPresetLink({
+			CardType: "equipment",
+			CardVariant: "not-a-variant",
+			CardName: "Still Loads",
+		});
+		const state = useCardCreator.getState();
+		expect(state.CardName).toBe("Still Loads");
+		expect(state.CardVariant).toBeNull();
+	});
+});

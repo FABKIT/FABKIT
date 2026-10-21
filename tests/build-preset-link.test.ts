@@ -254,3 +254,46 @@ describe("round trip through loadPresetLink", () => {
 		);
 	});
 });
+
+describe("card variants in share links", () => {
+	it("includes the variant only when the card has one", () => {
+		useCardCreator.setState({ CardType: "equipment", CardVariant: null });
+		expect(
+			buildPresetLinkPayload(useCardCreator.getState()).CardVariant,
+		).toBeUndefined();
+
+		useCardCreator.setState({
+			CardType: "equipment",
+			CardVariant: "evo_instant",
+		});
+		expect(buildPresetLinkPayload(useCardCreator.getState()).CardVariant).toBe(
+			"evo_instant",
+		);
+	});
+
+	it("an Evo card reopens as the same Evo card", () => {
+		useCardCreator.setState({
+			CardType: "equipment",
+			CardVariant: "evo_action",
+			CardName: "Evo Command Center",
+			CardPitch: 2,
+			CardResource: "3",
+			CardDefense: "3",
+			CardSubType: "evo_head",
+			CardBack: stockCardBack,
+		});
+
+		const payload = buildPresetLinkPayload(useCardCreator.getState());
+		useCardCreator.getState().reset();
+		loadPresetLink(payload);
+
+		const reopened = useCardCreator.getState();
+		expect(reopened.CardType).toBe("equipment");
+		expect(reopened.CardVariant).toBe("evo_action");
+		expect(reopened.CardName).toBe("Evo Command Center");
+		expect(reopened.CardPitch).toBe(2);
+		expect(reopened.CardResource).toBe("3");
+		expect(reopened.CardDefense).toBe("3");
+		expect(reopened.CardSubType).toBe("evo_head");
+	});
+});

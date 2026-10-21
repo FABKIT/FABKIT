@@ -17,6 +17,7 @@ import {
 } from "@fabkit/shared/config/cards/card_backs.ts";
 import type { CardStyle } from "@fabkit/shared/config/cards/card_styles.ts";
 import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import type { CardVariant } from "@fabkit/shared/config/cards/variants.ts";
 import { getCustomFramesForTypeAndStyle } from "../stores/custom-frames.ts";
 import type { CardCreatorCardBack } from "./rendering.ts";
 
@@ -35,11 +36,16 @@ import type { CardCreatorCardBack } from "./rendering.ts";
 export function getAvailableCardBacks(
 	customFrames: CardCreatorCardBack[],
 	type: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack[] {
 	return [
-		...(getCardBacksForTypeAndStyle(type, style) as CardCreatorCardBack[]),
-		...getCustomFramesForTypeAndStyle(customFrames, type, style),
+		...(getCardBacksForTypeAndStyle(
+			type,
+			variant,
+			style,
+		) as CardCreatorCardBack[]),
+		...getCustomFramesForTypeAndStyle(customFrames, type, variant, style),
 	];
 }
 
@@ -60,6 +66,7 @@ export function getAvailableCardBacks(
  */
 export function derivePlaceholderPresentation(
 	cardType: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): {
 	type: string;
@@ -67,7 +74,7 @@ export function derivePlaceholderPresentation(
 	renderer: CardCreatorCardBack["renderer"];
 } {
 	const nearest = getSuggestedCardBack(
-		getCardBacksForTypeAndStyle(cardType, style),
+		getCardBacksForTypeAndStyle(cardType, variant, style),
 	) as CardCreatorCardBack | null;
 	const dented = style === "dented";
 	return {
@@ -99,6 +106,7 @@ const MISSING_FRAME_NAME = "missing-custom-frame";
 export function makeMissingFramePlaceholder(
 	id: number,
 	cardType: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack {
 	return {
@@ -106,7 +114,7 @@ export function makeMissingFramePlaceholder(
 		name: MISSING_FRAME_NAME,
 		source: "custom",
 		missing: true,
-		...derivePlaceholderPresentation(cardType, style),
+		...derivePlaceholderPresentation(cardType, variant, style),
 		images: [{ id: 0, pitch: 0, fileName: "missing-frame.png" }],
 	};
 }
@@ -126,10 +134,11 @@ export function makeMissingFramePlaceholder(
 export function carryMissingFrame(
 	frame: CardCreatorCardBack | null,
 	cardType: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 ): CardCreatorCardBack | null {
 	if (!frame?.missing) return null;
-	return makeMissingFramePlaceholder(frame.id, cardType, style);
+	return makeMissingFramePlaceholder(frame.id, cardType, variant, style);
 }
 
 /**
@@ -143,8 +152,12 @@ export function carryMissingFrame(
 export function resolveCardBackKeepingMissing(
 	current: CardCreatorCardBack | null,
 	cardType: CardType | null,
+	variant: CardVariant | null,
 	style: CardStyle,
 	computeIfNotMissing: () => CardCreatorCardBack | null,
 ): CardCreatorCardBack | null {
-	return carryMissingFrame(current, cardType, style) ?? computeIfNotMissing();
+	return (
+		carryMissingFrame(current, cardType, variant, style) ??
+		computeIfNotMissing()
+	);
 }

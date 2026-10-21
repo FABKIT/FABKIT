@@ -113,6 +113,7 @@ export function buildPresetLinkPayload(
 	const out: Record<string, unknown> = {};
 
 	if (state.CardType) out.CardType = state.CardType;
+	if (state.CardVariant) out.CardVariant = state.CardVariant;
 	if (state.CardPitch) out.CardPitch = state.CardPitch;
 	if (state.CardName) out.CardName = state.CardName;
 	if (state.CardResource) out.CardResource = state.CardResource;

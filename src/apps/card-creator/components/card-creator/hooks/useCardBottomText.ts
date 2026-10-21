@@ -25,15 +25,17 @@
 
 import { useCardCreator } from "@fabkit/apps/card-creator/stores/card-creator.ts";
 import {
+	getCardSubtypes,
+	getCardTypeLabel,
+} from "@fabkit/shared/config/cards/card_definition.ts";
+import {
 	type CardClass,
 	CardClasses,
 } from "@fabkit/shared/config/cards/classes.ts";
-import { CardSubtypes } from "@fabkit/shared/config/cards/subtypes.ts";
 import {
 	type CardTalent,
 	CardTalents,
 } from "@fabkit/shared/config/cards/talents.ts";
-import { CardTypes } from "@fabkit/shared/config/cards/types.ts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -48,6 +50,7 @@ export function useCardBottomText() {
 	const {
 		CardTalent,
 		CardType,
+		CardVariant,
 		CardClass,
 		CardSecondaryClass,
 		CardSubType,
@@ -82,15 +85,19 @@ export function useCardBottomText() {
 				? `${primaryClass}${separator}${secondaryClass}`
 				: primaryClass;
 
-		// Translate a card type
-		const cardType = CardType ? t(CardTypes[CardType].label) : null;
+		// Translate a card type (a variant can print its own word, e.g. an Evo
+		// variant of equipment prints "Action Equipment")
+		const cardType = CardType
+			? t(getCardTypeLabel(CardType, CardVariant))
+			: null;
 
 		// Build subtype portion
 		const subtypeParts: string[] = [];
 
 		// Add a translated subtype if present
 		if (CardType && CardSubType && CardSubType !== "none") {
-			const subtypeKey = CardSubtypes[CardType]?.[CardSubType] || CardSubType;
+			const subtypeKey =
+				getCardSubtypes(CardType, CardVariant)[CardSubType] || CardSubType;
 			if (subtypeKey) {
 				subtypeParts.push(t(subtypeKey));
 			}
@@ -116,6 +123,7 @@ export function useCardBottomText() {
 		CardClass,
 		CardSecondaryClass,
 		CardType,
+		CardVariant,
 		CardSubType,
 		CardWeapon,
 		t,

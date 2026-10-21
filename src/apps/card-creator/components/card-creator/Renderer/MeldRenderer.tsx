@@ -240,7 +240,7 @@ export function MeldRenderer({
 			[CardSetNumber, "FABKIT", CardArtworkCredits]
 				.filter((v) => v?.trim()?.length)
 				.join(" | "),
-			"FaB TCC BY LSS",
+			"FaB TCG BY LSS",
 		],
 		[CardSetNumber, CardArtworkCredits],
 	);

@@ -8,6 +8,9 @@ import { useTranslation } from "react-i18next";
 
 /**
  * Renders the card type field.
+ *
+ * Picking a type always starts it as its standard version (no variant); a
+ * variant, where the type has any, is chosen afterwards in the editor.
  */
 export function CardTypeField() {
 	const { t } = useTranslation("card-creator");
@@ -19,10 +22,12 @@ export function CardTypeField() {
 	// TODO: invalidate memo when `t`'s language changes?
 	const options = useMemo(
 		() =>
-			(Object.keys(CardTypes) as CardType[]).sort().map((key) => ({
-				value: key,
-				label: t(CardTypes[key].label),
-			})),
+			(Object.keys(CardTypes) as CardType[])
+				.map((key) => ({
+					value: key,
+					label: t(CardTypes[key].label),
+				}))
+				.sort((a, b) => a.label.localeCompare(b.label)),
 		[t],
 	);
 
@@ -43,7 +48,7 @@ export function CardTypeField() {
 				setIsLoading(true);
 
 				reset();
-				setCardType(type);
+				setCardType(type, null);
 				await navigate({ to: "/card-creator" });
 			}}
 			options={options}

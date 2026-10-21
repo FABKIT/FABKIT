@@ -10,6 +10,12 @@
  * no-op, so call sites never need to guard themselves.
  */
 
+import type { CardType } from "@fabkit/shared/config/cards/types.ts";
+import {
+	type CardVariant,
+	STANDARD_VARIANT,
+} from "@fabkit/shared/config/cards/variants.ts";
+
 interface AnalyticsProvider {
 	init(): void;
 	track(name: string, data?: Record<string, string | number | boolean>): void;
@@ -58,13 +64,26 @@ export function initAnalytics(): void {
 // can).
 
 type AnalyticsEvent =
-	| { name: "card_type_selected"; data: { cardType: string } }
+	| {
+			name: "card_type_selected";
+			data: { cardType: CardType; cardVariant: CardVariant | null };
+	  }
 	| {
 			name: "card_exported";
-			data: { cardType: string; orientation: "portrait" | "landscape" };
+			data: {
+				cardType: CardType;
+				cardVariant: CardVariant | null;
+				orientation: "portrait" | "landscape";
+			};
 	  }
-	| { name: "preset_link_created"; data: { cardType: string } }
-	| { name: "preset_link_opened"; data: { cardType: string } }
+	| {
+			name: "preset_link_created";
+			data: { cardType: CardType; cardVariant: CardVariant | null };
+	  }
+	| {
+			name: "preset_link_opened";
+			data: { cardType: CardType; cardVariant: CardVariant | null };
+	  }
 	| { name: "gallery_exported" }
 	| { name: "gallery_folder_created" }
 	| { name: "fabble_puzzle_started"; data: { mode: string } }
@@ -87,8 +106,27 @@ type AnalyticsEvent =
 	  }
 	| { name: "bug_report_submitted" };
 
+/**
+ * Providers only accept text, numbers and booleans. An event value that is
+ * `null` (today only `cardVariant`, on a card with no variant) is sent as
+ * `STANDARD_VARIANT`, so it can still be filtered on in the dashboard.
+ */
+function toProviderData(
+	data: Record<string, string | number | boolean | null>,
+): Record<string, string | number | boolean> {
+	return Object.fromEntries(
+		Object.entries(data).map(([key, value]) => [
+			key,
+			value ?? STANDARD_VARIANT,
+		]),
+	);
+}
+
 export function trackEvent(event: AnalyticsEvent): void {
-	activeProvider.track(event.name, "data" in event ? event.data : undefined);
+	activeProvider.track(
+		event.name,
+		"data" in event ? toProviderData(event.data) : undefined,
+	);
 }
 
 declare global {
