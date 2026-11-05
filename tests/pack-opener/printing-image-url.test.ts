@@ -26,8 +26,7 @@ function printing(overrides: Partial<FabPrinting>): FabPrinting {
 }
 
 /**
- * The scope gate from the execution plan, section 3.2: artSlug is only
- * ever used for Marvel printings. A great many non-Marvel printings also
+ * The scope gate: artSlug is only ever used for Marvel printings. A great many non-Marvel printings also
  * have a differing artSlug (Unlimited-edition reprints, resized thumbnail
  * artifacts, and real Rainbow/Cold Foil artwork with the foil effect
  * already baked in, which would double up with this app's own foil

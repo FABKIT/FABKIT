@@ -72,6 +72,9 @@ jobs:
           APP_VERSION: ${{ steps.version.outputs.value }}
         run: bun run build-pack-data
 
+      - name: Check every pack slot can be dealt
+        run: bun test tests/pack-opener/pool-viability.test.ts
+
       - name: Build (Production)
         if: ${{ github.repository == 'FABKIT/FABKIT' }}
         env:

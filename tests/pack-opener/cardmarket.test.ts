@@ -30,7 +30,8 @@ function printing(overrides: Partial<FabPrinting>): FabPrinting {
 interface CmProductFixture {
 	idProduct: number;
 	dateAdded: string;
-	price: number;
+	/** Absent when Cardmarket's price guide has nothing for this product. */
+	price?: number;
 }
 
 /** A single-expansion, single-metacard catalog for one card name, built from
@@ -56,7 +57,11 @@ function catalogWith(cmProducts: CmProductFixture[]): CardmarketCatalog {
 		expansionsByMetacard: new Map([[1, [100]]]),
 		sealedByExpansion: new Map(),
 		priceByProduct: new Map(
-			cmProducts.map((product) => [product.idProduct, product.price]),
+			cmProducts.flatMap((product) =>
+				product.price === undefined
+					? []
+					: [[product.idProduct, product.price] as const],
+			),
 		),
 	};
 }
@@ -94,7 +99,6 @@ describe("buildCardmarketSnapshot's price-based Marvel pairing", () => {
 
 		expect(snapshot.cardPrices).toEqual({ standard: 0.34, marvel: 23.67 });
 		expect(coverage.priced).toBe(2);
-		expect(coverage.priceOrderMismatch).toBe(0);
 	});
 
 	it("still prices a normal, already-correctly-ordered Marvel/standard pair", () => {
@@ -121,7 +125,30 @@ describe("buildCardmarketSnapshot's price-based Marvel pairing", () => {
 
 		expect(snapshot.cardPrices).toEqual({ standard: 0.5, marvel: 20 });
 		expect(coverage.priced).toBe(2);
-		expect(coverage.priceOrderMismatch).toBe(0);
+	});
+
+	it("writes no price for a card when one of its products has none", () => {
+		// Only the foil has a price here. Ranking the one priced product
+		// would hand the foil's 6.65 to the plain print, which sorts first.
+		const catalog = catalogWith([
+			{ idProduct: 501, dateAdded: "2025-01-01" },
+			{ idProduct: 502, dateAdded: "2025-01-01", price: 6.65 },
+		]);
+		const printings = [
+			printing({ uniqueId: "standard", foiling: "standard" }),
+			printing({ uniqueId: "rainbow", foiling: "rainbow" }),
+		];
+
+		const { snapshot, coverage } = buildCardmarketSnapshot(
+			"TST",
+			printings,
+			{},
+			catalog,
+		);
+
+		expect(snapshot.cardPrices).toEqual({});
+		expect(coverage.versions).toBe(2);
+		expect(coverage.priced).toBe(0);
 	});
 
 	it("keeps two collector numbers' prices from crossing into each other, Mandible Claw-style", () => {
@@ -177,6 +204,5 @@ describe("buildCardmarketSnapshot's price-based Marvel pairing", () => {
 			"cru005-rainbow": 4.12,
 		});
 		expect(coverage.priced).toBe(4);
-		expect(coverage.priceOrderMismatch).toBe(0);
 	});
 });

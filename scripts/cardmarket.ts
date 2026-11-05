@@ -25,16 +25,19 @@ import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
  *   1. `idMetacard` identifies a card, pitch colour included. Sink Below
  *      red, yellow and blue are three metacards, and all of a card's
  *      versions in one set share one (metacard, expansion) pair.
- *   2. Within that pair, Cardmarket adds products plainest-first, and
- *      `dateAdded` records it. A card's normal print is added seconds
- *      before its Rainbow Foil.
- *   3. So when Cardmarket's number of versions for a card equals OURS, the
- *      two lists pair off in order with nothing left over on either side,
- *      and the pairing is forced rather than guessed.
+ *   2. When Cardmarket's number of versions for a card equals OURS, the two
+ *      lists pair off with nothing left over on either side.
+ *   3. `dateAdded` keeps a card's products together by collector number,
+ *      and within a collector number the cheapest product is taken to be
+ *      the plainest version.
  *
- * Where the counts DISAGREE we write no price at all. That is the whole
- * accuracy story: not every card gets a price, but every price shown is
- * one the data forces.
+ * Where the counts DISAGREE we write no price at all, and likewise where a
+ * collector number has a product with no price, since a rank needs every
+ * product's price. So the set of versions priced is proven by the counts,
+ * but which of a card's versions gets which price is a heuristic: a plain
+ * print can genuinely cost more than its own foil when tournament demand
+ * bids it up, those two prices then swap, and nothing in the files can show
+ * it. See pricesByVersion.
  *
  * FOUR READINGS OF "A VERSION", tried plainest first, each accepted only
  * if IT makes the two counts agree exactly. Our own data and Cardmarket's
@@ -111,7 +114,7 @@ interface CmPriceRow {
 	trend: number | null;
 }
 
-export interface CardmarketSnapshot {
+interface CardmarketSnapshot {
 	capturedAt: string;
 	/** Cardmarket's own createdAt, so a price is never presented as more
 	 * current than the file it came from. */
@@ -129,7 +132,7 @@ export interface CardmarketSnapshot {
 	cardPrices: Record<string, number>;
 }
 
-export interface CardmarketCoverage {
+interface CardmarketCoverage {
 	/** Cardmarket expansion this set resolved to, 0 when none did. */
 	expansion: number;
 	/** Distinct card versions in our own data. */
@@ -137,13 +140,8 @@ export interface CardmarketCoverage {
 	/** Versions we wrote a price for. */
 	priced: number;
 	/** Versions dropped because their version count disagreed with ours
-	 * under BOTH readings of a version — see the file header. */
+	 * under every reading of a version — see the file header. */
 	ambiguous: number;
-	/** Versions dropped because the counts agreed but the resulting Marvel
-	 * price came in under that same card's other treatments — see
-	 * pricesAreOrdered. A forced count-match is a necessary condition for a
-	 * correct pairing, not a sufficient one. */
-	priceOrderMismatch: number;
 	/** Versions that needed a reading finer than "one per foiling" to pair
 	 * — art variations, collector numbers, or both. Logged so a drop here
 	 * is visible if either catalogue changes how it splits a card. */
@@ -382,10 +380,10 @@ type CardReadings = Version[][];
 /** Collector number, then plainest foiling, then ordinary art before
  * Extended Art. The collector-number grouping is still read off Cardmarket's
  * dateAdded, verified against Crucible of War's Mandible Claw (CRU004's two
- * products added before CRU005's two) — see
- * pricesWithinCardChunksByPrice, which resolves foiling order WITHIN each
- * such group by price instead. The fields a reading does not split on are
- * empty everywhere and sort out of the way on their own. */
+ * products added before CRU005's two) — see pricesByVersion, which resolves
+ * foiling order WITHIN each such group by price instead. The fields a
+ * reading does not split on are empty everywhere and sort out of the way on
+ * their own. */
 function sortVersions(versions: Version[]): Version[] {
 	return versions.sort(
 		(a, b) =>
@@ -522,41 +520,46 @@ function productsIn(
  * so there is no identifier to look up instead — the only signal left
  * that actually correlates with rarity is the price itself.
  *
- * This re-sorts `products` by price ascending WITHIN each same-collector-
+ * This hands out prices in ascending order WITHIN each same-collector-
  * number run (a "chunk", sized off `ours`'s own cardId groups — empty
  * string, i.e. one chunk covering everything, for every reading that
  * doesn't split by collector number, which is the common case), so the
  * cheapest product in a chunk pairs with our plainest treatment and the
  * most expensive with our fanciest — "the higher the price, the higher
  * the rarity" — without disturbing which products belong to which
- * collector number, which only dateAdded can tell apart. A product with no
- * price at all sorts to the end of its chunk: undefined data can't
- * outrank a real number, and nothing is written for it anyway (see
- * buildCardmarketSnapshot's `if (euros === undefined) continue`). */
-function sortProductsWithinCardChunksByPrice(
+ * collector number, which only dateAdded can tell apart.
+ *
+ * A chunk with an unpriced product gets no prices at all, because there is
+ * no telling which version that product is. Ranking only the priced ones
+ * would hand a Rainbow Foil's price to the plain print whenever it was the
+ * plain print that had none. */
+function pricesByVersion(
 	ours: readonly Version[],
 	products: readonly CmProduct[],
 	priceByProduct: ReadonlyMap<number, number>,
-): CmProduct[] {
-	const result = [...products];
+): Array<number | undefined> {
+	const prices: Array<number | undefined> = new Array(ours.length).fill(
+		undefined,
+	);
 	let start = 0;
 	while (start < ours.length) {
 		let end = start + 1;
 		while (end < ours.length && ours[end].cardId === ours[start].cardId) {
 			end++;
 		}
-		const chunk = result.slice(start, end);
-		chunk.sort((a, b) => {
-			const priceA =
-				priceByProduct.get(a.idProduct) ?? Number.POSITIVE_INFINITY;
-			const priceB =
-				priceByProduct.get(b.idProduct) ?? Number.POSITIVE_INFINITY;
-			return priceA - priceB;
-		});
-		result.splice(start, chunk.length, ...chunk);
+		const chunk = products
+			.slice(start, end)
+			.map((product) => priceByProduct.get(product.idProduct));
+		if (!chunk.includes(undefined)) {
+			(chunk as number[])
+				.sort((a, b) => a - b)
+				.forEach((price, i) => {
+					prices[start + i] = price;
+				});
+		}
 		start = end;
 	}
-	return result;
+	return prices;
 }
 
 /** A sane euro-per-dollar figure to score candidate expansions against.
@@ -639,61 +642,6 @@ function chooseExpansion(
 	return { expansion: winner.expansion, ratio: winner.ratio };
 }
 
-/**
- * A pure sanity check, not the fix itself (see
- * sortProductsWithinCardChunksByPrice for that) — sorting each chunk by
- * price ascending before this runs already guarantees a Marvel's price is
- * the max of its chunk, so this should always pass. Kept cheap in case that
- * invariant is ever broken by a future change (or a genuine tie at the
- * boundary), since the failure mode it guards is exactly the bug this file
- * exists to avoid: The Hunted's "Arakni, Trap-Door" token print silently
- * priced at EUR 23.67 (its Marvel's real price) while the Marvel priced at
- * EUR 0.34 (the token's), the two swapped.
- *
- * Checks only Marvel, not every treatment tier — Marvel is FAB's designated
- * chase treatment, an intentionally ultra-rare alternate art with no
- * competitive-playable role distinct from the card's ordinary printing, so
- * "worth less than a plain print of the same card" has no legitimate
- * explanation. An earlier attempt asserted non-decreasing prices across
- * EVERY treatment (standard, then Rainbow Foil, then Cold Foil) and turned
- * out to assume something not actually true of this market: a
- * constructed-playable card's plain print can genuinely cost MORE than its
- * own foil when the foil was a low-demand collector's release and
- * tournament demand is bidding up the copies people actually play with.
- * That version rejected 5-90% of almost every set's versions the first
- * time it ran for real, discarding hundreds of perfectly good prices to
- * guard against one narrower failure mode. Undefined entries (no price for
- * that product at all) are skipped. Scoped to each `cardId` separately
- * (empty string for every reading that doesn't split by collector number),
- * so Crucible of War's Mandible Claw's two collector numbers are never
- * compared against each other.
- */
-function pricesAreOrdered(
-	versions: readonly Version[],
-	prices: ReadonlyArray<number | undefined>,
-): boolean {
-	const byCardId = new Map<string, { marvel?: number; maxOther?: number }>();
-	for (let i = 0; i < versions.length; i++) {
-		const price = prices[i];
-		if (price === undefined) continue;
-		const entry = byCardId.get(versions[i].cardId) ?? {};
-		if (versions[i].treatment === "marvel") {
-			entry.marvel =
-				entry.marvel === undefined ? price : Math.min(entry.marvel, price);
-		} else {
-			entry.maxOther =
-				entry.maxOther === undefined ? price : Math.max(entry.maxOther, price);
-		}
-		byCardId.set(versions[i].cardId, entry);
-	}
-	for (const { marvel, maxOther } of byCardId.values()) {
-		if (marvel !== undefined && maxOther !== undefined && marvel < maxOther) {
-			return false;
-		}
-	}
-	return true;
-}
-
 export function buildCardmarketSnapshot(
 	setCode: string,
 	printings: FabPrinting[],
@@ -716,14 +664,13 @@ export function buildCardmarketSnapshot(
 	let versionCount = 0;
 	let priced = 0;
 	let ambiguous = 0;
-	let priceOrderMismatch = 0;
 	let refinedPairings = 0;
 
 	for (const [key, readings] of versions) {
 		const products = expansion ? productsIn(catalog, key, expansion) : [];
-		// The forced pairing, and the only one we accept: same number of
-		// versions on both sides means each of ours has exactly one of
-		// theirs, in order. Anything else is a guess, so it gets no price.
+		// The only pairing we accept: same number of versions on both sides
+		// means each of ours has exactly one of theirs. Anything else is a
+		// guess, so it gets no price.
 		// Every reading of "a version" gets to try, plainest first (see the
 		// file header); none is allowed to pair with anything left over on
 		// either side, and an expansion we never resolved (no products at
@@ -747,23 +694,8 @@ export function buildCardmarketSnapshot(
 		// Which collector-number chunk each product belongs to still comes
 		// from dateAdded (productsIn), but which TREATMENT within that chunk
 		// each product is comes from its price instead — see
-		// sortProductsWithinCardChunksByPrice's own comment.
-		const orderedProducts = sortProductsWithinCardChunksByPrice(
-			ours,
-			products,
-			catalog.priceByProduct,
-		);
-		const prices = orderedProducts.map((product) =>
-			catalog.priceByProduct.get(product.idProduct),
-		);
-		// Belt and suspenders: sorting each chunk by price should always
-		// satisfy this by construction, so a failure here means a chunk had
-		// two equally-priced products in the wrong slots (or similar
-		// degenerate tie) rather than a genuinely fixable pairing.
-		if (!pricesAreOrdered(ours, prices)) {
-			priceOrderMismatch += ours.length;
-			continue;
-		}
+		// pricesByVersion's own comment.
+		const prices = pricesByVersion(ours, products, catalog.priceByProduct);
 		if (ours !== readings[0]) refinedPairings += ours.length;
 		for (let i = 0; i < ours.length; i++) {
 			const euros = prices[i];
@@ -793,7 +725,6 @@ export function buildCardmarketSnapshot(
 			versions: versionCount,
 			priced,
 			ambiguous,
-			priceOrderMismatch,
 			refinedPairings,
 			edition,
 			ratio,

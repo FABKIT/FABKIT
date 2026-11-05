@@ -2,33 +2,30 @@ import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { KNOWN_SETS } from "@fabkit/apps/pack-opener/config/known-sets";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
-import type { SetPriceSnapshot } from "@fabkit/shared/data/fab-prices";
-import { priceKey } from "@fabkit/shared/data/fab-prices";
 import type {
 	FabPrinting,
 	FabSetPrintings,
 	FoilTreatment,
 } from "@fabkit/shared/data/fab-printings";
-import { cards as bridgeCards } from "@flesh-and-blood/cards";
-import {
-	Class as BridgeClass,
-	Foiling as BridgeFoiling,
-	type Printing as BridgePrinting,
-	Rarity as BridgeRarity,
-	Release as BridgeRelease,
-	Treatment as BridgeTreatment,
-} from "@flesh-and-blood/types";
 import {
 	buildCardmarketSnapshot,
 	type CardmarketCatalog,
 	fetchCardmarketCatalog,
 } from "./cardmarket";
+import { bridgePrintings, PRE_RELEASE_SETS } from "./pre-release-bridge";
+import { BACK_SUFFIX, type RawCard, type RawPrinting } from "./raw-card-data";
+import {
+	buildSetPriceSnapshot,
+	fetchTcgcsvGroups,
+	resolveGroup,
+	type TcgcsvGroup,
+} from "./tcgcsv";
 
 /**
  * Builds the pack opener's per-set card and price data from the-fab-cube's
- * public dataset and tcgcsv.com's TCGplayer mirror. See the execution plan
- * (D:\Desktop\pack-opener-execution-plan.md, outside the repo), sections
- * 2.2, 2.4, 5.1 and 8, for the full reasoning.
+ * public dataset, tcgcsv.com's TCGplayer mirror (scripts/tcgcsv.ts) and
+ * Cardmarket's daily catalogue (scripts/cardmarket.ts). A browser cannot
+ * fetch the price sources itself, so they ship as build-time snapshots.
  *
  * Output (gitignored — build output, not source, see .gitignore):
  *   public/data/pack-opener/sets/<CODE>.json    one file per included set
@@ -41,8 +38,8 @@ import {
  *
  * This script is safe to run locally any time: `bun run build-pack-data`. A
  * fresh checkout without ever having run it just has no pack-opener data
- * yet, and the app degrades per the plan's section 8.6 (a set with no
- * price file shows dashes, not zeros).
+ * yet, and the app degrades rather than breaks (a set with no price file
+ * shows no prices, never zeros).
  */
 
 /**
@@ -62,218 +59,8 @@ const FOILING_JSON_URL =
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");
 
-/** Flesh and Blood's category id on tcgcsv/TCGplayer — verified against
- * live data (see the execution plan, section 2.4 and appendix A.4). */
-const TCGCSV_CATEGORY_ID = 62;
-const TCGCSV_BASE = `https://tcgcsv.com/tcgplayer/${TCGCSV_CATEGORY_ID}`;
-
-/** tcgcsv rejects requests with no identifying User-Agent (plan section
- * 2.4). APP_VERSION matches what pages.yml resolves at deploy time; local
- * runs (no env var set) just say "dev". */
-const TCGCSV_USER_AGENT = `FABKIT/${process.env.APP_VERSION ?? "dev"} (+https://github.com/FABKIT/FABKIT)`;
-
-async function fetchTcgcsv<T>(path: string): Promise<T> {
-	const response = await fetch(`${TCGCSV_BASE}${path}`, {
-		headers: { "User-Agent": TCGCSV_USER_AGENT },
-	});
-	if (!response.ok) {
-		throw new Error(`tcgcsv fetch failed for ${path}: ${response.status}`);
-	}
-	return response.json() as Promise<T>;
-}
-
-interface TcgcsvGroup {
-	groupId: number;
-	name: string;
-	abbreviation: string;
-}
-
-interface TcgcsvProduct {
-	productId: number;
-	name: string;
-}
-
-interface TcgcsvPriceRow {
-	productId: number;
-	marketPrice: number | null;
-	subTypeName: string;
-}
-
-/** Maps our own FoilTreatment vocabulary to TCGplayer's subtype names, so
- * the price snapshot can be keyed identically to how printings are already
- * keyed (see fab-prices.ts's priceKey). TCGplayer does not list Gold Cold
- * Foil as its own subtype (verified against multiple sets' live price
- * data) — the closest real listing is the plain Cold Foil one, which is
- * used here rather than showing no price at all for a treatment that, as
- * of this writing, the odds engine never actually draws (see
- * pack/generate-pack.ts) but the shader and types already model. */
-const TCGCSV_SUBTYPE_BY_TREATMENT: Record<FoilTreatment, string> = {
-	standard: "Normal",
-	rainbow: "Rainbow Foil",
-	cold: "Cold Foil",
-	"gold-cold": "Cold Foil",
-};
-
-/** Resolves a set's tcgcsv group id — abbreviation AND exact name first,
- * then abbreviation alone, then exact name alone (see the plan, section
- * 8.4: neither alone is reliable, but the two combined resolve all 20
- * known booster sets). Returns null (logged, not thrown) when nothing
- * matches, so one set's tcgcsv naming drifting must never fail the whole
- * build — that set's prices are simply unavailable until the mismatch is
- * noticed and fixed.
- *
- * The both-fields pass exists for `IAR`, which tcgcsv lists twice: group
- * 24762 "Usurp the Shadow Throne" and 24776 "Usurp the Shadow Throne
- * Pre-release Cards" share the one abbreviation. Every other known set has
- * exactly one abbreviation match (verified against the live group list),
- * so this pass never changes their resolution — it only breaks IAR's tie
- * in favour of the group whose name is the exact one this app wants. */
-function resolveGroup(
-	code: string,
-	setName: string,
-	groups: TcgcsvGroup[],
-): TcgcsvGroup | null {
-	const wanted = setName.toLowerCase();
-	const byBoth = groups.find(
-		(g) => g.abbreviation === code && g.name.toLowerCase() === wanted,
-	);
-	if (byBoth) return byBoth;
-	const byAbbreviation = groups.find((g) => g.abbreviation === code);
-	if (byAbbreviation) return byAbbreviation;
-	// Case-insensitively, because tcgcsv's own naming is not consistent:
-	// its groups read "GEM Pack 1" through "GEM Pack 4" and then "Gem Pack
-	// 5". An exact match would silently leave that one product with no
-	// prices at all, which is the quietest possible way for this to break.
-	const byName = groups.find((g) => g.name.toLowerCase() === wanted);
-	if (byName) return byName;
-	console.warn(
-		`  ${code}: no tcgcsv group matched by abbreviation or exact name ("${setName}") — prices unavailable`,
-	);
-	return null;
-}
-
-/** The sealed booster pack/box products within a group, matched by
- * TCGplayer's own naming convention — "<Set Name> Booster Pack" for a
- * modern single-edition set, or "<Set Name> Booster Pack [Unlimited
- * Edition]" / "[1st Edition]" for an older set with more than one print
- * run (verified against live data for Arcane Rising). `setName` should be
- * the tcgcsv *group's* own name, not the-fab-cube's — the two disagree on
- * casing and wording often enough to matter (verified: TCGplayer's own
- * group is "Dusk till Dawn" but its own product is "Dusk Till Dawn";
- * the-fab-cube's "History Pack 1" vs TCGplayer's "History Pack Vol.1" is
- * worse still), and matching within one source's own naming is far more reliable
- * than matching across two. Still compared case-insensitively on top of
- * that, per the "Dusk Till/till Dawn" case.
- *
- * Deliberately anchored to `${base}` or `${base} [` rather than a
- * substring/`.includes()` check — "Booster Box" would otherwise also match
- * "Booster Box Case" (a case of boxes, a much bigger and differently-priced
- * product).
- *
- * Returned in preference order (exact name, then Unlimited, then 1st
- * Edition, then anything else), not narrowed to one product here — the
- * caller tries each in turn, because the "preferred" edition's own product
- * sometimes has no live market price at all (also verified for Arcane
- * Rising: its Unlimited Edition pack has none, while its 1st Edition pack
- * does) and falling through to a priced-but-less-preferred edition beats
- * showing no pack price whatsoever. */
-function findSealedProductCandidates(
-	products: TcgcsvProduct[],
-	setName: string,
-	kind: "Booster Pack" | "Booster Box",
-): TcgcsvProduct[] {
-	const base = `${setName} ${kind}`.toLowerCase();
-	const candidates = products.filter((p) => {
-		const name = p.name.toLowerCase();
-		return name === base || name.startsWith(`${base} [`);
-	});
-	const rank = (p: TcgcsvProduct): number => {
-		const name = p.name.toLowerCase();
-		if (name === base) return 0;
-		if (name.includes("[unlimited edition]")) return 1;
-		if (name.includes("[1st edition]")) return 2;
-		return 3;
-	};
-	return [...candidates].sort((a, b) => rank(a) - rank(b));
-}
-
-/** Builds one set's price snapshot from its resolved tcgcsv group — sealed
- * pack/box market prices plus a market price per (tcgplayerProductId,
- * treatment) pair actually present in the set's own printings. Only
- * entries tcgcsv has a real market price for are written; everything else
- * is simply absent (see fab-prices.ts's SetPriceSnapshot doc comment). */
-async function buildSetPriceSnapshot(
-	groupId: number,
-	setName: string,
-	printings: FabPrinting[],
-): Promise<SetPriceSnapshot> {
-	const [products, prices] = await Promise.all([
-		fetchTcgcsv<{ results: TcgcsvProduct[] }>(`/${groupId}/products`),
-		fetchTcgcsv<{ results: TcgcsvPriceRow[] }>(`/${groupId}/prices`),
-	]);
-
-	const priceByProductAndSubtype = new Map<string, number>();
-	for (const row of prices.results) {
-		if (row.marketPrice === null) continue;
-		priceByProductAndSubtype.set(
-			`${row.productId}:${row.subTypeName}`,
-			row.marketPrice,
-		);
-	}
-	// Sets with more than one historical print run (Alpha/1st Edition vs
-	// Unlimited — see toSetMeta's own comment on this) don't carry a bare
-	// "Normal" / "Cold Foil" / "Rainbow Foil" subtype at all; tcgcsv only
-	// has "Unlimited Edition Cold Foil", "1st Edition Cold Foil", etc
-	// (verified against live data for Arcane Rising). Prefer the plain
-	// name when it exists, then Unlimited (the print still sold in current
-	// boosters), then 1st Edition, rather than showing no price at all for
-	// every card in these older sets.
-	const EDITION_PREFIXES = ["", "Unlimited Edition ", "1st Edition "];
-	function marketPriceFor(
-		productId: number,
-		subTypeName: string,
-	): number | null {
-		for (const prefix of EDITION_PREFIXES) {
-			const price = priceByProductAndSubtype.get(
-				`${productId}:${prefix}${subTypeName}`,
-			);
-			if (price !== undefined) return price;
-		}
-		return null;
-	}
-
-	function bestSealedPrice(candidates: TcgcsvProduct[]): number | null {
-		for (const candidate of candidates) {
-			const price = marketPriceFor(candidate.productId, "Normal");
-			if (price !== null) return price;
-		}
-		return null;
-	}
-
-	const cardPrices: Record<string, number> = {};
-	for (const printing of printings) {
-		if (!printing.tcgplayerProductId) continue;
-		const subType = TCGCSV_SUBTYPE_BY_TREATMENT[printing.foiling];
-		const price = marketPriceFor(Number(printing.tcgplayerProductId), subType);
-		if (price === null) continue;
-		cardPrices[priceKey(printing.tcgplayerProductId, printing.foiling)] = price;
-	}
-
-	return {
-		capturedAt: new Date().toISOString(),
-		packMarketPrice: bestSealedPrice(
-			findSealedProductCandidates(products.results, setName, "Booster Pack"),
-		),
-		boxMarketPrice: bestSealedPrice(
-			findSealedProductCandidates(products.results, setName, "Booster Box"),
-		),
-		cardPrices,
-	};
-}
-
 /** Real, checked-in artwork (not gitignored build output like OUTPUT_DIR
- * above) — see the execution plan, section 7.1, for the exact spec the
- * product owner uploads to. */
+ * above) — see the README in that folder for the spec to upload to. */
 const PACK_ART_DIR = join("public", "img", "pack-opener", "packs");
 
 /** Numbered pack-front artworks for one set, in order, as public URLs —
@@ -325,7 +112,7 @@ async function resolvePackArt(code: string): Promise<string[]> {
  * has printings this table does not account for.
  *
  * Names must match the TCGplayer group name, since that is how prices are
- * resolved — see resolveGroup above. */
+ * resolved — see resolveGroup in tcgcsv.ts. */
 const SET_SPLITS: Record<
 	string,
 	ReadonlyArray<{
@@ -484,57 +271,15 @@ async function resolveSetLogo(
 	}
 }
 
-/** A booster-shaped candidate needs at least this many distinct printings
- * (see the plan, section 8.3, rule 2). Below this, small crossover/promo
- * products would otherwise pass the "has a Rainbow Foil" check too. */
+/** A booster-shaped candidate needs at least this many distinct printings.
+ * Below this, small crossover/promo products would otherwise pass the "has
+ * a Rainbow Foil" check too. */
 const MIN_BOOSTER_PRINTING_COUNT = 50;
 
 interface RawLookupEntry {
 	id: string;
 	description?: string;
 	name?: string;
-}
-
-interface RawPrinting {
-	id: string;
-	set_id: string;
-	rarity: string;
-	foiling: string;
-	/** "A" / "F" / "U" / "N" — carried through as FabPrinting.edition. */
-	edition: string;
-	expansion_slot: boolean;
-	tcgplayer_product_id: string | null;
-	/** This printing's own true identity — unlike `id` (the collector
-	 * number, e.g. "SEA001"), which a card and its Marvel version share.
-	 * Carried through as FabPrinting.uniqueId. */
-	unique_id: string;
-	/** e.g. ["FA"] on a Marvel/full-art printing. Carried through as
-	 * FabPrinting.artVariations — see printingImageUrl's own comment in
-	 * fab-printings.ts for what this is used for. */
-	art_variations: string[];
-	/** The real artwork filename this printing actually renders with —
-	 * differs from `id` for Marvel printings (e.g. SEA001's Marvel version
-	 * is SEA001-MV). Optional/nullable defensively: not every printing in
-	 * the upstream data is guaranteed to carry one. */
-	image_url?: string | null;
-	/** Present only on the ~500 booster-set printings that are one face of
-	 * a double-faced card. `other_face_unique_id` addresses the OTHER
-	 * face's printing, which is what backSlugFor() below resolves. */
-	double_sided_card_info?: {
-		other_face_unique_id: string;
-		is_front: boolean;
-		is_DFC: boolean;
-	}[];
-}
-
-interface RawCard {
-	name: string;
-	pitch: string;
-	cost: string;
-	power: string;
-	defense: string;
-	types: string[];
-	printings: RawPrinting[];
 }
 
 interface RawSetPrinting {
@@ -557,11 +302,10 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 /** Builds a code -> value lookup from the-fab-cube's own rarity.json /
- * foiling.json, per Appendix A.4 ("use them rather than hardcoding the
- * single-letter codes"). Throwing here (rather than falling back to some
- * default) is deliberate: if upstream ever adds a rarity or foiling code
- * this doesn't know how to map, that must fail the build loudly rather
- * than silently mis-map or drop printings. */
+ * foiling.json. Throwing here (rather than falling back to some default) is
+ * deliberate: if upstream ever adds a rarity or foiling code this doesn't
+ * know how to map, that must fail the build loudly rather than silently
+ * mis-map or drop printings. */
 function buildLookup<T extends string>(
 	entries: RawLookupEntry[],
 	valuesByCode: Record<string, T>,
@@ -633,29 +377,38 @@ interface SetMeta {
 	setLogo: string | null;
 }
 
-/** One set can carry more than one `printings` entry in set.json (distinct
- * editions with distinct release dates, e.g. Alpha vs Unlimited). Use the
- * earliest release date, and the logo attached to that same entry, falling
- * back to any entry that does carry a logo. */
 /**
- * The slug the OTHER face of a double-faced card renders from, or null when
- * this printing has only one face.
+ * Whether this row is the back of a physical card. card.json lists the two
+ * sides of a card as two printings, which share a collector number and,
+ * from the same physical card, a TCGplayer product. Left in, a card with
+ * two sides would be two rows in its pool and be dealt twice as often as a
+ * card with one.
  *
- * is_DFC is the whole gate, and it is not a formality. Of the 506
- * booster-set printings carrying double_sided_card_info, only 148 are
- * genuinely two faces of one card. The other 358 set is_DFC to false: they
- * are separate cards that merely share a print sheet, so Welcome to Rathe's
+ * Read off the artwork filename because is_front cannot be trusted:
+ * Dusk till Dawn's DTD164 has it the wrong way round. is_DFC cannot decide
+ * this either, since it is false on the many Marvel heroes that carry art
+ * on both sides of one card (HNT003-MV and HNT003-MV_BACK).
+ */
+function isBackFace(raw: RawPrinting): boolean {
+	return toArtSlug(raw.image_url)?.endsWith(BACK_SUFFIX) ?? false;
+}
+
+/**
+ * The slug the OTHER side of a card renders from, or null when there is
+ * nothing to turn it over to.
+ *
+ * is_DFC is the gate for ordinary printings, and it is not a formality. Most
+ * printings carrying double_sided_card_info set it to false: they are
+ * separate cards that merely share a print sheet, so Welcome to Rathe's
  * WTR040 "Anothos" lists WTR077 "Katsu", WTR113 "Dorinthea Ironsong" and
  * WTR225 "Quicken" as related printings. Taking the first entry regardless
  * would have offered players a flip to a completely unrelated card.
  *
- * The slug itself is this printing's OWN front slug plus "_BACK", not the
+ * For those the slug is this printing's OWN front slug plus "_BACK", not the
  * other face's id. Both faces of a real double-faced card share one
  * collector number (DTD005 is both sides of Suraya), so using the other
  * face's id would have returned the front's own slug and shown the same
- * picture twice. Verified across all 148: the back's filename is always
- * the front's filename plus that suffix, DTD005 to DTD005_BACK and
- * DTD005-MV to DTD005-MV_BACK.
+ * picture twice.
  *
  * Deriving it from the front slug rather than reading the other printing's
  * image_url also inherits printingImageUrl's rule for free (see
@@ -664,221 +417,36 @@ interface SetMeta {
  * foil-baked artwork for foil printings, which doubles up with this app's
  * own foil shader.
  *
- * The 148 are worth having: Commons, Rares, Majestics, Legendaries, Fabled
- * and Marvels, no tokens.
+ * A Marvel with art on both sides but is_DFC false uses its back row's own
+ * slug instead, which isBackFace has dropped from the pool, so this is the
+ * only way left to see that art. Usually that is the front slug plus the
+ * suffix, but not always (HVY093-MV's back is HVY093_MARVEL_BACK), so the
+ * row's own link is tried first. A link has to stay on the same collector
+ * number: as above, it can otherwise name a different card off the sheet.
  */
-const BACK_SUFFIX = "_BACK";
-
-function backSlugFor(raw: RawPrinting, frontSlug: string): string | null {
-	const info = raw.double_sided_card_info?.find((entry) => entry.is_DFC);
-	if (!info?.other_face_unique_id) return null;
-	// Toggle the suffix rather than append it, because a pack can draw
-	// either face. A printing whose own artwork is already the back (the
-	// Marvel back-face printings, whose slug ends in the suffix) has the
-	// FRONT as its other side; appending blindly produced
-	// "DTD005-MV_BACK_BACK", which is not an image that exists.
-	return frontSlug.endsWith(BACK_SUFFIX)
-		? frontSlug.slice(0, -BACK_SUFFIX.length)
-		: `${frontSlug}${BACK_SUFFIX}`;
+function backSlugFor(
+	raw: RawPrinting,
+	frontSlug: string,
+	isMarvel: boolean,
+	backSlugByUniqueId: ReadonlyMap<string, string>,
+): string | null {
+	const info = raw.double_sided_card_info;
+	if (info?.some((entry) => entry.is_DFC && entry.other_face_unique_id)) {
+		return `${frontSlug}${BACK_SUFFIX}`;
+	}
+	if (!isMarvel) return null;
+	const linked = info
+		?.map((entry) => backSlugByUniqueId.get(entry.other_face_unique_id))
+		.find((slug) => slug?.startsWith(raw.id));
+	if (linked) return linked;
+	const sibling = `${frontSlug}${BACK_SUFFIX}`;
+	return [...backSlugByUniqueId.values()].includes(sibling) ? sibling : null;
 }
 
-/**
- * Sets whose full card list has not reached Released/card.json yet — a new
- * set is spoiled and pre-release-priced well before the-fab-cube (and so
- * fabrary's own Released copy of it, see the file comment above) carries
- * it. Usurp the Shadow Throne is the first case of this: as of writing,
- * Released/card.json has 11 Marvel preview printings for it and set.json
- * names it "??? Set 20 ???" with no release date at all.
- *
- * fabrary ALSO publishes a second, pre-release pipeline (its "Spoiled"
- * scripts, a maintained spoiler-card spreadsheet) that already has the
- * whole set — 263 cards, 516 printings, matching the product page's own
- * "263 cards in set", 515 of them with a TCGplayer id. It isn't exposed as
- * JSON the way Released is; it's compiled into the `@flesh-and-blood/cards`
- * npm package instead (pinned exactly in package.json — pre-release data
- * changes daily upstream, so bumping it is a deliberate
- * `bun update @flesh-and-blood/cards`, never a surprise). This bridge reads
- * that package for exactly the sets listed below and maps its schema onto
- * the same RawCard/RawPrinting shapes Released already produces, so
- * nothing downstream of `buildSetPrintings` has to know the difference.
- *
- * It is deliberately self-retiring rather than a permanent second source:
- * bridgePrintings() below is only used while Released/card.json's own
- * printing count for that code is still smaller than the bridge's. The
- * moment the-fab-cube adds the set for real, the build logs that the
- * entry is no longer needed and quietly stops using it — see main()'s
- * loop over this table. Removing the entry (and, eventually, the
- * dependency) at that point is housekeeping, not urgent.
- */
-const PRE_RELEASE_SETS: Record<
-	string,
-	{ release: BridgeRelease; name: string; releaseDate: string }
-> = {
-	IAR: {
-		release: BridgeRelease.UsurpTheShadowThrone,
-		// Must equal the tcgcsv group's own name — see resolveGroup above.
-		name: "Usurp the Shadow Throne",
-		// LSS's Card Vault API agrees:
-		// api.cardvault.fabtcg.com/carddb/api/v1/product-cards/usurp-the-shadow-throne/
-		// gives "release_date":"2026-09-25". Without this override the set
-		// sorts by an empty release date, which — see main()'s indexEntries
-		// sort — puts it FIRST among booster sets, ahead of Welcome to Rathe.
-		releaseDate: "2026-09-25T00:00:00.000Z",
-	},
-};
-
-/** the-fab-cube's rarity.json codes, reversed from the bridged package's own
- * Rarity enum values (its strings match the-fab-cube's rarity names
- * exactly, e.g. "Super Rare", "Marvel"). */
-const BRIDGE_RARITY_TO_CODE: Record<string, string> = {
-	[BridgeRarity.Basic]: "B",
-	[BridgeRarity.Token]: "T",
-	[BridgeRarity.Common]: "C",
-	[BridgeRarity.Rare]: "R",
-	[BridgeRarity.SuperRare]: "S",
-	[BridgeRarity.Majestic]: "M",
-	[BridgeRarity.Marvel]: "V",
-	[BridgeRarity.Legendary]: "L",
-	[BridgeRarity.Fabled]: "F",
-	[BridgeRarity.Promo]: "P",
-};
-
-/** the bridged package leaves `foiling` undefined for a standard printing
- * rather than naming a "Standard" member the way the-fab-cube's code table
- * does — handled as a special case in toBridgeRawPrinting below, not here. */
-const BRIDGE_FOILING_TO_CODE: Record<string, string> = {
-	[BridgeFoiling.Rainbow]: "R",
-	[BridgeFoiling.Cold]: "C",
-	[BridgeFoiling.Gold]: "G",
-};
-
-/** the-fab-cube's art-variation.json codes, reversed from the bridged
- * package's own Treatment enum (no "Half Size" member exists there; IAR
- * carries none, verified against the full 516-printing census). */
-const BRIDGE_TREATMENT_TO_CODE: Record<string, string> = {
-	[BridgeTreatment.FA]: "FA",
-	[BridgeTreatment.EA]: "EA",
-	[BridgeTreatment.AA]: "AA",
-	[BridgeTreatment.AB]: "AB",
-	[BridgeTreatment.AT]: "AT",
-};
-
-/** One bridged printing, mapped onto the RawPrinting shape Released
- * printings already carry — see PRE_RELEASE_SETS's own comment for why. */
-function toBridgeRawPrinting(
-	printing: BridgePrinting,
-	setCode: string,
-): RawPrinting {
-	const rarity = BRIDGE_RARITY_TO_CODE[printing.rarity];
-	if (!rarity) {
-		throw new Error(
-			`Unmapped bridge rarity "${printing.rarity}" on ${printing.identifier}. ` +
-				"Add it to BRIDGE_RARITY_TO_CODE in scripts/build-pack-data.ts.",
-		);
-	}
-	const foiling = printing.foiling
-		? BRIDGE_FOILING_TO_CODE[printing.foiling]
-		: "S";
-	if (!foiling) {
-		throw new Error(
-			`Unmapped bridge foiling "${printing.foiling}" on ${printing.identifier}. ` +
-				"Add it to BRIDGE_FOILING_TO_CODE in scripts/build-pack-data.ts.",
-		);
-	}
-	const artVariations = (printing.treatments ?? []).map((treatment) => {
-		const code = BRIDGE_TREATMENT_TO_CODE[treatment];
-		if (!code) {
-			throw new Error(
-				`Unmapped bridge treatment "${treatment}" on ${printing.identifier}. ` +
-					"Add it to BRIDGE_TREATMENT_TO_CODE in scripts/build-pack-data.ts.",
-			);
-		}
-		return code;
-	});
-	return {
-		// The printing's own collector id, e.g. "IAR206". NEVER
-		// printing.image: that's "IAR206-RF" for a Rainbow printing (foil-
-		// baked artwork), which would double up with this app's own foil
-		// shader — see printingImageUrl's comment in fab-printings.ts.
-		id: printing.identifier,
-		set_id: setCode,
-		rarity,
-		foiling,
-		// Single-run set; the bridged package leaves `edition` undefined
-		// for every IAR printing.
-		edition: "N",
-		expansion_slot: printing.isExpansionSlot ?? false,
-		tcgplayer_product_id: printing.tcgplayer?.productId ?? null,
-		// The bridged schema has no unique id of its own. `print` (e.g.
-		// "IAR159-Cold-Full Art") is distinct across every printing of a
-		// set — verified for all 516 IAR printings — and is only ever
-		// consumed as this build's own Cardmarket snapshot key, rebuilt
-		// fresh every run, so a synthetic id here is safe.
-		unique_id: printing.print,
-		art_variations: artVariations,
-		// A bare slug ("IAR206", "IAR159-MV"), not a URL — toArtSlug below
-		// tolerates that fine, since it only strips a path and extension
-		// neither of which are present.
-		image_url: printing.image ?? null,
-		double_sided_card_info: printing.oppositeImage
-			? [
-					{
-						other_face_unique_id: printing.oppositeImage,
-						is_front: !printing.image?.endsWith(BACK_SUFFIX),
-						is_DFC: true,
-					},
-				]
-			: undefined,
-	};
-}
-
-/** Builds one pre-release set's RawCard/RawPrinting lists from the bridged
- * package — see PRE_RELEASE_SETS's own comment. Only a card's printings
- * for THIS set are kept; the bridged package lists every reprint of a card
- * across every set it's been in (IAR reprints ~80 cards from earlier
- * sets), and those belong to their own set's pool, not this one's. */
-function bridgePrintings(
-	code: string,
-	entry: (typeof PRE_RELEASE_SETS)[string],
-): { cards: RawCard[]; printings: RawPrinting[] } {
-	const cards: RawCard[] = [];
-	const printings: RawPrinting[] = [];
-	for (const card of bridgeCards) {
-		const setPrintings = card.printings.filter(
-			(printing) => printing.set === entry.release,
-		);
-		if (setPrintings.length === 0) continue;
-		const rawPrintings = setPrintings.map((printing) =>
-			toBridgeRawPrinting(printing, code),
-		);
-		cards.push({
-			name: card.name,
-			pitch: String(card.pitch ?? ""),
-			cost: String(card.cost ?? ""),
-			power: String(card.power ?? ""),
-			defense: String(card.defense ?? ""),
-			// Flattened onto the-fab-cube's shape, which packs a card's class,
-			// talent and subtypes into the same one `types` array the rest of
-			// this script already reads (see isClassCard/hasType in
-			// fab-printings.ts). NotClassed and Generic are the bridged
-			// package's own placeholders for "no class", never a real class
-			// name the-fab-cube would print — dropped so isClassCard doesn't
-			// have to special-case this set.
-			types: [
-				...card.classes.filter(
-					(c) => c !== BridgeClass.NotClassed && c !== BridgeClass.Generic,
-				),
-				...(card.talents ?? []),
-				...card.types,
-				...card.subtypes,
-			],
-			printings: rawPrintings,
-		});
-		printings.push(...rawPrintings);
-	}
-	return { cards, printings };
-}
-
+/** One set can carry more than one `printings` entry in set.json (distinct
+ * editions with distinct release dates, e.g. Alpha vs Unlimited). Use the
+ * earliest release date, and the logo attached to that same entry, falling
+ * back to any entry that does carry a logo. */
 function toSetMeta(raw: RawSet): SetMeta {
 	const dated = raw.printings
 		.filter((p): p is RawSetPrinting & { initial_release_date: string } =>
@@ -907,11 +475,11 @@ interface Candidate {
 	printingCount: number;
 }
 
-/** The automatic derivation rule from the plan, section 8.3: released, plus
- * at least MIN_BOOSTER_PRINTING_COUNT distinct printings, plus at least one
- * Rainbow Foil printing. Verified against the real dataset to find 20 of 21
- * known booster sets correctly (misses 1HP, wrongly admits a handful of
- * Mastery Pack / crossover products) — see known-sets.ts for how those are
+/** The automatic derivation rule: released, plus at least
+ * MIN_BOOSTER_PRINTING_COUNT distinct printings, plus at least one Rainbow
+ * Foil printing. Verified against the real dataset to find 20 of 21 known
+ * booster sets correctly (misses 1HP, wrongly admits a handful of Mastery
+ * Pack / crossover products) — see known-sets.ts for how those are
  * corrected. This function only proposes candidates; known-sets.ts and the
  * caller decide what actually ships. */
 function deriveCandidates(
@@ -936,12 +504,13 @@ function deriveCandidates(
 	return candidates.sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
 }
 
-/** The CI gate from the plan, section 8.5: every automatically-derived
- * candidate must have a decision recorded in known-sets.ts. An unrecognised
- * candidate fails the build with enough detail (name, release date,
- * printing count) to write that decision. Manual "include" entries in
- * known-sets.ts (sets the automatic rule structurally can't find, e.g.
- * 1HP) are added on top, not filtered by this check. */
+/** The CI gate: every automatically-derived candidate must have a decision
+ * recorded in known-sets.ts, so a newly released set can't ship, or be left
+ * out, without someone deciding. An unrecognised candidate fails the build
+ * with enough detail (name, release date, printing count) to write that
+ * decision. Manual "include" entries in known-sets.ts (sets the automatic
+ * rule structurally can't find, e.g. 1HP) are added on top, not filtered by
+ * this check. */
 function resolveIncludedSetCodes(candidates: Candidate[]): string[] {
 	const decisionByCode = new Map(KNOWN_SETS.map((d) => [d.code, d]));
 
@@ -978,20 +547,29 @@ function resolveIncludedSetCodes(candidates: Candidate[]): string[] {
 function buildSetPrintings(
 	code: string,
 	rawPrintings: RawPrinting[],
-	cardByPrintingId: Map<string, RawCard>,
+	cardByUniqueId: Map<string, RawCard>,
 ): FabSetPrintings {
+	const backSlugByUniqueId = new Map(
+		rawPrintings
+			.filter(isBackFace)
+			.map((raw) => [raw.unique_id, toArtSlug(raw.image_url) as string]),
+	);
 	const printings: FabPrinting[] = rawPrintings
+		.filter((raw) => !isBackFace(raw))
 		.map((raw): FabPrinting | null => {
-			const card = cardByPrintingId.get(raw.id);
+			const card = cardByUniqueId.get(raw.unique_id);
 			if (!card) {
-				throw new Error(`No parent card found for printing ${raw.id}`);
+				throw new Error(
+					`No parent card found for printing ${raw.id} (${raw.unique_id})`,
+				);
 			}
-			// A handful of upstream printings (6, as of this writing, e.g.
-			// PEN078) carry an empty foiling or rarity string rather than a
-			// real code — an upstream data-entry gap, not a new code this
-			// script doesn't know about. Drop just that printing rather than
-			// failing the whole build; a genuinely new non-empty code still
-			// throws below, which is the real "unmapped code" case.
+			// An upstream printing can carry an empty foiling or rarity string
+			// rather than a real code — a data-entry gap, not a new code this
+			// script doesn't know about. None do as of this writing, but one
+			// such slip upstream must not stop every deploy. Drop just that
+			// printing rather than failing the whole build; a genuinely new
+			// non-empty code still throws below, which is the real "unmapped
+			// code" case.
 			if (!raw.foiling || !raw.rarity) {
 				console.warn(
 					`  Skipping ${raw.id}: missing rarity or foiling code in upstream data ` +
@@ -1030,6 +608,8 @@ function buildSetPrintings(
 					rarity === "marvel" && toArtSlug(raw.image_url)
 						? (toArtSlug(raw.image_url) as string)
 						: raw.id,
+					rarity === "marvel",
+					backSlugByUniqueId,
 				),
 			};
 		})
@@ -1056,10 +636,14 @@ async function main() {
 	console.log(`${cards.length} cards, ${sets.length} set entries.`);
 
 	const printingsBySetCode = new Map<string, RawPrinting[]>();
-	const cardByPrintingId = new Map<string, RawCard>();
+	// Keyed by unique_id, because a collector id can't identify a card: both
+	// sides of a double-faced card share one (MST095 is "A Drop in the Ocean"
+	// and "Inner Chi"), so keying on it gave whichever face was read last's
+	// name and stats to both.
+	const cardByUniqueId = new Map<string, RawCard>();
 	for (const card of cards) {
 		for (const printing of card.printings) {
-			cardByPrintingId.set(printing.id, card);
+			cardByUniqueId.set(printing.unique_id, card);
 			const list = printingsBySetCode.get(printing.set_id);
 			if (list) {
 				list.push(printing);
@@ -1072,37 +656,36 @@ async function main() {
 	const setMetaByCode = new Map(sets.map((s) => [s.id, toSetMeta(s)]));
 
 	// Pre-release bridge — see PRE_RELEASE_SETS's own comment. Only takes
-	// over a set's printings/metadata while Released/card.json's own count
-	// for that code is still behind the bridge's; steps out of the way (and
-	// says so) the moment the-fab-cube catches up.
+	// over a set's printings/metadata while card.json's own count for that
+	// code is still behind the bridge's; steps out of the way (and says so)
+	// the moment the-fab-cube catches up.
 	for (const [code, entry] of Object.entries(PRE_RELEASE_SETS)) {
 		const upstreamCount = printingsBySetCode.get(code)?.length ?? 0;
 		const bridged = bridgePrintings(code, entry);
 		if (upstreamCount >= bridged.printings.length) {
 			console.log(
-				`  ${code}: Released/card.json now carries ${upstreamCount} printing(s) ` +
+				`  ${code}: card.json now carries ${upstreamCount} printing(s) ` +
 					`(bridge has ${bridged.printings.length}) — the PRE_RELEASE_SETS entry ` +
-					"in scripts/build-pack-data.ts is no longer needed and can be removed",
+					"in scripts/pre-release-bridge.ts is no longer needed and can be removed",
 			);
 			continue;
 		}
 		console.log(
 			`  ${code}: bridging ${bridged.printings.length} printing(s) from ` +
-				`@flesh-and-blood/cards (Released/card.json only has ${upstreamCount})`,
+				`@flesh-and-blood/cards (card.json only has ${upstreamCount})`,
 		);
 		printingsBySetCode.set(code, bridged.printings);
 		for (const card of bridged.cards) {
 			for (const printing of card.printings) {
-				cardByPrintingId.set(printing.id, card);
+				cardByUniqueId.set(printing.unique_id, card);
 			}
 		}
 		setMetaByCode.set(code, {
 			code,
 			name: entry.name,
 			releaseDate: entry.releaseDate,
-			// LSS's own data carries no logo for this set yet — see Step 8 of
-			// docs/plans/iar-usurp-the-shadow-throne.md; resolveSetLogo's
-			// checked-in-file override picks it up once it lands.
+			// LSS's own data carries no logo for this set yet; resolveSetLogo's
+			// checked-in-file override supplies one.
 			setLogo: null,
 		});
 	}
@@ -1138,8 +721,17 @@ async function main() {
 		);
 	}
 
+	// Same policy as Cardmarket above, and as the per-set price fetch below:
+	// losing prices for a deploy is a degrade, not a break.
 	console.log("Fetching tcgcsv group list...");
-	const groups = await fetchTcgcsv<{ results: TcgcsvGroup[] }>("/groups");
+	let groups: TcgcsvGroup[] = [];
+	try {
+		groups = await fetchTcgcsvGroups();
+	} catch (error) {
+		console.warn(
+			`  tcgcsv group list fetch failed (${error instanceof Error ? error.message : error}) — dollar prices unavailable this build`,
+		);
+	}
 
 	const indexEntries: Array<{
 		code: string;
@@ -1170,7 +762,7 @@ async function main() {
 		const setPrintings = buildSetPrintings(
 			code,
 			output.printings,
-			cardByPrintingId,
+			cardByUniqueId,
 		);
 		await writeFile(
 			join(OUTPUT_DIR, "sets", `${code}.json`),
@@ -1188,7 +780,8 @@ async function main() {
 			packArt,
 		});
 
-		const group = resolveGroup(code, output.name, groups.results);
+		const group =
+			groups.length > 0 ? resolveGroup(code, output.name, groups) : null;
 		let priceLogSuffix = "no prices";
 		// Kept for the Cardmarket build below, which scores candidate
 		// expansions by how well their euros agree with these dollars.
@@ -1241,9 +834,6 @@ async function main() {
 			cardmarketLogSuffix =
 				`, EUR ${coverage.priced}/${coverage.versions} versions (${pct}%` +
 				(coverage.ambiguous > 0 ? `, ${coverage.ambiguous} ambiguous` : "") +
-				(coverage.priceOrderMismatch > 0
-					? `, ${coverage.priceOrderMismatch} order-mismatch`
-					: "") +
 				(coverage.refinedPairings > 0
 					? `, ${coverage.refinedPairings} refined`
 					: "") +
