@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 /**
  * Select Dropdown Component
  *
@@ -38,6 +37,7 @@ import {
 	ListboxOptions,
 } from "@headlessui/react";
 import { Check, ChevronDown } from "lucide-react";
+import { Fragment } from "react";
 
 /**
  * Single option in a Select dropdown.
@@ -124,14 +124,12 @@ interface SelectProps<T extends string> {
 	/** Class names for custom button styling */
 	buttonClassName?: string;
 	/** Overrides the button's visible-value span (default: text-body when a
-	 * value is selected, text-faint otherwise). Setting this to something
-	 * like "text-transparent" visually hides the label text while keeping
-	 * it in the accessible name/value chain — for a caller whose button
-	 * already shows the current value another way (e.g. pack-opener's
-	 * SetCarousel, which renders the selected set's logo next to a
-	 * collapsed chevron-only button) and doesn't want it duplicated as
-	 * visible text. Note this only affects the closed button; option rows
-	 * in the open list always show their own real label. */
+	 * value is selected, text-faint otherwise). A class such as "sr-only"
+	 * hides the label text visually while keeping it available to assistive
+	 * technology, for a caller whose button already shows the current value
+	 * another way and doesn't want it duplicated as visible text. This only
+	 * affects the closed button; option rows in the open list always show
+	 * their own label. */
 	valueClassName?: string;
 	/** Class names for the open dropdown panel. The default anchors its
 	 * width to the trigger button's own rendered width (w-(--button-width)),
@@ -230,7 +228,6 @@ export default function Select<T extends string>({
 									</div>
 								)}
 								<ListboxOption
-									key={option.value}
 									value={option.value}
 									className={
 										isAction

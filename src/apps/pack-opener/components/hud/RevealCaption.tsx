@@ -3,6 +3,7 @@ import { PriceValue } from "@fabkit/apps/pack-opener/components/PriceValue";
 import { TreatmentBadge } from "@fabkit/apps/pack-opener/components/TreatmentBadge";
 import { usePrices } from "@fabkit/apps/pack-opener/hooks/usePrices";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
+import { selectActiveCardIndex } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { FlipHorizontal2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -29,16 +30,13 @@ export function RevealCaption() {
 	const pack = usePackOpenerStore((state) => state.pack);
 	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
-	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
+	const activeIndex = usePackOpenerStore(selectActiveCardIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
 	const showingOtherFace = usePackOpenerStore(
 		(state) => state.showingOtherFace,
 	);
 	const flipCard = usePackOpenerStore((state) => state.flipCard);
 	const prices = usePrices();
-
-	const activeIndex =
-		revisitIndex !== null && phase === "done" ? revisitIndex : revealIndex;
 
 	const drawn =
 		pack && activeIndex >= 0 && activeIndex < pack.length

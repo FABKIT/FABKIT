@@ -6,9 +6,9 @@
  * library to keep in step for no benefit. Same approach as the brand icons
  * beside this file.
  *
- * Drawn on the same 24x24 grid and 1.5 stroke weight lucide uses, so it
- * sits at the same visual weight as its neighbours in the nav. Path from
- * heroicons v2 (MIT, github.com/tailwindlabs/heroicons).
+ * Drawn on the same 24x24 grid lucide uses, at heroicons' own 1.5 stroke,
+ * which is lighter than lucide's default of 2. Path from heroicons v2 (MIT,
+ * github.com/tailwindlabs/heroicons).
  */
 export function Square2Stack({
 	className,

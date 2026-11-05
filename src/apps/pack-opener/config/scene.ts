@@ -152,6 +152,6 @@ export const REVEALING_CAMERA_POSITION: [number, number, number] = [0, 0, 2.8];
  * the last card of a pack visibly shrank as the summary arrived, and every
  * card revisited from the summary ledger showed up smaller than it had
  * during the reveal. A card should be exactly one size for the whole
- * session; the summary collapsing (see PackSummary.tsx) is what makes room
+ * session; the summary collapsing (see PackLedger.tsx) is what makes room
  * now, not the camera. */
 export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0, 2.8];

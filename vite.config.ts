@@ -51,8 +51,7 @@ export default defineConfig({
 			},
 			workbox: {
 				cleanupOutdatedCaches: true,
-				// Pack opener card art (see the execution plan, section 5,
-				// performance fix 1): content.fabrary.net's own Cache-Control
+				// Pack opener card art: content.fabrary.net's own Cache-Control
 				// only holds a card's image for 3 days, but a pack draws its
 				// commons from a pool of roughly 130 per set, so repeat
 				// openings of the same set collide constantly — after around
@@ -61,6 +60,10 @@ export default defineConfig({
 				// available for a full month regardless of what the origin
 				// server's own header says, capped at 600 images so this can
 				// never grow without bound.
+				//
+				// Only status 200 is cached, never an opaque 0: every load from
+				// this path is CORS, and an opaque entry served by CacheFirst
+				// would fail every later CORS texture load for that card.
 				runtimeCaching: [
 					{
 						urlPattern: ({ url }: { url: URL }) =>
@@ -73,7 +76,7 @@ export default defineConfig({
 								maxEntries: 600,
 								maxAgeSeconds: 60 * 60 * 24 * 30,
 							},
-							cacheableResponse: { statuses: [0, 200] },
+							cacheableResponse: { statuses: [200] },
 						},
 					},
 				],

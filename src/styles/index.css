@@ -49,8 +49,7 @@
 
 	/* Fonts */
 	--font-card-text: "palatino_lt_stdroman", serif;
-	/* Pack opener's reveal caption/summary (see src/apps/pack-opener/CLAUDE.md
-	   and the execution plan, section 3.7): the game's own faces for the
+	/* Pack opener's reveal caption and summary: the game's own faces for the
 	   game's own content — card names in the real FAB card-name face, and
 	   numbers/rarity labels/prices in the real FAB stat/type-line face. */
 	--font-card-name: "amanda_std_regular", serif;
@@ -180,6 +179,7 @@
 @media (max-width: 767px) {
 	.floatingchat-container-wrap,
 	.floatingchat-container-wrap-mobi {
+		/* biome-ignore-start lint/complexity/noImportantStyles: Ko-fi styles its widget inline, so nothing else can override it */
 		top: 10px !important;
 		right: 12px !important;
 		bottom: auto !important;
@@ -192,5 +192,6 @@
 		width: 195px !important;
 		transform: scale(0.62) !important;
 		transform-origin: top right !important;
+		/* biome-ignore-end lint/complexity/noImportantStyles: Ko-fi styles its widget inline, so nothing else can override it */
 	}
 }

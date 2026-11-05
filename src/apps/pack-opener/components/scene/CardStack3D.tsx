@@ -6,6 +6,7 @@ import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/Outgoing
 import { revealIntroTransform } from "@fabkit/apps/pack-opener/components/scene/revealIntro";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
+import { selectActiveCardIndex } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import type { Group } from "three";
@@ -18,6 +19,7 @@ export function CardStack3D() {
 	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
+	const activeIndex = usePackOpenerStore(selectActiveCardIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
 	const phaseStartedAt = usePackOpenerStore((state) => state.phaseStartedAt);
 	const advanceReveal = usePackOpenerStore((state) => state.advanceReveal);
@@ -60,7 +62,6 @@ export function CardStack3D() {
 	// "active": no advance on tap and no outgoing slide, but still tiltable,
 	// since read-only doesn't mean frozen.
 	const isRevisiting = phase === "done" && revisitIndex !== null;
-	const activeIndex = isRevisiting ? revisitIndex : revealIndex;
 
 	const activeDrawn =
 		pack && activeIndex >= 0 && activeIndex < pack.length

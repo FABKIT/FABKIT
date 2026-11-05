@@ -1009,8 +1009,8 @@ const ARCANE_RISING: PackConfig = {
 // set but aren't a named slot here, unlike Welcome to Rathe/Arcane Rising).
 //
 // Unlike those two, Legendary IS named directly in a slot here ("Rare /
-// Majestic / Legendary"), so the section 5.2.1 four-step method applies:
-// collectors-centre states Rare 1.75/pack, Majestic 1/4 (0.25/pack),
+// Majestic / Legendary"), so the slot's weights come straight from the
+// published rates: collectors-centre states Rare 1.75/pack, Majestic 1/4 (0.25/pack),
 // Legendary 1/240 (0.0041667/pack). Sum = 2.0042 -> 2 slots (1 pure Rare +
 // 1 Rare/Majestic/Legendary), matching the published structure.
 //

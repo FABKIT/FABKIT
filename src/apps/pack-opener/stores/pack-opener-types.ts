@@ -7,6 +7,16 @@ import type { OpenedPackRecord } from "@fabkit/apps/pack-opener/stats/session-st
 
 export type PackOpenerPhase = "idle" | "tearing" | "revealing" | "done";
 
+/** The card the scene and caption are showing: the one chosen from the ledger
+ * while revisiting a finished pack, otherwise the one reached in the reveal. */
+export function selectActiveCardIndex(
+	state: Pick<PackOpenerState, "phase" | "revealIndex" | "revisitIndex">,
+): number {
+	return state.phase === "done" && state.revisitIndex !== null
+		? state.revisitIndex
+		: state.revealIndex;
+}
+
 export interface PackOpenerState {
 	phase: PackOpenerPhase;
 	pack: DrawnCard[] | null;
