@@ -4,15 +4,15 @@ import { join } from "node:path";
 import {
 	resolveTreatment,
 	selectPrintingPool,
-} from "../../src/apps/pack-opener/cards/card-resolver";
-import { hashToIndex } from "../../src/apps/pack-opener/cards/deterministic-hash";
-import { generatePack } from "../../src/apps/pack-opener/pack/generate-pack";
-import { REAL_SET_PACK_CONFIGS } from "../../src/apps/pack-opener/pack/set-configs";
-import type { DrawnCard } from "../../src/apps/pack-opener/pack/types";
+} from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { hashToIndex } from "@fabkit/apps/pack-opener/cards/deterministic-hash";
+import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
+import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type {
 	FabPrinting,
 	FabSetPrintings,
-} from "../../src/shared/data/fab-printings";
+} from "@fabkit/shared/data/fab-printings";
 import { hasPackData } from "./pack-data";
 
 const DATA_DIR = join(process.cwd(), "public", "data", "pack-opener", "sets");

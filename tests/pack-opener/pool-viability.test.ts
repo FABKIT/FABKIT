@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { REAL_SET_PACK_CONFIGS } from "../../src/apps/pack-opener/pack/set-configs";
-import type { CardRarity } from "../../src/shared/config/cards/rarities";
-import type { FabSetPrintings } from "../../src/shared/data/fab-printings";
-import { hasType, isClassCard } from "../../src/shared/data/fab-printings";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
+import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import type { FabSetPrintings } from "@fabkit/shared/data/fab-printings";
+import { hasType, isClassCard } from "@fabkit/shared/data/fab-printings";
 import { hasPackData } from "./pack-data";
 
 /**

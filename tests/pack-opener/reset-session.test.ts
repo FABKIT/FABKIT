@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "bun:test";
-import { generatePack } from "../../src/apps/pack-opener/pack/generate-pack";
-import { DEFAULT_PACK_CONFIG } from "../../src/apps/pack-opener/pack/odds";
-import { mulberry32 } from "../../src/apps/pack-opener/pack/rng";
-import { usePackOpenerStore } from "../../src/apps/pack-opener/stores/pack-opener";
+import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
+import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
+import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
+import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 
 /**
  * resetSession() throws a run away, and the two things it must NOT throw

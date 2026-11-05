@@ -2,9 +2,9 @@ import { describe, expect, it } from "bun:test";
 import {
 	activeCardResolver,
 	resolveTreatment,
-} from "../../src/apps/pack-opener/cards/card-resolver";
-import type { DrawnCard } from "../../src/apps/pack-opener/pack/types";
-import type { FabPrinting } from "../../src/shared/data/fab-printings";
+} from "@fabkit/apps/pack-opener/cards/card-resolver";
+import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
+import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
 
 function drawn(overrides: Partial<DrawnCard>): DrawnCard {
 	return {

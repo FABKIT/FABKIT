@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { generatePack } from "../../src/apps/pack-opener/pack/generate-pack";
-import { DEFAULT_PACK_CONFIG } from "../../src/apps/pack-opener/pack/odds";
-import { mulberry32 } from "../../src/apps/pack-opener/pack/rng";
+import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
+import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
+import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
 
 describe("generatePack", () => {
 	it("always returns exactly cardsPerPack cards", () => {

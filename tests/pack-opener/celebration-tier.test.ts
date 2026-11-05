@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import type { ResolvedCard } from "../../src/apps/pack-opener/cards/card-resolver";
-import { celebrationTierFor } from "../../src/apps/pack-opener/cards/celebration-tier";
+import type { ResolvedCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-tier";
 
 function card(overrides: Partial<ResolvedCard>): ResolvedCard {
 	return {

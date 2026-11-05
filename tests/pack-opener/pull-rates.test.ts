@@ -1,11 +1,11 @@
 import { describe, expect, it } from "bun:test";
-import { DEFAULT_PACK_CONFIG } from "../../src/apps/pack-opener/pack/odds";
+import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
 import {
 	PERCENT_DISPLAY_THRESHOLD,
 	percentOfPack,
 	pullRateRows,
-} from "../../src/apps/pack-opener/pack/pull-rates";
-import { REAL_SET_PACK_CONFIGS } from "../../src/apps/pack-opener/pack/set-configs";
+} from "@fabkit/apps/pack-opener/pack/pull-rates";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
 
 describe("pullRateRows", () => {
 	it("orders rows most common to rarest", () => {

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { generatePack } from "../../src/apps/pack-opener/pack/generate-pack";
-import { mulberry32 } from "../../src/apps/pack-opener/pack/rng";
-import { REAL_SET_PACK_CONFIGS } from "../../src/apps/pack-opener/pack/set-configs";
-import { expectedRarityCounts } from "../../src/apps/pack-opener/stats/session-stats";
-import type { CardRarity } from "../../src/shared/config/cards/rarities";
+import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
+import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
+import { expectedRarityCounts } from "@fabkit/apps/pack-opener/stats/session-stats";
+import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 
 /**
  * Frequency calibration: for every config derived from a set's published

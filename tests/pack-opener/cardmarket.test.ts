@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
 import {
 	buildCardmarketSnapshot,
 	type CardmarketCatalog,
 } from "../../scripts/cardmarket";
-import type { FabPrinting } from "../../src/shared/data/fab-printings";
 
 function printing(overrides: Partial<FabPrinting>): FabPrinting {
 	return {

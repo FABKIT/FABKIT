@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
 	type FabPrinting,
 	printingImageUrl,
-} from "../../src/shared/data/fab-printings";
+} from "@fabkit/shared/data/fab-printings";
 
 function printing(overrides: Partial<FabPrinting>): FabPrinting {
 	return {

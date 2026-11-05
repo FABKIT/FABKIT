@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from "bun:test";
-import { LAST_CARD_AUTO_SUMMARY_MS } from "../../src/apps/pack-opener/config/scene";
-import { generatePack } from "../../src/apps/pack-opener/pack/generate-pack";
-import { DEFAULT_PACK_CONFIG } from "../../src/apps/pack-opener/pack/odds";
-import { mulberry32 } from "../../src/apps/pack-opener/pack/rng";
-import { usePackOpenerStore } from "../../src/apps/pack-opener/stores/pack-opener";
+import { LAST_CARD_AUTO_SUMMARY_MS } from "@fabkit/apps/pack-opener/config/scene";
+import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
+import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
+import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
+import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

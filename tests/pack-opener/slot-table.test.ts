@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { REAL_SET_PACK_CONFIGS } from "../../src/apps/pack-opener/pack/set-configs";
-import { slotTable } from "../../src/apps/pack-opener/pack/slot-table";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
+import { slotTable } from "@fabkit/apps/pack-opener/pack/slot-table";
 
 /**
  * pack/published-rates.ts exists to be edited by hand, which makes a

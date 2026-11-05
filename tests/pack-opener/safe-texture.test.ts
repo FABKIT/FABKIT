@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
-import { SRGBColorSpace, Texture, TextureLoader } from "three";
 import {
 	clearFailedTextureUrls,
 	preloadSafeTexture,
 	trimSafeTextureCache,
-} from "../../src/apps/pack-opener/components/scene/textures/useSafeTexture";
-import { CARD_BACK_URL } from "../../src/apps/pack-opener/config/scene";
+} from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
+import { CARD_BACK_URL } from "@fabkit/apps/pack-opener/config/scene";
+import { SRGBColorSpace, Texture, TextureLoader } from "three";
 
 /** Lets the loader's fake callback and the promise chain behind it settle. */
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
