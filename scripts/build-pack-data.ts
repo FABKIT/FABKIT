@@ -46,31 +46,19 @@ import {
  */
 
 /**
- * Cards and sets come from fabrary/cards rather than upstream
- * the-fab-cube, which is where they used to come from.
- *
- * fabrary vendors the-fab-cube's own files, in the identical schema (every
- * field on both the card and the printing objects matches), and corrects
- * and extends them. In practice that means it is simply further ahead:
- * when this was checked, the-fab-cube had 34 of Mastery Pack Warrior's 156
- * cards a month after that product released, with 3 distinct Commons for a
- * slot that deals 8 per pack, while fabrary had all 156 with TCGplayer ids
- * on every printing. Across the 22 sets shipping at the time, the two
- * differed by a single printing in three sets and were identical in the
- * other nineteen, so this is a strictly-more-complete copy rather than a
- * different dataset with its own opinions.
- *
- * The rarity and foiling code lookups still come from the-fab-cube, since
- * fabrary does not vendor those two files and the codes themselves match.
+ * All four files come from the-fab-cube's develop branch, its default. Its
+ * main branch lags well behind: when this was checked, main had 34 of
+ * Mastery Pack Warrior's 156 cards and no TCGplayer ids for them, while
+ * develop had all 156.
  */
 const CARD_JSON_URL =
-	"https://raw.githubusercontent.com/fabrary/cards/main/packages/cards/scripts/Released/card.json";
+	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/card.json";
 const SET_JSON_URL =
-	"https://raw.githubusercontent.com/fabrary/cards/main/packages/cards/scripts/Released/set.json";
+	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/set.json";
 const RARITY_JSON_URL =
-	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/rarity.json";
+	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/rarity.json";
 const FOILING_JSON_URL =
-	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/foiling.json";
+	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/foiling.json";
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");
 
