@@ -3,8 +3,6 @@ import type { MockPitch } from "@fabkit/apps/pack-opener/cards/mock-card";
 import { resolveMockCard } from "@fabkit/apps/pack-opener/cards/mock-card";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
-import type { FabCard } from "@fabkit/shared/data/fab-card-dataset";
-import { getFabCardsByRarity } from "@fabkit/shared/data/fab-card-dataset";
 import type {
 	FabPrinting,
 	FoilTreatment,
@@ -31,40 +29,36 @@ export interface ResolvedCard {
 	treatment: FoilTreatment;
 	imageUrl: string | null;
 	/** The other face's art, for the roughly 500 real printings that are one
-	 * face of a double-faced card, otherwise null. Null for every mock card
-	 * and for the cross-set fallback below, which resolves a card by rarity
-	 * rather than a specific printing and so cannot know about its faces.
-	 * Nothing to do with CARD_BACK_URL, which is the generic Flesh and Blood
-	 * back used as a loading placeholder. */
+	 * face of a double-faced card, otherwise null. Always null for a mock
+	 * card. Nothing to do with CARD_BACK_URL, which is the generic Flesh and
+	 * Blood back used as a loading placeholder. */
 	backImageUrl: string | null;
 	set?: string;
 	pitch: MockPitch | 1 | 2 | 3;
 	cost: number | null;
 	power: number | null;
 	defense: number | null;
-	/** The-fab-cube's TCGplayer product id for this exact printing — null
-	 * for mock cards and for real cards resolved outside their own set (see
-	 * fabDatasetCardResolver below), since a price lookup needs the specific
-	 * printing, not just a card name. Used by the price snapshot (see the
-	 * execution plan, section 4.4) to match a pulled card to a price. */
+	/** The-fab-cube's TCGplayer product id for this exact printing, null for a
+	 * mock card. The dollar price snapshot looks a card up by this plus its
+	 * treatment, because TCGplayer prices each foiling separately. */
 	tcgplayerProductId: string | null;
-	/** The-fab-cube's own id for this exact printing, null in the same two
-	 * cases as tcgplayerProductId above. This is what the euro price
-	 * snapshot is keyed by rather than a TCGplayer id (see
+	/** The-fab-cube's own id for this exact printing. This is what the euro
+	 * price snapshot is keyed by rather than a TCGplayer id (see
 	 * shared/data/fab-prices-cm.ts): Cardmarket is a different marketplace
-	 * with its own product ids, and several sets Cardmarket prices well
-	 * carry no TCGplayer id at all. */
+	 * with its own product ids, and several sets Cardmarket prices well carry
+	 * no TCGplayer id at all. Null for a mock card, and for a card shown in a
+	 * treatment this printing doesn't have, since that printing's euro price
+	 * would be the price of a different card. */
 	printingId: string | null;
 }
 
-export interface CardResolver {
+interface CardResolver {
 	/** `setCode` is the set the pack was actually generated for (see
-	 * stores/pack-opener.ts's `packSetCode`) — omitted by resolvers that
-	 * don't need it (mock, the cross-set fallback below). */
+	 * stores/pack-opener.ts's `packSetCode`) — omitted for the mock config. */
 	resolve(drawn: DrawnCard, setCode?: string): ResolvedCard;
 }
 
-export const mockCardResolver: CardResolver = {
+const mockCardResolver: CardResolver = {
 	resolve(drawn) {
 		const mock = resolveMockCard(drawn);
 		return {
@@ -84,66 +78,14 @@ export const mockCardResolver: CardResolver = {
 	},
 };
 
-/**
- * The dataset has no cards of rarity "token" or "marvel" (see
- * fab-card-dataset.ts) — tokens aren't guessable trivia answers in the
- * source game, and Marvel is a foil treatment layered onto an existing
- * card's own rarity, not a rarity of its own. When a pack slot draws one of
- * those, substitute a real card from a nearby, populated rarity so the pull
- * still shows a genuine card image rather than falling back to mock art.
- *
- * Only fabDatasetCardResolver (the cross-set fallback) needs this: real
- * per-set printings (fabPrintingsCardResolver, below) DO have genuine
- * Token, Marvel and Fabled printings for most modern sets — see the
- * execution plan, section 2.2, "real Marvel, Token and Fabled cards with
- * real art replace it".
- */
-function substituteRarityFor(rarity: CardRarity): CardRarity {
-	if (rarity === "token") return "basic";
-	if (rarity === "marvel") return "legendary";
-	return rarity;
-}
-
-/** Resolves cards from the global, cross-set FAB dataset (see
- * shared/data/fab-card-dataset.ts) — picked deterministically per drawn
- * card id so re-renders don't reshuffle which real card a slot shows. This
- * is the fallback path, used when a real per-set printing genuinely isn't
- * available (see fabPrintingsCardResolver below): it shows a real card, but
- * not necessarily one actually printed in the pack's own set, and it never
- * carries a tcgplayerProductId (a cross-set substitute isn't the specific
- * printing a price would be for). */
-export const fabDatasetCardResolver: CardResolver = {
-	resolve(drawn) {
-		const pool = getFabCardsByRarity(substituteRarityFor(drawn.rarity));
-		if (pool.length === 0) return mockCardResolver.resolve(drawn);
-		const picked = pool[hashToIndex(drawn.id, pool.length)];
-		return toResolvedCardFromFabCard(drawn, picked);
-	},
-};
-
-function toResolvedCardFromFabCard(
-	drawn: DrawnCard,
-	real: FabCard,
-): ResolvedCard {
-	return {
-		id: drawn.id,
-		name: real.name,
-		// Keep the slot's own drawn rarity (not real.rarity) — for the
-		// token/marvel substitute pools, real.rarity is a stand-in pool, but
-		// the pack's odds model and HUD should still reflect what was
-		// actually drawn.
-		rarity: drawn.rarity,
-		treatment: drawn.treatment,
-		imageUrl: real.imageUrl,
-		backImageUrl: null,
-		pitch: real.pitch,
-		cost: real.cost,
-		power: real.power,
-		defense: real.defense,
-		tcgplayerProductId: null,
-		printingId: null,
-	};
-}
+/** Rarities a Cold Foil redraw must never land on. Each has its own published
+ * or estimated rate, and an upgrade on an ordinary slot handing them out on top
+ * of that would quietly raise the odds of a set's best cards. */
+const COLD_REDRAW_EXCLUDED: ReadonlySet<CardRarity> = new Set<CardRarity>([
+	"legendary",
+	"fabled",
+	"marvel",
+]);
 
 /** Every real printing in `setCode` matching what was actually drawn — same
  * exact-match rules tests/pack-opener/pool-viability.test.ts already
@@ -168,7 +110,14 @@ function toResolvedCardFromFabCard(
  * "the real printed card wins" working for Legendary (see
  * resolveTreatment below) — a standard-drawn Legendary in a set that only
  * ever printed Legendaries foil finds no standard match, falls back, and
- * gets correctly promoted to foil. */
+ * gets correctly promoted to foil.
+ *
+ * The Cold Foil upgrade is the exception to that fallback. It targets a slot,
+ * and the slot's rarity often has no cold printing at all: Heavy Hitters
+ * upgrades a Token, but prints no cold Tokens. Falling back there would show a
+ * plain Token with a foil shader, a card that doesn't exist. So an upgrade with
+ * no cold printing at the drawn rarity redraws from the set's real cold
+ * printings instead, leaving how often a pack upgrades untouched. */
 export function selectPrintingPool(
 	printings: FabPrinting[],
 	drawn: DrawnCard,
@@ -184,31 +133,48 @@ export function selectPrintingPool(
 	const sameTreatment = matching.filter(
 		(printing) => printing.foiling === drawn.treatment,
 	);
-	return sameTreatment.length > 0 ? sameTreatment : matching;
+	if (sameTreatment.length > 0) return sameTreatment;
+
+	if (drawn.treatment === "cold" && !COLD_REDRAW_EXCLUDED.has(drawn.rarity)) {
+		const coldRedraw = printings.filter(
+			(printing) =>
+				printing.foiling === "cold" &&
+				!COLD_REDRAW_EXCLUDED.has(printing.rarity),
+		);
+		if (coldRedraw.length > 0) return coldRedraw;
+	}
+	return matching;
 }
 
 function poolForDrawn(setCode: string, drawn: DrawnCard): FabPrinting[] {
 	return selectPrintingPool(getSetPrintings(setCode), drawn);
 }
 
-/** Real per-set data is the tie-breaker between what the odds engine drew
- * and what the set actually printed — see the execution plan, section 3.3.
- * The engine's own draw wins when it deliberately produced a foil (the
- * cold-foil upgrade roll is a pack mechanic, not a property of any one
- * card), but when it drew "standard" and this exact printing was never
- * printed that way, the printing wins instead. In most modern sets every
- * Legendary is foil-only (see set-configs.ts's own per-set counts), so this
- * is the common case in practice for Legendary pulls specifically — a few
- * older sets (History Pack 1, Compendium of Rathe, Bright Lights, and a
- * couple of others) print some Legendaries plain, and those are left alone
- * since the printing's own foiling already agrees with a "standard" draw
- * there. */
+/** Real per-set data is the tie-breaker between what the odds engine drew and
+ * what the set actually printed. The printing wins in three cases:
+ *
+ *  - A Fabled always carries its own foiling. Real ones are Rainbow, Cold or
+ *    both depending on the set, and the premium slot's fixed Rainbow says
+ *    nothing about which: Everfest, Dynasty and Heavy Hitters print only Cold.
+ *  - A "standard" draw of a printing never printed plain. In most modern sets
+ *    every Legendary is foil-only (see set-configs.ts's own per-set counts), so
+ *    this is the common case for Legendary pulls. A few older sets (History
+ *    Pack 1, Compendium of Rathe, Bright Lights, and a couple of others) print
+ *    some Legendaries plain, and those are left alone since the printing's own
+ *    foiling already agrees with a "standard" draw there.
+ *  - A Cold Foil upgrade on a printing with no cold version, which only happens
+ *    when the set had no cold printing to redraw from (see selectPrintingPool).
+ *    Showing it plain beats showing a foil that doesn't exist.
+ *
+ * Otherwise the engine's draw stands: the premium slot's Rainbow is a property
+ * of the slot. */
 export function resolveTreatment(
 	drawn: DrawnCard,
 	printing: FabPrinting,
 ): FoilTreatment {
-	if (drawn.treatment === "standard" && printing.foiling !== "standard") {
-		return printing.foiling;
+	if (drawn.rarity === "fabled") return printing.foiling;
+	if (drawn.treatment === "standard" || drawn.treatment === "cold") {
+		if (printing.foiling !== drawn.treatment) return printing.foiling;
 	}
 	return drawn.treatment;
 }
@@ -218,11 +184,15 @@ function toResolvedCardFromPrinting(
 	printing: FabPrinting,
 	setCode: string,
 ): ResolvedCard {
+	const treatment = resolveTreatment(drawn, printing);
 	return {
 		id: drawn.id,
 		name: printing.name,
-		rarity: drawn.rarity,
-		treatment: resolveTreatment(drawn, printing),
+		// The printing's, not the draw's: a Cold Foil redraw can land on a
+		// different rarity from the slot it upgraded, and the card shown is
+		// what the player should see named.
+		rarity: printing.rarity,
+		treatment,
 		imageUrl: printingImageUrl(printing),
 		backImageUrl: printingBackImageUrl(printing),
 		set: setCode,
@@ -231,22 +201,20 @@ function toResolvedCardFromPrinting(
 		power: printing.power,
 		defense: printing.defense,
 		tcgplayerProductId: printing.tcgplayerProductId,
-		printingId: printing.uniqueId,
+		printingId: treatment === printing.foiling ? printing.uniqueId : null,
 	};
 }
 
 /** Resolves cards from the pulled card's OWN set (see
  * shared/data/fab-printings.ts) — the printing shown genuinely comes from
  * the set on the pack, at that set's own printed rarity, with that set's
- * own art and TCGplayer product id. See the execution plan, sections 2.1-2.2
- * for why this matters: the global dataset can show a card's art from the
- * wrong set entirely.
+ * own art and TCGplayer product id. Picked deterministically per drawn card id
+ * so re-renders don't reshuffle which card a slot shows.
  *
- * Falls back to the cross-set dataset when `setCode` is missing (the mock
- * config) or that set's own pool genuinely has nothing matching (data still
- * loading, or a slot pool-viability hasn't verified — should not happen for
- * a real set's own config, see poolForDrawn's comment). */
-export const fabPrintingsCardResolver: CardResolver = {
+ * Falls back to a mock card when `setCode` is missing (the mock config) or
+ * that set's own pool genuinely has nothing matching (data still loading, or
+ * failed to load). */
+const fabPrintingsCardResolver: CardResolver = {
 	resolve(drawn, setCode) {
 		if (setCode) {
 			const pool = poolForDrawn(setCode, drawn);
@@ -255,11 +223,10 @@ export const fabPrintingsCardResolver: CardResolver = {
 				return toResolvedCardFromPrinting(drawn, picked, setCode);
 			}
 		}
-		return fabDatasetCardResolver.resolve(drawn);
+		return mockCardResolver.resolve(drawn);
 	},
 };
 
-/** Swap point for card content — real per-set printings, with the cross-set
- * dataset and mock/placeholder as graceful fallbacks baked into the
- * resolvers themselves. */
+/** Swap point for card content — real per-set printings, with mock/placeholder
+ * as the graceful fallback baked into the resolver itself. */
 export const activeCardResolver: CardResolver = fabPrintingsCardResolver;

@@ -86,10 +86,10 @@ describe("celebrationTierFor", () => {
 		).toBe("legendary");
 	});
 
-	it("gives fabled the same tier as legendary", () => {
+	it("gives fabled the top tier, being rarer than marvel", () => {
 		expect(
-			celebrationTierFor(card({ rarity: "fabled", treatment: "standard" })),
-		).toBe("legendary");
+			celebrationTierFor(card({ rarity: "fabled", treatment: "cold" })),
+		).toBe("marvel");
 	});
 
 	it("marvel always wins, even over legendary treatment quirks", () => {

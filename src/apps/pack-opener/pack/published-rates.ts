@@ -59,13 +59,13 @@ export const ESTIMATED_MARVEL_CHANCE = 1 / 100;
  * set's single Fabled card the rarest thing it can deal while still
  * making it reachable, which is the point. A set with no Marvel rate of
  * its own gets half of ESTIMATED_MARVEL_CHANCE. */
-export const FABLED_SHARE_OF_MARVEL = 0.5;
+const FABLED_SHARE_OF_MARVEL = 0.5;
 
 /** A set's Fabled chance per pack, from its own Marvel chance. Sets that
- * print no Marvel at all (the five oldest) fall back to the Marvel
- * estimate, so their Fabled still lands at one per 200 packs rather than
- * at zero. The two sets whose boosters contain no Fabled printing pass 0
- * explicitly instead of calling this. */
+ * print no Marvel at all (the oldest ones) fall back to the Marvel estimate,
+ * so their Fabled still lands at one per 200 packs rather than at zero. Sets
+ * whose boosters contain no Fabled printing pass 0 explicitly instead of
+ * calling this. */
 export function fabledChanceFor(marvelChance: number): number {
 	const basis = marvelChance > 0 ? marvelChance : ESTIMATED_MARVEL_CHANCE;
 	return basis * FABLED_SHARE_OF_MARVEL;
@@ -274,10 +274,10 @@ export const PUBLISHED_RATES = {
 	},
 
 	// -----------------------------------------------------------------
-	// Mastery Pack Guardian. The one set here sourced from a product page
-	// rather than a Collectors Centre page, because it has no Collectors
-	// Centre page: LSS states which rarities each slot can hold but never
-	// how often. PUBLISHED configuration, 13 cards a pack:
+	// Mastery Pack Guardian. Sourced from a product page rather than a
+	// Collectors Centre page, because it has no Collectors Centre page: LSS
+	// states which rarities each slot can hold but never how often. PUBLISHED
+	// configuration, 13 cards a pack:
 	//   Common 9 per pack / Rare or Majestic 1 per pack /
 	//   Equipment 1 per pack / Token 1 per pack /
 	//   Token or higher, Rainbow Foil or Cold Foil, 1 per pack
@@ -430,7 +430,7 @@ export const PUBLISHED_RATES = {
 	//   10 Rare (1 per pack)
 	//   3 Puzzles, 9 cards per puzzle (1 per pack)
 	//
-	// THE PUZZLE SLOT IS NOT MODELLED, on Louis's instruction, and it could
+	// THE PUZZLE SLOT IS NOT MODELLED, by product decision, and it could
 	// not be anyway: the 27 puzzle cards do not exist in the upstream card
 	// data under any set code, so there would be nothing to deal. Every
 	// other card above does exist — 1 + 3 + 7 + 17 + 17 + 10 is exactly the

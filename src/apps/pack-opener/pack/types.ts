@@ -33,7 +33,7 @@ export interface RarityWeight {
 	 * printing. LSS doesn't publish which rarity an expansion-slot pull
 	 * tends to land on, so configs that use this pick one representative
 	 * rarity for it rather than modelling the full spread — see each
-	 * config's own comment in odds.ts. */
+	 * config's own comment in pack/set-configs.ts. */
 	expansionSlot?: boolean;
 	/** This entry only matches printings whose card types (see
 	 * shared/data/fab-printings.ts's `types`/`hasType`) include this value
@@ -80,20 +80,19 @@ export interface PackConfig {
 	 * to "fabled" — a set's single rarest card. No set publishes a rate for
 	 * it (every Collectors Centre page prints "1 per ??? packs"), so this is
 	 * derived from the set's Marvel rate; see pack/published-rates.ts's
-	 * FABLED_SHARE_OF_MARVEL. 0 for the two sets whose boosters contain no
-	 * Fabled printing at all.
+	 * FABLED_SHARE_OF_MARVEL. 0 for sets whose boosters contain no Fabled
+	 * printing at all.
 	 *
 	 * Rolled before marvelChance and winning outright when both hit, so the
-	 * two rolls can never both land on one card. Unlike Marvel, a Fabled
-	 * draw keeps the premium slot's own treatment: real Fabled printings are
-	 * Rainbow Foil, Cold Foil, or both depending on the set, so the printing
-	 * decides rather than the engine (see cards/card-resolver.ts's
-	 * resolveTreatment, which already does this for Legendary). */
+	 * two rolls can never both land on one card. Unlike Marvel, the engine
+	 * doesn't decide a Fabled's foiling: real Fabled printings are Rainbow
+	 * Foil, Cold Foil, or both depending on the set, so the printing does (see
+	 * cards/card-resolver.ts's resolveTreatment). */
 	fabledChance: number;
 	/** Chance, applied to the premium slot's draw, that its rarity is bumped
-	 * to "marvel". Only used by sets that don't publish Marvel as its own
-	 * slot entry — most modern sets fold Marvel into a wildcard slot's own
-	 * rarityTable instead (see odds.ts), in which case this is 0. */
+	 * to "marvel". Used by sets that don't carry Marvel as an ordinary slot
+	 * entry — only High Seas and Mastery Pack Warrior table it instead (see
+	 * pack/set-configs.ts), in which case this is 0. */
 	marvelChance: number;
 }
 
@@ -101,10 +100,10 @@ export interface DrawnCard {
 	id: string;
 	slot: PackSlotKind;
 	rarity: CardRarity;
-	/** A printing's foil treatment — see shared/data/fab-printings.ts. Real
-	 * Marvel cards are exclusively printed Cold Foil, so a "marvel" rarity
-	 * draw always carries treatment "cold"; rarity is what actually marks a
-	 * card as Marvel, not the treatment itself. */
+	/** A printing's foil treatment — see shared/data/fab-printings.ts. Marvel
+	 * cards are printed Cold Foil, barring a handful of Rainbow ones in High
+	 * Seas, so a "marvel" rarity draw always carries treatment "cold"; rarity
+	 * is what actually marks a card as Marvel, not the treatment itself. */
 	treatment: FoilTreatment;
 	/** True when this draw should resolve from `rarity`'s expansion-slot
 	 * pool rather than its ordinary pool — see RarityWeight.expansionSlot. */

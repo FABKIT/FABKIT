@@ -2,7 +2,7 @@ import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
 import { expectedRarityCounts } from "@fabkit/apps/pack-opener/stats/session-stats";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 
-export interface PullRateRow {
+interface PullRateRow {
 	rarity: CardRarity;
 	/** Expected cards of this rarity per pack, straight from
 	 * stats/session-stats.ts's expectedRarityCounts — the same number
@@ -14,10 +14,9 @@ export interface PullRateRow {
 }
 
 /** Below this share of the pack, a percentage reads as more precise than it
- * is (see the execution plan, section 1.7) — "0.4%" is harder to reason
- * about than "about 1 in 240 packs" for the genuinely rare stuff. 1 percent
- * of a pack is the threshold Louis asked for. Exported so SetInfoDialog.tsx
- * and this module's own tests agree on the exact same crossover point. */
+ * is — "0.4%" is harder to reason about than "about 1 in 240 packs" for the
+ * genuinely rare stuff. Exported so SetInfoDialog.tsx and this module's own
+ * tests agree on the exact same crossover point. */
 export const PERCENT_DISPLAY_THRESHOLD = 1;
 
 /** Turns a set's own PackConfig into pull-rate rows, ordered most common to
@@ -54,10 +53,12 @@ export function percentOfPack(row: PullRateRow, config: PackConfig): number {
  * Booster Pack". So the app shows the printed count with the token called
  * out beside it, and this is where that split is worked out.
  *
- * Only slots that are ALWAYS a token count. A "token-or-wildcard" slot (the
- * Heavy Hitters family) can land on a real card, so subtracting it would
- * understate the pack. That leaves Heavy Hitters at 15 plus 1 token rather
- * than 14, which is what its wrapper says.
+ * Only slots that are ALWAYS a token count, whatever the slot is called. A
+ * "token-or-wildcard" slot (the Heavy Hitters family) can land on a real card,
+ * so subtracting it would understate the pack, and so can Uprising's and
+ * Outsiders' "token" slots, whose published rate is under one per slot. That
+ * leaves Heavy Hitters at 15 plus 1 token rather than 14, which is what its
+ * wrapper says.
  *
  * Nothing about the odds engine depends on this. cardsPerPack itself stays
  * exactly as fabtcg publishes it, because every pull-rate percentage
@@ -65,6 +66,10 @@ export function percentOfPack(row: PullRateRow, config: PackConfig): number {
  */
 export function guaranteedTokenCount(config: PackConfig): number {
 	return config.slots
-		.filter((slot) => slot.kind === "token")
+		.filter((slot) =>
+			slot.rarityTable.every(
+				(entry) => entry.rarity === "token" || entry.weight === 0,
+			),
+		)
 		.reduce((total, slot) => total + slot.count, 0);
 }

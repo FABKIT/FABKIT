@@ -10,16 +10,10 @@ import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
 
 /**
  * Real per-set pack configs, verified against each set's own official
- * fabtcg.com product page (fetched directly, browser user-agent — see the
- * execution plan's Appendix A.1) and sanity-checked against that set's real
- * printed card population (scripts/build-pack-data.ts's output). Only sets
- * whose official page states a slot structure that sums to a *confirmed*
- * pack size are here — see the execution plan, section 10, for the sets
- * still waiting on a product-owner decision (Outsiders' stated ranges,
- * High Seas' assumed-by-family size, Compendium of Rathe's missing page,
- * and every set whose page gives frequencies instead of slots, which need
- * the section 5.2.1 derivation method plus a calibration test instead of
- * being listed here).
+ * fabtcg.com pages and sanity-checked against that set's real printed card
+ * population (scripts/build-pack-data.ts's output). Where a page gives
+ * frequencies rather than slots, the config is derived from them and held to
+ * those figures by tests/pack-opener/calibration.test.ts.
  *
  * A rarity table's weights are that set's own real per-rarity printing
  * count (see the counts cited in each config's comment) used directly as
@@ -52,10 +46,9 @@ import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
  *
  * A cold-foil rate stated as "1 per display" is converted to 1/24, since
  * every set here confirms (via its own barcode/product-configuration text)
- * that a display is 24 packs — more precise than DEFAULT_COLD_FOIL_CHANCE's
- * general 1/22 community estimate, which is kept only for the mock config.
+ * that a display is 24 packs.
  */
-export const PUBLISHED_COLD_FOIL_CHANCE = COLD_FOIL_PER_DISPLAY;
+const PUBLISHED_COLD_FOIL_CHANCE = COLD_FOIL_PER_DISPLAY;
 
 // ---------------------------------------------------------------------------
 // Everfest (EVR) — 10 cards. fabtcg.com/products/booster-set/everfest/
@@ -63,9 +56,9 @@ export const PUBLISHED_COLD_FOIL_CHANCE = COLD_FOIL_PER_DISPLAY;
 // (Rainbow Foil or Cold Foil); Rare or higher - 2 per pack (1 Rare/
 // Majestic/Legendary); Common - 7 per pack." Sum: 1 + 2 + 7 = 10.
 // Real population (non-expansion-slot, distinct cards): rare 61, majestic
-// 45, legendary 3. No Basic, Token, Marvel, or Fabled printings exist in
-// this set at all, so none of those are reachable here — marvelChance is 0
-// to match (a nonzero value would draw from an empty pool).
+// 45, legendary 3, plus one Cold Foil Fabled. No Basic, Token or Marvel
+// printings exist in this set at all, so none of those are reachable here —
+// marvelChance is 0 to match (a nonzero value would draw from an empty pool).
 // ---------------------------------------------------------------------------
 // Rates from https://fabtcg.com/collectors-centre/everfest/ :
 //   1 Fabled (1 per ??? packs) / 3 Legendary (1 per 160 packs) /
@@ -79,7 +72,8 @@ export const PUBLISHED_COLD_FOIL_CHANCE = COLD_FOIL_PER_DISPLAY;
 // Majestic 1 per 4 and Legendary 1 per 160 between them. Weights below are
 // those rates halved over a denominator of 2000 draws, with Common taking
 // up the small slack the published rounding leaves.
-// Fabled is omitted: its rate is printed "1 per ??? packs".
+// Fabled's rate is printed "1 per ??? packs", so it takes the estimate from
+// fabledChanceFor below rather than a table entry.
 const evrRareOrHigherTable = slotTable(
 	"Everfest's two Rare-or-higher slots",
 	[
@@ -115,7 +109,7 @@ const EVERFEST: PackConfig = {
 	// premium slot directly, which the engine handles regardless of that
 	// slot's existing fixedTreatment (see generate-pack.ts).
 	// Published as "Cold Foil (1 per 16 packs)" on this set's Collectors
-	// Centre page: the one set here that is not the 1-per-display 1/24.
+	// Centre page, rather than the 1-per-display 1/24 most sets carry.
 	coldFoilChance: PUBLISHED_RATES.EVR.coldFoil,
 	coldFoilReplaces: "premium-foil",
 	marvelChance: 0,
@@ -143,12 +137,10 @@ const EVERFEST: PackConfig = {
 // set's Rare and Majestic pulls on its own; giving the separate Premium
 // Foil slot the same weighted table on top would double-count them (this
 // is exactly the bug the Welcome to Rathe/Crucible of War/Monarch/Tales
-// of Aria configs' calibration tests caught — see set-configs.ts's WTR
-// comment). There's no published aggregate rate for this set to calibrate
-// against, but the same reasoning still applies: Premium Foil is modelled
-// as Common-primary instead, keeping only a population-weighted sliver of
-// Legendary so that rarity stays reachable (it has no other channel in
-// this set, unlike sets with a dedicated wildcard/Equipment slot).
+// of Aria configs' calibration tests caught — see this file's WTR comment).
+// Premium Foil is modelled as Common-primary instead, with Legendary as its
+// only other entry, since that rarity has no other channel in this set,
+// unlike sets with a dedicated wildcard/Equipment slot.
 // ---------------------------------------------------------------------------
 // Rates from https://fabtcg.com/collectors-centre/uprising/ :
 //   1 Fabled (1 per ??? packs) /
@@ -158,10 +150,9 @@ const EVERFEST: PackConfig = {
 //   Premium Foil (1 per pack) / Cold Foil (1 per 24 packs) /
 //   Marvel (1 per ??? packs)
 // Sum: 15.77, i.e. the 16-card pack. Rare 1.75 is one guaranteed Rare plus
-// 0.75 from the pair's second half; Majestic 1 per 4 is the rest of it,
-// split 4:1 with the expansion-slot entry. Legendary keeps its premium-slot
-// channel but now at the published Rainbow Foil rate of 1 per 80 rather
-// than a population sliver. The two token slots share the published 1.75,
+// 0.75 from the pair's second half; Majestic 1 per 4 is the rest of it.
+// Legendary keeps its premium-slot channel at the published Rainbow Foil
+// rate of 1 per 80. The two token slots share the published 1.75,
 // so each lands on a token 87.5% of the time.
 // Unlike the later sets, this one prints no expansion-slot Majestic at
 // all in the-fab-cube's data (tests/pack-opener/pool-viability.test.ts
@@ -219,15 +210,15 @@ const UPRISING: PackConfig = {
 // Dynasty (DYN) — 10 cards. fabtcg.com/products/booster-set/dynasty/
 // "A booster pack contains 10 cards, being: Premium Foil - 1 per pack;
 // Rare or higher - 2 per pack (1 Rare + 1 Rare/Majestic); Common - 7 per
-// pack." Sum: 1 + 2 + 7 = 10. No Cold Foil line at all on this page —
-// coldFoilChance is 0 to match (nothing published, unlike every other set
-// here).
+// pack." Sum: 1 + 2 + 7 = 10. This product page has no Cold Foil line, but
+// the Collectors Centre page below does, at 1 per 24, which is what
+// coldFoilChance carries.
 // Real population: rare 81, majestic 51, legendary 5, marvel 14. Legendary
 // folded into the premium slot; Marvel applied via marvelChance there too
 // (page is silent on both, same reasoning as Uprising above).
-// Premium Foil modelled as Common-primary with a population-weighted
-// sliver of Legendary, not a reuse of the named pair's own table — same
-// double-counting fix as Uprising above.
+// Premium Foil modelled as Common-primary with Legendary as its only other
+// entry, not a reuse of the named pair's own table — same double-counting
+// fix as Uprising above.
 // ---------------------------------------------------------------------------
 // Rates from https://fabtcg.com/collectors-centre/dynasty/ :
 //   1 Fabled (1 per ??? packs) / 14 Marvel (1 per ??? packs) /
@@ -400,9 +391,9 @@ const DUSK_TILL_DAWN: PackConfig = {
 
 /** The Premium Foil slot's published rarity table, shared by all four sets
  * because all four publish exactly the same one: 1/96, 1/18, 5/24, 18/24
- * over a common denominator of 1440 packs. Fabled is omitted — every page
- * prints "1 per ??? packs" for it, and an invented rate is worse than an
- * unpullable card. */
+ * over a common denominator of 1440 packs. Every page prints "1 per ??? packs"
+ * for Fabled, so it isn't in this table: fabledChanceFor rolls it separately,
+ * at an openly flagged estimate. */
 const hvyFamilyPremiumTable = slotTable(
 	"the Heavy Hitters family's Premium Foil slot",
 	[
@@ -517,7 +508,7 @@ const THE_HUNTED = buildHvyFamilyConfig(
 // Majestic); Common - 11 per pack; Basic / Expansion Slot / Legendary /
 // Marvel - 1 per pack. Sum: 11 + 2 + 1 (separate Rainbow Foil card) + 1 =
 // 15 — unlike the family above, this only reaches 15 if Rainbow Foil is
-// its own card (matches the plan's own sum check for this set too).
+// its own card.
 // Real population: rare 40, superrare 40, majestic 14, legendary 2, basic
 // 9, marvel 8 (marvel/legendary counts exclude their own expansion-slot
 // printings, consistent with every other config here).
@@ -542,10 +533,12 @@ const THE_HUNTED = buildHvyFamilyConfig(
 // Seas below. Legendary is published there and nowhere else, so it is
 // drawn there and only there, at 1 per 94.
 //
-// Set and Expansion content (0.125 + 0.167 a pack) is expansion-slot
-// printings, modelled at Majestic rarity per pack/types.ts. It is split
-// between the Rare-or-higher slot and the wildcard; both published rates
-// are honoured in total.
+// Both Set and Expansion content (0.125 + 0.167 a pack) are Majestic rarity.
+// "Set" means the set's own core Majestics, so those are ordinary printings;
+// the 14 here is exactly how many plain, non-expansion-slot Majestics this set
+// prints. "Expansion" is its expansion-slot printings. They are split between
+// the Rare-or-higher slot and the wildcard; both published rates are honoured
+// in total.
 //
 // This set's base Majestic has no published rate at all, only the premium
 // slot's 1 per 22. The gap is filled from OBSERVED data rather than a
@@ -561,11 +554,7 @@ const supRareOrHigherTable = slotTable(
 		{ rarity: "superrare", perPack: PUBLISHED_RATES.SUP.superRare },
 		// The published "Set" content, as distinct from the "Expansion"
 		// content, which rides in the wildcard slot below.
-		{
-			rarity: "majestic",
-			perPack: PUBLISHED_RATES.SUP.set,
-			expansionSlot: true,
-		},
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.SUP.set },
 	],
 	"rare",
 );
@@ -662,8 +651,8 @@ const SUPER_SLAM: PackConfig = {
 // pack.
 //
 // This set publishes no standalone Majestic rate: its Majestics are Set
-// and Expansion content, both of which DO have rates, so its whole base
-// Majestic figure is expansion-slot content (same shape as Super Slam).
+// and Expansion content, both of which DO have rates (same shape as Super
+// Slam: Set is the core Majestics, Expansion the expansion-slot printings).
 // Those two rates total 0.268 a pack, which is more than the one
 // Rare-or-Majestic slot can carry alongside 0.88 Rare, so the remainder
 // rides in the Basic wildcard - which is where this set's own page says
@@ -676,11 +665,7 @@ const omnRareOrMajesticTable = slotTable(
 	"Omens of the Third Age's Rare-or-Majestic slot",
 	[
 		// The published "Set" content; "Expansion" rides in the wildcard.
-		{
-			rarity: "majestic",
-			perPack: PUBLISHED_RATES.OMN.set,
-			expansionSlot: true,
-		},
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.OMN.set },
 	],
 	"rare",
 );
@@ -782,11 +767,7 @@ const iarRareOrMajesticTable = slotTable(
 	[
 		// The published (borrowed) "Set" content; "Expansion" rides in the
 		// wildcard, same split as Omens above.
-		{
-			rarity: "majestic",
-			perPack: PUBLISHED_RATES.IAR.set,
-			expansionSlot: true,
-		},
+		{ rarity: "majestic", perPack: PUBLISHED_RATES.IAR.set },
 	],
 	"rare",
 );
@@ -1354,8 +1335,8 @@ const BRIGHT_LIGHTS: PackConfig = {
 // Base Rare lands at 1.80 against a published 1.83, because Majestic has
 // to come out of the same two rare-or-higher slots. 2% under, left alone.
 //
-// Fabled is deliberately absent: both blocks print "1 per ??? packs" for
-// it, and an invented rate is worse than an unpullable card.
+// Both blocks print "1 per ??? packs" for Fabled, so it isn't in a table:
+// fabledChanceFor rolls it separately, at an openly flagged estimate.
 // ---------------------------------------------------------------------------
 const seaRareOrMajesticTable = slotTable(
 	"High Seas' Rare-or-Majestic slot",

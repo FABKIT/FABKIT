@@ -1,20 +1,22 @@
-import {
-	DEFAULT_COLD_FOIL_CHANCE,
-	DEFAULT_MARVEL_CHANCE,
-} from "@fabkit/apps/pack-opener/pack/rates";
 import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
 import type {
 	PackConfig,
 	PackSlotSpec,
 } from "@fabkit/apps/pack-opener/pack/types";
 
-export { DEFAULT_COLD_FOIL_CHANCE, DEFAULT_MARVEL_CHANCE };
+const CARDS_PER_PACK = 16;
+const COMMON_SLOT_COUNT = 12;
+const RARE_SLOT_COUNT = 1;
+const PREMIUM_SLOT_COUNT = 1;
+const BASIC_SLOT_COUNT = 2;
 
-export const CARDS_PER_PACK = 16;
-export const COMMON_SLOT_COUNT = 12;
-export const RARE_SLOT_COUNT = 1;
-export const PREMIUM_SLOT_COUNT = 1;
-export const BASIC_SLOT_COUNT = 2;
+/** Placeholder for the mock config only, close to the 1 per 24 that most real
+ * sets publish. Real sets state their own rate in pack/published-rates.ts. */
+const MOCK_COLD_FOIL_CHANCE = 1 / 22;
+
+/** Placeholder for the mock config only. Real sets state their own rate, or an
+ * openly flagged estimate, in pack/published-rates.ts. */
+const MOCK_MARVEL_CHANCE = 1 / 2000;
 
 const commonSlot: PackSlotSpec = {
 	kind: "common",
@@ -35,8 +37,7 @@ const guaranteedRareSlot: PackSlotSpec = {
 const premiumFoilSlot: PackSlotSpec = {
 	kind: "premium-foil",
 	count: PREMIUM_SLOT_COUNT,
-	// Real sets' guaranteed foil slot is Rainbow Foil (see the execution
-	// plan's per-set pull rate research) — matched here for the mock config.
+	// Matches real sets, whose guaranteed foil slot is Rainbow Foil.
 	fixedTreatment: "rainbow",
 	rarityTable: [
 		{ rarity: "rare", weight: 70 },
@@ -59,20 +60,22 @@ export const DEFAULT_PACK_CONFIG: PackConfig = {
 	id: "default-mock-set",
 	cardsPerPack: CARDS_PER_PACK,
 	slots: [commonSlot, guaranteedRareSlot, premiumFoilSlot, basicOrTokenSlot],
-	coldFoilChance: DEFAULT_COLD_FOIL_CHANCE,
+	coldFoilChance: MOCK_COLD_FOIL_CHANCE,
 	coldFoilReplaces: "basic-or-token",
-	marvelChance: DEFAULT_MARVEL_CHANCE,
+	marvelChance: MOCK_MARVEL_CHANCE,
 	// The mock config's pool is drawn, not real, and has no Fabled card
 	// to resolve to.
 	fabledChance: 0,
 };
 
-export const PackConfigsBySet: Record<string, PackConfig> = {
+const PACK_CONFIGS_BY_SET: Record<string, PackConfig> = {
 	[DEFAULT_PACK_CONFIG.id]: DEFAULT_PACK_CONFIG,
 	...REAL_SET_PACK_CONFIGS,
 };
 
 export function getPackConfig(setCode?: string): PackConfig {
-	if (setCode && PackConfigsBySet[setCode]) return PackConfigsBySet[setCode];
+	if (setCode && PACK_CONFIGS_BY_SET[setCode]) {
+		return PACK_CONFIGS_BY_SET[setCode];
+	}
 	return DEFAULT_PACK_CONFIG;
 }

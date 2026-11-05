@@ -7,30 +7,16 @@ import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
  * time by scripts/build-pack-data.ts into one slim JSON file per set
  * (public/data/pack-opener/sets/<CODE>.json).
  *
- * This module is deliberately separate from fab-card-dataset.ts, which
- * Fabble also consumes and which this file must not touch (see that file's
- * own comment). The two datasets solve different problems:
- *
- * - fab-card-dataset.ts: one rarity/image per card, no per-set fidelity.
- *   Good enough for Fabble's trivia use case.
- * - fab-printings.ts (this file): every *printing* of a card is its own
- *   row, because a card's rarity and available foil treatments can differ
- *   between sets, and only per-set fidelity lets a "Part the Mistveil pack"
- *   actually only ever show Part the Mistveil cards at Part the Mistveil's
- *   own printed rarities. See the execution plan, section 2.1-2.2, for the
- *   full reasoning.
- *
- * pack-opener's own card-resolver.ts (cards/card-resolver.ts) is what
- * switches over to this module — that swap, plus the rest of the odds
- * engine work, is a later commit. This file is pure data plumbing with no
- * app dependents yet.
+ * Every *printing* of a card is its own row, because a card's rarity and
+ * available foil treatments can differ between sets, and only per-set fidelity
+ * lets a "Part the Mistveil pack" actually only ever show Part the Mistveil
+ * cards at Part the Mistveil's own printed rarities.
  */
 
 /**
- * A printing's foil treatment, as printed. Distinct from
- * `pack/types.ts`'s DrawnCard.foil/marvel booleans (a property of what got
- * *drawn*, wired up in a later commit) — this is a property of the
- * printing itself, independent of any pack simulation.
+ * A printing's foil treatment, as printed. pack/types.ts's DrawnCard carries
+ * the same type for what got *drawn*; here it is a property of the printing
+ * itself, independent of any pack simulation.
  */
 export type FoilTreatment = "standard" | "rainbow" | "cold" | "gold-cold";
 
@@ -42,10 +28,8 @@ export interface FabPrinting {
 	 * an image URL from for every printing. */
 	id: string;
 	/** This printing's true identity (the-fab-cube's own unique_id) — unlike
-	 * `id`, never shared with another printing. Not currently used for
-	 * anything but documenting the distinction; kept for whenever a future
-	 * feature (Marvel front/back, see the execution plan's "Deferred"
-	 * section) needs to address one exact printing. */
+	 * `id`, never shared with another printing. The euro price snapshot is
+	 * keyed by it (see fab-prices-cm.ts). */
 	uniqueId: string;
 	name: string;
 	rarity: CardRarity;
@@ -108,9 +92,7 @@ export interface FabSetPrintings {
  * for a Marvel pull too. Marvel printings instead use `artSlug`, the real
  * artwork filename the upstream data actually carries for them (verified
  * live: content.fabrary.net serves a genuinely distinct image at that slug
- * for the large majority of Marvel printings — see the execution plan,
- * section 3.2, for the small number of exceptions and why they're not worth
- * chasing).
+ * for the large majority of Marvel printings).
  *
  * This is deliberately scoped to Marvel ONLY, not "any printing whose
  * artSlug differs from its id" — a great many non-Marvel printings also
@@ -118,8 +100,7 @@ export interface FabSetPrintings {
  * artifacts, and critically, real Rainbow/Cold Foil artwork with the foil
  * effect already baked into the image, which would double up with this
  * app's own foil shader). Using artSlug for those would be a real
- * regression, not an improvement — see the plan's own extensive comment on
- * this exact trap.
+ * regression, not an improvement.
  */
 export function printingImageUrl(printing: FabPrinting): string {
 	const isMarvel = printing.rarity === "marvel";
@@ -142,10 +123,10 @@ function cardArtUrl(slug: string): string {
 const setCache = new Map<string, FabSetPrintings>();
 const loadPromises = new Map<string, Promise<FabSetPrintings>>();
 
-/** Fetches and caches one set's printing data (lazy, per set — see the
- * plan's size note: 33-58 KB per set, only the selected set is ever
- * loaded). Safe to call more than once for the same set code; subsequent
- * calls reuse the same in-flight/settled promise. */
+/** Fetches and caches one set's printing data (lazy, per set, so only the
+ * selected set is ever loaded). Safe to call more than once for the same set
+ * code: concurrent calls share one in-flight request, later ones reuse the
+ * cached result, and a failure isn't cached, so the next call retries. */
 export function loadSetPrintings(setCode: string): Promise<FabSetPrintings> {
 	const cached = setCache.get(setCode);
 	if (cached) return Promise.resolve(cached);
@@ -164,8 +145,10 @@ export function loadSetPrintings(setCode: string): Promise<FabSetPrintings> {
 		})
 		.then((data) => {
 			setCache.set(setCode, data);
-			loadPromises.delete(setCode);
 			return data;
+		})
+		.finally(() => {
+			loadPromises.delete(setCode);
 		});
 
 	loadPromises.set(setCode, promise);
@@ -176,27 +159,6 @@ export function loadSetPrintings(setCode: string): Promise<FabSetPrintings> {
  * for that set has resolved. */
 export function getSetPrintings(setCode: string): FabPrinting[] {
 	return setCache.get(setCode)?.printings ?? [];
-}
-
-/** Printings of a given rarity within a set, excluding expansion-slot
- * printings unless asked for — expansion slot cards are a distinct pull,
- * not part of a rarity's normal pool (see the plan, section 5.2). */
-export function getSetPrintingsByRarity(
-	setCode: string,
-	rarity: CardRarity,
-	options: { includeExpansionSlot?: boolean } = {},
-): FabPrinting[] {
-	const includeExpansionSlot = options.includeExpansionSlot ?? false;
-	return getSetPrintings(setCode).filter(
-		(printing) =>
-			printing.rarity === rarity &&
-			(includeExpansionSlot || !printing.expansionSlot),
-	);
-}
-
-/** Expansion-slot printings within a set, regardless of rarity. */
-export function getSetExpansionSlotPrintings(setCode: string): FabPrinting[] {
-	return getSetPrintings(setCode).filter((printing) => printing.expansionSlot);
 }
 
 const CLASS_TYPE_NAMES = new Set(
@@ -245,21 +207,18 @@ export interface SetIndexEntry {
 	productKind: "booster-set" | "supplemental";
 	/** URLs of this set's uploaded 3D pack-front artwork
 	 * (public/img/pack-opener/packs/<CODE>/1.webp, 2.webp, ...), in upload
-	 * order — see the execution plan, section 7.1. Empty until the product
-	 * owner uploads at least one; PackMesh.tsx falls back to the mock
-	 * canvas-drawn pack when this is empty (see the plan's section 8.6
-	 * degradation ladder — the composited-logo fallback described there
-	 * needs a template asset that doesn't exist yet, so this is currently
-	 * a two-rung ladder, not three). */
+	 * order. PackMesh.tsx falls back to the mock canvas-drawn pack when this is
+	 * empty. */
 	packArt: string[];
 }
 
 let setIndexCache: SetIndexEntry[] | null = null;
 let setIndexPromise: Promise<SetIndexEntry[]> | null = null;
 
-/** Fetches and caches the set list (sorted by release date — see the build
- * script). Safe to call more than once; subsequent calls reuse the same
- * in-flight/settled promise, same pattern as loadSetPrintings above. */
+/** Fetches and caches the set list: booster sets by release date, then
+ * supplemental products by name (see the build script's index sort), so the
+ * last entry is not necessarily the newest set. Same caching and retry
+ * behaviour as loadSetPrintings above. */
 export function loadSetIndex(): Promise<SetIndexEntry[]> {
 	if (setIndexCache) return Promise.resolve(setIndexCache);
 	if (setIndexPromise) return setIndexPromise;
@@ -273,8 +232,10 @@ export function loadSetIndex(): Promise<SetIndexEntry[]> {
 		})
 		.then((data) => {
 			setIndexCache = data.sets;
-			setIndexPromise = null;
 			return data.sets;
+		})
+		.finally(() => {
+			setIndexPromise = null;
 		});
 
 	setIndexPromise = promise;

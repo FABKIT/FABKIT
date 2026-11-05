@@ -10,14 +10,13 @@ import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
  * SessionStatsDialog.tsx, same as PackSummary.tsx already does for prices).
  * Kept deliberately this shape, not a random session id or a full
  * ResolvedCard list, so promoting this to persistent per-device history
- * later (see the execution plan, section 9) is "persist this array", not a
- * redesign. */
+ * later is "persist this array", not a redesign. */
 export interface OpenedPackRecord {
 	setCode: string;
 	cards: DrawnCard[];
 }
 
-export interface RarityStat {
+interface RarityStat {
 	rarity: CardRarity;
 	pulled: number;
 	/** Percentage of this set's pulled cards that were this rarity. */
@@ -30,14 +29,14 @@ export interface RarityStat {
 	expectedPercent: number | null;
 }
 
-export interface SetSessionStats {
+interface SetSessionStats {
 	setCode: string;
 	packsOpened: number;
 	totalCards: number;
 	rarities: RarityStat[];
 }
 
-export interface SessionStats {
+interface SessionStats {
 	totalPacksOpened: number;
 	bySet: SetSessionStats[];
 }
@@ -95,8 +94,7 @@ export function expectedRarityCounts(
 }
 
 /** Aggregates a session's opened packs into per-set stats — pure, no
- * card-resolution or price lookups, so it's trivially testable and, per the
- * execution plan section 4.5's "designed for, not built", trivially
+ * card-resolution or price lookups, so it's trivially testable and trivially
  * promotable to run over a persisted list later instead of an in-memory
  * one. `configFor` is injected rather than imported directly so this stays
  * a pure function of its inputs (matches getPackConfig's own signature). */

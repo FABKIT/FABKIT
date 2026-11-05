@@ -24,7 +24,7 @@
  * for the matching rules and for which cards deliberately go unpriced.
  */
 
-export interface SetCardmarketSnapshot {
+interface SetCardmarketSnapshot {
 	/** ISO timestamp of the build that fetched this, shown wherever a euro
 	 * price is, so a price is never presented as more current than it is. */
 	capturedAt: string;
@@ -44,11 +44,11 @@ export interface SetCardmarketSnapshot {
 const priceCache = new Map<string, SetCardmarketSnapshot>();
 const loadPromises = new Map<string, Promise<SetCardmarketSnapshot>>();
 
-/** Fetches and caches one set's euro snapshot — same in-flight/settled
- * promise reuse as fab-prices.ts's loadSetPrices, and the same contract on
- * failure: every caller treats a rejection as "no euro prices available"
- * and shows a neutral dash, never a zero and never a dollar figure wearing
- * a euro sign. */
+/** Fetches and caches one set's euro snapshot — same caching and retry
+ * behaviour as fab-prices.ts's loadSetPrices, and the same contract on failure:
+ * every caller treats a rejection as "no euro prices available" and shows a
+ * neutral "no price" state, never a zero and never a dollar figure wearing a
+ * euro sign. */
 export function loadSetCardmarketPrices(
 	setCode: string,
 ): Promise<SetCardmarketSnapshot> {
@@ -69,8 +69,10 @@ export function loadSetCardmarketPrices(
 		})
 		.then((data) => {
 			priceCache.set(setCode, data);
-			loadPromises.delete(setCode);
 			return data;
+		})
+		.finally(() => {
+			loadPromises.delete(setCode);
 		});
 
 	loadPromises.set(setCode, promise);
@@ -86,9 +88,9 @@ export function getSetCardmarketPrices(
 }
 
 /** A pulled card's Cardmarket price in euros, or null when unavailable for
- * any reason: the snapshot is not loaded yet, the card came from the
- * cross-set fallback resolver and so has no specific printing, or
- * Cardmarket's own listing for it could not be matched without guessing. */
+ * any reason: the snapshot is not loaded yet, the card is a mock card or is
+ * shown in a treatment its printing doesn't have, or Cardmarket's own listing
+ * for it could not be matched without guessing. */
 export function getCardEuroPrice(
 	setCode: string,
 	printingId: string | null,

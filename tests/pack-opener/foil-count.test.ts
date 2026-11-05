@@ -13,6 +13,7 @@ import type {
 	FabPrinting,
 	FabSetPrintings,
 } from "../../src/shared/data/fab-printings";
+import { hasPackData } from "./pack-data";
 
 const DATA_DIR = join(process.cwd(), "public", "data", "pack-opener", "sets");
 
@@ -77,6 +78,32 @@ describe("selectPrintingPool", () => {
 		expect(pool.map((p) => p.id)).toEqual(["B"]);
 	});
 
+	it("redraws a Cold Foil upgrade from the set's cold printings when the slot's rarity has none", () => {
+		const pool = selectPrintingPool(
+			[
+				printing({ id: "T", rarity: "token", foiling: "standard" }),
+				printing({ id: "C", rarity: "common", foiling: "cold" }),
+				printing({ id: "L", rarity: "legendary", foiling: "cold" }),
+				printing({ id: "F", rarity: "fabled", foiling: "cold" }),
+				printing({ id: "V", rarity: "marvel", foiling: "cold" }),
+			],
+			drawn({ rarity: "token", treatment: "cold" }),
+		);
+		// Never the chase cards, which have rates of their own.
+		expect(pool.map((p) => p.id)).toEqual(["C"]);
+	});
+
+	it("keeps a Cold Foil upgrade on its own rarity when a cold printing exists there", () => {
+		const pool = selectPrintingPool(
+			[
+				printing({ id: "T", rarity: "token", foiling: "cold" }),
+				printing({ id: "C", rarity: "common", foiling: "cold" }),
+			],
+			drawn({ rarity: "token", treatment: "cold" }),
+		);
+		expect(pool.map((p) => p.id)).toEqual(["T"]);
+	});
+
 	it("falls back to every match when the set never printed that rarity plain — the Legendary case", () => {
 		const printings = [
 			printing({ id: "L1", rarity: "legendary", foiling: "rainbow" }),
@@ -106,30 +133,33 @@ describe("selectPrintingPool", () => {
  * preferred a matching foiling, roughly half of every pack's commons
  * resolved onto foil printings and got promoted — 6 to 8 foils a pack.
  */
-describe("foils per generated pack, against real set data", () => {
-	const PACKS = 300;
+describe.skipIf(!hasPackData())(
+	"foils per generated pack, against real set data",
+	() => {
+		const PACKS = 300;
 
-	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
-		it(`${code} averages about one foil per pack`, () => {
-			const printings = loadPrintings(code);
-			let total = 0;
-			let worst = 0;
+		for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
+			it(`${code} averages about one foil per pack`, () => {
+				const printings = loadPrintings(code);
+				let total = 0;
+				let worst = 0;
 
-			for (let i = 0; i < PACKS; i++) {
-				let foils = 0;
-				for (const card of generatePack(config)) {
-					const pool = selectPrintingPool(printings, card);
-					if (pool.length === 0) continue;
-					const picked = pool[hashToIndex(card.id, pool.length)];
-					if (resolveTreatment(card, picked) !== "standard") foils += 1;
+				for (let i = 0; i < PACKS; i++) {
+					let foils = 0;
+					for (const card of generatePack(config)) {
+						const pool = selectPrintingPool(printings, card);
+						if (pool.length === 0) continue;
+						const picked = pool[hashToIndex(card.id, pool.length)];
+						if (resolveTreatment(card, picked) !== "standard") foils += 1;
+					}
+					total += foils;
+					worst = Math.max(worst, foils);
 				}
-				total += foils;
-				worst = Math.max(worst, foils);
-			}
 
-			const average = total / PACKS;
-			expect(average).toBeLessThanOrEqual(2.5);
-			expect(worst).toBeLessThanOrEqual(4);
-		});
-	}
-});
+				const average = total / PACKS;
+				expect(average).toBeLessThanOrEqual(2.5);
+				expect(worst).toBeLessThanOrEqual(4);
+			});
+		}
+	},
+);

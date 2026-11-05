@@ -5,9 +5,7 @@ import { mulberry32 } from "../../src/apps/pack-opener/pack/rng";
 import { usePackOpenerStore } from "../../src/apps/pack-opener/stores/pack-opener";
 
 /**
- * Louis's decision (see the execution plan, section "Louis's decisions
- * already made"): switching sets mid-pack is allowed, but the abandoned
- * pack is discarded and must NEVER be recorded into session stats — stats
+ * Switching sets mid-pack is allowed, but the abandoned pack is discarded and must NEVER be recorded into session stats — stats
  * exist to show value the player actually pulled, so counting cards they
  * never saw would be misleading. SetCarousel.tsx gates this behind
  * LeavePackDialog before ever calling selectSet(); this test covers the

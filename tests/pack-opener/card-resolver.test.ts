@@ -36,11 +36,9 @@ function printing(overrides: Partial<FabPrinting>): FabPrinting {
 }
 
 /**
- * Louis's decision (see the execution plan): the real printed card wins
- * over the odds engine's own draw, but only in the direction of "this
- * printing was never plain, so don't show it as plain" — never the other
- * way around, since a pack-level upgrade (the cold-foil roll) is a
- * mechanic of the pack, not a property of any one card.
+ * The real printed card wins over the odds engine's own draw wherever the
+ * draw would otherwise show a version that doesn't exist: never plain if the
+ * printing was never plain, and never Cold Foil if it has no cold version.
  */
 describe("resolveTreatment", () => {
 	it("adopts the printing's foiling when the draw was standard but the printing never was", () => {
@@ -61,21 +59,37 @@ describe("resolveTreatment", () => {
 		).toBe("standard");
 	});
 
-	it("never overrides a non-standard draw, even if the printing disagrees", () => {
-		// The cold-foil upgrade roll is a pack mechanic (see
-		// generate-pack.ts's coldFoilChance) — it must win regardless of
-		// what this specific printing happens to be.
-		expect(
-			resolveTreatment(
-				drawn({ treatment: "cold" }),
-				printing({ foiling: "rainbow" }),
-			),
-		).toBe("cold");
+	it("keeps the premium slot's Rainbow, which is a property of the slot", () => {
 		expect(
 			resolveTreatment(
 				drawn({ treatment: "rainbow" }),
 				printing({ foiling: "standard" }),
 			),
 		).toBe("rainbow");
+	});
+
+	it("never shows Cold Foil on a printing with no cold version", () => {
+		expect(
+			resolveTreatment(
+				drawn({ treatment: "cold" }),
+				printing({ foiling: "standard" }),
+			),
+		).toBe("standard");
+		expect(
+			resolveTreatment(
+				drawn({ treatment: "cold" }),
+				printing({ foiling: "cold" }),
+			),
+		).toBe("cold");
+	});
+
+	it("lets a Fabled's own printing decide, whatever the premium slot says", () => {
+		// Everfest, Dynasty and Heavy Hitters print only a Cold Foil Fabled.
+		expect(
+			resolveTreatment(
+				drawn({ rarity: "fabled", treatment: "rainbow" }),
+				printing({ rarity: "fabled", foiling: "cold" }),
+			),
+		).toBe("cold");
 	});
 });

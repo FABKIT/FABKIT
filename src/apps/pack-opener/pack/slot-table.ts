@@ -6,7 +6,7 @@ import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
  * is 1 per 390 packs) and keeps the rounding error invisible. */
 const WEIGHT_SCALE = 1_000_000;
 
-export interface SlotRate extends Omit<RarityWeight, "weight"> {
+interface SlotRate extends Omit<RarityWeight, "weight"> {
 	/** How many cards of this rarity the whole slot yields per pack. A
 	 * slot with `count: 2` splits this across its two draws, so pass the
 	 * published per-pack figure and let the helper do the division. */

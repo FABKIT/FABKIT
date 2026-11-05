@@ -23,7 +23,7 @@ describe("guaranteedTokenCount", () => {
 	it("subtracts the single token slot for Welcome to Rathe", () => {
 		const config = REAL_SET_PACK_CONFIGS.WTR;
 		expect(guaranteedTokenCount(config)).toBe(1);
-		// The number actually printed on the pack Louis uploaded.
+		// The number actually printed on the pack's wrapper.
 		expect(config.cardsPerPack - guaranteedTokenCount(config)).toBe(15);
 	});
 
@@ -37,6 +37,16 @@ describe("guaranteedTokenCount", () => {
 		);
 		expect(guaranteedTokenCount(config)).toBe(1);
 		expect(config.cardsPerPack - guaranteedTokenCount(config)).toBe(15);
+	});
+
+	it("does not count a token slot that can land on another rarity", () => {
+		// Uprising and Outsiders call both slots "token", but their published
+		// rate is under one per slot, so either can come up a Common.
+		for (const code of ["UPR", "OUT"]) {
+			const config = REAL_SET_PACK_CONFIGS[code];
+			expect(config.slots.some((slot) => slot.kind === "token")).toBe(true);
+			expect(guaranteedTokenCount(config)).toBe(0);
+		}
 	});
 
 	it("never subtracts more cards than a pack has", () => {

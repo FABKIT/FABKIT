@@ -18,7 +18,8 @@ function weightedPick(table: RarityWeight[], rng: () => number): RarityWeight {
 
 /** Generates one booster pack's worth of drawn cards from a PackConfig.
  * Always returns exactly `config.cardsPerPack` cards. Pass a seeded rng
- * (see pack/rng.ts) for deterministic output in tests. */
+ * (see pack/rng.ts) for deterministic rarities and treatments in tests; each
+ * card's id is a uuid regardless. */
 export function generatePack(
 	config: PackConfig,
 	rng: () => number = Math.random,
@@ -40,14 +41,13 @@ export function generatePack(
 					rarity = "marvel";
 				}
 			}
-			// Real Marvel cards are exclusively printed Cold Foil — see
-			// pack/types.ts's DrawnCard comment. This has to override
-			// fixedTreatment, not just the marvelChance branch above: sets
-			// whose Collectors Centre page publishes a Marvel rate inside
-			// the Premium Foil slot's own breakdown (High Seas, Mistveiled,
-			// Heavy Hitters) carry "marvel" as an ordinary rarityTable entry
-			// in a slot whose fixedTreatment is "rainbow", and a Marvel that
-			// came out rainbow would be wrong in a way no rate test can see.
+			// Marvel cards are Cold Foil, barring a handful of Rainbow ones in
+			// High Seas — see pack/types.ts's DrawnCard comment. This has to
+			// override fixedTreatment, not just the marvelChance branch above:
+			// a set can carry "marvel" as an ordinary rarityTable entry (High
+			// Seas, Mastery Pack Warrior) in a slot whose fixedTreatment is
+			// "rainbow", and a Marvel that came out rainbow would be wrong in a
+			// way no rate test can see.
 			if (rarity === "marvel") treatment = "cold";
 			cards.push({
 				id: uuid(),
@@ -61,6 +61,9 @@ export function generatePack(
 		}
 	}
 
+	// Marks the upgrade without choosing the card: this module doesn't know the
+	// set's printings. cards/card-resolver.ts's selectPrintingPool turns it into
+	// a real cold printing, redrawing when the slot's rarity has none.
 	if (config.coldFoilReplaces && rng() < config.coldFoilChance) {
 		const eligibleIndexes = cards
 			.map((card, index) => ({ card, index }))

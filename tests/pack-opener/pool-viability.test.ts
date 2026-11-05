@@ -5,19 +5,20 @@ import { REAL_SET_PACK_CONFIGS } from "../../src/apps/pack-opener/pack/set-confi
 import type { CardRarity } from "../../src/shared/config/cards/rarities";
 import type { FabSetPrintings } from "../../src/shared/data/fab-printings";
 import { hasType, isClassCard } from "../../src/shared/data/fab-printings";
+import { hasPackData } from "./pack-data";
 
 /**
- * Hard gate from the execution plan, section 5.2: every rarity a real
- * set's PackConfig can draw must actually be fillable from that set's own
- * real printing pool. A config that declares a slot LSS's own pool can't
- * fill silently falls back to placeholder art mid-pack — this test exists
- * so that fails the build instead, per the plan's explicit instruction.
+ * Hard gate: every rarity a real set's PackConfig can draw must actually be
+ * fillable from that set's own real printing pool. A config that declares a
+ * slot LSS's own pool can't fill silently falls back to placeholder art
+ * mid-pack — this test exists so that fails the build instead.
  *
  * Reads the generated per-set JSON directly from disk rather than going
  * through shared/data/fab-printings.ts's loadSetPrintings(), which fetches
  * over HTTP and assumes a browser/dev-server origin — not available here.
  * Requires `bun run build-pack-data` to have been run first (wired into
- * CI ahead of the Test step — see .github/workflows/ci.yml).
+ * CI ahead of the Test step — see .github/workflows/ci.yml); skipped with a
+ * message locally when it hasn't, see pack-data.ts.
  */
 
 const DATA_DIR = join(process.cwd(), "public", "data", "pack-opener", "sets");
@@ -45,7 +46,7 @@ function poolSize(
 	}).length;
 }
 
-describe("pool viability", () => {
+describe.skipIf(!hasPackData())("pool viability", () => {
 	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
 		describe(code, () => {
 			const data = loadSetPrintings(code);

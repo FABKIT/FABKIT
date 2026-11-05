@@ -6,13 +6,11 @@ import { expectedRarityCounts } from "../../src/apps/pack-opener/stats/session-s
 import type { CardRarity } from "../../src/shared/config/cards/rarities";
 
 /**
- * Frequency calibration, per the execution plan, section 5.2: for every
- * config derived from a set's published *frequency* numbers (rather than
- * a literal slot count), simulate a large number of packs and assert the
- * observed rate of each rarity matches what LSS actually published,
- * within a stated tolerance. This is the only defence against a
- * plausible-looking config that is quietly wrong — see that section for
- * why it's treated as non-optional.
+ * Frequency calibration: for every config derived from a set's published
+ * *frequency* numbers (rather than a literal slot count), simulate a large
+ * number of packs and assert the observed rate of each rarity matches what LSS
+ * actually published, within a stated tolerance. This is the only defence
+ * against a plausible-looking config that is quietly wrong.
  *
  * N = 200,000 packs per set. Tolerance is +-20% of the published rate,
  * generous enough not to be flaky (most of these rates are well above
@@ -25,15 +23,28 @@ import type { CardRarity } from "../../src/shared/config/cards/rarities";
 const N = 200_000;
 const TOLERANCE = 0.2;
 
-function simulateRatePerPack(setCode: string, rarity: CardRarity): number {
+/** One seeded simulation per set, counted once per rarity. Every assertion in
+ * this file reads from the same run, which is what it was already measuring
+ * (the seed never changed), without paying for 200,000 packs per rarity. */
+const histograms = new Map<string, Map<CardRarity, number>>();
+
+function histogramFor(setCode: string): Map<CardRarity, number> {
+	const cached = histograms.get(setCode);
+	if (cached) return cached;
 	const config = REAL_SET_PACK_CONFIGS[setCode];
 	const rng = mulberry32(1);
-	let total = 0;
+	const counts = new Map<CardRarity, number>();
 	for (let i = 0; i < N; i++) {
-		const pack = generatePack(config, rng);
-		total += pack.filter((c) => c.rarity === rarity).length;
+		for (const card of generatePack(config, rng)) {
+			counts.set(card.rarity, (counts.get(card.rarity) ?? 0) + 1);
+		}
 	}
-	return total / N;
+	histograms.set(setCode, counts);
+	return counts;
+}
+
+function simulateRatePerPack(setCode: string, rarity: CardRarity): number {
+	return (histogramFor(setCode).get(rarity) ?? 0) / N;
 }
 
 function expectRate(setCode: string, rarity: CardRarity, published: number) {
@@ -194,7 +205,7 @@ describe("frequency calibration", () => {
 	});
 
 	// Omens of the Third Age, same provenance. Majestic here is the sum of
-	// the two published expansion-content rates (Set 1 per 8, Expansion
+	// the two published Majestic content rates (Set 1 per 8, Expansion
 	// 1 per 7) plus the premium slot's 1 per 42: this set publishes no
 	// standalone Majestic rate of its own.
 	it("Omens of the Third Age matches its published rates", () => {
@@ -223,8 +234,8 @@ describe("frequency calibration", () => {
 
 	// Super Slam. Majestic is not asserted: its base breakdown lists 42
 	// Majestics with no rate at all, and the only published Majestic rate
-	// is the Premium Foil slot's 1 per 22. The set's expansion-slot content
-	// (Set 1 per 8, Expansion 1 per 6) is Majestic rarity in the card data,
+	// is the Premium Foil slot's 1 per 22. The set's Set and Expansion content
+	// (1 per 8 and 1 per 6) is Majestic rarity in the card data,
 	// so the engine's Majestic total is those two plus the premium rate,
 	// and there is no single published number to compare it against.
 	it("Super Slam matches its published rates", () => {
