@@ -26,6 +26,8 @@ in `GEM1`, Pack 2's in `GEM2`, and so on.
 the first missing number, so a folder holding `1.webp` and `3.webp` will only
 ever show the first one.
 
+A new set's folder appears in git once it holds its first `1.webp`.
+
 ## Size and shape
 
 The baseline is **796 x 1509**, taken from the Welcome to Rathe art already in
@@ -47,9 +49,3 @@ one-number fix (`PACK_SEAL_HEIGHT` in
 
 Transparent backgrounds are expected and handled: the corners are cut out rather
 than blended, so a cut-out product shot will not show a dark halo.
-
-## The `.gitkeep` files
-
-Git does not track empty folders. Each set folder holds a small marker file
-naming its set so the folders survive a fresh clone. Leave them where they are;
-they are ignored by everything that reads this directory.

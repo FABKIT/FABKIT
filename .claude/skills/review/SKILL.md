@@ -8,7 +8,7 @@ You are performing a FABKIT-specific code review. Your job is to catch real viol
 
 ## What to Review
 
-Run `git diff HEAD` to get all uncommitted changes. If everything is staged, use `git diff --cached`. Review only the changed lines, not the entire file.
+Run `git diff HEAD` to get all uncommitted changes. If everything is staged, use `git diff --cached`. On a clean tree, or to review a whole branch, use `git diff origin/master...HEAD`. Review only the changed lines, not the entire file.
 
 If no diff is available, ask the user which files or changes to review.
 
@@ -29,6 +29,7 @@ Valid import aliases:
 - `@fabkit/shared/*` → `src/shared/`
 - `@fabkit/apps/card-creator/*` → `src/apps/card-creator/`
 - `@fabkit/apps/fabble/*` → `src/apps/fabble/`
+- `@fabkit/apps/pack-opener/*` → `src/apps/pack-opener/`
 
 Relative imports (`./`, `../`) are only valid **within the same layer**. A relative import that crosses a layer boundary is a violation.
 
@@ -52,6 +53,7 @@ Each layer owns its own namespace. `useTranslation()` must be called with the co
 - `src/platform/` components → `useTranslation("platform")`
 - `src/apps/card-creator/` components → `useTranslation("card-creator")`
 - `src/apps/fabble/` components → `useTranslation("fabble")`
+- `src/apps/pack-opener/` components → `useTranslation("pack-opener")`
 
 No namespace argument (defaults to `"platform"`) is only acceptable in platform components.
 
@@ -152,6 +154,7 @@ If a new `t("key")` call is added, confirm the key exists in the correct namespa
 - `src/platform/i18n/en.json` for platform
 - `src/apps/card-creator/i18n/en.json` for card-creator
 - `src/apps/fabble/i18n/en.json` for fabble
+- `src/apps/pack-opener/i18n/en.json` for pack-opener
 
 ---
 

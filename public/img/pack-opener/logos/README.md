@@ -24,6 +24,8 @@ its pack fronts are always named the same thing.
 
 | File | Set |
 |------|-----|
+| `ANQ.webp` | Compendium of Rathe - Antiquity Pack |
+| `IAR.webp` | Usurp the Shadow Throne |
 | `PEN.webp` | Compendium of Rathe |
 | `GEM1.webp` to `GEM5.webp` | GEM Packs 1 to 5 |
 

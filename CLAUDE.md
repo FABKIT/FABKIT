@@ -8,11 +8,11 @@ Three-layer model — each layer may only import downward:
 
 | Layer        | Path               | Purpose                                                                        |
 | ------------ | ------------------ | ------------------------------------------------------------------------------ |
-| **Apps**     | `src/apps/<name>/` | Self-contained feature apps (card-creator, fabble)                             |
+| **Apps**     | `src/apps/<name>/` | Self-contained feature apps (card-creator, fabble, pack-opener)                |
 | **Platform** | `src/platform/`    | Shell infrastructure: router, error boundary, bug report, shared UI primitives |
 | **Shared**   | `src/shared/`      | FAB domain data and generic utilities (no UI, no platform deps)                |
 
-Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-creator/*`, `@fabkit/apps/fabble/*`
+Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-creator/*`, `@fabkit/apps/fabble/*`, `@fabkit/apps/pack-opener/*`
 
 **Boundary rule:** platform must not import from apps; apps must not import from each other. Apps import from platform and shared; platform imports from shared only.
 
@@ -29,7 +29,7 @@ Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-cre
 
 - Use the `/frontend-design` skill when generating UI markup
 - All user-facing text must use `t()` from `react-i18next` — no hardcoded strings
-- i18n namespaces: `"platform"`, `"card-creator"`, `"fabble"` — use the namespace that owns the text
+- i18n namespaces: `"platform"`, `"card-creator"`, `"fabble"`, `"pack-opener"` — use the namespace that owns the text
 - Icons come from `lucide-react`; brand icons (Discord, GitHub) are in `src/platform/components/icons/`
 - Prefer TanStack Router's `Link` over `<a>` for internal navigation
 - Use semantic color tokens from `src/styles/index.css` — avoid `dark:` variants
@@ -54,3 +54,4 @@ Import aliases: `@fabkit/platform/*`, `@fabkit/shared/*`, `@fabkit/apps/card-cre
 - `bun format` - Lint and format with Biome
 - `bun run build` - Production build + type check
 - `bun test` - Run tests
+- `bun run build-pack-data` - Download the pack opener's card and price data into `public/data/pack-opener/` (gitignored). Tests that need it skip without it, and fail in CI

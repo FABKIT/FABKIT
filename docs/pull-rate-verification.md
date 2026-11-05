@@ -16,10 +16,14 @@ where they are applied, one comment per set citing the lines it used.
 **Every set with a readable Collectors Centre page now deals its published
 rates**, verified by `tests/pack-opener/calibration.test.ts`, which simulates
 200,000 packs per set and asserts each rarity within 20% of the figure
-published here. **Usurp the Shadow Throne (IAR) is the one exception**: it
-has no Collectors Centre page at all yet (it hasn't released), so its config
-runs on Omens of the Third Age's rates, borrowed rather than published. See
-its own section below.
+published here. **Usurp the Shadow Throne (IAR) is the one booster exception**:
+it had no Collectors Centre page when last checked on 2026-09-15, so its config
+runs on Omens of the Third Age's rates, borrowed rather than published. It has
+released since, so recheck for a page. See its own section below.
+
+Mastery Pack Guardian (MPG), Mastery Pack Warrior (MPW) and GEM Packs 1 to 5
+aren't Collectors Centre products at all. Their sections are at the end, and
+they mostly state what a slot can hold rather than how often.
 
 Before this, Majestics, Legendaries and Marvels all came up far more often
 than they should, because most slots were weighted by how many distinct cards
@@ -37,26 +41,32 @@ Their figures are recorded below with the rest.
 
 Where a page prints "1 per ??? packs", there is no number to use and none was
 invented.
-
 - **Fabled is unpublished on every set**: every page prints "1 per ???
   packs". It is ESTIMATED at half the set's own Marvel rate, on the product
   owner's instruction, so a set's single rarest card stays reachable rather
   than unpullable. That lands between 1 per 120 packs (High Seas) and 1 per
   780 (Outsiders), 1 per 200 for the sets with no Marvel rate of their own.
-  History Pack 1 and Compendium of Rathe deal none: the first's Fabled cards
-  are Black Label product, the second prints none at all.
+  History Pack 1, Compendium of Rathe, both Mastery Packs and the GEM Packs deal
+  none: the first's Fabled cards are Black Label product, the others print none.
+  The Antiquity Pack is the exception, with a published rate of its own.
 - **Marvel is published for eight sets**: High Seas 1 per 60, Dynasty and
   Compendium of Rathe 1 per 96, Part the Mistveil and Dusk till Dawn 1 per
   100, Uprising 1 per 110, Heavy Hitters 1 per 192, Outsiders 1 per 390.
-  Bright Lights, The Hunted, Rosetta, Omens, Super Slam and Usurp the
-  Shadow Throne have real Marvel printings but no published rate, and use
-  `ESTIMATED_MARVEL_CHANCE`, a flagged estimate at 1 per 100, the median of
+  Bright Lights, The Hunted, Rosetta, Omens, Super Slam, Usurp the Shadow Throne
+  and both Mastery Packs have real Marvel printings but no published rate, and
+  use `ESTIMATED_MARVEL_CHANCE`, a flagged estimate at 1 per 100, the median of
   the eight. History Pack 1 stays at zero: its Marvels are Black Label
-  product, not boosters.
-- **Super Slam publishes no base Majestic rate**, only its Premium Foil
-  slot's 1 per 22. Its Majestic total therefore comes from that plus its
-  published Set (1 per 8) and Expansion (1 per 6) content, which is Majestic
-  rarity in the card data.
+  product, not boosters. The blocks below still print "???" for Uprising,
+  Dynasty, Outsiders and Dusk till Dawn, as they were scraped: their Marvel rates
+  were supplied later by the product owner, and the source isn't recorded.
+- **Super Slam publishes no base Majestic rate**. Its total is OBSERVED: about
+  10 per 24 packs, counted from a real display. Its published Set (1 per 8),
+  Expansion (1 per 6) and Premium Foil (1 per 22) reach 0.337 of that 0.417, and
+  the wildcard slot carries the rest.
+- **"Set" Majestics are core cards, "Expansion" ones are expansion-slot cards.**
+  Super Slam, Omens and Usurp the Shadow Throne publish the two separately, and
+  the core counts in the card data (14, 15 and 20) match their "Set" and "Core"
+  figures, so only the Expansion entries set `expansionSlot`.
 - **Uprising, Dynasty and Dusk till Dawn print no expansion-slot Majestic**
   in the-fab-cube's data at all, so their published Majestic rate is not
   split with an expansion entry the way the later sets' is.
@@ -71,7 +81,7 @@ card describes one card. So a rarity listed in both blocks has a per-pack
 rate that is the sum of the two, and a rarity listed only in the premium
 block (Legendary, and Marvel on High Seas) is drawn from that slot alone.
 
-The product pages name what *can* appear in a slot; the Collectors Centre
+The product pages name what _can_ appear in a slot; the Collectors Centre
 gives the rates. Where the two disagree on structure, the rates win, because
 rates are what the app models.
 
@@ -86,6 +96,7 @@ breakdown, then the Premium Foil slot's own breakdown, then the Cold Foil
 breakdown.
 
 ### WTR : Welcome to Rathe
+
 Source: https://fabtcg.com/collectors-centre/welcome-to-rathe/
 ```
 1 Fabled (1 per ??? packs)
@@ -99,6 +110,7 @@ Premium Foil (1 per pack, with Alpha Print containing 1 Cold Foil every 24 packs
 ```
 
 ### ARC : Arcane Rising
+
 Source: https://fabtcg.com/collectors-centre/arcane-rising/
 ```
 1 Fabled (1 per ??? packs)
@@ -112,6 +124,7 @@ Premium Foil (1 per pack, with First Edition containing 1 Cold Foil every 24 pac
 ```
 
 ### CRU : Crucible of War
+
 Source: https://fabtcg.com/collectors-centre/crucible-of-war/
 ```
 1 Fabled (1 per ??? packs)
@@ -123,6 +136,7 @@ Premium Foil (1 per pack, with First Edition containing 1 Cold Foil every 22 pac
 ```
 
 ### MON : Monarch
+
 Source: https://fabtcg.com/collectors-centre/monarch/
 ```
 1 Fabled (1 per ??? packs)
@@ -135,6 +149,7 @@ Premium Foil (1 per pack, with First Edition containing 1 Cold Foil every 22 pac
 ```
 
 ### ELE : Tales of Aria
+
 Source: https://fabtcg.com/collectors-centre/tales-of-aria/
 ```
 1 Fabled (1 per ??? packs)
@@ -147,6 +162,7 @@ Premium Foil (1 per pack, with First Edition also containing 1 Cold Foil every 2
 ```
 
 ### EVR : Everfest
+
 Source: https://fabtcg.com/collectors-centre/everfest/
 ```
 1 Fabled (1 per ??? packs)
@@ -159,6 +175,7 @@ Cold Foil (1 per 16 packs)
 ```
 
 ### 1HP : History Pack 1
+
 Source: https://fabtcg.com/collectors-centre/history-pack-1/
 ```
 9 Legendary (1 per 82 packs)
@@ -170,6 +187,7 @@ Source: https://fabtcg.com/collectors-centre/history-pack-1/
 ```
 
 ### UPR : Uprising
+
 Source: https://fabtcg.com/collectors-centre/uprising/
 ```
 1 Fabled (1 per ??? packs)
@@ -184,6 +202,7 @@ Marvel (1 per ??? packs)
 ```
 
 ### DYN : Dynasty
+
 Source: https://fabtcg.com/collectors-centre/dynasty/
 ```
 1 Fabled (1 per ??? packs)
@@ -197,6 +216,7 @@ Premium Foil (1 per pack)
 ```
 
 ### OUT : Outsiders
+
 Source: https://fabtcg.com/collectors-centre/outsiders/
 ```
 1 Fabled (1 per ??? packs)
@@ -211,6 +231,7 @@ Cold Foil (1 per 24 packs)
 ```
 
 ### DTD : Dusk till Dawn
+
 Source: https://fabtcg.com/collectors-centre/dusk-till-dawn/
 ```
 1 Fabled (1 per ??? packs)
@@ -226,6 +247,7 @@ Cold Foil (1 per 24 packs)
 ```
 
 ### EVO : Bright Lights
+
 Source: https://fabtcg.com/collectors-centre/bright-lights/
 ```
 1 Fabled (1 per ??? packs)
@@ -240,6 +262,7 @@ Cold Foil (1 per 24 packs)
 ```
 
 ### HVY : Heavy Hitters
+
 Source: https://fabtcg.com/collectors-centre/heavy-hitters/
 Base breakdown, then the Premium Foil slot, then Cold Foil.
 ```
@@ -264,6 +287,7 @@ Premium Foil (1 per pack)
 ```
 
 ### MST : Part the Mistveil
+
 Source: https://fabtcg.com/collectors-centre/part-the-mistveil/
 ```
 1 Fabled
@@ -289,6 +313,7 @@ Premium Foil (1 per pack)
 ```
 
 ### ROS : Rosetta
+
 Source: https://fabtcg.com/collectors-centre/rosetta/
 ```
 1 Fabled
@@ -315,6 +340,7 @@ Premium Foil (1 per pack)
 ```
 
 ### HNT : The Hunted
+
 Source: https://fabtcg.com/collectors-centre/the-hunted/
 ```
 1 Fabled
@@ -340,6 +366,7 @@ Premium Foil (1 per pack)
 ```
 
 ### SEA : High Seas
+
 Source: https://fabtcg.com/collectors-centre/high-seas/
 ```
 1 Fabled
@@ -358,6 +385,7 @@ Premium Foil (1 per pack)
 ```
 
 ### SUP : Super Slam
+
 Source: https://fabtcg.com/collectors-centre/super-slam/
 ```
 1 Fabled
@@ -385,13 +413,8 @@ Source: https://fabtcg.com/collectors-centre/super-slam/
 13 Common
 ```
 
-### PEN : Compendium of Rathe, and OMN : Omens of the Third Age
-
-Not captured. Both pages render their breakdown behind JavaScript tabs
-("ESTIMATED RARITY BREAKDOWN - EN") rather than in the page text. They need a
-manual visit.
-
 ### PEN : Compendium of Rathe
+
 Source: https://fabtcg.com/collectors-centre/compendium-of-rathe/ , read off
 the live page by hand (JavaScript tabs).
 ```
@@ -410,6 +433,7 @@ Cold Foil (1 per 8 packs)
 ```
 
 ### OMN : Omens of the Third Age
+
 Source: https://fabtcg.com/collectors-centre/omens-of-the-third-age/ , read
 off the live page by hand (JavaScript tabs).
 ```
@@ -436,6 +460,7 @@ Cold Foil (1 per 24 packs)
 ```
 
 ### ANQ : Compendium of Rathe - Antiquity Pack
+
 Source: LSS's published "Estimated Rarity Breakdown - EN", supplied by the
 product owner. Not captured by the scrape for the same reason PEN and OMN
 were not.
@@ -480,9 +505,9 @@ without inventing one.
 
 ### IAR : Usurp the Shadow Throne
 
-This set is the one entry in this document with **no Collectors Centre page
-to transcribe**. Both plausible URLs 404 as of 2026-09-15, ten days ahead of
-its 2026-09-25 release:
+This set is the one booster here with **no Collectors Centre page to
+transcribe**. Both plausible URLs returned 404 on 2026-09-15, ten days ahead of
+its 2026-09-25 release, and haven't been rechecked since:
 <https://fabtcg.com/collectors-centre/iar/> and
 <https://fabtcg.com/collectors-centre/usurp-the-shadow-throne/>.
 
@@ -535,11 +560,87 @@ never said.
 with the real figures, in one commit. Until then this set is the one
 declared exception named in Status above.
 
-This set's card data has a second, unrelated wrinkle worth noting here since
-it's the same "not released yet" root cause: the-fab-cube's own feed
-(`Released/card.json`) only carries 11 preview printings for it, so
-`scripts/build-pack-data.ts` reads the full 516 from a different fabrary
-pipeline instead, temporarily — see that script's `PRE_RELEASE_SETS` comment.
-That is a data-sourcing detail, separate from the rates question this section
-is about; the odds engine sees the same `RawPrinting`/`RawCard` shapes either
-way.
+This set's card data has a second, unrelated wrinkle: the-fab-cube's develop
+`card.json` only carries 11 preview printings for it, so the build reads the
+full set from the `@flesh-and-blood/cards` npm package instead, temporarily. See
+`PRE_RELEASE_SETS` in `scripts/pre-release-bridge.ts`. That is a data-sourcing
+detail, separate from the rates question this section is about; the odds engine
+sees the same `RawPrinting`/`RawCard` shapes either way.
+
+## Products with no Collectors Centre page
+
+These come from product pages or the FAQ, which state a configuration and a set
+composition. Where they say what a slot can hold but not how often, the split is
+POPULATION: weighted by how many cards the set prints. None of these figures is a
+published rate unless it says so. `PUBLISHED_RATES` in
+`src/apps/pack-opener/pack/published-rates.ts` carries each one.
+
+### MPG : Mastery Pack Guardian
+
+Source: <https://fabtcg.com/products/product/mastery-pack-guardian/>
+
+```
+13 cards per pack:
+Common 9 per pack
+Rare or Majestic 1 per pack
+Equipment 1 per pack
+Token 1 per pack
+Token or higher, Rainbow Foil or Cold Foil, 1 per pack
+
+Set composition:
+3 Legendary
+16 Majestic
+30 Rare
+76 Common
+3 Token
+12 Marvel
+```
+
+POPULATION: the Rare or Majestic slot (30 to 16), and the Equipment slot (21
+Common to 8 Rare). ESTIMATED: Legendary at 1 per 96, borrowed because almost every
+set with a published Legendary rate uses it; Marvel at `ESTIMATED_MARVEL_CHANCE`;
+Cold Foil at 1 per 24.
+
+### MPW : Mastery Pack Warrior
+
+Source: <https://fabtcg.com/products/product/mastery-pack-warrior/>
+
+```
+13 cards per pack:
+Common 8 per pack
+Rare or Majestic 2 per pack (1 Rare + 1 Rare or Majestic)
+Rainbow Foil 1 per pack
+Basic 2 per pack (1 Basic + 1 Basic, Legendary, Cold Foil or Marvel)
+
+Set composition:
+9 Marvel
+4 Legendary
+20 Majestic
+40 Rare
+80 Common
+10 Basic
+```
+
+POPULATION: the second Rare or Majestic card (40 to 20), and the Rainbow Foil card,
+weighted by this set's Rainbow Foil printings (46 Common, 31 Rare, 16 Majestic).
+Rainbow Foil Legendaries are left out of that slot, because LSS lists Legendary as
+an outcome of the Basic slot and putting it in both would deal it twice as often as
+stated. ESTIMATED: Legendary, Marvel and Cold Foil, at Mastery Pack Guardian's
+figures, the closest comparable product.
+
+### GEM1 to GEM5 : GEM Packs 1 to 5
+
+Source: <https://fabtcg.com/articles/gem_pack_faq/>
+
+```
+3 cards per pack:
+1 regular print
+1 premium foil (Rainbow Foil, Cold Foil or Marvel)
+1 art card
+```
+
+Every GEM printing is Promo rarity, so slots are told apart by foiling rather than
+rarity. The art card isn't in the card data, so a pack deals the two real cards.
+POPULATION: how often the premium card is Cold Foil rather than Rainbow Foil, from
+each pack's own printing counts (Rainbow to Cold: GEM1 22 to 10, GEM2 26 to 9, GEM3
+28 to 8, GEM4 28 to 8, GEM5 35 to 9).

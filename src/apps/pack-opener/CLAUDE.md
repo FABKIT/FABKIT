@@ -1,8 +1,8 @@
 # Pack Opener App
 
-A 3D booster-pack-opening simulator (react-three-fiber): tear open a pack, then pull
-all 16 cards off the stack one by one. Cards show real Flesh and Blood card images —
-see "Card data" below — with a placeholder-drawn fallback if the real dataset can't load.
+A 3D booster-pack-opening simulator (react-three-fiber): tear open a pack, then pull every
+card off the stack one by one. How many depends on the product (`cardsPerPack`, 2 to 16).
+Cards show real Flesh and Blood card images, see "Card data" below.
 
 ## Structure
 
@@ -10,45 +10,57 @@ see "Card data" below — with a placeholder-drawn fallback if the real dataset 
 src/apps/pack-opener/
   pack/              Pure odds/generation logic, no React or three.js
     types.ts         PackSlotSpec, PackConfig, DrawnCard, RarityWeight
-    rng.ts           mulberry32 — seeded PRNG for deterministic tests
-    odds.ts          DEFAULT_PACK_CONFIG + named constants, per-set lookup via getPackConfig()
-    generate-pack.ts generatePack(config, rng?) — weighted slot draws + cold foil/marvel rolls
-    reveal-order.ts  orderForReveal() — shuffles reveal order, pins the premium-foil card last
-  cards/             Card content resolution
-    deterministic-hash.ts hashToIndex() — stable per-id pick into a pool, shared by the
-                      mock name/pitch generator and the real-card resolver's pool selection
-    mock-card.ts     resolveMockCard() — deterministic placeholder flavor names by rarity
-    card-resolver.ts ResolvedCard type (mirrors FabbleCard's shape) + CardResolver interface;
-                      fabPrintingsCardResolver (real per-set data, see "Card data" below) is
-                      activeCardResolver — the swap point, in case that ever needs to change
-    rarity-icon-cache.ts  Preloads the 10 shared rarity SVGs once (called from the route loader)
-    mock-card-texture.ts  drawMockCardFace() — canvas-drawn FAB-style placeholder card face,
-                      used only by the mock-fallback rendering path (see "Card data")
-  lib/               currency.ts (the Currency type + per-market formatting),
-                      pricing.ts (the ONE place a component asks what something
-                      costs — see "Prices and currency"), easing.ts
-  stores/pack-opener.ts   Zustand store — the idle/tearing/revealing/done state machine,
-                      plus the persisted currency preference and resetSession()
+    published-rates.ts  Every rate that decides what a pack deals, hand-editable, each tagged
+                      PUBLISHED, OBSERVED, ESTIMATED or POPULATION
+    set-configs.ts   Turns those rates into each set's PackConfig
+    odds.ts          DEFAULT_PACK_CONFIG (mock, used when no set applies, and by tests) and
+                      getPackConfig()
+    generate-pack.ts generatePack(config, rng?): weighted slot draws, then Cold Foil, Marvel
+                      and Fabled rolls
+    reveal-order.ts  orderForReveal(): shuffles reveal order, pins the premium foil last
+    slot-table.ts, pull-rates.ts  What a pack holds, for the set info dialog
+    rng.ts           mulberry32, a seeded PRNG for deterministic tests
+  cards/
+    card-resolver.ts ResolvedCard, and activeCardResolver (per-set printings, with a
+                      placeholder when a set's data is missing)
+    celebration-tier.ts  Which rarities get which celebration
+    deterministic-hash.ts  hashToIndex(): a stable per-id pick into a pool
+  stats/             computeSessionStats, value totals. Pure, no React.
+  lib/               currency.ts, pricing.ts (see "Prices and currency"), easing.ts,
+                      pack-art.ts, pack-opener-storage.ts, preload-pack.ts, set-index.ts
+  hooks/             useCardTilt, useCollapseOnOutsidePointer, useNeighbourLogoPreload,
+                      usePrefersReducedMotion, usePrices, useSetNavigation
+  stores/
+    pack-opener.ts   Zustand store: the idle/tearing/revealing/done state machine, the
+                      persisted currency preference, resetSession()
+    pack-opener-types.ts  State and action types
   components/
-    scene/           react-three-fiber scene: PackOpenerCanvas, CameraRig (scripted, no
-                      OrbitControls), PackMesh (top-seal tear animation), TearBurst,
-                      CardStack3D (composes the active + outgoing card below), Card3D
-                      (static face-up card; branches real-image vs. mock-canvas rendering,
-                      unlit material — see "Rendering" — foil material swap, never
-                      rotates), OutgoingCard (the actual reveal: slides the previous card
-                      up and off, exposing the active one underneath — see "Reveal
-                      mechanic" below), materials/foilMaterial.ts (holographic shader),
-                      textures/useCardTexture.ts (the only place a THREE.CanvasTexture is
-                      constructed — real card images load via drei's useTexture instead,
-                      see "Card data")
-    hud/             2D page chrome BELOW the canvas, not overlaid on it (IdleOverlay,
-                      RevealCaption, PackSummary, SessionStatsDialog,
-                      ResetSessionDialog), driven purely by store state and composed
-                      directly by PackOpenerPage
-  config/scene.ts     Animation durations, easing, camera targets/punch-per-slot
-  i18n/en.json        Namespace "pack-opener" — carries its own card.rarity.* block since
-                      rarity labels are per-app translations, not centrally shared (see
-                      card-creator's i18n for the same pattern)
+    PackOpenerPage.tsx  The page
+    PackOpenerDialog, ConfirmDialog, CurrencyToggle, PriceValue, TreatmentBadge  Shared by
+                      the HUD and the carousel
+    carousel/        SetCarousel and SetLogo (the set picker), LeavePackDialog, SetInfoDialog
+                      and its sections, set-dropdown-options.ts
+    hud/             2D page chrome BELOW the canvas, not overlaid on it: IdleOverlay,
+                      RevealCaption, PackSummary, PackLedger, PackLedgerRow, SessionControls,
+                      SessionStatsDialog and its sections, ResetSessionDialog
+    scene/           react-three-fiber scene:
+      PackOpenerCanvas  The canvas
+      CameraRig      Scripted camera, no OrbitControls
+      PackMesh, PackMaterial, TearBurst  The pack and its top-seal tear animation
+      CardStack3D    Composes the active and outgoing cards with CelebrationEffects
+      Card3D, CardFace, CardFaceMaterial  A static face-up card: which art it shows, and
+                      its unlit material or foil. Never rotates.
+      OutgoingCard, outgoingSlide.ts, revealIntro.ts  The reveal, see "Reveal mechanic"
+      CelebrationEffects, PullCelebration, PullSparkles, LegendaryFireworks  Rare pulls
+      pointerTilt.ts  Pointer-to-tilt maths shared by the card and the pack
+      materials/foilMaterial.ts  The cold foil shader
+      textures/      useSafeTexture.ts (every image texture, see "Card data"),
+                      pack-art-strips.ts, mock-pack-texture.ts, glow-texture.ts,
+                      make-canvas-texture.ts
+  config/            scene.ts (animation timing, camera targets, sizes), celebration.ts (one
+                      config per celebration tier), known-sets.ts (which products ship and why)
+  i18n/en.json       Namespace "pack-opener". Carries its own card.rarity.* block, since rarity
+                      labels are per-app translations, not centrally shared
 ```
 
 ## State machine
@@ -56,23 +68,21 @@ src/apps/pack-opener/
 `idle -> tearing -> revealing(index) -> done`, owned entirely by `stores/pack-opener.ts`.
 The store is the sole source of truth for animation timing (`phaseStartedAt` — every
 `useFrame` timer in the scene reads off this single timestamp); 3D components and the HUD
-are pure readers, never independent timers. `openPack()` generates + orders a new pack and
-schedules the tear-to-reveal transition itself; `advanceReveal()` only debounces against a
-single tap firing twice (`ADVANCE_DEBOUNCE_MS`, ~120ms) — there's no wait for an animation
+are pure readers, never independent timers. `openPack()` generates and orders a new pack and
+schedules the tear-to-reveal transition itself. If the set's printings aren't cached yet it
+waits for them first, so every surface resolves the same cards; a failed load still deals,
+and switching set or resetting cancels the wait. `advanceReveal()` only debounces against a
+single tap firing twice (`ADVANCE_DEBOUNCE_MS`, 120ms) — there's no wait for an animation
 to finish, so tapping fast skips through the pack quickly.
 
 ## Reveal mechanic
 
 Cards never flip or rotate. The active card (`Card3D`, in `CardStack3D.tsx`) is always
-rendered face-up and static; the "reveal" is `OutgoingCard` sliding the *previous* card
+rendered face-up and static; the "reveal" is `OutgoingCard` sliding the _previous_ card
 up and off (timed off the same `phaseStartedAt`), exposing the already-in-place active
 card underneath — like pulling the top card off a physical stack, not turning one over.
-Nothing else renders beneath the active card — an earlier version added a thin peek of
-the next/final card's back there, but that (and, before it, a decorative "remaining
-cards" box stack matching the active card's exact size) was removed on explicit
-feedback: no peek at all, just the card itself. This also replaced an even earlier
-rotation-based flip design (feedback: it should feel like sliding a real card off a
-stack, not spinning one in place).
+Nothing else renders beneath the active card: peeks, box stacks and flips were all tried
+and removed on explicit feedback.
 
 ## Rendering
 
@@ -114,62 +124,75 @@ nearer the camera than the card's furthest tilt excursion paints straight over t
 The same rule is why the foil shader adds its highlight in the fragment shader rather than
 switching the material to `AdditiveBlending`.
 
+## Bundle
+
+three.js, fiber and drei must not load for visitors who never open this app. `index.ts`
+runs on every page, so its bug-report provider imports the store on demand, and the route
+loader imports `useSafeTexture` dynamically for the same reason. Keep anything reachable
+from those two entry points free of static scene and store imports. `config/scene.ts` has
+no imports for this reason.
+
 ## Card data
 
 Cards are real Flesh and Blood cards, resolved per the set the open pack was actually
 generated from. `src/shared/data/fab-printings.ts` fetches one JSON file per set
-(`public/data/pack-opener/sets/<CODE>.json`, built by `scripts/build-pack-data.ts` from
-github.com/the-fab-cube/flesh-and-blood-cards) — every real *printing* of a card, with
-that set's own rarity, foil treatments, and TCGplayer product id. `loadSetPrintings()`
-is called whenever a set is selected (`stores/pack-opener.ts`'s `selectSet` and
-`initializeSetArt`), warming that set's pool ahead of the next `openPack()`.
+(`public/data/pack-opener/sets/<CODE>.json`, built by `scripts/build-pack-data.ts` from the
+develop branch of github.com/the-fab-cube/flesh-and-blood-cards; its main branch lags well
+behind) — every real _printing_ of a card, with that set's own rarity, foil treatments,
+and TCGplayer product id. The store's `warmSet` loads a set's printings and prices whenever
+it is selected, ahead of the next `openPack()`.
+
+**A double-faced card is one row.** The build drops back-face rows by image filename
+(`is_front` is unreliable upstream, inverted on DTD164), so a double-faced card is dealt at
+its real rate, and its other face is only reached through the flip control, via
+`backImageUrl`. Two-sided Marvels work the same way. Printings are matched to cards by
+unique id, since both faces of a card share one collector id.
 
 **A set that hasn't been picked up by the-fab-cube yet can still ship** via a
-self-retiring bridge in `build-pack-data.ts`: `PRE_RELEASE_SETS` lists sets
-whose card data instead comes from `@flesh-and-blood/cards` (fabrary's own
-compiled pre-release feed, pinned exactly as a devDependency), mapped onto
-the same `RawCard`/`RawPrinting` shapes the-fab-cube's data already produces
-so nothing downstream — `buildSetPrintings`, `fab-printings.ts`, the card
-resolver, any of it — has to know the difference. Usurp the Shadow Throne
-(IAR) is the first case: the-fab-cube's `Released/card.json` only carries 11
-preview printings for it as of writing. The bridge only takes over while
-that stays true — the moment Released's own count for a bridged code
-overtakes the bridge's, `bun run build-pack-data` logs that the entry is no
-longer needed and stops using it on its own, no build failure either way.
-See that table's own comment for the full reasoning and the field-by-field
-schema mapping.
+self-retiring bridge, `scripts/pre-release-bridge.ts`: `PRE_RELEASE_SETS` lists sets whose
+card data instead comes from `@flesh-and-blood/cards` (fabrary's own compiled pre-release
+feed, pinned exactly as a devDependency), mapped onto the same `RawCard`/`RawPrinting`
+shapes the-fab-cube's data already produces so nothing downstream has to know the
+difference. Usurp the Shadow Throne (IAR) is the current case: develop's `card.json` only
+carries 11 preview printings for it. The bridge only takes over while that stays true — the
+moment develop's own count for a bridged code overtakes the bridge's, `bun run
+build-pack-data` logs that the entry is no longer needed and stops using it on its own, no
+build failure either way.
 
-`fabPrintingsCardResolver` (`cards/card-resolver.ts`, the `activeCardResolver` swap
-point) picks a real printing from the pack's own set (`packSetCode` in the store) whose
-rarity, expansion-slot flag, required type and class-restriction all match what was
-actually drawn — deterministically per drawn-card id (`hashToIndex`) so re-renders don't
-reshuffle which card a slot shows. Every declared slot in every real set's `PackConfig`
-is verified non-empty against that set's own pool by
-`tests/pack-opener/pool-viability.test.ts`, so this pool is only ever empty for the mock
-`"default-mock-set"` config or while a set's data is still loading.
+`activeCardResolver` (`cards/card-resolver.ts`) picks a real printing from the pack's own
+set (`packSetCode` in the store) whose rarity, expansion-slot flag, required type and
+class-restriction all match what was actually drawn — deterministically per drawn-card id
+(`hashToIndex`) so re-renders don't reshuffle which card a slot shows. Every declared slot
+in every real set's `PackConfig` is verified non-empty against that set's own pool by
+`tests/pack-opener/pool-viability.test.ts`.
 
-When it is empty, `fabPrintingsCardResolver` falls back to `fabDatasetCardResolver`, the
-older cross-set resolver: it picks a real card from `src/shared/data/fab-card-dataset.ts`
-(the same public dataset the Fabble app consumes, github.com/FABKIT/fabble-data — a slim
-`FabCard` type rather than the full `FabbleCard` shape, grouped by rarity for
-`getFabCardsByRarity()`), which shows a real card but not necessarily one printed in the
-pack's own set, and never carries a `tcgplayerProductId`. The route loader
-(`src/routes/pack-opener.tsx`) awaits `loadFabCardDataset()` up front for this fallback,
-same as the rarity-icon preload. That dataset has no cards of rarity "token" or "marvel"
-either (tokens aren't guessable trivia answers in the source game; Marvel is a foil
-treatment on an existing card, not its own rarity) — `substituteRarityFor()` redirects
-those draws to "basic" and "legendary" pools respectively so this fallback still shows a
-real card rather than mock art. If even that dataset never loaded (or a pool is somehow
-still empty), `fabDatasetCardResolver` falls back to `mockCardResolver` per-draw rather
-than crashing.
+**The printing wins over the draw** in a few cases, see `resolveTreatment`: a Fabled always
+takes its own foiling, and a "standard" draw of a foil-only card takes the foil.
 
-A real card's own image already IS the fully rendered card face — Card3D's
-`RealCardFace` loads it directly via drei's `useTexture` (Suspense-based, cached by
-URL), no canvas frame-drawing needed. `MockCardFace` (the `drawMockCardFace` canvas
-pipeline) only runs for cards that came back from the mock fallback. `stores/pack-opener.ts`'s
-`openPack()` preloads every card's image via `useTexture.preload()` right when the pack
-is generated, so by the time each card becomes active during the ~1.5s tear animation
-its texture is normally already cached and doesn't suspend mid-reveal.
+**The Cold Foil upgrade never shows a card that doesn't exist.** It targets a slot, and that
+slot's rarity often has no cold printing: Heavy Hitters upgrades a Token but prints no cold
+Tokens. So it redraws from the set's real cold printings, excluding Legendary, Fabled and
+Marvel so an upgrade can't raise their published or estimated rates. How often a pack
+upgrades is unchanged. A redrawn card can show a different rarity from its slot, so anything
+counting pulls (session stats, analytics) uses the resolved rarity, not the drawn one.
+
+**When a set's data is missing or failed to load**, the resolver returns a placeholder
+(`isPlaceholder: true`, empty name) instead of a real card. The scene shows it as the card
+back with its treatment, and the HUD supplies a translated name. `DEFAULT_PACK_CONFIG` (the
+mock `"default-mock-set"`) is what deals when no set is selected. A pack with no artwork
+falls back to `mock-pack-texture.ts`, a text-free gradient and sheen; every set has real art
+today, so this only appears when the index or an image fails.
+
+A real card's own image already IS the fully rendered card face. Every image goes through
+`textures/useSafeTexture.ts` rather than drei's `useTexture`, because a 404 there throws
+from inside three.js's own image handler, outside React, and takes the whole route with it.
+`useSafeTexture` reports failure instead, so `CardFace` can fall back from the face asked
+for, to the card's front, to the card back. It also sets sRGB once at load, so the same art
+looks the same whichever material saw it first, shares one download between a preload and a
+mounted card, evicts all but the most recent textures per pack (`trimSafeTextureCache`), and
+forgets failures per pack so a brief network drop doesn't cost a card its art for the whole
+session (`clearFailedTextureUrls`). The store preloads a pack's art as it's dealt
+(`preloadPackTextures`), covered by the ~1.9s tear.
 
 CORS note: `content.fabrary.net` (the image host) only returns
 `Access-Control-Allow-Origin` when a request actually carries an `Origin` header — a
@@ -179,23 +202,30 @@ so this works with zero extra configuration.
 
 ## Odds
 
-Every set's per-pack rates come from its Collectors Centre page on fabtcg.com
-(for example fabtcg.com/collectors-centre/high-seas/), transcribed verbatim in
-`docs/pull-rate-verification.md` and applied in `pack/set-configs.ts`, where each
-set's comment cites the lines it was derived from. `tests/pack-opener/calibration.test.ts`
-simulates 200,000 packs per set and asserts every published rate within 20%, so a
-config cannot quietly drift away from its source. That file is the guard; changing a
-weight without changing the transcription will fail it.
+Every rate that decides what a pack deals lives in `pack/published-rates.ts`, each tagged
+PUBLISHED, OBSERVED, ESTIMATED or POPULATION, and `pack/set-configs.ts` turns them into each
+set's config. The twenty sets with a Collectors Centre page on fabtcg.com (for example
+fabtcg.com/collectors-centre/high-seas/) are transcribed verbatim in
+`docs/pull-rate-verification.md`, including Compendium of Rathe and Omens of the Third Age,
+which were read off the live pages by hand. The rest come from elsewhere: the Antiquity Pack
+from LSS's own breakdown, Mastery Packs and GEM Packs from product pages or the FAQ, and
+Usurp the Shadow Throne borrows Omens' rates.
 
-Read `docs/pull-rate-verification.md` before touching any config. It records which
-figures are published and which are not: Fabled is unpublished everywhere and is
-therefore not drawn at all, Marvel is published for only three sets and estimated for
-the rest, and two sets (PEN, OMN) have never been verified because their pages hide the
-breakdown behind JavaScript tabs.
+`tests/pack-opener/calibration.test.ts` simulates 200,000 packs per set and asserts every
+published rate within 20%, so a config cannot quietly drift away from its source. That file
+is the guard; changing a weight without changing the transcription will fail it.
 
-Cold foil is a published per-set rate (usually 1 per 24 packs, one display) applied as a
-pack-level upgrade roll rather than a slot. `pack/odds.ts`'s DEFAULT_* constants are now
-community estimates used only by the mock config.
+Read `docs/pull-rate-verification.md` before touching any config. It records which figures
+are published and which are not:
+- **Fabled** is unpublished except on the Antiquity Pack, and is estimated at half the set's
+  Marvel rate (`fabledChanceFor`), so a set's rarest card stays reachable. Sets whose boosters
+  hold no Fabled printing deal none.
+- **Marvel** is published for eight sets and estimated at 1 per 100 for Bright Lights, Rosetta,
+  The Hunted, Super Slam, Omens, Usurp the Shadow Throne and both Mastery Packs.
+- **Cold foil** is a published per-set rate (usually 1 per 24 packs, one display) applied as a
+  pack-level upgrade roll rather than a slot.
+
+`pack/odds.ts`'s `DEFAULT_*` constants are placeholders for the mock config only.
 
 ## Prices and currency
 
@@ -207,26 +237,55 @@ mirrored by tcgcsv.com (`src/shared/data/fab-prices.ts`, keyed by
 `scripts/build-pack-data.ts` into `public/data/pack-opener/prices/` and `prices-cm/`;
 neither can be fetched live from a browser.
 
-**Components never touch either module directly — they call `lib/pricing.ts`.** That
-file takes the currency and hands back a number or null, so the two different keying
-schemes stay in one place and every surface (the pack ledger, the reveal caption, the
-session totals, the set info dialog) can never end up showing different marketplaces at
-once. The currency itself lives in the store (persisted per device) for the same reason.
+**Components never touch either module directly — they call `lib/pricing.ts`**, through the
+`usePrices` hook. That file takes the currency and hands back a number or null, so the two
+different keying schemes stay in one place and every surface (the pack ledger, the reveal
+caption, the session totals, the set info dialog) can never end up showing different
+marketplaces at once. The currency itself lives in the store (persisted per device) for the
+same reason. Snapshots live in module caches React can't watch, so the store bumps
+`pricesVersion` when one lands and `usePrices` re-reads, so a figure read too early doesn't
+stay missing.
 
-A missing price is normal and shows a dash, never a zero and never the other currency's
-figure. About 4% of card versions have no euro price at all, on purpose: see
-`scripts/cardmarket.ts`, which pairs our printings against Cardmarket's products only
-when the two counts agree exactly and writes nothing when they do not. That file's header
-is the full story, including why the two catalogues disagree about cards like Crucible of
-War's Mandible Claw.
+A missing price is normal and shows "Not priced yet", never a zero and never the other
+currency's figure. About 18% of printings have no euro price. Nearly all of those are the
+first print run of the oldest sets (Welcome to Rathe, Arcane Rising, Crucible of War, Monarch,
+Tales of Aria, about half of each), because a Cardmarket expansion is matched to one print
+run, the Unlimited one there. Elsewhere coverage is 93% or better. `scripts/cardmarket.ts`
+pairs our printings against Cardmarket's products only when the two counts agree exactly and
+writes nothing when they do not, and writes nothing for a chunk holding an unpriced product.
+That file's header is the full story, including why the two catalogues disagree about cards
+like Crucible of War's Mandible Claw.
 
 ## Session
 
-`packsOpenedThisSession` and `openedPacksThisSession` are in-memory only and reset on
-reload. `resetSession()` clears both and puts a closed pack back on the counter, keeping
-the selected set and its artwork; it is destructive with no undo, so `ResetSessionDialog`
-confirms first, the same gate `LeavePackDialog` puts in front of discarding an in-flight
-pack.
+`openedPacksThisSession` is in-memory only and resets on reload. `resetSession()` clears it
+and puts a closed pack back on the counter, keeping the selected set and re-rolling its
+artwork; it is destructive with no undo, so `ResetSessionDialog` confirms first, the same
+gate `LeavePackDialog` puts in front of discarding an in-flight pack.
+
+## Decided, don't reopen
+
+**Foil art: keep our own shaders, and never resolve `-RF`/`-CF` slugs.** The shader responds
+to the card's tilt, and LSS's foil art is a flat still with the foil printed into the image,
+so the two would double up. It's unusable anyway: fabrary serves the base image for those
+slugs (identical ETags for `EVO013` and `EVO013-RF`), and the genuine renders were only on
+LSS's S3, which sent no CORS header when checked. This is why `printingImageUrl` only uses
+`artSlug` for Marvels.
+
+**Smaller card images are a dead end.** LSS's S3 had the same cards at 546x763 for about 60 KB,
+a quarter of fabrary's weight, but with no `Access-Control-Allow-Origin` header, so WebGL can't
+use the pixels. Fabrary has no smaller variant (`?w=` and `?width=` are ignored, `/small/` and
+`.width-N` return 404). Self-hosting re-encoded copies means shipping thousands of images,
+hundreds of MB. The levers are when and how often we fetch, not how big each file is.
+
+## Deferred
+
+- **Edition fidelity.** The build doesn't separate print runs, so a Welcome to Rathe pool mixes
+  Alpha and Unlimited printings of the same card. Non-Marvel art comes from the collector id, so
+  the image is the same either way, but a pack doesn't model which run it came from, and euro
+  prices only attach to the run Cardmarket matched.
+- **A higher-resolution card back.** `public/img/pack-opener/card-back.webp` is 300x419 and
+  poorly compressed. Replacing it is a straight file swap with no code change.
 
 ## Import Rules
 
