@@ -1,15 +1,20 @@
-import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { registerReportDataProvider } from "@fabkit/platform/bug-report";
 
-registerReportDataProvider("pack-opener", () => {
-	const { phase, revealIndex, pack, packsOpenedThisSession } =
+// main.tsx imports this file on every page. Importing the store at the top
+// would pull three.js into every visitor's first load, for a report that is
+// rarely filed and usually from another app entirely.
+registerReportDataProvider("pack-opener", async () => {
+	const { usePackOpenerStore } = await import(
+		"@fabkit/apps/pack-opener/stores/pack-opener"
+	);
+	const { phase, revealIndex, pack, openedPacksThisSession } =
 		usePackOpenerStore.getState();
 
 	return {
 		state: {
 			phase,
 			revealIndex,
-			packsOpenedThisSession,
+			packsOpenedThisSession: openedPacksThisSession.length,
 			packSummary:
 				pack?.map((card) => ({
 					rarity: card.rarity,

@@ -1,6 +1,4 @@
 import { hashToIndex } from "@fabkit/apps/pack-opener/cards/deterministic-hash";
-import type { MockPitch } from "@fabkit/apps/pack-opener/cards/mock-card";
-import { resolveMockCard } from "@fabkit/apps/pack-opener/cards/mock-card";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import type {
@@ -18,62 +16,65 @@ import {
 /**
  * Shape every 3D/UI component consumes, deliberately mirroring FabbleCard's
  * fields (name/imageUrl/rarity/set/pitch/cost/power/defense — see
- * src/apps/fabble/types.ts). `imageUrl` is null for mock/placeholder cards
- * and a real content.fabrary.net URL for real ones — the 3D layer (Card3D)
- * branches on its presence to pick a rendering path.
+ * src/apps/fabble/types.ts). `imageUrl` is a real content.fabrary.net URL, or
+ * null for a placeholder, which the 3D layer shows as the card back.
  */
 export interface ResolvedCard {
 	id: string;
+	/** Empty for a placeholder: see `isPlaceholder`. */
 	name: string;
 	rarity: CardRarity;
 	treatment: FoilTreatment;
 	imageUrl: string | null;
-	/** The other face's art, for the roughly 500 real printings that are one
-	 * face of a double-faced card, otherwise null. Always null for a mock
-	 * card. Nothing to do with CARD_BACK_URL, which is the generic Flesh and
+	/** The other face's art, for the real printings that are one face of a
+	 * double-faced card, otherwise null. Nothing to do with CARD_BACK_URL, which is the generic Flesh and
 	 * Blood back used as a loading placeholder. */
 	backImageUrl: string | null;
 	set?: string;
-	pitch: MockPitch | 1 | 2 | 3;
+	pitch: FabPrinting["pitch"];
 	cost: number | null;
 	power: number | null;
 	defense: number | null;
-	/** The-fab-cube's TCGplayer product id for this exact printing, null for a
-	 * mock card. The dollar price snapshot looks a card up by this plus its
+	/** The-fab-cube's TCGplayer product id for this exact printing, if any. The
+	 * dollar price snapshot looks a card up by this plus its
 	 * treatment, because TCGplayer prices each foiling separately. */
 	tcgplayerProductId: string | null;
 	/** The-fab-cube's own id for this exact printing. This is what the euro
 	 * price snapshot is keyed by rather than a TCGplayer id (see
 	 * shared/data/fab-prices-cm.ts): Cardmarket is a different marketplace
 	 * with its own product ids, and several sets Cardmarket prices well carry
-	 * no TCGplayer id at all. Null for a mock card, and for a card shown in a
+	 * no TCGplayer id at all. Null for a placeholder, and for a card shown in a
 	 * treatment this printing doesn't have, since that printing's euro price
 	 * would be the price of a different card. */
 	printingId: string | null;
+	/** No real card could be resolved, because the set's data is missing or
+	 * failed to load. Everything but the id, rarity and treatment is empty, and
+	 * the UI has to supply its own translated name. */
+	isPlaceholder: boolean;
 }
 
 interface CardResolver {
 	/** `setCode` is the set the pack was actually generated for (see
-	 * stores/pack-opener.ts's `packSetCode`) — omitted for the mock config. */
+	 * stores/pack-opener.ts's `packSetCode`) — omitted when no set is selected. */
 	resolve(drawn: DrawnCard, setCode?: string): ResolvedCard;
 }
 
-const mockCardResolver: CardResolver = {
+const placeholderCardResolver: CardResolver = {
 	resolve(drawn) {
-		const mock = resolveMockCard(drawn);
 		return {
-			id: mock.id,
-			name: mock.name,
-			rarity: mock.rarity,
-			treatment: mock.treatment,
+			id: drawn.id,
+			name: "",
+			rarity: drawn.rarity,
+			treatment: drawn.treatment,
 			imageUrl: null,
 			backImageUrl: null,
-			pitch: mock.pitch,
-			cost: mock.cost,
-			power: mock.power,
-			defense: mock.defense,
+			pitch: null,
+			cost: null,
+			power: null,
+			defense: null,
 			tcgplayerProductId: null,
 			printingId: null,
+			isPlaceholder: true,
 		};
 	},
 };
@@ -202,6 +203,7 @@ function toResolvedCardFromPrinting(
 		defense: printing.defense,
 		tcgplayerProductId: printing.tcgplayerProductId,
 		printingId: treatment === printing.foiling ? printing.uniqueId : null,
+		isPlaceholder: false,
 	};
 }
 
@@ -211,9 +213,8 @@ function toResolvedCardFromPrinting(
  * own art and TCGplayer product id. Picked deterministically per drawn card id
  * so re-renders don't reshuffle which card a slot shows.
  *
- * Falls back to a mock card when `setCode` is missing (the mock config) or
- * that set's own pool genuinely has nothing matching (data still loading, or
- * failed to load). */
+ * Falls back to a placeholder when `setCode` is missing or that set's own pool
+ * genuinely has nothing matching (data still loading, or failed to load). */
 const fabPrintingsCardResolver: CardResolver = {
 	resolve(drawn, setCode) {
 		if (setCode) {
@@ -223,10 +224,10 @@ const fabPrintingsCardResolver: CardResolver = {
 				return toResolvedCardFromPrinting(drawn, picked, setCode);
 			}
 		}
-		return mockCardResolver.resolve(drawn);
+		return placeholderCardResolver.resolve(drawn);
 	},
 };
 
-/** Swap point for card content — real per-set printings, with mock/placeholder
- * as the graceful fallback baked into the resolver itself. */
+/** Swap point for card content — real per-set printings, with a placeholder as
+ * the graceful fallback baked into the resolver itself. */
 export const activeCardResolver: CardResolver = fabPrintingsCardResolver;

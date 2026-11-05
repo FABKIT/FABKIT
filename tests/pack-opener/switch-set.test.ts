@@ -27,7 +27,6 @@ describe("switching sets mid-reveal", () => {
 			pack: null,
 			revealIndex: -1,
 			phaseStartedAt: null,
-			packsOpenedThisSession: 0,
 			openedPacksThisSession: [],
 			selectedSet: DEFAULT_PACK_CONFIG.id,
 			packArtUrl: null,
@@ -51,7 +50,7 @@ describe("switching sets mid-reveal", () => {
 		usePackOpenerStore.getState().selectSet("some-other-set-not-in-index");
 
 		const state = usePackOpenerStore.getState();
-		expect(state.packsOpenedThisSession).toBe(0);
+		expect(state.openedPacksThisSession).toHaveLength(0);
 		expect(state.openedPacksThisSession).toEqual([]);
 		expect(state.pack).toBeNull();
 		expect(state.phase).toBe("idle");
@@ -73,7 +72,7 @@ describe("switching sets mid-reveal", () => {
 		usePackOpenerStore.getState().selectSet("some-other-set-not-in-index");
 
 		const state = usePackOpenerStore.getState();
-		expect(state.packsOpenedThisSession).toBe(0);
+		expect(state.openedPacksThisSession).toHaveLength(0);
 		expect(state.openedPacksThisSession).toEqual([]);
 	});
 
@@ -85,7 +84,6 @@ describe("switching sets mid-reveal", () => {
 			phase: "done",
 			pack,
 			revealIndex: pack.length - 1,
-			packsOpenedThisSession: 1,
 			openedPacksThisSession: [
 				{ setCode: DEFAULT_PACK_CONFIG.id, cards: pack },
 			],
@@ -95,7 +93,7 @@ describe("switching sets mid-reveal", () => {
 		usePackOpenerStore.getState().selectSet("some-other-set-not-in-index");
 
 		const state = usePackOpenerStore.getState();
-		expect(state.packsOpenedThisSession).toBe(1);
+		expect(state.openedPacksThisSession).toHaveLength(1);
 		expect(state.openedPacksThisSession).toHaveLength(1);
 	});
 });

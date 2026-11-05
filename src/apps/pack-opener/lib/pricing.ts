@@ -20,7 +20,8 @@ import {
  * currency. Showing a dollar figure to someone who asked for euros, or
  * silently converting one at today's rate, would make the number wrong in
  * a way the player cannot see, which is exactly what the whole sourcing
- * story in scripts/cardmarket.ts exists to avoid. A dash is honest. */
+ * story in scripts/cardmarket.ts exists to avoid. "Not priced yet" is
+ * honest. */
 
 /** One pulled card's price, or null when this marketplace has none for it. */
 export function cardPrice(
@@ -75,10 +76,51 @@ export function priceSourceKey(currency: Currency): string {
 	return currency === "EUR" ? "dialog.price_source_cm" : "dialog.price_source";
 }
 
-/** Warms both snapshots for a set. Deliberately both regardless of the
- * current currency: switching the toggle is a single click with no loading
- * state of its own, and these are small files fetched once per set. */
-export function warmPrices(setCode: string): void {
-	loadSetPrices(setCode).catch(() => {});
-	loadSetCardmarketPrices(setCode).catch(() => {});
+/** The date a snapshot was captured, in the player's own locale. */
+export function formatCapturedDate(capturedAt: string | null): string | null {
+	return capturedAt
+		? new Date(capturedAt).toLocaleDateString(undefined, {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+			})
+		: null;
+}
+
+/** Warms both snapshots for a set, settling once both have finished either
+ * way. Deliberately both regardless of the current currency: switching the
+ * toggle is a single click with no loading state of its own, and these are
+ * small files fetched once per set. */
+export async function warmPrices(setCode: string): Promise<void> {
+	await Promise.allSettled([
+		loadSetPrices(setCode),
+		loadSetCardmarketPrices(setCode),
+	]);
+}
+
+/** Every price lookup, bound to one currency and to one state of the price
+ * caches. A component reads prices through this rather than the functions
+ * above (see hooks/usePrices.ts), because it gets a new identity whenever
+ * either changes, and anything computed from it recomputes with it. */
+export interface PriceReader {
+	currency: Currency;
+	version: number;
+	card(setCode: string | null, card: ResolvedCard): number | null;
+	pack(setCode: string | null): number | null;
+	box(setCode: string | null): number | null;
+	capturedAt(setCode: string | null): string | null;
+}
+
+export function createPriceReader(
+	currency: Currency,
+	version: number,
+): PriceReader {
+	return {
+		currency,
+		version,
+		card: (setCode, card) => cardPrice(currency, setCode, card),
+		pack: (setCode) => packPrice(currency, setCode),
+		box: (setCode) => boxPrice(currency, setCode),
+		capturedAt: (setCode) => priceCapturedAt(currency, setCode),
+	};
 }

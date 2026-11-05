@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { resolveTreatment } from "../../src/apps/pack-opener/cards/card-resolver";
+import {
+	activeCardResolver,
+	resolveTreatment,
+} from "../../src/apps/pack-opener/cards/card-resolver";
 import type { DrawnCard } from "../../src/apps/pack-opener/pack/types";
 import type { FabPrinting } from "../../src/shared/data/fab-printings";
 
@@ -91,5 +94,30 @@ describe("resolveTreatment", () => {
 				printing({ rarity: "fabled", foiling: "cold" }),
 			),
 		).toBe("cold");
+	});
+});
+
+/** A set whose data is missing must still give the scene something to draw, and
+ * must not pretend to know what the card is. */
+describe("activeCardResolver's placeholder", () => {
+	it("keeps the draw's rarity and treatment and carries no real card data", () => {
+		const resolved = activeCardResolver.resolve(
+			drawn({ rarity: "marvel", treatment: "cold" }),
+		);
+		expect(resolved).toMatchObject({
+			isPlaceholder: true,
+			name: "",
+			rarity: "marvel",
+			treatment: "cold",
+			imageUrl: null,
+			backImageUrl: null,
+			tcgplayerProductId: null,
+			printingId: null,
+		});
+	});
+
+	it("is what a set with no loaded printings resolves to", () => {
+		const resolved = activeCardResolver.resolve(drawn({}), "NOT_LOADED");
+		expect(resolved.isPlaceholder).toBe(true);
 	});
 });

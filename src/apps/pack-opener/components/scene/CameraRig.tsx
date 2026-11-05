@@ -4,19 +4,16 @@ import {
 	REVEALING_CAMERA_POSITION,
 	TEARING_CAMERA_POSITION,
 } from "@fabkit/apps/pack-opener/config/scene";
+import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
+import type { PackOpenerPhase } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import { Vector3 } from "three";
 
-/** No more per-slot camera dolly-in here (there used to be one, keyed off
- * the active card's slot) — Louis's explicit feedback was that a premium
- * pull's card getting physically bigger wasn't necessary, and it never
- * distinguished a Majestic/Legendary pull from a Common unless that pull
- * also happened to be foil. See cards/celebration-tier.ts and
- * PullCelebration.tsx for what replaced it: a glow behind the card instead
- * of a camera move. */
-function targetForPhase(phase: string): [number, number, number] {
+/** Fixed per phase, with no per-card dolly-in: a good pull earns a glow behind
+ * the card instead of a camera move (see cards/celebration-tier.ts). */
+function targetForPhase(phase: PackOpenerPhase): [number, number, number] {
 	if (phase === "tearing") return TEARING_CAMERA_POSITION;
 	if (phase === "done") return DONE_CAMERA_POSITION;
 	if (phase === "revealing") return REVEALING_CAMERA_POSITION;
@@ -26,14 +23,18 @@ function targetForPhase(phase: string): [number, number, number] {
 /** Scripted camera driven entirely by pack-opener store state — no OrbitControls,
  * this is a cinematic view the user never takes manual control of. */
 export function CameraRig() {
-	const { camera } = useThree();
+	const camera = useThree((state) => state.camera);
 	const phase = usePackOpenerStore((state) => state.phase);
+	const reducedMotion = usePrefersReducedMotion();
 	const target = useRef(new Vector3(...IDLE_CAMERA_POSITION));
 	const previousPhase = useRef(phase);
 
 	useFrame((_, delta) => {
 		const [x, y, z] = targetForPhase(phase);
-		const idleBobY = phase === "idle" ? Math.sin(Date.now() / 1500) * 0.03 : 0;
+		const idleBobY =
+			phase === "idle" && !reducedMotion
+				? Math.sin(Date.now() / 1500) * 0.03
+				: 0;
 		target.current.set(x, y + idleBobY, z);
 
 		// Opening a pack is a scene change, not a continuation, so the camera

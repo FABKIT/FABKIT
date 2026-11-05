@@ -23,7 +23,6 @@ describe("resetting the session", () => {
 			pack: null,
 			revealIndex: -1,
 			phaseStartedAt: null,
-			packsOpenedThisSession: 0,
 			openedPacksThisSession: [],
 			selectedSet: DEFAULT_PACK_CONFIG.id,
 			currency: "USD",
@@ -41,7 +40,6 @@ describe("resetting the session", () => {
 			revealIndex: pack.length - 1,
 			revisitIndex: 2,
 			packSetCode: DEFAULT_PACK_CONFIG.id,
-			packsOpenedThisSession: 3,
 			openedPacksThisSession: [
 				{ setCode: DEFAULT_PACK_CONFIG.id, cards: pack },
 				{ setCode: DEFAULT_PACK_CONFIG.id, cards: pack },
@@ -52,7 +50,7 @@ describe("resetting the session", () => {
 		usePackOpenerStore.getState().resetSession();
 
 		const state = usePackOpenerStore.getState();
-		expect(state.packsOpenedThisSession).toBe(0);
+		expect(state.openedPacksThisSession).toHaveLength(0);
 		expect(state.openedPacksThisSession).toEqual([]);
 		expect(state.phase).toBe("idle");
 		expect(state.pack).toBeNull();
@@ -65,7 +63,6 @@ describe("resetting the session", () => {
 		usePackOpenerStore.setState({
 			selectedSet: "DTD",
 			currency: "EUR",
-			packsOpenedThisSession: 2,
 		});
 
 		usePackOpenerStore.getState().resetSession();
@@ -76,11 +73,18 @@ describe("resetting the session", () => {
 	});
 
 	it("switches currency without disturbing the session", () => {
-		usePackOpenerStore.setState({ packsOpenedThisSession: 4 });
+		const pack = generatePack(DEFAULT_PACK_CONFIG, mulberry32(12));
+		usePackOpenerStore.setState({
+			openedPacksThisSession: [
+				{ setCode: DEFAULT_PACK_CONFIG.id, cards: pack },
+			],
+		});
 
 		usePackOpenerStore.getState().setCurrency("EUR");
 
 		expect(usePackOpenerStore.getState().currency).toBe("EUR");
-		expect(usePackOpenerStore.getState().packsOpenedThisSession).toBe(4);
+		expect(usePackOpenerStore.getState().openedPacksThisSession).toHaveLength(
+			1,
+		);
 	});
 });

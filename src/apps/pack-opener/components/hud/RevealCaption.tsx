@@ -1,10 +1,10 @@
 import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
-import { formatMoney } from "@fabkit/apps/pack-opener/lib/currency";
-import { cardPrice } from "@fabkit/apps/pack-opener/lib/pricing";
+import { PriceValue } from "@fabkit/apps/pack-opener/components/PriceValue";
+import { TreatmentBadge } from "@fabkit/apps/pack-opener/components/TreatmentBadge";
+import { usePrices } from "@fabkit/apps/pack-opener/hooks/usePrices";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { FlipHorizontal2 } from "lucide-react";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 /** What the card currently on screen actually is — in normal document flow
@@ -31,11 +31,11 @@ export function RevealCaption() {
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
 	const phase = usePackOpenerStore((state) => state.phase);
-	const currency = usePackOpenerStore((state) => state.currency);
 	const showingOtherFace = usePackOpenerStore(
 		(state) => state.showingOtherFace,
 	);
 	const flipCard = usePackOpenerStore((state) => state.flipCard);
+	const prices = usePrices();
 
 	const activeIndex =
 		revisitIndex !== null && phase === "done" ? revisitIndex : revealIndex;
@@ -44,13 +44,11 @@ export function RevealCaption() {
 		pack && activeIndex >= 0 && activeIndex < pack.length
 			? pack[activeIndex]
 			: null;
-	const resolved = useMemo(
-		() =>
-			drawn
-				? activeCardResolver.resolve(drawn, packSetCode ?? undefined)
-				: null,
-		[drawn, packSetCode],
-	);
+	const resolved = drawn
+		? activeCardResolver.resolve(drawn, packSetCode ?? undefined)
+		: null;
+
+	if (!resolved || !pack) return null;
 
 	/** The same build-time snapshot the summary totals up, read one card
 	 * at a time, in whichever currency is selected (see lib/pricing.ts).
@@ -59,24 +57,19 @@ export function RevealCaption() {
 	 * Rainbow Foil. No price is a real and fairly common state — a few
 	 * printings in every hundred are in neither snapshot — so it says so
 	 * rather than showing a zero. */
-	const price = useMemo(
-		() => (resolved ? cardPrice(currency, packSetCode, resolved) : null),
-		[resolved, packSetCode, currency],
-	);
-
-	if (!resolved || !pack) return null;
+	const price = prices.card(packSetCode, resolved);
 
 	return (
 		<div className="flex flex-col items-center gap-1">
-			{/* Card names in the real FAB card-name face — section 3.7's
-			    "the game's own face for the game's own content". */}
+			{/* Card names in the real FAB card-name face: the game's own face
+			    for the game's own content. */}
 			{/* The flip control sits beside the name rather than over the card
 			    so it can never cover the artwork it exists to reveal, and
 			    appears only for the double-faced cards that actually have
 			    another side (see card-resolver.ts's backImageUrl). */}
 			<span className="flex items-center gap-2">
 				<span className="font-card-name text-lg text-heading">
-					{resolved.name}
+					{resolved.isPlaceholder ? t("card.unavailable") : resolved.name}
 				</span>
 				{resolved.backImageUrl !== null && (
 					<button
@@ -101,16 +94,7 @@ export function RevealCaption() {
 					className="h-4 w-4"
 				/>
 				<span>{t(CardRarities[resolved.rarity].label)}</span>
-				{resolved.rarity === "marvel" && (
-					<span className="font-bold text-pack-marvel">
-						{t("page.marvel_badge")}
-					</span>
-				)}
-				{resolved.rarity !== "marvel" && resolved.treatment !== "standard" && (
-					<span className="font-bold text-pack-foil">
-						{t(`page.treatment_name.${resolved.treatment}`)}
-					</span>
-				)}
+				<TreatmentBadge card={resolved} />
 				{/* Price rides on the rarity line rather than getting a line of
 				    its own: this block sits in a fixed-height slot owned by
 				    PackOpenerPage, and adding a line would resize the canvas
@@ -122,16 +106,14 @@ export function RevealCaption() {
 				<span
 					className={price === null ? "text-subtle" : "font-bold text-heading"}
 				>
-					{price === null
-						? t("page.price_unavailable")
-						: formatMoney(price, currency)}
+					<PriceValue amount={price} currency={prices.currency} />
 				</span>
 			</p>
 			{/* Reveal-only. Once the pack is done there is nothing left to tap
 			    through, and the summary below carries the count instead. There
 			    is deliberately no "back to summary" control: the summary sits
 			    right underneath, collapsed to its header, and expanding it is
-			    what reopens the ledger (see PackSummary.tsx). */}
+			    what reopens the ledger (see PackLedger.tsx). */}
 			{phase === "revealing" && (
 				<p className="text-sm text-muted">
 					{t("page.tap_to_reveal")}

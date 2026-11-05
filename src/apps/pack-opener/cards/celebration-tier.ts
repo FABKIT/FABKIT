@@ -4,8 +4,8 @@ import type { ResolvedCard } from "@fabkit/apps/pack-opener/cards/card-resolver"
  * soft glow behind the active card, replacing an old camera dolly-in punch: the
  * final card getting physically bigger wasn't necessary, and it never
  * celebrated a plain Majestic/Legendary pull that happened not to be foil.
- * "marvel" names the richest tier, which Fabled shares. */
-export type CelebrationTier = "majestic" | "foil" | "legendary" | "marvel";
+ * "chase" names the richest tier, shared by Marvel and Fabled. */
+export type CelebrationTier = "majestic" | "foil" | "legendary" | "chase";
 
 /**
  * Ordered richest first, and deliberately a chain of exclusive ifs rather
@@ -36,7 +36,7 @@ export type CelebrationTier = "majestic" | "foil" | "legendary" | "marvel";
  *  - Everything else (Common through Rare, Basic, Token): no celebration.
  */
 export function celebrationTierFor(card: ResolvedCard): CelebrationTier | null {
-	if (card.rarity === "marvel" || card.rarity === "fabled") return "marvel";
+	if (card.rarity === "marvel" || card.rarity === "fabled") return "chase";
 	if (card.rarity === "legendary") return "legendary";
 	if (card.rarity === "majestic") return "majestic";
 	if (card.treatment !== "standard") return "foil";

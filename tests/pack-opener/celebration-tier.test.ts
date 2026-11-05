@@ -15,6 +15,8 @@ function card(overrides: Partial<ResolvedCard>): ResolvedCard {
 		power: null,
 		defense: null,
 		tcgplayerProductId: null,
+		printingId: null,
+		isPlaceholder: false,
 		...overrides,
 	};
 }
@@ -89,12 +91,12 @@ describe("celebrationTierFor", () => {
 	it("gives fabled the top tier, being rarer than marvel", () => {
 		expect(
 			celebrationTierFor(card({ rarity: "fabled", treatment: "cold" })),
-		).toBe("marvel");
+		).toBe("chase");
 	});
 
 	it("marvel always wins, even over legendary treatment quirks", () => {
 		expect(
 			celebrationTierFor(card({ rarity: "marvel", treatment: "cold" })),
-		).toBe("marvel");
+		).toBe("chase");
 	});
 });

@@ -1,49 +1,8 @@
 import type { CelebrationTier } from "@fabkit/apps/pack-opener/cards/celebration-tier";
+import { CELEBRATION_BY_TIER } from "@fabkit/apps/pack-opener/config/celebration";
 import { CELEBRATION_Z } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { Sparkles } from "@react-three/drei";
-
-/** How each rarity tier celebrates. Deliberately escalating rather than
- * merely different: a Majestic is a good pull, a Legendary is a rare one,
- * and a Marvel is the rarest thing in the game, so each step up adds
- * particles, size and speed rather than swapping one look for another. */
-interface SparkleSpec {
-	count: number;
-	size: number;
-	speed: number;
-	color: string;
-	/** World-space box the particles live in, as [x, y, z]. Wide on
-	 * purpose: the card fills most of the canvas vertically but only a
-	 * fraction of it horizontally, so there is real room to either side of
-	 * the card and almost none above or below it. Spreading sideways is
-	 * what makes the effect visible at all rather than hidden behind the
-	 * card. */
-	area: [number, number, number];
-}
-
-const TIER_SPARKLES: Partial<Record<CelebrationTier, SparkleSpec>> = {
-	majestic: {
-		count: 28,
-		size: 3,
-		speed: 0.3,
-		color: "#d4af37",
-		area: [3.0, 2.0, 0.7],
-	},
-	legendary: {
-		count: 62,
-		size: 5,
-		speed: 0.5,
-		color: "#f0c26a",
-		area: [3.6, 2.3, 0.9],
-	},
-	marvel: {
-		count: 95,
-		size: 6,
-		speed: 0.7,
-		color: "#ff8fc4",
-		area: [4.0, 2.5, 1.0],
-	},
-};
 
 /** Layered just behind the shared celebration depth — see
  * CELEBRATION_Z in config/scene.ts for the render-queue reason every
@@ -69,7 +28,7 @@ const SPARKLE_Z = CELEBRATION_Z - 0.05;
  * static form, and the glow still marks the pull on its own. */
 export function PullSparkles({ tier }: { tier: CelebrationTier }) {
 	const reducedMotion = usePrefersReducedMotion();
-	const spec = TIER_SPARKLES[tier];
+	const spec = CELEBRATION_BY_TIER[tier].sparkles;
 	if (!spec || reducedMotion) return null;
 	return (
 		<Sparkles

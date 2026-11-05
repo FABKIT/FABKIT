@@ -24,9 +24,8 @@ interface OutgoingCardProps {
  * The z offset (0.03) is intentionally small and does NOT by itself
  * guarantee this card renders in front of the active one underneath — the
  * active card can tilt up to CARD_TILT_MAX_DEG with the pointer, and at the
- * corners that swings it geometrically well past this gap (see the
- * execution plan, section 2.2). `alwaysOnTop` on Card3D below is what
- * actually keeps this card on top regardless of that overlap, by disabling
+ * corners that swings it geometrically well past this gap. `alwaysOnTop` on
+ * Card3D below is what actually keeps this card on top regardless of that overlap, by disabling
  * depth testing on its material and raising its renderOrder — the z offset
  * just keeps the two planes from perfectly coinciding. */
 export function OutgoingCard({ card, phaseStartedAt }: OutgoingCardProps) {

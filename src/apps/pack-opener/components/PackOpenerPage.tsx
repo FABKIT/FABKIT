@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
  * predictable height. The summary's space is reserved from the first reveal
  * rather than appearing at the end, because otherwise the canvas would
  * shrink at that moment and the last card would visibly shrink with it; its
- * ledger opens upward over the canvas (see PackSummary.tsx) for the same
+ * ledger opens upward over the canvas (see PackLedger.tsx) for the same
  * reason.
  */
 export function PackOpenerPage() {
@@ -40,11 +40,7 @@ export function PackOpenerPage() {
 				    like a bug behind the unlit 3D card. */}
 				<div
 					aria-hidden="true"
-					className="pointer-events-none absolute inset-0"
-					style={{
-						background:
-							"radial-gradient(ellipse 60% 50% at 50% 45%, var(--color-surface-muted), transparent 70%)",
-					}}
+					className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,var(--color-surface-muted),transparent_70%)]"
 				/>
 				<PackOpenerCanvas />
 			</div>

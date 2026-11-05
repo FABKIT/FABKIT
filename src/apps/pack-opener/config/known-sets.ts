@@ -1,7 +1,6 @@
 /**
- * Every set code the project has made a decision about, per the
- * self-maintenance design in the execution plan (section 8.5). This is the
- * CI gate: scripts/build-pack-data.ts derives a candidate set list from the
+ * Every set code the project has made a decision about. This is the CI
+ * gate: scripts/build-pack-data.ts derives a candidate set list from the
  * upstream the-fab-cube data automatically (released + at least 50 distinct
  * printings + at least one Rainbow Foil printing — see that script's
  * deriveCandidates()), then cross-checks every candidate against this file.
@@ -17,7 +16,7 @@
  * sets the automatic rule structurally can't detect.
  */
 
-export type KnownSetDecisionKind = "include" | "exclude";
+type KnownSetDecisionKind = "include" | "exclude";
 
 /** What KIND of product a set is, as distinct from whether it ships.
  *
@@ -28,9 +27,9 @@ export type KnownSetDecisionKind = "include" | "exclude";
  * not the same thing, and listing them interleaved by release date among
  * the mainline sets makes the set picker read as one long undifferentiated
  * list. The pack opener groups on this (see SetCarousel.tsx). */
-export type ProductKind = "booster-set" | "supplemental";
+type ProductKind = "booster-set" | "supplemental";
 
-export interface KnownSetDecision {
+interface KnownSetDecision {
 	code: string;
 	decision: KnownSetDecisionKind;
 	/** Defaults to "booster-set" when omitted, since most entries here are
@@ -193,12 +192,12 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"Mastery Pack Warrior — the same kind of product as Mastery Pack " +
 			"Guardian above, and its page publishes the same shape of " +
 			"configuration. This was excluded for a while on DATA rather than " +
-			"principle: the-fab-cube had 34 of its 156 cards, including only 3 " +
-			"distinct Commons for a slot that deals 8, so every pack would have " +
-			"shown the same three Commons over and over. That was a property of " +
-			"the source, not of the product, and the build now reads fabrary's " +
-			"copy instead, which has all 156 with prices — see the comment on " +
-			"CARD_JSON_URL in scripts/build-pack-data.ts.",
+			"principle: the-fab-cube's main branch had 34 of its 156 cards, " +
+			"including only 3 distinct Commons for a slot that deals 8, so every " +
+			"pack would have shown the same three Commons over and over. That was " +
+			"a property of the source, not of the product, and the build now reads " +
+			"the-fab-cube's develop branch, which has all 156 with prices — see " +
+			"the comment on CARD_JSON_URL in scripts/build-pack-data.ts.",
 	},
 	{
 		code: "TNP",
@@ -253,9 +252,9 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"include, the same escape hatch 1HP uses. Two things about it are " +
 			"temporary and self-correcting, not permanent departures from how " +
 			"every other set here works: the card data comes via the " +
-			"PRE_RELEASE_SETS bridge in scripts/build-pack-data.ts (fabrary's " +
-			"Released data only has 11 preview printings for it) until " +
-			"the-fab-cube catches up, and the odds in pack/set-configs.ts are " +
+			"PRE_RELEASE_SETS bridge in scripts/pre-release-bridge.ts " +
+			"(the-fab-cube's develop branch only has 11 preview printings for " +
+			"it) until the-fab-cube catches up, and the odds in pack/set-configs.ts are " +
 			"Omens' own rates borrowed as an estimate until fabtcg.com publishes " +
 			"this set's Collectors Centre page. See that config's own comment " +
 			"and docs/pull-rate-verification.md's IAR section.",

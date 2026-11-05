@@ -10,20 +10,16 @@ const vertexShader = /* glsl */ `
 `;
 
 /**
- * uTreatment codes — see TREATMENT_CODE in Card3D.tsx, which maps
- * FoilTreatment (shared/data/fab-printings.ts) to these:
- *   0 standard   (no effect — CardFaceMaterial doesn't even attach this
- *                 material for "standard", so the shader never actually
- *                 needs to handle this case, but the branch stays cheap
- *                 insurance)
+ * uTreatment codes — see TREATMENT_CODE in CardFaceMaterial.tsx, which maps
+ * FoilTreatment (shared/data/fab-printings.ts) to these. A plain card never
+ * gets this material at all:
  *   1 rainbow    broad spectral sweep across the whole card
  *   2 cold       silver mirror under the ink, achromatic
  *   3 gold-cold  the same, tinted gold
  *
  * uLightDir is the card's current tilt offset (-1..1 each axis, see
- * Card3D's pointer-driven tilt) fed in every frame — moving the card
- * moves this "virtual light" across it, per the execution plan section
- * 3.3.
+ * useCardTilt) fed in every frame, so moving the card moves this "virtual
+ * light" across it.
  *
  * THE COLD FOIL IS A MIRROR UNDER THE INK, which is how the printing
  * process actually works: a metallic layer (vapour-deposited aluminium on a
@@ -87,8 +83,8 @@ const fragmentShader = /* glsl */ `
 		return dot(c, vec3(0.299, 0.587, 0.114));
 	}
 
-	/** Smooth value noise — hash() on its own is per-pixel static, which
-	 * reads as dirt on a flat surface rather than as a brushed finish. */
+	/** Smooth value noise, for the slow wave in a cold foil's reflection —
+	 * hash() on its own is per-pixel static, which would read as dirt. */
 	float valueNoise(vec2 p) {
 		vec2 i = floor(p);
 		vec2 f = fract(p);
@@ -101,20 +97,21 @@ const fragmentShader = /* glsl */ `
 	}
 
 	void main() {
-		vec4 base = texture2D(uBaseTexture, vUv);
+		// The texture is flagged sRGB (see useSafeTexture.ts), so sampling it
+		// decodes to linear, and unlike three's own materials a ShaderMaterial
+		// gets no output encode at the end. Everything below is arithmetic on
+		// the image's display values, and was tuned on them, so this re-encodes
+		// up front and the final write stays in display space. Without it the
+		// whole card renders too dark.
+		vec4 base = linearToOutputTexel(texture2D(uBaseTexture, vUv));
 
 		// Card art has transparent rounded corners baked into its own alpha
-		// channel (see Card3D.tsx's plain meshBasicMaterial path, which relies
-		// on the same cutout via alphaTest). A ShaderMaterial doesn't get
+		// channel (see CardFaceMaterial.tsx's plain path, which relies on the
+		// same cutout via alphaTest). A ShaderMaterial doesn't get
 		// three.js's built-in alphaTest handling for free — that only applies
 		// to three's own built-in materials — so it has to be an explicit
 		// discard here instead.
 		if (base.a < 0.5) discard;
-
-		if (uTreatment == 0) {
-			gl_FragColor = base;
-			return;
-		}
 
 		float lum = luma(base.rgb);
 

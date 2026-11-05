@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { preloadLookaheadCount } from "../../src/apps/pack-opener/stores/pack-opener";
+import { preloadLookaheadCount } from "../../src/apps/pack-opener/lib/preload-pack";
 
 /** Restores `navigator.connection` to whatever it was before each test —
  * most environments (including this one, by default) have no `connection`

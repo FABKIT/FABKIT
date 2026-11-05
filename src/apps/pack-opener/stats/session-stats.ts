@@ -7,7 +7,7 @@ import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 /** One completed pack, as the store records it (see stores/pack-opener.ts's
  * openedPacksThisSession) — just enough to aggregate from, nothing that
  * needs card resolution or price lookups (those stay in the component, see
- * SessionStatsDialog.tsx, same as PackSummary.tsx already does for prices).
+ * SessionStatsDialog.tsx, same as PackLedger.tsx does for prices).
  * Kept deliberately this shape, not a random session id or a full
  * ResolvedCard list, so promoting this to persistent per-device history
  * later is "persist this array", not a redesign. */
@@ -36,7 +36,7 @@ interface SetSessionStats {
 	rarities: RarityStat[];
 }
 
-interface SessionStats {
+export interface SessionStats {
 	totalPacksOpened: number;
 	bySet: SetSessionStats[];
 }
@@ -97,10 +97,14 @@ export function expectedRarityCounts(
  * card-resolution or price lookups, so it's trivially testable and trivially
  * promotable to run over a persisted list later instead of an in-memory
  * one. `configFor` is injected rather than imported directly so this stays
- * a pure function of its inputs (matches getPackConfig's own signature). */
+ * a pure function of its inputs (matches getPackConfig's own signature), and
+ * `rarityOf` likewise: a cold upgrade can redraw into a different rarity, so
+ * the session counts what the player saw, which only a resolver can say. */
 export function computeSessionStats(
 	records: OpenedPackRecord[],
 	configFor: (setCode: string) => PackConfig,
+	rarityOf: (card: DrawnCard, setCode: string) => CardRarity = (card) =>
+		card.rarity,
 ): SessionStats {
 	const bySetCode = new Map<string, OpenedPackRecord[]>();
 	for (const record of records) {
@@ -125,10 +129,8 @@ export function computeSessionStats(
 		let totalCards = 0;
 		for (const record of setRecords) {
 			for (const card of record.cards) {
-				pulledByRarity.set(
-					card.rarity,
-					(pulledByRarity.get(card.rarity) ?? 0) + 1,
-				);
+				const rarity = rarityOf(card, setCode);
+				pulledByRarity.set(rarity, (pulledByRarity.get(rarity) ?? 0) + 1);
 				totalCards += 1;
 			}
 		}

@@ -1,15 +1,16 @@
 // Pack mesh proportions (world units) — matches real FAB pack proportions,
 // roughly 1:2 width:height. Shared between PackMesh.tsx (the actual
-// boxGeometry dimensions) and textures/useRealPackTexture.ts (which derives
+// boxGeometry dimensions) and textures/pack-art-strips.ts (which derives
 // the seal/body split fraction of an uploaded pack image from these same
 // numbers) so the two can never drift apart and shear the art at the tear
-// line — see the execution plan, section 5.3.
+// line.
 export const PACK_WIDTH = 1.05;
 export const PACK_HEIGHT = 2.0;
+export type PackPart = "body" | "seal";
 /** Height of the tear-off seal strip, in the same world units as
  * PACK_HEIGHT. Its share of PACK_HEIGHT (0.236 / 2.0 = 11.8%) is also the
  * top fraction of an uploaded pack-front image that gets cut away as the
- * seal texture — see useRealPackTexture.ts's SEAL_FRACTION.
+ * seal texture — see pack-art-strips.ts's SEAL_FRACTION.
  *
  * Measured off a real pack front rather than guessed: on Legend Story
  * Studios' own product shots the crimped foil strip runs from the top edge
@@ -19,11 +20,23 @@ export const PACK_HEIGHT = 2.0;
  * differently, this one number is the thing to re-measure. */
 export const PACK_SEAL_HEIGHT = 0.236;
 
-/** Card tilt (see the execution plan, section 3.4) — pointer position maps
- * to a tilt of at most this many degrees on each axis, eased toward its
- * target each frame rather than snapping (TILT_EASE is a lerp factor, a
- * cheap spring approximation, not a real spring model). */
+export const CARD_WIDTH = 1.2;
+export const CARD_HEIGHT = CARD_WIDTH * (628 / 450);
+
+/** The official Flesh and Blood card back, self-hosted rather than hotlinked
+ * from content.fabrary.net: a loading placeholder must never itself be the thing
+ * that's loading, self-hosted it gets precached by the service worker and works
+ * offline, and it removes a third-party dependency from a core piece of UI.
+ * Warmed by the route loader, so it's normally already cached by the time any
+ * card needs it as a stand-in (see CardFace.tsx). */
+export const CARD_BACK_URL = "/img/pack-opener/card-back.webp";
+
+/** Card tilt: pointer position maps to a tilt of at most this many degrees on
+ * each axis, eased toward its target each frame rather than snapping
+ * (CARD_TILT_EASE is a lerp factor, a cheap spring approximation, not a real
+ * spring model). */
 export const CARD_TILT_MAX_DEG = 12;
+export const CARD_TILT_EASE = 0.12;
 /** The same gesture on the closed pack (see PackMesh.tsx). Smaller than the
  * card's: the pack is a tall box rather than a flat plane, so the same
  * angle swings its edges much further and starts to read as the whole pack
@@ -54,7 +67,6 @@ export const SWIPE_THRESHOLD_PX = 40;
  * toward the camera, so this sits comfortably clear of that. Effects layer
  * themselves further back from here. */
 export const CELEBRATION_Z = -0.55;
-export const CARD_TILT_EASE = 0.12;
 
 /** A beat where the pack sits closed before the seal starts moving. The
  * tear used to begin the instant openPack() fired, which meant it played
@@ -67,7 +79,7 @@ export const CARD_TILT_EASE = 0.12;
  * moving camera. */
 export const TEAR_START_DELAY_MS = 420;
 export const TEAR_DURATION_MS = 1200;
-/** Extra pause after the tear animation finishes before the first card's flip starts. */
+/** Extra pause after the tear animation finishes before the first card arrives. */
 export const TEAR_TAIL_MS = 300;
 /** How long the just-revealed card takes to slide up and off, exposing the
  * next card underneath — like pulling the top card off a physical stack.
@@ -106,9 +118,9 @@ export const ADVANCE_DEBOUNCE_MS = 120;
 export const LAST_CARD_AUTO_SUMMARY_MS = 2600;
 /** How long PullCelebration.tsx's glow takes to bloom in to its resting
  * size/opacity once a celebrated card becomes active — see
- * cards/celebration-tier.ts for which pulls celebrate. Deliberately close
- * to REVEAL_TRANSITION_MS so the glow reads as arriving with the card, not
- * as a separate, later event. */
+ * cards/celebration-tier.ts for which pulls celebrate. It starts together with
+ * REVEAL_TRANSITION_MS's slide, off the same timestamp, and runs on past it so
+ * the glow is still settling as the card comes to rest. */
 export const GLOW_ANIMATION_MS = 900;
 
 // Camera distances frame each phase's subject at a similar share of the
@@ -143,21 +155,3 @@ export const REVEALING_CAMERA_POSITION: [number, number, number] = [0, 0, 2.8];
  * session; the summary collapsing (see PackSummary.tsx) is what makes room
  * now, not the camera. */
 export const DONE_CAMERA_POSITION: [number, number, number] = [0, 0, 2.8];
-
-/**
- * A camera position always looks at the world origin (see CameraRig.tsx's
- * camera.lookAt(0, 0, 0)), so moving the camera's own Y does not move a
- * subject sitting at the origin on screen — it only tilts the viewing
- * angle, which would make a flat card plane read as subtly foreshortened.
- * To actually shift the revealed card lower in frame (closing the gap
- * between it and RevealCaption below the canvas — the execution plan,
- * section 2.3), CardStack3D.tsx offsets the CARD ITSELF by this amount
- * instead of moving the camera. Negative Y = down. Modest on purpose: the
- * card must stay fully inside the vertical frustum at every tilt angle. */
-/** The card sits dead centre in the canvas in every phase. It briefly had a
- * separate, raised position for the done phase, back when the summary was
- * an overlay floating over the bottom of the canvas and the card had to
- * climb out from under it. The summary now takes its own space in the page
- * below the canvas (see PackOpenerPage.tsx), so there is nothing left to
- * dodge and one centred position serves every phase. */
-export const CARD_Y_OFFSET = 0;

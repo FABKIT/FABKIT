@@ -1,12 +1,12 @@
 import { Sparkles } from "@react-three/drei";
 
 interface TearBurstProps {
-	position?: [number, number, number];
+	position: [number, number, number];
 }
 
 /** Particle flourish shown only while the pack is tearing — mounted/unmounted
  * by PackMesh based on phase, not self-gating. */
-export function TearBurst({ position = [0, 0, 0.1] }: TearBurstProps) {
+export function TearBurst({ position }: TearBurstProps) {
 	return (
 		<Sparkles
 			count={60}

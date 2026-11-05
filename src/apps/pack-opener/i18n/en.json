@@ -53,9 +53,10 @@
 		"box_price_label": "Booster box",
 		"price_captured": "Prices captured {{date}}",
 		"price_source": "Market prices come from TCGplayer, collected through tcgcsv.com.",
+		"price_source_cm": "Market prices come from Cardmarket's daily price guide.",
 		"source_link": "See the official product page",
 		"treatment": {
-			"rainbow": "guaranteed Rainbow Foil",
+			"rainbow": "usually Rainbow Foil",
 			"cold": "guaranteed Cold Foil",
 			"gold-cold": "guaranteed Gold Cold Foil"
 		},
@@ -74,9 +75,11 @@
 			"generic-common": "Generic Common",
 			"class-common": "Class Common",
 			"equipment": "Equipment",
-			"promo": "Promo card"
+			"promo": "Promo card",
+			"majestic": "Majestic"
 		},
-		"price_source_cm": "Market prices come from Cardmarket's daily price guide."
+		"slot_line": "{{amount}} × {{label}}",
+		"slot_rarities_treatment": "{{rarities}}, {{treatment}}"
 	},
 	"stats": {
 		"open_button": "Session stats",
@@ -86,9 +89,11 @@
 		"value_title": "Value this session",
 		"spent_label": "Spent on packs",
 		"packs_opened_for_set": "{{count}} opened",
-		"expected_short": "expected"
+		"pull_line": "{{pulled}} · {{percent}}%",
+		"pull_line_with_expected": "{{pulled}} · {{percent}}% (expected {{expected}}%)"
 	},
 	"card": {
+		"unavailable": "Card unavailable",
 		"rarity": {
 			"basic": "Basic",
 			"common": "Common",

@@ -21,7 +21,6 @@ describe("automatic hand-over on the last card", () => {
 			pack: null,
 			revealIndex: -1,
 			phaseStartedAt: null,
-			packsOpenedThisSession: 0,
 			openedPacksThisSession: [],
 			selectedSet: DEFAULT_PACK_CONFIG.id,
 			packArtUrl: null,
@@ -57,7 +56,7 @@ describe("automatic hand-over on the last card", () => {
 
 		const state = usePackOpenerStore.getState();
 		expect(state.phase).toBe("done");
-		expect(state.packsOpenedThisSession).toBe(1);
+		expect(state.openedPacksThisSession).toHaveLength(1);
 		expect(state.openedPacksThisSession).toHaveLength(1);
 	});
 
@@ -70,12 +69,14 @@ describe("automatic hand-over on the last card", () => {
 		usePackOpenerStore.setState({ phaseStartedAt: Date.now() - 1000 });
 		usePackOpenerStore.getState().advanceReveal();
 		expect(usePackOpenerStore.getState().phase).toBe("done");
-		expect(usePackOpenerStore.getState().packsOpenedThisSession).toBe(1);
+		expect(usePackOpenerStore.getState().openedPacksThisSession).toHaveLength(
+			1,
+		);
 
 		await sleep(LAST_CARD_AUTO_SUMMARY_MS + 400);
 
 		const state = usePackOpenerStore.getState();
-		expect(state.packsOpenedThisSession).toBe(1);
+		expect(state.openedPacksThisSession).toHaveLength(1);
 		expect(state.openedPacksThisSession).toHaveLength(1);
 	});
 });
@@ -89,6 +90,7 @@ describe("automatic hand-over on the last card", () => {
  */
 describe("readyAnotherPack", () => {
 	it("returns to idle with a pack to tap rather than opening one", () => {
+		usePackOpenerStore.setState({ phase: "idle", pack: null });
 		const store = usePackOpenerStore.getState();
 		store.openPack(DEFAULT_PACK_CONFIG);
 		const pack = usePackOpenerStore.getState().pack;
