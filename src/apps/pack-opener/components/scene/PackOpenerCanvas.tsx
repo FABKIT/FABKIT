@@ -30,6 +30,10 @@ export function PackOpenerCanvas() {
 			// weaker and older GPUs smoother while only slightly softening the
 			// sharpest screens.
 			dpr={[1, 1.5]}
+			// No tone mapping: card and pack art must read true to source, and
+			// the foil shader bypasses tone mapping anyway, so with it on a plain
+			// card and its foil copy wouldn't match.
+			flat
 		>
 			<CameraRig />
 			{(phase === "idle" || phase === "tearing") && <PackMesh />}
