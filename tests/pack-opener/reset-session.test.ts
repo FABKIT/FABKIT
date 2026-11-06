@@ -10,8 +10,8 @@ import { resetStore } from "./reset-store";
  * away with it are the selected set and the currency preference — both are
  * settings the player chose, not part of the run. Getting that wrong is
  * silent and annoying rather than loud: the set would spring back to
- * whatever localStorage held and the pack front would drop to the mock
- * one, which is exactly what spreading the store's initialState would do.
+ * nothing and the pack front would drop to the mock one, which is exactly
+ * what spreading the store's initialState would do.
  *
  * Builds the "finished pack" state with setState rather than by calling
  * openPack(), for the same reason switch-set.test.ts does: openPack pulls

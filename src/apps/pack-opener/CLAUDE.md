@@ -33,7 +33,8 @@ src/apps/pack-opener/
                       usePrefersReducedMotion, usePrices, useSafeTexture, useSetNavigation
   stores/
     pack-opener.ts   Zustand store: the idle/tearing/revealing/done state machine, the
-                      persisted currency preference, resetSession()
+                      selected set and currency (saved with zustand's persist, never
+                      through localStorage directly), resetSession()
     pack-opener-types.ts  State and action types
   components/
     PackOpenerPage.tsx  The page

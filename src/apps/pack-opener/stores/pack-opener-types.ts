@@ -59,8 +59,8 @@ export interface PackOpenerState {
 	openedPacksThisSession: OpenedPackRecord[];
 	/** Set code driving getPackConfig() for the next openPack() call, and
 	 * shown by SetCarousel — null until the carousel picks a default (the
-	 * set index hasn't loaded yet, or nothing was ever stored). See
-	 * lib/pack-opener-storage.ts for the persisted value. */
+	 * set index hasn't loaded yet, or nothing was ever stored). Persisted by
+	 * the store. */
 	selectedSet: string | null;
 	/** The one artwork PackMesh.tsx renders for selectedSet. Rolled afresh
 	 * (see lib/pack-art.ts) on arriving at the page, selecting a set, readying
@@ -75,8 +75,8 @@ export interface PackOpenerState {
 	 * dollars or Cardmarket euros. Lives in the store rather than in the
 	 * summary component because three separate surfaces read it (the pack
 	 * ledger, the session stats dialog, the set info dialog) and they must
-	 * never disagree about which currency is on screen. Persisted, see
-	 * lib/pack-opener-storage.ts. */
+	 * never disagree about which currency is on screen. Persisted by the
+	 * store. */
 	currency: Currency;
 	/** Goes up each time a set's price snapshots finish loading. Prices are
 	 * read synchronously out of module caches, which React cannot see change,

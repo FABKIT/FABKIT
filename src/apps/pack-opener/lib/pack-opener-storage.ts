@@ -1,45 +1,29 @@
-import type { Currency } from "@fabkit/apps/pack-opener/lib/currency";
+import {
+	createJSONStorage,
+	type PersistStorage,
+	type StateStorage,
+} from "zustand/middleware";
 
-const SELECTED_SET_STORAGE_KEY = "pack-opener:selected-set";
-const CURRENCY_STORAGE_KEY = "pack-opener:currency";
-
-/** Deliberately not a shared safeStorage util (see Fabble's
- * src/apps/fabble/game/storage.ts) — apps can't import each other, and
- * this store only touches two keys, so a tiny inline try/catch per key is
- * simpler than a new shared module for it. */
-export function readStoredSelectedSet(): string | null {
-	try {
-		return localStorage.getItem(SELECTED_SET_STORAGE_KEY);
-	} catch {
-		return null;
-	}
-}
-
-export function writeStoredSelectedSet(setCode: string): void {
-	try {
-		localStorage.setItem(SELECTED_SET_STORAGE_KEY, setCode);
-	} catch {
-		// Private mode / quota exceeded — the selection just won't survive
-		// a reload, which is a fine degrade for a preference like this.
-	}
-}
-
-/** Dollars unless this visitor has said otherwise. Deliberately not guessed
- * from the browser's locale: a euro price here is a Cardmarket price, and
- * a visitor's language says nothing about which marketplace they buy from.
- * They pick once and it sticks. */
-export function readStoredCurrency(): Currency {
-	try {
-		return localStorage.getItem(CURRENCY_STORAGE_KEY) === "EUR" ? "EUR" : "USD";
-	} catch {
-		return "USD";
-	}
-}
-
-export function writeStoredCurrency(currency: Currency): void {
-	try {
-		localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
-	} catch {
-		// Same fine degrade as the set selection above.
-	}
+/** zustand's own JSON storage, with one change: a failed write is dropped.
+ * persist writes inside every set(), so with the default storage a full or
+ * blocked localStorage throws out of whichever action was running, after its
+ * state changed but before the rest of it ran. openPack would never schedule
+ * the end of the tear, leaving the pack stuck. Losing a preference on reload is
+ * a fine degrade; losing the pack isn't. When storage can't be reached at all,
+ * this also spares the console persist's warning on every set(). */
+export function createPreferenceStorage<T>(
+	getStorage: () => StateStorage = () => window.localStorage,
+): PersistStorage<T> {
+	const storage = createJSONStorage<T>(getStorage);
+	return {
+		getItem: (name) => storage?.getItem(name) ?? null,
+		setItem: (name, value) => {
+			try {
+				storage?.setItem(name, value);
+			} catch {
+				// See above: the preference just won't survive a reload.
+			}
+		},
+		removeItem: (name) => storage?.removeItem(name),
+	};
 }
