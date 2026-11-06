@@ -1,9 +1,9 @@
-import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { PriceValue } from "@fabkit/apps/pack-opener/components/PriceValue";
 import { TreatmentBadge } from "@fabkit/apps/pack-opener/components/TreatmentBadge";
 import { usePrices } from "@fabkit/apps/pack-opener/hooks/usePrices";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
-import { selectActiveCardIndex } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
+import { selectActiveCard } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { FlipHorizontal2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,7 @@ export function RevealCaption() {
 	const pack = usePackOpenerStore((state) => state.pack);
 	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
-	const activeIndex = usePackOpenerStore(selectActiveCardIndex);
+	const drawn = usePackOpenerStore(selectActiveCard);
 	const phase = usePackOpenerStore((state) => state.phase);
 	const showingOtherFace = usePackOpenerStore(
 		(state) => state.showingOtherFace,
@@ -38,15 +38,9 @@ export function RevealCaption() {
 	const flipCard = usePackOpenerStore((state) => state.flipCard);
 	const prices = usePrices();
 
-	const drawn =
-		pack && activeIndex >= 0 && activeIndex < pack.length
-			? pack[activeIndex]
-			: null;
-	const resolved = drawn
-		? activeCardResolver.resolve(drawn, packSetCode ?? undefined)
-		: null;
+	if (!drawn || !pack) return null;
 
-	if (!resolved || !pack) return null;
+	const resolved = resolveCard(drawn, packSetCode);
 
 	/** The same build-time snapshot the summary totals up, read one card
 	 * at a time, in whichever currency is selected (see lib/pricing.ts).
@@ -67,7 +61,7 @@ export function RevealCaption() {
 			    another side (see card-resolver.ts's backImageUrl). */}
 			<span className="flex items-center gap-2">
 				<span className="font-card-name text-lg text-heading">
-					{resolved.isPlaceholder ? t("card.unavailable") : resolved.name}
+					{resolved.name ?? t("card.unavailable")}
 				</span>
 				{resolved.backImageUrl !== null && (
 					<button
@@ -104,7 +98,7 @@ export function RevealCaption() {
 				<span
 					className={price === null ? "text-subtle" : "font-bold text-heading"}
 				>
-					<PriceValue amount={price} currency={prices.currency} />
+					<PriceValue amount={price} />
 				</span>
 			</p>
 			{/* Reveal-only. Once the pack is done there is nothing left to tap

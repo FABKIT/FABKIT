@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
+import { expectedRarityCounts } from "@fabkit/apps/pack-opener/pack/pull-rates";
 import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
 import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
-import { expectedRarityCounts } from "@fabkit/apps/pack-opener/stats/session-stats";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 
 /**
@@ -35,7 +35,7 @@ function histogramFor(setCode: string): Map<CardRarity, number> {
 	const rng = mulberry32(1);
 	const counts = new Map<CardRarity, number>();
 	for (let i = 0; i < N; i++) {
-		for (const card of generatePack(config, rng)) {
+		for (const card of generatePack(config, rng, () => "")) {
 			counts.set(card.rarity, (counts.get(card.rarity) ?? 0) + 1);
 		}
 	}
@@ -264,7 +264,7 @@ describe("frequency calibration", () => {
 
 /**
  * The pull-rates dialog and the session summary don't simulate — they read
- * stats/session-stats.ts's expectedRarityCounts, which works the weights
+ * pack/pull-rates.ts's expectedRarityCounts, which works the weights
  * out analytically. Nothing checked that the analytic path agrees with the
  * engine that actually deals the cards, so a config could be right in the
  * dialog and wrong in the pack, or the reverse. This closes that gap for

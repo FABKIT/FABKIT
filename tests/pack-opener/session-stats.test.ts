@@ -8,15 +8,6 @@ describe("session stats", () => {
 	const pack = generatePack(DEFAULT_PACK_CONFIG, mulberry32(21));
 	const records = [{ setCode: DEFAULT_PACK_CONFIG.id, cards: pack }];
 
-	it("counts the rarity the card was drawn at by default", () => {
-		const stats = computeSessionStats(records, () => DEFAULT_PACK_CONFIG);
-		const total = stats.bySet[0].rarities.reduce(
-			(sum, rarity) => sum + rarity.pulled,
-			0,
-		);
-		expect(total).toBe(pack.length);
-	});
-
 	it("counts what was shown when a redraw changed the rarity", () => {
 		const stats = computeSessionStats(
 			records,

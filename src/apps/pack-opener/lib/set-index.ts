@@ -11,10 +11,6 @@ function defaultSetPosition(sets: SetIndexEntry[]): number {
 	return sets.length - 1;
 }
 
-export function defaultSet(sets: SetIndexEntry[]): SetIndexEntry | undefined {
-	return sets[defaultSetPosition(sets)];
-}
-
 /** The selected set's place in the index, treating a code the index doesn't
  * know (a stored choice from an older build, say) as no selection at all. */
 export function selectedSetPosition(
@@ -25,14 +21,22 @@ export function selectedSetPosition(
 	return position >= 0 ? position : defaultSetPosition(sets);
 }
 
-/** The set `offset` steps from the current one, wrapping at either end. The
- * one calculation behind the arrow buttons, the arrow keys and swiping, so all
- * three agree on where a step lands. */
+/** The set `offset` steps from `position`, wrapping at either end. */
+export function setAtOffset(
+	sets: SetIndexEntry[],
+	position: number,
+	offset: number,
+): SetIndexEntry {
+	return sets[(position + offset + sets.length) % sets.length];
+}
+
+/** The code `offset` steps from the current set. The one calculation behind the
+ * arrow buttons, the arrow keys and swiping, so all three agree on where a step
+ * lands. */
 export function stepSetCode(
 	sets: SetIndexEntry[],
 	selectedSet: string | null,
 	offset: number,
 ): string {
-	const base = selectedSetPosition(sets, selectedSet);
-	return sets[(base + offset + sets.length) % sets.length].code;
+	return setAtOffset(sets, selectedSetPosition(sets, selectedSet), offset).code;
 }

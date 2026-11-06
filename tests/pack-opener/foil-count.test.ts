@@ -1,6 +1,4 @@
 import { describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import {
 	resolveTreatment,
 	selectPrintingPool,
@@ -8,50 +6,16 @@ import {
 import { hashToIndex } from "@fabkit/apps/pack-opener/cards/deterministic-hash";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
-import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
-import type {
-	FabPrinting,
-	FabSetPrintings,
-} from "@fabkit/shared/data/fab-printings";
-import { hasPackData } from "./pack-data";
-
-const DATA_DIR = join(process.cwd(), "public", "data", "pack-opener", "sets");
+import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
+import {
+	makeDrawn as drawn,
+	hasPackData,
+	makePrinting as printing,
+	readGeneratedSet,
+} from "./pack-data";
 
 function loadPrintings(code: string): FabPrinting[] {
-	const raw = readFileSync(join(DATA_DIR, `${code}.json`), "utf-8");
-	return (JSON.parse(raw) as FabSetPrintings).printings;
-}
-
-function printing(overrides: Partial<FabPrinting>): FabPrinting {
-	return {
-		id: "TST001",
-		uniqueId: "u",
-		name: "Test",
-		rarity: "common",
-		foiling: "standard",
-		expansionSlot: false,
-		tcgplayerProductId: null,
-		pitch: null,
-		cost: null,
-		power: null,
-		defense: null,
-		types: [],
-		artVariations: [],
-		artSlug: null,
-		backSlug: null,
-		...overrides,
-	};
-}
-
-function drawn(overrides: Partial<DrawnCard>): DrawnCard {
-	return {
-		id: "d",
-		slot: "common",
-		rarity: "common",
-		treatment: "standard",
-		expansionSlot: false,
-		...overrides,
-	};
+	return readGeneratedSet(code).printings;
 }
 
 describe("selectPrintingPool", () => {

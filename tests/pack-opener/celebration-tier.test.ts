@@ -10,13 +10,8 @@ function card(overrides: Partial<ResolvedCard>): ResolvedCard {
 		treatment: "standard",
 		imageUrl: null,
 		backImageUrl: null,
-		pitch: null,
-		cost: null,
-		power: null,
-		defense: null,
 		tcgplayerProductId: null,
 		printingId: null,
-		isPlaceholder: false,
 		...overrides,
 	};
 }

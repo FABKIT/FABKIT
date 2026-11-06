@@ -1,11 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import type { FabSetPrintings } from "@fabkit/shared/data/fab-printings";
 import { hasType, isClassCard } from "@fabkit/shared/data/fab-printings";
-import { hasPackData } from "./pack-data";
+import { hasPackData, readGeneratedSet } from "./pack-data";
 
 /**
  * Hard gate: every rarity a real set's PackConfig can draw must actually be
@@ -13,20 +11,11 @@ import { hasPackData } from "./pack-data";
  * slot LSS's own pool can't fill silently falls back to placeholder art
  * mid-pack — this test exists so that fails the build instead.
  *
- * Reads the generated per-set JSON directly from disk rather than going
- * through shared/data/fab-printings.ts's loadSetPrintings(), which fetches
- * over HTTP and assumes a browser/dev-server origin — not available here.
+ * Reads the generated per-set JSON directly from disk (see pack-data.ts).
  * Requires `bun run build-pack-data` to have been run first (wired into
  * CI ahead of the Test step — see .github/workflows/ci.yml); skipped with a
  * message locally when it hasn't, see pack-data.ts.
  */
-
-const DATA_DIR = join(process.cwd(), "public", "data", "pack-opener", "sets");
-
-function loadSetPrintings(code: string): FabSetPrintings {
-	const raw = readFileSync(join(DATA_DIR, `${code}.json`), "utf-8");
-	return JSON.parse(raw) as FabSetPrintings;
-}
 
 function poolSize(
 	data: FabSetPrintings,
@@ -49,7 +38,7 @@ function poolSize(
 describe.skipIf(!hasPackData())("pool viability", () => {
 	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
 		describe(code, () => {
-			const data = loadSetPrintings(code);
+			const data = readGeneratedSet(code);
 
 			it("every declared rarity/expansion-slot combination has a non-empty real pool", () => {
 				const empty: string[] = [];

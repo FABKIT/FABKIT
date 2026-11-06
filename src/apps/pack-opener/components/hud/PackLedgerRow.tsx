@@ -1,14 +1,12 @@
 import type { ResolvedCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { PriceValue } from "@fabkit/apps/pack-opener/components/PriceValue";
 import { TreatmentBadge } from "@fabkit/apps/pack-opener/components/TreatmentBadge";
-import type { Currency } from "@fabkit/apps/pack-opener/lib/currency";
 import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { useTranslation } from "react-i18next";
 
 interface PackLedgerRowProps {
 	card: ResolvedCard;
 	price: number | null;
-	currency: Currency;
 	isShowing: boolean;
 	onSelect: () => void;
 }
@@ -18,7 +16,6 @@ interface PackLedgerRowProps {
 export function PackLedgerRow({
 	card,
 	price,
-	currency,
 	isShowing,
 	onSelect,
 }: PackLedgerRowProps) {
@@ -41,11 +38,11 @@ export function PackLedgerRow({
 					className="h-5 w-5 shrink-0"
 				/>
 				<span className="font-card-name flex-1 truncate text-sm text-body">
-					{card.isPlaceholder ? t("card.unavailable") : card.name}
+					{card.name ?? t("card.unavailable")}
 				</span>
 				<TreatmentBadge card={card} className="shrink-0 text-xs" />
 				<span className="font-card-stat shrink-0 text-sm text-subtle">
-					<PriceValue amount={price} currency={currency} />
+					<PriceValue amount={price} />
 				</span>
 			</button>
 		</li>

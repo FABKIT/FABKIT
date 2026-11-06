@@ -1,3 +1,5 @@
+import type { SetIndexEntry } from "@fabkit/shared/data/fab-printings";
+
 /**
  * Every set code the project has made a decision about. This is the CI
  * gate: scripts/build-pack-data.ts derives a candidate set list from the
@@ -27,7 +29,7 @@ type KnownSetDecisionKind = "include" | "exclude";
  * not the same thing, and listing them interleaved by release date among
  * the mainline sets makes the set picker read as one long undifferentiated
  * list. The pack opener groups on this (see SetCarousel.tsx). */
-type ProductKind = "booster-set" | "supplemental";
+type ProductKind = SetIndexEntry["productKind"];
 
 interface KnownSetDecision {
 	code: string;

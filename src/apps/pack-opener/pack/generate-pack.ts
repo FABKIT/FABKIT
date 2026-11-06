@@ -18,11 +18,12 @@ function weightedPick(table: RarityWeight[], rng: () => number): RarityWeight {
 
 /** Generates one booster pack's worth of drawn cards from a PackConfig.
  * Always returns exactly `config.cardsPerPack` cards. Pass a seeded rng
- * (see pack/rng.ts) for deterministic rarities and treatments in tests; each
- * card's id is a uuid regardless. */
+ * (see pack/rng.ts) for deterministic rarities and treatments in tests, and
+ * an `makeId` when ids should be deterministic too or aren't needed at all. */
 export function generatePack(
 	config: PackConfig,
 	rng: () => number = Math.random,
+	makeId: () => string = uuid,
 ): DrawnCard[] {
 	const cards: DrawnCard[] = [];
 
@@ -50,7 +51,7 @@ export function generatePack(
 			// way no rate test can see.
 			if (rarity === "marvel") treatment = "cold";
 			cards.push({
-				id: uuid(),
+				id: makeId(),
 				slot: slot.kind,
 				rarity,
 				treatment,

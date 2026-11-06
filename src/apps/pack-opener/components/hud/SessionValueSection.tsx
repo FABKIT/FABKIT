@@ -1,34 +1,27 @@
-import { PriceValue } from "@fabkit/apps/pack-opener/components/PriceValue";
-import type { PriceReader } from "@fabkit/apps/pack-opener/lib/pricing";
+import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { PriceRow } from "@fabkit/apps/pack-opener/components/PriceRow";
+import { usePrices } from "@fabkit/apps/pack-opener/hooks/usePrices";
 import type { OpenedPackRecord } from "@fabkit/apps/pack-opener/stats/session-stats";
 import { computeValueTotals } from "@fabkit/apps/pack-opener/stats/value-totals";
 import { useTranslation } from "react-i18next";
 
 export function SessionValueSection({
 	openedPacks,
-	prices,
 }: {
 	openedPacks: OpenedPackRecord[];
-	prices: PriceReader;
 }) {
 	const { t } = useTranslation("pack-opener");
-	const totals = computeValueTotals(openedPacks, prices);
+	const prices = usePrices();
+	const totals = computeValueTotals(openedPacks, prices, resolveCard);
 
 	return (
 		<section className="space-y-1.5">
 			<h3 className="font-semibold text-body">{t("stats.value_title")}</h3>
-			<div className="flex items-center justify-between text-sm">
-				<span className="text-muted">{t("page.value_pulled_label")}</span>
-				<span className="font-card-stat text-body">
-					<PriceValue amount={totals.pulledValue} currency={prices.currency} />
-				</span>
-			</div>
-			<div className="flex items-center justify-between text-sm">
-				<span className="text-muted">{t("stats.spent_label")}</span>
-				<span className="font-card-stat text-body">
-					<PriceValue amount={totals.spent} currency={prices.currency} />
-				</span>
-			</div>
+			<PriceRow
+				label={t("page.value_pulled_label")}
+				amount={totals.pulledValue}
+			/>
+			<PriceRow label={t("stats.spent_label")} amount={totals.spent} />
 			{totals.isPartial && (
 				<p className="text-xs text-subtle">{t("page.partial_total_note")}</p>
 			)}

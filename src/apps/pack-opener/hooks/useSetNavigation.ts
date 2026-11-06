@@ -42,7 +42,7 @@ function arrowKeyBelongsElsewhere(event: KeyboardEvent): boolean {
  * Handlers read live store state via getState() rather than this render's own
  * values, so the keydown listener never needs re-attaching (and never goes
  * stale) as the selection or phase changes. */
-export function useSetNavigation(hasSets: boolean) {
+export function useSetNavigation() {
 	const selectSet = usePackOpenerStore((state) => state.selectSet);
 	const [leaveRequest, setLeaveRequest] = useState<LeaveRequest | null>(null);
 	const touchStartX = useRef<number | null>(null);
@@ -87,7 +87,6 @@ export function useSetNavigation(hasSets: boolean) {
 	// Left/right arrow keys step through sets whenever the carousel is on
 	// screen. There's no text input on this page to conflict with.
 	useEffect(() => {
-		if (!hasSets) return;
 		function handleKeyDown(event: KeyboardEvent): void {
 			if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
 			if (arrowKeyBelongsElsewhere(event)) return;
@@ -95,15 +94,16 @@ export function useSetNavigation(hasSets: boolean) {
 		}
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [hasSets, step]);
+	}, [step]);
 
 	function handleTouchStart(event: TouchEvent): void {
-		// Scrolling the set dropdown drifts sideways often enough that it
-		// would otherwise switch sets under the player's finger.
-		const insideListbox =
-			event.target instanceof Element &&
-			event.target.closest('[role="listbox"]') !== null;
-		touchStartX.current = insideListbox ? null : event.touches[0].clientX;
+		// The set dropdown and the dialogs portal away in the DOM, but React
+		// still bubbles their touches through here. Scrolling one drifts sideways
+		// often enough that it would otherwise switch sets under the player's
+		// finger, so only a touch that really began in this element counts.
+		touchStartX.current = event.currentTarget.contains(event.target as Node)
+			? event.touches[0].clientX
+			: null;
 	}
 
 	function handleTouchEnd(event: TouchEvent): void {

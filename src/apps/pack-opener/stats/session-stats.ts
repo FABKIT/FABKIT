@@ -1,3 +1,4 @@
+import { expectedRarityCounts } from "@fabkit/apps/pack-opener/pack/pull-rates";
 import type {
 	DrawnCard,
 	PackConfig,
@@ -6,8 +7,8 @@ import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 
 /** One completed pack, as the store records it (see stores/pack-opener.ts's
  * openedPacksThisSession) — just enough to aggregate from, nothing that
- * needs card resolution or price lookups (those stay in the component, see
- * SessionStatsDialog.tsx, same as PackLedger.tsx does for prices).
+ * needs card resolution or price lookups (those are injected, here and in
+ * stats/value-totals.ts).
  * Kept deliberately this shape, not a random session id or a full
  * ResolvedCard list, so promoting this to persistent per-device history
  * later is "persist this array", not a redesign. */
@@ -22,7 +23,7 @@ interface RarityStat {
 	/** Percentage of this set's pulled cards that were this rarity. */
 	pulledPercent: number;
 	/** Percentage this rarity is *expected* to make up, derived from the
-	 * set's own PackConfig (see expectedRarityCounts below) — the number a
+	 * set's own PackConfig (see pack/pull-rates.ts's expectedRarityCounts) — the number a
 	 * player compares their own pulls against to see if they ran hot or
 	 * cold. Null when the set's config was never resolved (shouldn't happen
 	 * for any set actually opened, since openPack() always resolves one). */
@@ -41,58 +42,6 @@ export interface SessionStats {
 	bySet: SetSessionStats[];
 }
 
-/** Expected number of cards of each rarity in a single pack from `config`,
- * derived the same way generate-pack.ts actually draws (weight / total
- * weight per slot, times the slot's card count) — see that file's
- * weightedPick. Also folds in the premium-foil slot's fabledChance and
- * marvelChance upgrades, since those measurably shift its slot's real
- * rarity mix — and since they are the only way either rarity is dealt at
- * all, leaving them out would hide Fabled and Marvel from the pull-rates
- * dialog entirely. This is an expectation, not a guarantee — real packs vary, which is the whole point
- * of showing it next to what was actually pulled.
- *
- * Exported for pack/pull-rates.ts too, which turns these same expected
- * counts into the percentages SetInfoDialog.tsx shows before a pack is even
- * opened — one source for both, so the two views can't drift apart. */
-export function expectedRarityCounts(
-	config: PackConfig,
-): Partial<Record<CardRarity, number>> {
-	const counts: Partial<Record<CardRarity, number>> = {};
-	const add = (rarity: CardRarity, amount: number) => {
-		counts[rarity] = (counts[rarity] ?? 0) + amount;
-	};
-
-	for (const slot of config.slots) {
-		const totalWeight = slot.rarityTable.reduce(
-			(sum, entry) => sum + entry.weight,
-			0,
-		);
-		if (totalWeight === 0) continue;
-		// The premium slot's two upgrade rolls, in generate-pack.ts's own
-		// order: Fabled is rolled first and wins outright, so Marvel only
-		// gets its roll when Fabled misses. Mirrored exactly here rather
-		// than approximated, so this and the engine cannot disagree — it
-		// costs Marvel about half a percent of its stated chance, and this
-		// is the number the pull-rates dialog shows, so it should be the
-		// one actually dealt.
-		const isPremiumFoil = slot.kind === "premium-foil";
-		const fabledShare = isPremiumFoil ? config.fabledChance : 0;
-		const marvelShare = isPremiumFoil
-			? (1 - fabledShare) * config.marvelChance
-			: 0;
-		const ordinaryShare = 1 - fabledShare - marvelShare;
-		for (const entry of slot.rarityTable) {
-			const expected =
-				(entry.weight / totalWeight) * slot.count * ordinaryShare;
-			add(entry.rarity, expected);
-		}
-		if (fabledShare > 0) add("fabled", slot.count * fabledShare);
-		if (marvelShare > 0) add("marvel", slot.count * marvelShare);
-	}
-
-	return counts;
-}
-
 /** Aggregates a session's opened packs into per-set stats — pure, no
  * card-resolution or price lookups, so it's trivially testable and trivially
  * promotable to run over a persisted list later instead of an in-memory
@@ -103,8 +52,7 @@ export function expectedRarityCounts(
 export function computeSessionStats(
 	records: OpenedPackRecord[],
 	configFor: (setCode: string) => PackConfig,
-	rarityOf: (card: DrawnCard, setCode: string) => CardRarity = (card) =>
-		card.rarity,
+	rarityOf: (card: DrawnCard, setCode: string) => CardRarity,
 ): SessionStats {
 	const bySetCode = new Map<string, OpenedPackRecord[]>();
 	for (const record of records) {

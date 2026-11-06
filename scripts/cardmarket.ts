@@ -1,4 +1,7 @@
+import { priceKey } from "@fabkit/shared/data/fab-prices";
+import type { SetCardmarketSnapshot } from "@fabkit/shared/data/fab-prices-cm";
 import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
+import { fetchJson } from "./fetch-json";
 
 /**
  * Cardmarket prices, for the European half of the audience: a TCGplayer
@@ -114,24 +117,6 @@ interface CmPriceRow {
 	trend: number | null;
 }
 
-interface CardmarketSnapshot {
-	capturedAt: string;
-	/** Cardmarket's own createdAt, so a price is never presented as more
-	 * current than the file it came from. */
-	sourceUpdatedAt: string;
-	currency: "EUR";
-	/** Trend price of a single sealed booster pack, or null when Cardmarket
-	 * lists none for this set's expansion — the euro counterpart of
-	 * SetPriceSnapshot.packMarketPrice, and never a converted dollar
-	 * figure. See resolveSealedPrices. */
-	packPrice: number | null;
-	/** Trend price of a sealed booster box, same caveats. */
-	boxPrice: number | null;
-	/** Keyed by FabPrinting.uniqueId. A missing key means "no price we can
-	 * prove", never zero. */
-	cardPrices: Record<string, number>;
-}
-
 interface CardmarketCoverage {
 	/** Cardmarket expansion this set resolved to, 0 when none did. */
 	expansion: number;
@@ -216,8 +201,8 @@ export interface CardmarketCatalog {
 	/** card key -> the metacards it could be (more than one only where
 	 * Cardmarket splits a name we don't). */
 	metacardsByCard: Map<string, Set<number>>;
-	/** "metacard|expansion" -> that card's products in that set, oldest
-	 * first, which is plainest first. */
+	/** "metacard|expansion" -> that card's products in that set, in file
+	 * order. productsIn puts them in the order they pair in. */
 	productsByCardInSet: Map<string, CmProduct[]>;
 	/** metacard -> the expansions it appears in, for resolving which
 	 * Cardmarket set one of ours is. */
@@ -232,18 +217,9 @@ export interface CardmarketCatalog {
 
 export async function fetchCardmarketCatalog(): Promise<CardmarketCatalog> {
 	const [productFile, sealedFile, priceFile] = await Promise.all([
-		fetch(PRODUCTS_URL).then((r) => {
-			if (!r.ok) throw new Error(`Cardmarket products fetch: ${r.status}`);
-			return r.json() as Promise<{ createdAt: string; products: CmProduct[] }>;
-		}),
-		fetch(SEALED_URL).then((r) => {
-			if (!r.ok) throw new Error(`Cardmarket sealed fetch: ${r.status}`);
-			return r.json() as Promise<{ products: CmProduct[] }>;
-		}),
-		fetch(PRICES_URL).then((r) => {
-			if (!r.ok) throw new Error(`Cardmarket prices fetch: ${r.status}`);
-			return r.json() as Promise<{ priceGuides: CmPriceRow[] }>;
-		}),
+		fetchJson<{ createdAt: string; products: CmProduct[] }>(PRODUCTS_URL),
+		fetchJson<{ products: CmProduct[] }>(SEALED_URL),
+		fetchJson<{ priceGuides: CmPriceRow[] }>(PRICES_URL),
 	]);
 
 	const metacardsByCard = new Map<string, Set<number>>();
@@ -274,13 +250,6 @@ export async function fetchCardmarketCatalog(): Promise<CardmarketCatalog> {
 		} else {
 			expansionsByMetacard.set(product.idMetacard, [product.idExpansion]);
 		}
-	}
-
-	for (const list of productsByCardInSet.values()) {
-		list.sort(
-			(a, b) =>
-				a.dateAdded.localeCompare(b.dateAdded) || a.idProduct - b.idProduct,
-		);
 	}
 
 	const sealedByExpansion = new Map<number, CmProduct[]>();
@@ -617,7 +586,7 @@ function chooseExpansion(
 				const euros = catalog.priceByProduct.get(products[i].idProduct);
 				const printing = ours[i].printings[0];
 				const dollars = printing.tcgplayerProductId
-					? tcgPrices[`${printing.tcgplayerProductId}:${printing.foiling}`]
+					? tcgPrices[priceKey(printing.tcgplayerProductId, printing.foiling)]
 					: undefined;
 				// Cheap cards are noise in both markets; a 20 cent card says
 				// nothing about whether this is the right expansion.
@@ -647,18 +616,14 @@ export function buildCardmarketSnapshot(
 	printings: FabPrinting[],
 	tcgPrices: Record<string, number>,
 	catalog: CardmarketCatalog,
-): { snapshot: CardmarketSnapshot; coverage: CardmarketCoverage } {
+): { snapshot: SetCardmarketSnapshot; coverage: CardmarketCoverage } {
 	// Which expansion first, on every printing we have, because the print
-	// run is read OFF that expansion — then the readings are rebuilt for
-	// that run alone. Two passes rather than one, over a few hundred cards
-	// per set, which costs nothing next to the two catalogue downloads.
-	const { expansion, ratio } = chooseExpansion(
-		catalog,
-		versionsOf(printings, null),
-		tcgPrices,
-	);
+	// run is read OFF that expansion — then, for a set with more than one
+	// run, the readings are rebuilt for that run alone.
+	const allVersions = versionsOf(printings, null);
+	const { expansion, ratio } = chooseExpansion(catalog, allVersions, tcgPrices);
 	const edition = expansion ? editionForExpansion(catalog, expansion) : null;
-	const versions = versionsOf(printings, edition);
+	const versions = edition ? versionsOf(printings, edition) : allVersions;
 
 	const cardPrices: Record<string, number> = {};
 	let versionCount = 0;

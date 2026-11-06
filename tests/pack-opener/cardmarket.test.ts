@@ -4,28 +4,10 @@ import {
 	buildCardmarketSnapshot,
 	type CardmarketCatalog,
 } from "../../scripts/cardmarket";
+import { makePrinting } from "./pack-data";
 
-function printing(overrides: Partial<FabPrinting>): FabPrinting {
-	return {
-		id: "T001",
-		uniqueId: "T001-standard",
-		name: "Test Card",
-		rarity: "common",
-		foiling: "standard",
-		edition: "N",
-		expansionSlot: false,
-		tcgplayerProductId: null,
-		pitch: null,
-		cost: null,
-		power: null,
-		defense: null,
-		types: [],
-		artVariations: [],
-		artSlug: null,
-		backSlug: null,
-		...overrides,
-	};
-}
+const printing = (overrides: Partial<FabPrinting>) =>
+	makePrinting({ id: "T001", uniqueId: "T001-standard", ...overrides });
 
 interface CmProductFixture {
 	idProduct: number;

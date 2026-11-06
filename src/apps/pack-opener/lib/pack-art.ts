@@ -1,4 +1,4 @@
-import { preloadSafeTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
+import { preloadSafeTexture } from "@fabkit/apps/pack-opener/lib/texture-cache";
 import {
 	getSetIndex,
 	type SetIndexEntry,
@@ -19,15 +19,7 @@ export function rollPackArt(setCode: string | null): string | null {
 	if (!setCode) return null;
 	const entry = getSetIndex().find((set) => set.code === setCode);
 	if (!entry) return null;
-	// Every artwork this set has, not just the one being used now.
-	//
-	// Since a fresh artwork is rolled on every "Open Another Pack", a set
-	// with four pack fronts was a cold fetch three times out of four, no
-	// matter how many packs had been opened, and the pack sits blank until
-	// its artwork arrives. Warming the set's whole (small, local, 1 to 4 file)
-	// collection on selection means the roll is always a cache hit by the time
-	// anyone opens anything. Through the same cache PackMaterial.tsx reads, or
-	// the artwork would be downloaded twice.
+	// Warms all of a set's artworks, so the roll is always a cache hit.
 	for (const artUrl of entry.packArt) preloadSafeTexture(artUrl);
 	return pickPackArt(entry);
 }

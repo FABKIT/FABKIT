@@ -40,8 +40,7 @@ export function SetCarousel() {
 	const [infoOpen, setInfoOpen] = useState(false);
 
 	const sets = getSetIndex();
-	const hasSets = sets.length > 0;
-	const navigation = useSetNavigation(hasSets);
+	const navigation = useSetNavigation();
 	const currentPosition = selectedSetPosition(sets, selectedSet);
 
 	// Picks a default set when there is no usable selection, warms whichever
@@ -53,7 +52,7 @@ export function SetCarousel() {
 
 	useNeighbourLogoPreload(sets, currentPosition);
 
-	if (!hasSets) return null;
+	if (sets.length === 0) return null;
 
 	const current = sets[currentPosition];
 

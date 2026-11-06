@@ -1,9 +1,8 @@
 import { CARD_BACK_URL } from "@fabkit/apps/pack-opener/config/scene";
-import { useEffect, useReducer } from "react";
 import { SRGBColorSpace, type Texture, TextureLoader } from "three";
 
 /**
- * Loads a texture from a URL without depending on Suspense. A handful of real
+ * Loads textures from URLs without depending on Suspense. A handful of real
  * printings list a collector id whose art never made it to content.fabrary.net,
  * and a 404 there throws from inside three.js's own `<img>` onerror handler,
  * which fires outside React's render call stack and so can never be caught by a
@@ -33,7 +32,7 @@ const loader = new TextureLoader();
  * and the upload's format depends on it, so a texture that reached the foil shader
  * first was stuck without it for good, and a plain copy of the same card looked
  * washed out, or a foil copy too dark, depending on the order they were seen. */
-function ensureLoading(url: string): Promise<void> {
+export function ensureLoading(url: string): Promise<void> {
 	const pending = inFlight.get(url);
 	if (pending) return pending;
 
@@ -63,56 +62,13 @@ export type SafeTextureState =
 	| { status: "loaded"; texture: Texture }
 	| { status: "error" };
 
-function resolveCached(url: string): SafeTextureState {
+export function resolveCached(url: string): SafeTextureState {
 	if (failedUrls.has(url)) return { status: "error" };
 	const cached = textureCache.get(url);
 	if (!cached) return { status: "loading" };
 	textureCache.delete(url);
 	textureCache.set(url, cached);
 	return { status: "loaded", texture: cached };
-}
-
-/** A null `url` means there is nothing to load, and reads the same as a failure,
- * so a caller can use one fallback path for both. */
-export function useSafeTexture(url: string | null): SafeTextureState {
-	// This reads a cache that changes outside React, so it must run on every
-	// render. The compiler would otherwise memoise resolveCached(url) on `url`
-	// alone and a card would never see its art arrive.
-	"use no memo";
-
-	// A render counter, not the state itself. The state IS the cache, read fresh
-	// below on every render for whatever url we were actually handed.
-	//
-	// This used to hold the resolved texture in useState. A useState initializer
-	// only runs on mount, so when the url prop changed (every time the active card
-	// advances, and every time the outgoing card takes over the card before it)
-	// React returned the PREVIOUS card's texture for that render, and an effect
-	// corrected it one render later. That is a guaranteed stale frame on every
-	// single advance: for one frame the card on top showed the wrong art, which is
-	// the flash of another card that kept surviving fixes aimed at the slide
-	// animation. Deriving from the url during render means there is no window in
-	// which the two can disagree.
-	const [, onSettled] = useReducer((tick: number) => tick + 1, 0);
-	const state: SafeTextureState =
-		url === null ? { status: "error" } : resolveCached(url);
-	const { status } = state;
-
-	// `status` is a dependency so a texture evicted, or a failure forgiven, while
-	// this is still mounted gets loaded again rather than reading as loading for
-	// good. `cancelled` only suppresses the re-render, which would be on an
-	// unmounted component: the result is cached regardless.
-	useEffect(() => {
-		if (url === null || status !== "loading") return;
-		let cancelled = false;
-		ensureLoading(url).then(() => {
-			if (!cancelled) onSettled();
-		});
-		return () => {
-			cancelled = true;
-		};
-	}, [url, status]);
-
-	return state;
 }
 
 /** Fire-and-forget warmup, called by the store when a pack is generated, so most

@@ -7,7 +7,7 @@ import {
 	Release as BridgeRelease,
 	Treatment as BridgeTreatment,
 } from "@flesh-and-blood/types";
-import { BACK_SUFFIX, type RawCard, type RawPrinting } from "./raw-card-data";
+import type { RawCard, RawPrinting } from "./raw-card-data";
 
 /**
  * Sets whose full card list has not reached the-fab-cube's card.json yet — a
@@ -150,7 +150,6 @@ function toBridgeRawPrinting(
 			? [
 					{
 						other_face_unique_id: printing.oppositeImage,
-						is_front: !printing.image?.endsWith(BACK_SUFFIX),
 						is_DFC: true,
 					},
 				]

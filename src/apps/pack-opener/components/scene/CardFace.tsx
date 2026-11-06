@@ -3,12 +3,12 @@ import {
 	CardFaceMaterial,
 	type LightDirRef,
 } from "@fabkit/apps/pack-opener/components/scene/CardFaceMaterial";
-import { useSafeTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
 import {
 	CARD_BACK_URL,
 	CARD_HEIGHT,
 	CARD_WIDTH,
 } from "@fabkit/apps/pack-opener/config/scene";
+import { useSafeTexture } from "@fabkit/apps/pack-opener/hooks/useSafeTexture";
 
 interface CardFaceProps {
 	card: ResolvedCard;
@@ -30,7 +30,7 @@ interface CardFaceProps {
  *     for a placeholder with no art at all. It keeps the card's treatment, so a
  *     foil pull still reads as one.
  *
- * Failures are normal here rather than exceptional: see useSafeTexture.ts.
+ * Failures are normal here rather than exceptional: see lib/texture-cache.ts.
  *
  * ONE material, whose texture changes. Art arriving is only ever a prop change,
  * never one material swapped for another. It used to return a separate card

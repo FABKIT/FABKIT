@@ -1,3 +1,5 @@
+import { createCachedJsonLoader } from "@fabkit/shared/data/cached-json-loader";
+
 /**
  * One set's price snapshot in EUROS, from Cardmarket — the European
  * counterpart of fab-prices.ts, built at the same time by the same build
@@ -24,7 +26,7 @@
  * for the matching rules and for which cards deliberately go unpriced.
  */
 
-interface SetCardmarketSnapshot {
+export interface SetCardmarketSnapshot {
 	/** ISO timestamp of the build that fetched this, shown wherever a euro
 	 * price is, so a price is never presented as more current than it is. */
 	capturedAt: string;
@@ -41,42 +43,19 @@ interface SetCardmarketSnapshot {
 	cardPrices: Record<string, number>;
 }
 
-const priceCache = new Map<string, SetCardmarketSnapshot>();
-const loadPromises = new Map<string, Promise<SetCardmarketSnapshot>>();
+const priceLoader = createCachedJsonLoader<SetCardmarketSnapshot>(
+	(setCode) => `/data/pack-opener/prices-cm/${setCode}.json`,
+	(setCode) => `Cardmarket price snapshot fetch failed for ${setCode}`,
+);
 
-/** Fetches and caches one set's euro snapshot — same caching and retry
- * behaviour as fab-prices.ts's loadSetPrices, and the same contract on failure:
- * every caller treats a rejection as "no euro prices available" and shows a
- * neutral "no price" state, never a zero and never a dollar figure wearing a
- * euro sign. */
+/** Fetches and caches one set's euro snapshot, with the same contract on
+ * failure as fab-prices.ts's loadSetPrices: a rejection means "no euro prices
+ * available", shown as a neutral "no price" state, never a zero and never a
+ * dollar figure wearing a euro sign. */
 export function loadSetCardmarketPrices(
 	setCode: string,
 ): Promise<SetCardmarketSnapshot> {
-	const cached = priceCache.get(setCode);
-	if (cached) return Promise.resolve(cached);
-
-	const inFlight = loadPromises.get(setCode);
-	if (inFlight) return inFlight;
-
-	const promise = fetch(`/data/pack-opener/prices-cm/${setCode}.json`)
-		.then((response) => {
-			if (!response.ok) {
-				throw new Error(
-					`Cardmarket price snapshot fetch failed for ${setCode}: ${response.status}`,
-				);
-			}
-			return response.json() as Promise<SetCardmarketSnapshot>;
-		})
-		.then((data) => {
-			priceCache.set(setCode, data);
-			return data;
-		})
-		.finally(() => {
-			loadPromises.delete(setCode);
-		});
-
-	loadPromises.set(setCode, promise);
-	return promise;
+	return priceLoader.load(setCode);
 }
 
 /** Synchronous accessor — null until loadSetCardmarketPrices() for that set
@@ -84,11 +63,11 @@ export function loadSetCardmarketPrices(
 export function getSetCardmarketPrices(
 	setCode: string,
 ): SetCardmarketSnapshot | null {
-	return priceCache.get(setCode) ?? null;
+	return priceLoader.get(setCode) ?? null;
 }
 
 /** A pulled card's Cardmarket price in euros, or null when unavailable for
- * any reason: the snapshot is not loaded yet, the card is a mock card or is
+ * any reason: the snapshot is not loaded yet, the card is a placeholder or is
  * shown in a treatment its printing doesn't have, or Cardmarket's own listing
  * for it could not be matched without guessing. */
 export function getCardEuroPrice(

@@ -1,3 +1,4 @@
+import { createCachedJsonLoader } from "@fabkit/shared/data/cached-json-loader";
 import type { FoilTreatment } from "@fabkit/shared/data/fab-printings";
 
 /**
@@ -44,49 +45,24 @@ export function priceKey(
 	return `${tcgplayerProductId}:${treatment}`;
 }
 
-const priceCache = new Map<string, SetPriceSnapshot>();
-const loadPromises = new Map<string, Promise<SetPriceSnapshot>>();
+const priceLoader = createCachedJsonLoader<SetPriceSnapshot>(
+	(setCode) => `/data/pack-opener/prices/${setCode}.json`,
+	(setCode) => `Price snapshot fetch failed for ${setCode}`,
+);
 
-/** Fetches and caches one set's price snapshot. Safe to call more than once
- * for the same set code — same caching and retry behaviour as
- * fab-printings.ts's loadSetPrintings. A set with no price file yet (the
- * build script never resolved a tcgcsv group for it, or hasn't run at all
- * in this environment) simply rejects, and every caller here treats that as
- * "no prices available" rather than a hard failure — see PackSummary.tsx
- * and SetInfoDialog.tsx, which both swallow this the same way they already
- * swallow a missing set index or printing file. */
+/** Fetches and caches one set's price snapshot. A set with no price file yet
+ * (the build script never resolved a tcgcsv group for it, or hasn't run at
+ * all in this environment) simply rejects, which the pack opener's
+ * lib/pricing.ts warmPrices treats as "no prices available" rather than a
+ * hard failure. */
 export function loadSetPrices(setCode: string): Promise<SetPriceSnapshot> {
-	const cached = priceCache.get(setCode);
-	if (cached) return Promise.resolve(cached);
-
-	const inFlight = loadPromises.get(setCode);
-	if (inFlight) return inFlight;
-
-	const promise = fetch(`/data/pack-opener/prices/${setCode}.json`)
-		.then((response) => {
-			if (!response.ok) {
-				throw new Error(
-					`Price snapshot fetch failed for ${setCode}: ${response.status}`,
-				);
-			}
-			return response.json() as Promise<SetPriceSnapshot>;
-		})
-		.then((data) => {
-			priceCache.set(setCode, data);
-			return data;
-		})
-		.finally(() => {
-			loadPromises.delete(setCode);
-		});
-
-	loadPromises.set(setCode, promise);
-	return promise;
+	return priceLoader.load(setCode);
 }
 
 /** Synchronous accessor — returns null until loadSetPrices() for that set
  * has resolved (or if it never will, e.g. no tcgcsv group match). */
 export function getSetPrices(setCode: string): SetPriceSnapshot | null {
-	return priceCache.get(setCode) ?? null;
+	return priceLoader.get(setCode) ?? null;
 }
 
 /** A pulled card's market price, or null when unavailable for any reason

@@ -1,10 +1,7 @@
 import { CurrencyToggle } from "@fabkit/apps/pack-opener/components/CurrencyToggle";
-import { PriceValue } from "@fabkit/apps/pack-opener/components/PriceValue";
+import { PriceProvenance } from "@fabkit/apps/pack-opener/components/PriceProvenance";
+import { PriceRow } from "@fabkit/apps/pack-opener/components/PriceRow";
 import { usePrices } from "@fabkit/apps/pack-opener/hooks/usePrices";
-import {
-	formatCapturedDate,
-	priceSourceKey,
-} from "@fabkit/apps/pack-opener/lib/pricing";
 import { useTranslation } from "react-i18next";
 
 /** Prices come from the build-time snapshots (see shared/data/fab-prices.ts and
@@ -17,7 +14,6 @@ import { useTranslation } from "react-i18next";
 export function SetPricesSection({ setCode }: { setCode: string }) {
 	const { t } = useTranslation("pack-opener");
 	const prices = usePrices();
-	const capturedDate = formatCapturedDate(prices.capturedAt(setCode));
 
 	return (
 		<section className="space-y-1.5">
@@ -25,32 +21,15 @@ export function SetPricesSection({ setCode }: { setCode: string }) {
 				<h3 className="font-semibold text-body">{t("dialog.price_title")}</h3>
 				<CurrencyToggle variant="dialog" />
 			</div>
-			<div className="flex items-center justify-between text-sm">
-				<span className="text-muted">{t("dialog.pack_price_label")}</span>
-				<span className="font-card-stat text-body">
-					<PriceValue
-						amount={prices.pack(setCode)}
-						currency={prices.currency}
-					/>
-				</span>
-			</div>
-			<div className="flex items-center justify-between text-sm">
-				<span className="text-muted">{t("dialog.box_price_label")}</span>
-				<span className="font-card-stat text-body">
-					<PriceValue amount={prices.box(setCode)} currency={prices.currency} />
-				</span>
-			</div>
-			{capturedDate && (
-				<p className="text-xs text-subtle">
-					{t("dialog.price_captured", { date: capturedDate })}
-				</p>
-			)}
-			{/* Says where the money numbers actually come from. Players
-			    reasonably want to know a price is a real market figure and not
-			    something this app invented. */}
-			<p className="text-xs text-subtle">
-				{t(priceSourceKey(prices.currency))}
-			</p>
+			<PriceRow
+				label={t("dialog.pack_price_label")}
+				amount={prices.pack(setCode)}
+			/>
+			<PriceRow
+				label={t("dialog.box_price_label")}
+				amount={prices.box(setCode)}
+			/>
+			<PriceProvenance setCode={setCode} />
 		</section>
 	);
 }

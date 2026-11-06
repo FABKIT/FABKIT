@@ -1,5 +1,6 @@
 import { CardClasses } from "@fabkit/shared/config/cards/classes";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import { createCachedJsonLoader } from "@fabkit/shared/data/cached-json-loader";
 
 /**
  * Real per-set, per-printing FAB card data, sourced from
@@ -103,9 +104,17 @@ export interface FabSetPrintings {
  * regression, not an improvement.
  */
 export function printingImageUrl(printing: FabPrinting): string {
-	const isMarvel = printing.rarity === "marvel";
-	const slug = isMarvel && printing.artSlug ? printing.artSlug : printing.id;
-	return cardArtUrl(slug);
+	return cardArtUrl(printingArtSlug(printing));
+}
+
+/** The artwork filename a printing renders from, by the rule above. Shared
+ * with the build script, which derives a card's back face from it. */
+export function printingArtSlug(
+	printing: Pick<FabPrinting, "id" | "rarity" | "artSlug">,
+): string {
+	return printing.rarity === "marvel" && printing.artSlug
+		? printing.artSlug
+		: printing.id;
 }
 
 /** The other face of a double-faced card, or null when it has only one.
@@ -120,45 +129,21 @@ function cardArtUrl(slug: string): string {
 	return `https://content.fabrary.net/cards/${slug}.webp`;
 }
 
-const setCache = new Map<string, FabSetPrintings>();
-const loadPromises = new Map<string, Promise<FabSetPrintings>>();
+const printingsLoader = createCachedJsonLoader<FabSetPrintings>(
+	(setCode) => `/data/pack-opener/sets/${setCode}.json`,
+	(setCode) => `Set printing data fetch failed for ${setCode}`,
+);
 
 /** Fetches and caches one set's printing data (lazy, per set, so only the
- * selected set is ever loaded). Safe to call more than once for the same set
- * code: concurrent calls share one in-flight request, later ones reuse the
- * cached result, and a failure isn't cached, so the next call retries. */
+ * selected set is ever loaded). */
 export function loadSetPrintings(setCode: string): Promise<FabSetPrintings> {
-	const cached = setCache.get(setCode);
-	if (cached) return Promise.resolve(cached);
-
-	const inFlight = loadPromises.get(setCode);
-	if (inFlight) return inFlight;
-
-	const promise = fetch(`/data/pack-opener/sets/${setCode}.json`)
-		.then((response) => {
-			if (!response.ok) {
-				throw new Error(
-					`Set printing data fetch failed for ${setCode}: ${response.status}`,
-				);
-			}
-			return response.json() as Promise<FabSetPrintings>;
-		})
-		.then((data) => {
-			setCache.set(setCode, data);
-			return data;
-		})
-		.finally(() => {
-			loadPromises.delete(setCode);
-		});
-
-	loadPromises.set(setCode, promise);
-	return promise;
+	return printingsLoader.load(setCode);
 }
 
 /** Synchronous accessor — returns an empty array until loadSetPrintings()
  * for that set has resolved. */
 export function getSetPrintings(setCode: string): FabPrinting[] {
-	return setCache.get(setCode)?.printings ?? [];
+	return printingsLoader.get(setCode)?.printings ?? [];
 }
 
 const CLASS_TYPE_NAMES = new Set(
@@ -212,38 +197,23 @@ export interface SetIndexEntry {
 	packArt: string[];
 }
 
-let setIndexCache: SetIndexEntry[] | null = null;
-let setIndexPromise: Promise<SetIndexEntry[]> | null = null;
+/** There is only one index file, so its one cache entry needs only one key. */
+const SET_INDEX_KEY = "index";
+
+const setIndexLoader = createCachedJsonLoader<{ sets: SetIndexEntry[] }>(
+	() => "/data/pack-opener/index.json",
+	() => "Set index fetch failed",
+);
 
 /** Fetches and caches the set list: booster sets by release date, then
  * supplemental products by name (see the build script's index sort), so the
- * last entry is not necessarily the newest set. Same caching and retry
- * behaviour as loadSetPrintings above. */
+ * last entry is not necessarily the newest set. */
 export function loadSetIndex(): Promise<SetIndexEntry[]> {
-	if (setIndexCache) return Promise.resolve(setIndexCache);
-	if (setIndexPromise) return setIndexPromise;
-
-	const promise = fetch("/data/pack-opener/index.json")
-		.then((response) => {
-			if (!response.ok) {
-				throw new Error(`Set index fetch failed: ${response.status}`);
-			}
-			return response.json() as Promise<{ sets: SetIndexEntry[] }>;
-		})
-		.then((data) => {
-			setIndexCache = data.sets;
-			return data.sets;
-		})
-		.finally(() => {
-			setIndexPromise = null;
-		});
-
-	setIndexPromise = promise;
-	return promise;
+	return setIndexLoader.load(SET_INDEX_KEY).then((data) => data.sets);
 }
 
 /** Synchronous accessor — returns an empty array until loadSetIndex() has
  * resolved (e.g. the index never loaded, offline/build output missing). */
 export function getSetIndex(): SetIndexEntry[] {
-	return setIndexCache ?? [];
+	return setIndexLoader.get(SET_INDEX_KEY)?.sets ?? [];
 }

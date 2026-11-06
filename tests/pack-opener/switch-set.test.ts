@@ -3,6 +3,7 @@ import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
 import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
+import { resetStore } from "./reset-store";
 
 /**
  * Switching sets mid-pack is allowed, but the abandoned pack is discarded and must NEVER be recorded into session stats — stats
@@ -22,17 +23,7 @@ import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener"
  */
 describe("switching sets mid-reveal", () => {
 	beforeEach(() => {
-		usePackOpenerStore.setState({
-			phase: "idle",
-			pack: null,
-			revealIndex: -1,
-			phaseStartedAt: null,
-			openedPacksThisSession: [],
-			selectedSet: DEFAULT_PACK_CONFIG.id,
-			packArtUrl: null,
-			revisitIndex: null,
-			packSetCode: null,
-		});
+		resetStore();
 	});
 
 	it("discards an in-flight pack without recording it in session stats", () => {

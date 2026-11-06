@@ -1,7 +1,7 @@
 import { getMockPackTexture } from "@fabkit/apps/pack-opener/components/scene/textures/mock-pack-texture";
 import { getPackArtStrip } from "@fabkit/apps/pack-opener/components/scene/textures/pack-art-strips";
-import { useSafeTexture } from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
 import type { PackPart } from "@fabkit/apps/pack-opener/config/scene";
+import { useSafeTexture } from "@fabkit/apps/pack-opener/hooks/useSafeTexture";
 
 interface PackMaterialProps {
 	part: PackPart;

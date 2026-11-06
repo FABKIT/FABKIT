@@ -24,7 +24,7 @@ function makeStrip(source: Texture, repeatY: number, offsetY: number): Texture {
  * One pack-front image (512x1024, whose top PACK_SEAL_HEIGHT fraction is the
  * seal) shown as a body strip and a seal strip, through offset and repeat on two
  * clones of the same loaded texture. Clones, because the loaded texture is shared
- * through useSafeTexture's cache and mutating it would make the two strips
+ * through lib/texture-cache.ts and mutating it would make the two strips
  * overwrite each other. A clone shares the source image and its GPU upload.
  *
  * Built once per loaded image rather than per PackMesh mount, which remounts for

@@ -29,7 +29,6 @@ export interface RawPrinting {
 	 * resolves. */
 	double_sided_card_info?: {
 		other_face_unique_id: string;
-		is_front: boolean;
 		is_DFC: boolean;
 	}[];
 }
@@ -43,6 +42,3 @@ export interface RawCard {
 	types: string[];
 	printings: RawPrinting[];
 }
-
-/** Ends the artwork filename of a card's back face. */
-export const BACK_SUFFIX = "_BACK";

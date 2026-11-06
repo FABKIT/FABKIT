@@ -21,15 +21,16 @@ src/apps/pack-opener/
     slot-table.ts, pull-rates.ts  What a pack holds, for the set info dialog
     rng.ts           mulberry32, a seeded PRNG for deterministic tests
   cards/
-    card-resolver.ts ResolvedCard, and activeCardResolver (per-set printings, with a
+    card-resolver.ts ResolvedCard, and resolveCard (per-set printings, with a
                       placeholder when a set's data is missing)
     celebration-tier.ts  Which rarities get which celebration
     deterministic-hash.ts  hashToIndex(): a stable per-id pick into a pool
   stats/             computeSessionStats, value totals. Pure, no React.
   lib/               currency.ts, pricing.ts (see "Prices and currency"), easing.ts,
-                      pack-art.ts, pack-opener-storage.ts, preload-pack.ts, set-index.ts
-  hooks/             useCardTilt, useCollapseOnOutsidePointer, useNeighbourLogoPreload,
-                      usePrefersReducedMotion, usePrices, useSetNavigation
+                      pack-art.ts, pack-opener-storage.ts, preload-pack.ts, set-index.ts,
+                      texture-cache.ts (every image texture, see "Card data")
+  hooks/             useCollapseOnOutsidePointer, useNeighbourLogoPreload,
+                      usePrefersReducedMotion, usePrices, useSafeTexture, useSetNavigation
   stores/
     pack-opener.ts   Zustand store: the idle/tearing/revealing/done state machine, the
                       persisted currency preference, resetSession()
@@ -53,9 +54,9 @@ src/apps/pack-opener/
       OutgoingCard, outgoingSlide.ts, revealIntro.ts  The reveal, see "Reveal mechanic"
       CelebrationEffects, PullCelebration, PullSparkles, LegendaryFireworks  Rare pulls
       pointerTilt.ts  Pointer-to-tilt maths shared by the card and the pack
+      useCardTilt.ts  The card's tilt and the foil's light direction, in one useFrame
       materials/foilMaterial.ts  The cold foil shader
-      textures/      useSafeTexture.ts (every image texture, see "Card data"),
-                      pack-art-strips.ts, mock-pack-texture.ts, glow-texture.ts,
+      textures/      pack-art-strips.ts, mock-pack-texture.ts, glow-texture.ts,
                       make-canvas-texture.ts
   config/            scene.ts (animation timing, camera targets, sizes), celebration.ts (one
                       config per celebration tier), known-sets.ts (which products ship and why)
@@ -128,7 +129,7 @@ switching the material to `AdditiveBlending`.
 
 three.js, fiber and drei must not load for visitors who never open this app. `index.ts`
 runs on every page, so its bug-report provider imports the store on demand, and the route
-loader imports `useSafeTexture` dynamically for the same reason. Keep anything reachable
+loader imports `lib/texture-cache.ts` dynamically for the same reason. Keep anything reachable
 from those two entry points free of static scene and store imports. `config/scene.ts` has
 no imports for this reason.
 
@@ -159,7 +160,7 @@ moment develop's own count for a bridged code overtakes the bridge's, `bun run
 build-pack-data` logs that the entry is no longer needed and stops using it on its own, no
 build failure either way.
 
-`activeCardResolver` (`cards/card-resolver.ts`) picks a real printing from the pack's own
+`resolveCard` (`cards/card-resolver.ts`) picks a real printing from the pack's own
 set (`packSetCode` in the store) whose rarity, expansion-slot flag, required type and
 class-restriction all match what was actually drawn — deterministically per drawn-card id
 (`hashToIndex`) so re-renders don't reshuffle which card a slot shows. Every declared slot
@@ -177,16 +178,16 @@ upgrades is unchanged. A redrawn card can show a different rarity from its slot,
 counting pulls (session stats, analytics) uses the resolved rarity, not the drawn one.
 
 **When a set's data is missing or failed to load**, the resolver returns a placeholder
-(`isPlaceholder: true`, empty name) instead of a real card. The scene shows it as the card
+(a null name) instead of a real card. The scene shows it as the card
 back with its treatment, and the HUD supplies a translated name. `DEFAULT_PACK_CONFIG` (the
 mock `"default-mock-set"`) is what deals when no set is selected. A pack with no artwork
 falls back to `mock-pack-texture.ts`, a text-free gradient and sheen; every set has real art
 today, so this only appears when the index or an image fails.
 
 A real card's own image already IS the fully rendered card face. Every image goes through
-`textures/useSafeTexture.ts` rather than drei's `useTexture`, because a 404 there throws
+`lib/texture-cache.ts` rather than drei's `useTexture`, because a 404 there throws
 from inside three.js's own image handler, outside React, and takes the whole route with it.
-`useSafeTexture` reports failure instead, so `CardFace` can fall back from the face asked
+It reports failure instead, so `CardFace` can fall back from the face asked
 for, to the card's front, to the card back. It also sets sRGB once at load, so the same art
 looks the same whichever material saw it first, shares one download between a preload and a
 mounted card, evicts all but the most recent textures per pack (`trimSafeTextureCache`), and

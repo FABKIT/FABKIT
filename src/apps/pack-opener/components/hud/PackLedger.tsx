@@ -1,14 +1,12 @@
-import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { PackLedgerRow } from "@fabkit/apps/pack-opener/components/hud/PackLedgerRow";
+import { PriceProvenance } from "@fabkit/apps/pack-opener/components/PriceProvenance";
 import { PriceValue } from "@fabkit/apps/pack-opener/components/PriceValue";
 import { SWIPE_THRESHOLD_PX } from "@fabkit/apps/pack-opener/config/scene";
 import { useCollapseOnOutsidePointer } from "@fabkit/apps/pack-opener/hooks/useCollapseOnOutsidePointer";
 import { usePrices } from "@fabkit/apps/pack-opener/hooks/usePrices";
-import {
-	formatCapturedDate,
-	priceSourceKey,
-} from "@fabkit/apps/pack-opener/lib/pricing";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
+import { sumKnown } from "@fabkit/apps/pack-opener/stats/value-totals";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { ChevronDown } from "lucide-react";
 import { type RefObject, useId, useRef, useState } from "react";
@@ -69,22 +67,12 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 		setExpanded(false);
 	}
 
-	const resolvedCards = pack.map((card) =>
-		activeCardResolver.resolve(card, packSetCode ?? undefined),
-	);
+	const resolvedCards = pack.map((card) => resolveCard(card, packSetCode));
 	const cardPrices = resolvedCards.map((card) =>
 		prices.card(packSetCode, card),
 	);
-	const knownPrices = cardPrices.filter(
-		(price): price is number => price !== null,
-	);
-	const pulledTotal =
-		knownPrices.length > 0
-			? knownPrices.reduce((sum, price) => sum + price, 0)
-			: null;
-	const isPartialTotal =
-		knownPrices.length > 0 && knownPrices.length < resolvedCards.length;
-	const capturedDate = formatCapturedDate(prices.capturedAt(packSetCode));
+	const { total: pulledTotal, isPartial: isPartialTotal } =
+		sumKnown(cardPrices);
 
 	return (
 		<>
@@ -114,7 +102,6 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 										key={card.id}
 										card={card}
 										price={cardPrices[index]}
-										currency={prices.currency}
 										isShowing={revisitIndex === index}
 										onSelect={() => showCard(index)}
 									/>
@@ -126,10 +113,7 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 										{t("page.value_pulled_label")}
 									</span>
 									<span className="font-card-stat text-base text-body">
-										<PriceValue
-											amount={pulledTotal}
-											currency={prices.currency}
-										/>
+										<PriceValue amount={pulledTotal} />
 									</span>
 								</div>
 								{isPartialTotal && (
@@ -142,26 +126,10 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 										{t("page.pack_price_label")}
 									</span>
 									<span className="font-card-stat text-sm text-muted">
-										<PriceValue
-											amount={prices.pack(packSetCode)}
-											currency={prices.currency}
-										/>
+										<PriceValue amount={prices.pack(packSetCode)} />
 									</span>
 								</div>
-								{/* Same provenance the pull-rates dialog carries, on the
-								    same two translation keys rather than a second copy
-								    of the wording: every money figure a player sees
-								    should say where it came from and how old it is, not
-								    only the ones inside a dialog they had to go looking
-								    for. */}
-								{capturedDate && (
-									<p className="text-right text-xs text-subtle">
-										{t("dialog.price_captured", { date: capturedDate })}
-									</p>
-								)}
-								<p className="text-right text-xs text-subtle">
-									{t(priceSourceKey(prices.currency))}
-								</p>
+								<PriceProvenance setCode={packSetCode} className="text-right" />
 							</div>
 							<p className="mt-3 pb-4 text-center text-xs text-subtle">
 								{t("page.packs_opened_session", { count: packsOpened })}
@@ -211,7 +179,7 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 						<span className="truncate">{t("page.summary_title")}</span>
 						<span className="flex shrink-0 items-center gap-2">
 							<span className="font-card-stat text-base text-body">
-								<PriceValue amount={pulledTotal} currency={prices.currency} />
+								<PriceValue amount={pulledTotal} />
 							</span>
 							<ChevronDown
 								className={`h-5 w-5 text-muted transition-transform ${

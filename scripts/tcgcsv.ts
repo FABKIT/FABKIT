@@ -4,6 +4,7 @@ import type {
 	FabPrinting,
 	FoilTreatment,
 } from "@fabkit/shared/data/fab-printings";
+import { fetchJson } from "./fetch-json";
 
 /** Flesh and Blood's category id on tcgcsv/TCGplayer — verified against
  * live data. */
@@ -15,14 +16,10 @@ const TCGCSV_BASE = `https://tcgcsv.com/tcgplayer/${TCGCSV_CATEGORY_ID}`;
  * set) just say "dev". */
 const TCGCSV_USER_AGENT = `FABKIT/${process.env.APP_VERSION ?? "dev"} (+https://github.com/FABKIT/FABKIT)`;
 
-async function fetchTcgcsv<T>(path: string): Promise<T> {
-	const response = await fetch(`${TCGCSV_BASE}${path}`, {
+function fetchTcgcsv<T>(path: string): Promise<T> {
+	return fetchJson<T>(`${TCGCSV_BASE}${path}`, {
 		headers: { "User-Agent": TCGCSV_USER_AGENT },
 	});
-	if (!response.ok) {
-		throw new Error(`tcgcsv fetch failed for ${path}: ${response.status}`);
-	}
-	return response.json() as Promise<T>;
 }
 
 export interface TcgcsvGroup {

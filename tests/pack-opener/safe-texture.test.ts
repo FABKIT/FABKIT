@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
+import { CARD_BACK_URL } from "@fabkit/apps/pack-opener/config/scene";
 import {
 	clearFailedTextureUrls,
 	preloadSafeTexture,
 	trimSafeTextureCache,
-} from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
-import { CARD_BACK_URL } from "@fabkit/apps/pack-opener/config/scene";
+} from "@fabkit/apps/pack-opener/lib/texture-cache";
 import { SRGBColorSpace, Texture, TextureLoader } from "three";
 
 /** Lets the loader's fake callback and the promise chain behind it settle. */

@@ -1,4 +1,4 @@
-import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { celebrationTierFor } from "@fabkit/apps/pack-opener/cards/celebration-tier";
 import { Card3D } from "@fabkit/apps/pack-opener/components/scene/Card3D";
 import { CelebrationEffects } from "@fabkit/apps/pack-opener/components/scene/CelebrationEffects";
@@ -6,7 +6,7 @@ import { OutgoingCard } from "@fabkit/apps/pack-opener/components/scene/Outgoing
 import { revealIntroTransform } from "@fabkit/apps/pack-opener/components/scene/revealIntro";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
-import { selectActiveCardIndex } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
+import { selectActiveCard } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import type { Group } from "three";
@@ -19,7 +19,7 @@ export function CardStack3D() {
 	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
 	const revealIndex = usePackOpenerStore((state) => state.revealIndex);
 	const revisitIndex = usePackOpenerStore((state) => state.revisitIndex);
-	const activeIndex = usePackOpenerStore(selectActiveCardIndex);
+	const activeDrawn = usePackOpenerStore(selectActiveCard);
 	const phase = usePackOpenerStore((state) => state.phase);
 	const phaseStartedAt = usePackOpenerStore((state) => state.phaseStartedAt);
 	const advanceReveal = usePackOpenerStore((state) => state.advanceReveal);
@@ -30,7 +30,7 @@ export function CardStack3D() {
 	const revealStartedAt = usePackOpenerStore((state) => state.revealStartedAt);
 
 	// Timed off the store's revealStartedAt, never off this component's own
-	// mount: see that field's comment in stores/pack-opener.ts. React remounts
+	// mount: see that field's comment in stores/pack-opener-types.ts. React remounts
 	// this subtree more than once per pack, and a mount-timestamped animation
 	// restarts every time. Reading a store timestamp means a remount resumes the
 	// animation wherever it actually is, exactly as PackMesh's tear does. Unlike
@@ -63,24 +63,14 @@ export function CardStack3D() {
 	// since read-only doesn't mean frozen.
 	const isRevisiting = phase === "done" && revisitIndex !== null;
 
-	const activeDrawn =
-		pack && activeIndex >= 0 && activeIndex < pack.length
-			? pack[activeIndex]
-			: null;
-	const outgoingDrawn =
-		!isRevisiting && pack && revealIndex > 0 ? pack[revealIndex - 1] : null;
+	if (!activeDrawn) return null;
 
-	const resolvedCard = activeDrawn
-		? activeCardResolver.resolve(activeDrawn, packSetCode ?? undefined)
-		: null;
+	const resolvedCard = resolveCard(activeDrawn, packSetCode);
+	const outgoingDrawn = isRevisiting ? undefined : pack?.[revealIndex - 1];
 	const resolvedOutgoing = outgoingDrawn
-		? activeCardResolver.resolve(outgoingDrawn, packSetCode ?? undefined)
+		? resolveCard(outgoingDrawn, packSetCode)
 		: null;
-	const celebrationTier = resolvedCard
-		? celebrationTierFor(resolvedCard)
-		: null;
-
-	if (!resolvedCard) return null;
+	const celebrationTier = celebrationTierFor(resolvedCard);
 
 	return (
 		// The intro group carries the whole stack, effects included, so the
@@ -103,7 +93,7 @@ export function CardStack3D() {
 			<Card3D
 				card={resolvedCard}
 				showOtherFace={showingOtherFace}
-				onClick={() => phase === "revealing" && advanceReveal()}
+				onClick={advanceReveal}
 			/>
 			{resolvedOutgoing && (
 				<OutgoingCard card={resolvedOutgoing} phaseStartedAt={phaseStartedAt} />

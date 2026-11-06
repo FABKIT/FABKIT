@@ -1,3 +1,4 @@
+import { setAtOffset } from "@fabkit/apps/pack-opener/lib/set-index";
 import type { SetIndexEntry } from "@fabkit/shared/data/fab-printings";
 import { useEffect } from "react";
 
@@ -14,8 +15,7 @@ export function useNeighbourLogoPreload(
 	useEffect(() => {
 		if (sets.length === 0) return;
 		for (const offset of [-1, 1]) {
-			const neighbour =
-				sets[(currentPosition + offset + sets.length) % sets.length];
+			const neighbour = setAtOffset(sets, currentPosition, offset);
 			if (!neighbour?.setLogo) continue;
 			const img = new Image();
 			img.decoding = "async";

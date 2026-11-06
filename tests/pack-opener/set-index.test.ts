@@ -1,6 +1,5 @@
 import { describe, expect, it } from "bun:test";
 import {
-	defaultSet,
 	selectedSetPosition,
 	stepSetCode,
 } from "@fabkit/apps/pack-opener/lib/set-index";
@@ -23,15 +22,15 @@ const SETS = [
 
 describe("the default set", () => {
 	it("is the newest booster, not whichever supplemental sorts last", () => {
-		expect(defaultSet(SETS)?.code).toBe("IAR");
+		expect(selectedSetPosition(SETS, null)).toBe(1);
 	});
 
 	it("falls back to the last entry when no booster is listed", () => {
-		expect(defaultSet([entry("MPW", "supplemental")])?.code).toBe("MPW");
+		expect(selectedSetPosition([entry("MPW", "supplemental")], null)).toBe(0);
 	});
 
 	it("is nothing at all for an empty index", () => {
-		expect(defaultSet([])).toBeUndefined();
+		expect(selectedSetPosition([], null)).toBe(-1);
 	});
 });
 

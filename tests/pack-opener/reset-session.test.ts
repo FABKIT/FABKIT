@@ -3,6 +3,7 @@ import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
 import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
+import { resetStore } from "./reset-store";
 
 /**
  * resetSession() throws a run away, and the two things it must NOT throw
@@ -18,18 +19,7 @@ import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener"
  */
 describe("resetting the session", () => {
 	beforeEach(() => {
-		usePackOpenerStore.setState({
-			phase: "idle",
-			pack: null,
-			revealIndex: -1,
-			phaseStartedAt: null,
-			openedPacksThisSession: [],
-			selectedSet: DEFAULT_PACK_CONFIG.id,
-			currency: "USD",
-			packArtUrl: null,
-			revisitIndex: null,
-			packSetCode: null,
-		});
+		resetStore({ currency: "USD" });
 	});
 
 	it("clears the session ledger and returns to a closed pack", () => {

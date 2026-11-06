@@ -97,7 +97,7 @@ const fragmentShader = /* glsl */ `
 	}
 
 	void main() {
-		// The texture is flagged sRGB (see useSafeTexture.ts), so sampling it
+		// The texture is flagged sRGB (see lib/texture-cache.ts), so sampling it
 		// decodes to linear, and unlike three's own materials a ShaderMaterial
 		// gets no output encode at the end. Everything below is arithmetic on
 		// the image's display values, and was tuned on them, so this re-encodes

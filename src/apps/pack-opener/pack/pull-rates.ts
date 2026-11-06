@@ -1,16 +1,66 @@
 import type { PackConfig } from "@fabkit/apps/pack-opener/pack/types";
-import { expectedRarityCounts } from "@fabkit/apps/pack-opener/stats/session-stats";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 
 interface PullRateRow {
 	rarity: CardRarity;
 	/** Expected cards of this rarity per pack, straight from
-	 * stats/session-stats.ts's expectedRarityCounts — the same number
+	 * expectedRarityCounts below — the same number
 	 * SessionStatsDialog.tsx compares actual pulls against, so
 	 * SetInfoDialog.tsx's pull-rates section can never quietly drift out of
 	 * sync with what the odds engine (and the session summary) actually
 	 * believe. */
 	expectedPerPack: number;
+}
+
+/** Expected number of cards of each rarity in a single pack from `config`,
+ * derived the same way generate-pack.ts actually draws (weight / total
+ * weight per slot, times the slot's card count) — see that file's
+ * weightedPick. Also folds in the premium-foil slot's fabledChance and
+ * marvelChance upgrades, since those measurably shift its slot's real
+ * rarity mix — and since they are the only way either rarity is dealt at
+ * all, leaving them out would hide Fabled and Marvel from the pull-rates
+ * dialog entirely. This is an expectation, not a guarantee — real packs vary, which is the whole point
+ * of showing it next to what was actually pulled.
+ *
+ * One source for the pull-rates dialog and the session stats, so the two views
+ * can't drift apart. */
+export function expectedRarityCounts(
+	config: PackConfig,
+): Partial<Record<CardRarity, number>> {
+	const counts: Partial<Record<CardRarity, number>> = {};
+	const add = (rarity: CardRarity, amount: number) => {
+		counts[rarity] = (counts[rarity] ?? 0) + amount;
+	};
+
+	for (const slot of config.slots) {
+		const totalWeight = slot.rarityTable.reduce(
+			(sum, entry) => sum + entry.weight,
+			0,
+		);
+		if (totalWeight === 0) continue;
+		// The premium slot's two upgrade rolls, in generate-pack.ts's own
+		// order: Fabled is rolled first and wins outright, so Marvel only
+		// gets its roll when Fabled misses. Mirrored exactly here rather
+		// than approximated, so this and the engine cannot disagree — it
+		// costs Marvel about half a percent of its stated chance, and this
+		// is the number the pull-rates dialog shows, so it should be the
+		// one actually dealt.
+		const isPremiumFoil = slot.kind === "premium-foil";
+		const fabledShare = isPremiumFoil ? config.fabledChance : 0;
+		const marvelShare = isPremiumFoil
+			? (1 - fabledShare) * config.marvelChance
+			: 0;
+		const ordinaryShare = 1 - fabledShare - marvelShare;
+		for (const entry of slot.rarityTable) {
+			const expected =
+				(entry.weight / totalWeight) * slot.count * ordinaryShare;
+			add(entry.rarity, expected);
+		}
+		if (fabledShare > 0) add("fabled", slot.count * fabledShare);
+		if (marvelShare > 0) add("marvel", slot.count * marvelShare);
+	}
+
+	return counts;
 }
 
 /** Below this share of the pack, a percentage reads as more precise than it

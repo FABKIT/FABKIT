@@ -3,27 +3,10 @@ import {
 	type FabPrinting,
 	printingImageUrl,
 } from "@fabkit/shared/data/fab-printings";
+import { makePrinting } from "./pack-data";
 
-function printing(overrides: Partial<FabPrinting>): FabPrinting {
-	return {
-		id: "SEA001",
-		uniqueId: "test-unique-id",
-		name: "Test Card",
-		rarity: "common",
-		foiling: "standard",
-		expansionSlot: false,
-		tcgplayerProductId: null,
-		pitch: null,
-		cost: null,
-		power: null,
-		defense: null,
-		types: [],
-		artVariations: [],
-		artSlug: null,
-		backSlug: null,
-		...overrides,
-	};
-}
+const printing = (overrides: Partial<FabPrinting>) =>
+	makePrinting({ id: "SEA001", ...overrides });
 
 /**
  * The scope gate: artSlug is only ever used for Marvel printings. A great many non-Marvel printings also

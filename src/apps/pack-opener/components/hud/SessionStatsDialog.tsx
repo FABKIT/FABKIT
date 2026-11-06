@@ -1,8 +1,7 @@
-import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
+import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { SessionValueSection } from "@fabkit/apps/pack-opener/components/hud/SessionValueSection";
 import { SetRaritySection } from "@fabkit/apps/pack-opener/components/hud/SetRaritySection";
 import { InfoDialog } from "@fabkit/apps/pack-opener/components/PackOpenerDialog";
-import { usePrices } from "@fabkit/apps/pack-opener/hooks/usePrices";
 import { getPackConfig } from "@fabkit/apps/pack-opener/pack/odds";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type { OpenedPackRecord } from "@fabkit/apps/pack-opener/stats/session-stats";
@@ -17,7 +16,48 @@ interface SessionStatsDialogProps {
 }
 
 function shownRarity(card: DrawnCard, setCode: string) {
-	return activeCardResolver.resolve(card, setCode).rarity;
+	return resolveCard(card, setCode).rarity;
+}
+
+/** A closed dialog doesn't render its children, so keeping this work in one
+ * means opening packs with the dialog shut never pays for it. */
+function SessionStatsContent({
+	openedPacks,
+}: {
+	openedPacks: OpenedPackRecord[];
+}) {
+	const { t } = useTranslation("pack-opener");
+	const stats = computeSessionStats(openedPacks, getPackConfig, shownRarity);
+	const setNames = new Map(
+		getSetIndex().map((entry) => [entry.code, entry.name]),
+	);
+
+	if (stats.totalPacksOpened === 0) {
+		return <p className="text-sm text-muted">{t("stats.empty")}</p>;
+	}
+
+	return (
+		<>
+			<section className="space-y-1">
+				<h3 className="font-semibold text-body">
+					{t("stats.packs_opened_label")}
+				</h3>
+				<p className="text-sm text-muted">{stats.totalPacksOpened}</p>
+			</section>
+
+			<SessionValueSection openedPacks={openedPacks} />
+
+			<div className="space-y-4">
+				{stats.bySet.map((set) => (
+					<SetRaritySection
+						key={set.setCode}
+						stats={set}
+						setName={setNames.get(set.setCode) ?? set.setCode}
+					/>
+				))}
+			</div>
+		</>
+	);
 }
 
 /** Second dialog on the summary screen. Current-session only: aggregation
@@ -30,39 +70,10 @@ export function SessionStatsDialog({
 	openedPacks,
 }: SessionStatsDialogProps) {
 	const { t } = useTranslation("pack-opener");
-	const prices = usePrices();
-
-	const stats = computeSessionStats(openedPacks, getPackConfig, shownRarity);
-	const setNames = new Map(
-		getSetIndex().map((entry) => [entry.code, entry.name]),
-	);
 
 	return (
 		<InfoDialog open={open} onClose={onClose} title={t("stats.title")}>
-			{stats.totalPacksOpened === 0 ? (
-				<p className="text-sm text-muted">{t("stats.empty")}</p>
-			) : (
-				<>
-					<section className="space-y-1">
-						<h3 className="font-semibold text-body">
-							{t("stats.packs_opened_label")}
-						</h3>
-						<p className="text-sm text-muted">{stats.totalPacksOpened}</p>
-					</section>
-
-					<SessionValueSection openedPacks={openedPacks} prices={prices} />
-
-					<div className="space-y-4">
-						{stats.bySet.map((set) => (
-							<SetRaritySection
-								key={set.setCode}
-								stats={set}
-								setName={setNames.get(set.setCode) ?? set.setCode}
-							/>
-						))}
-					</div>
-				</>
-			)}
+			<SessionStatsContent openedPacks={openedPacks} />
 		</InfoDialog>
 	);
 }

@@ -9,12 +9,17 @@ export type PackOpenerPhase = "idle" | "tearing" | "revealing" | "done";
 
 /** The card the scene and caption are showing: the one chosen from the ledger
  * while revisiting a finished pack, otherwise the one reached in the reveal. */
-export function selectActiveCardIndex(
-	state: Pick<PackOpenerState, "phase" | "revealIndex" | "revisitIndex">,
-): number {
-	return state.phase === "done" && state.revisitIndex !== null
-		? state.revisitIndex
-		: state.revealIndex;
+export function selectActiveCard(
+	state: Pick<
+		PackOpenerState,
+		"phase" | "pack" | "revealIndex" | "revisitIndex"
+	>,
+): DrawnCard | undefined {
+	const index =
+		state.phase === "done" && state.revisitIndex !== null
+			? state.revisitIndex
+			: state.revealIndex;
+	return state.pack?.[index];
 }
 
 export interface PackOpenerState {
@@ -125,16 +130,7 @@ export interface PackOpenerActions {
 	 * Destructive on purpose (the session ledger is the only record of a
 	 * run), so the UI confirms first — see ResetSessionDialog.tsx. */
 	resetSession(): void;
-	/** Clears a finished pack away and brings out the next closed one, in
-	 * a fresh one of the set's pack fronts, WITHOUT opening it.
-	 *
-	 * This is what "Open Another Pack" does now. It used to call openPack()
-	 * directly, which tore the new pack open on its own the moment the
-	 * button was pressed. Opening a booster is the thing the player came to
-	 * do, and it was happening to them rather than being done by them; it
-	 * also meant the new pack's artwork was only ever glimpsed for the
-	 * fraction of a second before the tear started. Now the pack is put in
-	 * front of them closed and waits to be tapped, exactly as it does on a
-	 * first visit. */
+	/** Clears a finished pack and brings out the next one closed, in a fresh
+	 * one of the set's pack fronts, without opening it. */
 	readyAnotherPack(): void;
 }

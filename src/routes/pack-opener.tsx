@@ -11,7 +11,7 @@ export const Route = createFileRoute("/pack-opener")({
 		// module would pull three.js in for every visitor to every page. Not
 		// awaited: the card back is decoration, and CardFace copes with it
 		// arriving late or never.
-		import("@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture")
+		import("@fabkit/apps/pack-opener/lib/texture-cache")
 			.then(({ preloadSafeTexture }) => preloadSafeTexture(CARD_BACK_URL))
 			.catch((error) => {
 				console.error("pack-opener: card back failed to preload", error);

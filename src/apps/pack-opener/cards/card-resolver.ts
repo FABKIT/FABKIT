@@ -14,15 +14,14 @@ import {
 } from "@fabkit/shared/data/fab-printings";
 
 /**
- * Shape every 3D/UI component consumes, deliberately mirroring FabbleCard's
- * fields (name/imageUrl/rarity/set/pitch/cost/power/defense — see
- * src/apps/fabble/types.ts). `imageUrl` is a real content.fabrary.net URL, or
- * null for a placeholder, which the 3D layer shows as the card back.
+ * Shape every 3D/UI component consumes. `imageUrl` is a real content.fabrary.net
+ * URL, or null for a placeholder, which the 3D layer shows as the card back.
  */
 export interface ResolvedCard {
 	id: string;
-	/** Empty for a placeholder: see `isPlaceholder`. */
-	name: string;
+	/** Null when no real card could be resolved, because the set's data is
+	 * missing or failed to load. The UI supplies its own translated name then. */
+	name: string | null;
 	rarity: CardRarity;
 	treatment: FoilTreatment;
 	imageUrl: string | null;
@@ -30,11 +29,6 @@ export interface ResolvedCard {
 	 * double-faced card, otherwise null. Nothing to do with CARD_BACK_URL, which is the generic Flesh and
 	 * Blood back used as a loading placeholder. */
 	backImageUrl: string | null;
-	set?: string;
-	pitch: FabPrinting["pitch"];
-	cost: number | null;
-	power: number | null;
-	defense: number | null;
 	/** The-fab-cube's TCGplayer product id for this exact printing, if any. The
 	 * dollar price snapshot looks a card up by this plus its
 	 * treatment, because TCGplayer prices each foiling separately. */
@@ -47,37 +41,20 @@ export interface ResolvedCard {
 	 * treatment this printing doesn't have, since that printing's euro price
 	 * would be the price of a different card. */
 	printingId: string | null;
-	/** No real card could be resolved, because the set's data is missing or
-	 * failed to load. Everything but the id, rarity and treatment is empty, and
-	 * the UI has to supply its own translated name. */
-	isPlaceholder: boolean;
 }
 
-interface CardResolver {
-	/** `setCode` is the set the pack was actually generated for (see
-	 * stores/pack-opener.ts's `packSetCode`) — omitted when no set is selected. */
-	resolve(drawn: DrawnCard, setCode?: string): ResolvedCard;
+function placeholderCard(drawn: DrawnCard): ResolvedCard {
+	return {
+		id: drawn.id,
+		name: null,
+		rarity: drawn.rarity,
+		treatment: drawn.treatment,
+		imageUrl: null,
+		backImageUrl: null,
+		tcgplayerProductId: null,
+		printingId: null,
+	};
 }
-
-const placeholderCardResolver: CardResolver = {
-	resolve(drawn) {
-		return {
-			id: drawn.id,
-			name: "",
-			rarity: drawn.rarity,
-			treatment: drawn.treatment,
-			imageUrl: null,
-			backImageUrl: null,
-			pitch: null,
-			cost: null,
-			power: null,
-			defense: null,
-			tcgplayerProductId: null,
-			printingId: null,
-			isPlaceholder: true,
-		};
-	},
-};
 
 /** Rarities a Cold Foil redraw must never land on. Each has its own published
  * or estimated rate, and an upgrade on an ordinary slot handing them out on top
@@ -147,10 +124,6 @@ export function selectPrintingPool(
 	return matching;
 }
 
-function poolForDrawn(setCode: string, drawn: DrawnCard): FabPrinting[] {
-	return selectPrintingPool(getSetPrintings(setCode), drawn);
-}
-
 /** Real per-set data is the tie-breaker between what the odds engine drew and
  * what the set actually printed. The printing wins in three cases:
  *
@@ -183,7 +156,6 @@ export function resolveTreatment(
 function toResolvedCardFromPrinting(
 	drawn: DrawnCard,
 	printing: FabPrinting,
-	setCode: string,
 ): ResolvedCard {
 	const treatment = resolveTreatment(drawn, printing);
 	return {
@@ -196,38 +168,33 @@ function toResolvedCardFromPrinting(
 		treatment,
 		imageUrl: printingImageUrl(printing),
 		backImageUrl: printingBackImageUrl(printing),
-		set: setCode,
-		pitch: printing.pitch,
-		cost: printing.cost,
-		power: printing.power,
-		defense: printing.defense,
 		tcgplayerProductId: printing.tcgplayerProductId,
 		printingId: treatment === printing.foiling ? printing.uniqueId : null,
-		isPlaceholder: false,
 	};
 }
 
-/** Resolves cards from the pulled card's OWN set (see
+/** Resolves a card from the pulled card's OWN set (see
  * shared/data/fab-printings.ts) — the printing shown genuinely comes from
  * the set on the pack, at that set's own printed rarity, with that set's
  * own art and TCGplayer product id. Picked deterministically per drawn card id
  * so re-renders don't reshuffle which card a slot shows.
  *
- * Falls back to a placeholder when `setCode` is missing or that set's own pool
- * genuinely has nothing matching (data still loading, or failed to load). */
-const fabPrintingsCardResolver: CardResolver = {
-	resolve(drawn, setCode) {
-		if (setCode) {
-			const pool = poolForDrawn(setCode, drawn);
-			if (pool.length > 0) {
-				const picked = pool[hashToIndex(drawn.id, pool.length)];
-				return toResolvedCardFromPrinting(drawn, picked, setCode);
-			}
+ * `setCode` is the set the pack was actually generated for (see
+ * stores/pack-opener.ts's `packSetCode`). Falls back to a placeholder when it
+ * is missing or that set's own pool genuinely has nothing matching (data still
+ * loading, or failed to load). */
+export function resolveCard(
+	drawn: DrawnCard,
+	setCode?: string | null,
+): ResolvedCard {
+	if (setCode) {
+		const pool = selectPrintingPool(getSetPrintings(setCode), drawn);
+		if (pool.length > 0) {
+			return toResolvedCardFromPrinting(
+				drawn,
+				pool[hashToIndex(drawn.id, pool.length)],
+			);
 		}
-		return placeholderCardResolver.resolve(drawn);
-	},
-};
-
-/** Swap point for card content — real per-set printings, with a placeholder as
- * the graceful fallback baked into the resolver itself. */
-export const activeCardResolver: CardResolver = fabPrintingsCardResolver;
+	}
+	return placeholderCard(drawn);
+}

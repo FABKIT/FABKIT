@@ -50,7 +50,7 @@ export function OutgoingCard({ card, phaseStartedAt }: OutgoingCardProps) {
 			rotation={[0, 0, initial.rotationZ]}
 			visible={initial.visible}
 		>
-			<Card3D card={card} interactive={false} alwaysOnTop />
+			<Card3D card={card} alwaysOnTop />
 		</group>
 	);
 }

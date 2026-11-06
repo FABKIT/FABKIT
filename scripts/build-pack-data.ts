@@ -2,18 +2,21 @@ import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { KNOWN_SETS } from "@fabkit/apps/pack-opener/config/known-sets";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
-import type {
-	FabPrinting,
-	FabSetPrintings,
-	FoilTreatment,
+import {
+	type FabPrinting,
+	type FabSetPrintings,
+	type FoilTreatment,
+	printingArtSlug,
+	type SetIndexEntry,
 } from "@fabkit/shared/data/fab-printings";
 import {
 	buildCardmarketSnapshot,
 	type CardmarketCatalog,
 	fetchCardmarketCatalog,
 } from "./cardmarket";
+import { fetchJson } from "./fetch-json";
 import { bridgePrintings, PRE_RELEASE_SETS } from "./pre-release-bridge";
-import { BACK_SUFFIX, type RawCard, type RawPrinting } from "./raw-card-data";
+import type { RawCard, RawPrinting } from "./raw-card-data";
 import {
 	buildSetPriceSnapshot,
 	fetchTcgcsvGroups,
@@ -172,7 +175,7 @@ interface OutputSet {
 	name: string;
 	releaseDate: string | null;
 	setLogo: string | null;
-	productKind: "booster-set" | "supplemental";
+	productKind: SetIndexEntry["productKind"];
 	printings: RawPrinting[];
 }
 
@@ -193,7 +196,7 @@ function splitOutputSets(
 	code: string,
 	meta: SetMeta,
 	rawPrintings: RawPrinting[],
-	productKind: "booster-set" | "supplemental",
+	productKind: SetIndexEntry["productKind"],
 ): OutputSet[] {
 	const splits = SET_SPLITS[code];
 	if (!splits) {
@@ -293,14 +296,6 @@ interface RawSet {
 	printings: RawSetPrinting[];
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
-	const response = await fetch(url);
-	if (!response.ok) {
-		throw new Error(`Fetch failed for ${url}: ${response.status}`);
-	}
-	return response.json() as Promise<T>;
-}
-
 /** Builds a code -> value lookup from the-fab-cube's own rarity.json /
  * foiling.json. Throwing here (rather than falling back to some default) is
  * deliberate: if upstream ever adds a rarity or foiling code this doesn't
@@ -377,8 +372,11 @@ interface SetMeta {
 	setLogo: string | null;
 }
 
+/** Ends the artwork filename of a card's back face. */
+const BACK_SUFFIX = "_BACK";
+
 /**
- * Whether this row is the back of a physical card. card.json lists the two
+ * Whether this artwork is the back of a physical card. card.json lists the two
  * sides of a card as two printings, which share a collector number and,
  * from the same physical card, a TCGplayer product. Left in, a card with
  * two sides would be two rows in its pool and be dealt twice as often as a
@@ -389,8 +387,8 @@ interface SetMeta {
  * this either, since it is false on the many Marvel heroes that carry art
  * on both sides of one card (HNT003-MV and HNT003-MV_BACK).
  */
-function isBackFace(raw: RawPrinting): boolean {
-	return toArtSlug(raw.image_url)?.endsWith(BACK_SUFFIX) ?? false;
+function isBackFace(artSlug: string | null): artSlug is string {
+	return artSlug?.endsWith(BACK_SUFFIX) ?? false;
 }
 
 /**
@@ -429,6 +427,7 @@ function backSlugFor(
 	frontSlug: string,
 	isMarvel: boolean,
 	backSlugByUniqueId: ReadonlyMap<string, string>,
+	backSlugs: ReadonlySet<string>,
 ): string | null {
 	const info = raw.double_sided_card_info;
 	if (info?.some((entry) => entry.is_DFC && entry.other_face_unique_id)) {
@@ -440,7 +439,7 @@ function backSlugFor(
 		.find((slug) => slug?.startsWith(raw.id));
 	if (linked) return linked;
 	const sibling = `${frontSlug}${BACK_SUFFIX}`;
-	return [...backSlugByUniqueId.values()].includes(sibling) ? sibling : null;
+	return backSlugs.has(sibling) ? sibling : null;
 }
 
 /** One set can carry more than one `printings` entry in set.json (distinct
@@ -549,13 +548,15 @@ function buildSetPrintings(
 	rawPrintings: RawPrinting[],
 	cardByUniqueId: Map<string, RawCard>,
 ): FabSetPrintings {
-	const backSlugByUniqueId = new Map(
-		rawPrintings
-			.filter(isBackFace)
-			.map((raw) => [raw.unique_id, toArtSlug(raw.image_url) as string]),
-	);
-	const printings: FabPrinting[] = rawPrintings
-		.filter((raw) => !isBackFace(raw))
+	const backSlugByUniqueId = new Map<string, string>();
+	const frontRows: RawPrinting[] = [];
+	for (const raw of rawPrintings) {
+		const artSlug = toArtSlug(raw.image_url);
+		if (isBackFace(artSlug)) backSlugByUniqueId.set(raw.unique_id, artSlug);
+		else frontRows.push(raw);
+	}
+	const backSlugs = new Set(backSlugByUniqueId.values());
+	const printings: FabPrinting[] = frontRows
 		.map((raw): FabPrinting | null => {
 			const card = cardByUniqueId.get(raw.unique_id);
 			if (!card) {
@@ -585,6 +586,7 @@ function buildSetPrintings(
 			if (!foiling) {
 				throw new Error(`Unmapped foiling code "${raw.foiling}" on ${raw.id}`);
 			}
+			const artSlug = toArtSlug(raw.image_url);
 			return {
 				id: raw.id,
 				uniqueId: raw.unique_id,
@@ -600,16 +602,13 @@ function buildSetPrintings(
 				defense: toNumberOrNull(card.defense),
 				types: card.types,
 				artVariations: raw.art_variations ?? [],
-				artSlug: toArtSlug(raw.image_url),
-				// The same slug printingImageUrl() would build for the front,
-				// which is what the back is derived from — see backSlugFor.
+				artSlug,
 				backSlug: backSlugFor(
 					raw,
-					rarity === "marvel" && toArtSlug(raw.image_url)
-						? (toArtSlug(raw.image_url) as string)
-						: raw.id,
+					printingArtSlug({ id: raw.id, rarity, artSlug }),
 					rarity === "marvel",
 					backSlugByUniqueId,
+					backSlugs,
 				),
 			};
 		})
@@ -733,15 +732,7 @@ async function main() {
 		);
 	}
 
-	const indexEntries: Array<{
-		code: string;
-		name: string;
-		releaseDate: string | null;
-		setLogo: string | null;
-		printingCount: number;
-		productKind: "booster-set" | "supplemental";
-		packArt: string[];
-	}> = [];
+	const indexEntries: SetIndexEntry[] = [];
 
 	const outputSets = includedCodes.flatMap((code) => {
 		const meta = setMetaByCode.get(code);

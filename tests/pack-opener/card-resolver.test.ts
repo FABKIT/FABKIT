@@ -1,42 +1,17 @@
 import { describe, expect, it } from "bun:test";
 import {
-	activeCardResolver,
+	resolveCard,
 	resolveTreatment,
 } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
+import { makeDrawn, makePrinting } from "./pack-data";
 
-function drawn(overrides: Partial<DrawnCard>): DrawnCard {
-	return {
-		id: "test-drawn",
-		slot: "premium-foil",
-		rarity: "legendary",
-		treatment: "standard",
-		expansionSlot: false,
-		...overrides,
-	};
-}
+const drawn = (overrides: Partial<DrawnCard>) =>
+	makeDrawn({ slot: "premium-foil", rarity: "legendary", ...overrides });
 
-function printing(overrides: Partial<FabPrinting>): FabPrinting {
-	return {
-		id: "TST001",
-		uniqueId: "test-unique-id",
-		name: "Test Card",
-		rarity: "legendary",
-		foiling: "standard",
-		expansionSlot: false,
-		tcgplayerProductId: null,
-		pitch: null,
-		cost: null,
-		power: null,
-		defense: null,
-		types: [],
-		artVariations: [],
-		artSlug: null,
-		backSlug: null,
-		...overrides,
-	};
-}
+const printing = (overrides: Partial<FabPrinting>) =>
+	makePrinting({ rarity: "legendary", ...overrides });
 
 /**
  * The real printed card wins over the odds engine's own draw wherever the
@@ -99,14 +74,13 @@ describe("resolveTreatment", () => {
 
 /** A set whose data is missing must still give the scene something to draw, and
  * must not pretend to know what the card is. */
-describe("activeCardResolver's placeholder", () => {
+describe("resolveCard's placeholder", () => {
 	it("keeps the draw's rarity and treatment and carries no real card data", () => {
-		const resolved = activeCardResolver.resolve(
+		const resolved = resolveCard(
 			drawn({ rarity: "marvel", treatment: "cold" }),
 		);
 		expect(resolved).toMatchObject({
-			isPlaceholder: true,
-			name: "",
+			name: null,
 			rarity: "marvel",
 			treatment: "cold",
 			imageUrl: null,
@@ -117,7 +91,6 @@ describe("activeCardResolver's placeholder", () => {
 	});
 
 	it("is what a set with no loaded printings resolves to", () => {
-		const resolved = activeCardResolver.resolve(drawn({}), "NOT_LOADED");
-		expect(resolved.isPlaceholder).toBe(true);
+		expect(resolveCard(drawn({}), "NOT_LOADED").name).toBeNull();
 	});
 });

@@ -4,6 +4,7 @@ import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
 import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
+import { resetStore } from "./reset-store";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -16,17 +17,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  */
 describe("automatic hand-over on the last card", () => {
 	beforeEach(() => {
-		usePackOpenerStore.setState({
-			phase: "idle",
-			pack: null,
-			revealIndex: -1,
-			phaseStartedAt: null,
-			openedPacksThisSession: [],
-			selectedSet: DEFAULT_PACK_CONFIG.id,
-			packArtUrl: null,
-			revisitIndex: null,
-			packSetCode: null,
-		});
+		resetStore();
 	});
 
 	/** Puts the store one advance away from the final card. */

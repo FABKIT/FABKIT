@@ -1,27 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
 import { printingBackImageUrl } from "@fabkit/shared/data/fab-printings";
+import { makePrinting } from "./pack-data";
 
-function printing(overrides: Partial<FabPrinting> = {}): FabPrinting {
-	return {
-		id: "DTD007",
-		uniqueId: "uid",
-		name: "Aegis, Archangel of Protection",
-		rarity: "majestic",
-		foiling: "standard",
-		expansionSlot: false,
-		tcgplayerProductId: null,
-		pitch: null,
-		cost: null,
-		power: null,
-		defense: null,
-		types: [],
-		artVariations: [],
-		artSlug: null,
-		backSlug: null,
-		...overrides,
-	};
-}
+const printing = (overrides: Partial<FabPrinting> = {}) =>
+	makePrinting({ id: "DTD007", rarity: "majestic", ...overrides });
 
 /** The other face of a double-faced card. The slug itself is resolved at
  * build time (scripts/build-pack-data.ts's backSlugFor, which documents why

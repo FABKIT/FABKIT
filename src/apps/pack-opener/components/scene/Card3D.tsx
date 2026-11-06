@@ -1,16 +1,14 @@
 import type { ResolvedCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { CardFace } from "@fabkit/apps/pack-opener/components/scene/CardFace";
-import { useCardTilt } from "@fabkit/apps/pack-opener/hooks/useCardTilt";
+import { useCardTilt } from "@fabkit/apps/pack-opener/components/scene/useCardTilt";
 
 interface Card3DProps {
 	card: ResolvedCard;
 	onClick?: () => void;
-	/** False for the outgoing (sliding-away) card in OutgoingCard.tsx: not
-	 * interactive, so it tracks no pointer and stays flat. Tilt lives entirely
-	 * inside this component; the reveal slide stays on OutgoingCard's own
-	 * separate group, so the two never touch the same transform. */
-	interactive?: boolean;
-	/** True only for the outgoing card. The card underneath tilts with the
+	/** True only for the outgoing card. It tracks no pointer and stays flat:
+	 * tilt lives entirely inside this component, and the reveal slide on
+	 * OutgoingCard's own separate group, so the two never touch the same
+	 * transform. The card underneath does tilt with the
 	 * pointer (up to CARD_TILT_MAX_DEG), which at the corners swings it past the
 	 * small gap OutgoingCard's z offset leaves between the two, so the active
 	 * card could poke through mid-slide. Disabling depth testing and writing on
@@ -33,11 +31,10 @@ interface Card3DProps {
 export function Card3D({
 	card,
 	onClick,
-	interactive = true,
 	alwaysOnTop = false,
 	showOtherFace = false,
 }: Card3DProps) {
-	const { group, lightDir } = useCardTilt(interactive);
+	const { group, lightDir } = useCardTilt(!alwaysOnTop);
 
 	return (
 		<group ref={group}>

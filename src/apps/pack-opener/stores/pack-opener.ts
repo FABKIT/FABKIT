@@ -1,8 +1,4 @@
-import { activeCardResolver } from "@fabkit/apps/pack-opener/cards/card-resolver";
-import {
-	clearFailedTextureUrls,
-	trimSafeTextureCache,
-} from "@fabkit/apps/pack-opener/components/scene/textures/useSafeTexture";
+import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import {
 	ADVANCE_DEBOUNCE_MS,
 	LAST_CARD_AUTO_SUMMARY_MS,
@@ -22,7 +18,11 @@ import {
 	preloadPackTextures,
 } from "@fabkit/apps/pack-opener/lib/preload-pack";
 import { warmPrices } from "@fabkit/apps/pack-opener/lib/pricing";
-import { defaultSet } from "@fabkit/apps/pack-opener/lib/set-index";
+import { selectedSetPosition } from "@fabkit/apps/pack-opener/lib/set-index";
+import {
+	clearFailedTextureUrls,
+	trimSafeTextureCache,
+} from "@fabkit/apps/pack-opener/lib/texture-cache";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import {
 	DEFAULT_PACK_CONFIG,
@@ -46,9 +46,9 @@ import {
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-/** How many decoded card textures survive into the next pack: this pack's and
- * most of the previous one's, so a repeat card is instant without the cache
- * growing for as long as the session runs. */
+/** How many decoded textures survive into the next pack: about the last four
+ * full-size packs' worth, so a repeat card is instant without the cache growing
+ * for as long as the session runs. */
 const TEXTURE_CACHE_KEEP = 64;
 
 const initialState: PackOpenerState = {
@@ -70,7 +70,7 @@ const initialState: PackOpenerState = {
 /** Reports the card as the player sees it. A cold upgrade can redraw into a
  * different rarity, so the drawn card's own rarity may not be what's shown. */
 function trackCardRevealed(card: DrawnCard, setCode: string | null): void {
-	const shown = activeCardResolver.resolve(card, setCode ?? undefined);
+	const shown = resolveCard(card, setCode);
 	trackEvent({
 		name: "pack_opener_card_revealed",
 		data: { rarity: shown.rarity, treatment: shown.treatment },
@@ -79,10 +79,10 @@ function trackCardRevealed(card: DrawnCard, setCode: string | null): void {
 
 export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 	devtools((set, get) => {
-		/** The open tap currently waiting on a set's printings. Identity is
-		 * the point: switching sets or resetting clears it, and a load that
-		 * finishes after that finds it is no longer the live request. */
-		let pendingOpen: { setCode: string } | null = null;
+		/** The set an open tap is currently waiting on. Switching sets or
+		 * resetting clears it, and a load that finishes after that finds it is
+		 * no longer the live request. */
+		let pendingOpenSet: string | null = null;
 
 		/** Warms everything a set needs ahead of its first pack. Every loader
 		 * is idempotent per set code, and a failed one only means that data
@@ -172,7 +172,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					packConfig === DEFAULT_PACK_CONFIG ||
 					getSetPrintings(packConfig.id).length > 0;
 				if (isCached) {
-					pendingOpen = null;
+					pendingOpenSet = null;
 					dealPack(packConfig);
 					return;
 				}
@@ -182,14 +182,13 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				// resolves at a different moment, so the reveal and the ledger
 				// could disagree about what was pulled. A second tap while this
 				// waits is the same request, not another pack.
-				if (pendingOpen?.setCode === packConfig.id) return;
-				const request = { setCode: packConfig.id };
-				pendingOpen = request;
+				if (pendingOpenSet === packConfig.id) return;
+				pendingOpenSet = packConfig.id;
 				loadSetPrintings(packConfig.id)
 					.catch(() => {})
 					.then(() => {
-						if (pendingOpen !== request) return;
-						pendingOpen = null;
+						if (pendingOpenSet !== packConfig.id) return;
+						pendingOpenSet = null;
 						if (get().phase === "idle") dealPack(packConfig);
 					});
 			},
@@ -267,7 +266,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				// it already resets pack/phase/revealIndex cleanly below, which is
 				// exactly "discard the pack" — so there is nothing else to guard
 				// here once the UI has confirmed the player wants that.
-				pendingOpen = null;
+				pendingOpenSet = null;
 				const packArtUrl = rollPackArt(setCode);
 				warmSet(setCode);
 
@@ -303,9 +302,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				// A stored code the index no longer lists counts as no choice at
 				// all. Left in place, it would show the default set's logo while
 				// its packs came from the mock config.
-				const current =
-					sets.find((entry) => entry.code === selectedSet) ?? defaultSet(sets);
-				if (!current) return;
+				const current = sets[selectedSetPosition(sets, selectedSet)];
 				if (current.code !== selectedSet) writeStoredSelectedSet(current.code);
 
 				warmSet(current.code);
@@ -343,7 +340,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 				// rather than reset to initialState's value, which would re-read
 				// the set from localStorage, and the artwork is re-rolled for
 				// that same set rather than dropping back to the mock pack.
-				pendingOpen = null;
+				pendingOpenSet = null;
 				set(
 					{
 						phase: "idle",
