@@ -6,6 +6,15 @@ on:
   release:
     types: [published]
 
+  # Nightly price refresh: redeploys the latest published release with fresh
+  # pack-opener price data. 03:00 UTC is after both sources have updated
+  # (tcgcsv around 20:00 UTC, Cardmarket's daily files around 02:00 UTC).
+  # Rebuilds from the release TAG, never from master, so this can only ever
+  # change data, not code. GitHub pauses schedules on public repos after 60
+  # days without a commit; a push re-enables it.
+  schedule:
+    - cron: "0 3 * * *"
+
   # Allows you to run this workflow manually from the Actions tab (dev builds)
   workflow_dispatch:
     inputs:
@@ -27,13 +36,51 @@ concurrency:
 jobs:
   # Single deploy job since we're just deploying
   deploy:
+    # The nightly refresh only makes sense where releases are published; on
+    # a fork or staging copy it would fail every night looking for one.
+    if: ${{ github.event_name != 'schedule' || github.repository == 'FABKIT/FABKIT' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      # Which code and which version label this deploy carries. A release
+      # deploys its own tag; a scheduled run deploys the LATEST published
+      # release again (fresh prices, same code, same version label, so the
+      # footer and bug reports keep reporting the real release); a manual run
+      # deploys whatever ref it was started from, with the version typed in.
+      - name: Resolve ref and version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "${{ github.event_name }}" in
+            release)
+              tag='${{ github.ref_name }}'
+              ;;
+            schedule)
+              tag="$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name)"
+              if [ -z "$tag" ]; then
+                echo "No published release to refresh; nothing to deploy." >&2
+                exit 1
+              fi
+              ;;
+            *)
+              tag=''
+              ;;
+          esac
+          if [ -n "$tag" ]; then
+            echo "ref=$tag" >> "$GITHUB_OUTPUT"
+            echo "value=${tag#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
+            echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.version.outputs.ref }}
 
       - name: Remove placeholder cardbacks
         if: ${{ startsWith(github.repository, 'FABKIT/') }}
@@ -54,15 +101,6 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
-
-      - name: Resolve version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            echo "value=$(echo '${{ github.ref_name }}' | sed 's/^v//')" >> $GITHUB_OUTPUT
-          else
-            echo "value=${{ inputs.version }}" >> $GITHUB_OUTPUT
-          fi
 
       - name: Update PWA assets
         run: bun run scripts/update-pwa-assets

@@ -249,7 +249,9 @@ mirrored by tcgcsv.com (`src/shared/data/fab-prices.ts`, keyed by
 (`src/shared/data/fab-prices-cm.ts`, keyed by a printing's `uniqueId`, which is why
 `ResolvedCard` carries `printingId` as well). Both are build-time snapshots written by
 `scripts/build-pack-data.ts` into `public/data/pack-opener/prices/` and `prices-cm/`;
-neither can be fetched live from a browser.
+neither can be fetched live from a browser. They stay fresh because `pages.yml` also runs
+on a nightly schedule (03:00 UTC), redeploying the latest published release with
+re-fetched data: same code, same version label, new `capturedAt`.
 
 **Components never touch either module directly — they call `lib/pricing.ts`**, through the
 `usePrices` hook. That file takes the currency and hands back a number or null, so the two
