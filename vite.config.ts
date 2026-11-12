@@ -90,6 +90,72 @@ export default defineConfig({
 							cacheableResponse: { statuses: [200] },
 						},
 					},
+					// The pack opener's own code, data and artwork are kept out
+					// of the precache (see globIgnores above and
+					// scripts/update-pwa-assets.ts), so nothing else would keep
+					// them for an offline visit. These three rules store them the
+					// first time someone opens the app, and only for that person.
+					//
+					// The chunks carry a content hash in their name, so a cached
+					// one is never stale and CacheFirst is safe; the small cap
+					// lets old builds' chunks fall away.
+					{
+						urlPattern: ({
+							url,
+							sameOrigin,
+						}: {
+							url: URL;
+							sameOrigin: boolean;
+						}) =>
+							sameOrigin &&
+							/\/assets\/(pack-opener|texture-cache)-[^/]+\.js$/.test(
+								url.pathname,
+							),
+						handler: "CacheFirst",
+						options: {
+							cacheName: "pack-opener-code",
+							expiration: { maxEntries: 12 },
+							cacheableResponse: { statuses: [200] },
+						},
+					},
+					// Card and price data is rebuilt on every deploy under the
+					// same file names, so it is served from the cache and
+					// refreshed in the background for the next visit.
+					{
+						urlPattern: ({
+							url,
+							sameOrigin,
+						}: {
+							url: URL;
+							sameOrigin: boolean;
+						}) => sameOrigin && url.pathname.includes("/data/pack-opener/"),
+						handler: "StaleWhileRevalidate",
+						options: {
+							cacheName: "pack-opener-data",
+							expiration: { maxEntries: 150 },
+							cacheableResponse: { statuses: [200] },
+						},
+					},
+					{
+						urlPattern: ({
+							url,
+							sameOrigin,
+						}: {
+							url: URL;
+							sameOrigin: boolean;
+						}) =>
+							sameOrigin &&
+							/\/img\/pack-opener\/(packs|logos)\//.test(url.pathname),
+						handler: "CacheFirst",
+						options: {
+							cacheName: "pack-opener-art",
+							expiration: {
+								maxEntries: 100,
+								maxAgeSeconds: 60 * 60 * 24 * 30,
+							},
+							cacheableResponse: { statuses: [200] },
+						},
+					},
 				],
 			},
 			includeAssets: [

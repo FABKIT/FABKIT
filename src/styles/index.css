@@ -79,6 +79,42 @@
 	--color-pack-foil-subtle: rgba(56, 189, 248, 0.2);
 	--color-pack-marvel: #e879f9;
 	--color-pack-marvel-subtle: rgba(232, 121, 249, 0.2);
+
+	/* Pack opener loading screen: the top card of a stack is pulled up and
+	   off, then the next one settles into its place. */
+	--animate-pack-pull: pack-pull 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+	/* Pack opener "loading card art" pill: held back for a moment, so art
+	   that arrives almost at once never flashes it. */
+	--animate-pack-loading-in: pack-loading-in 0.2s ease-out 0.35s both;
+
+	@keyframes pack-loading-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes pack-pull {
+		0%,
+		30% {
+			transform: translateY(0);
+			opacity: 1;
+		}
+		65% {
+			transform: translateY(-85%);
+			opacity: 0;
+		}
+		66% {
+			transform: translateY(4%) scale(0.97);
+			opacity: 0;
+		}
+		100% {
+			transform: translateY(0) scale(1);
+			opacity: 1;
+		}
+	}
 }
 
 [data-theme="dark"] {

@@ -1,4 +1,6 @@
+import { PackOpenerLoading } from "@fabkit/apps/pack-opener/components/PackOpenerLoading";
 import { PackOpenerPage } from "@fabkit/apps/pack-opener/components/PackOpenerPage";
+import { PackOpenerUnavailable } from "@fabkit/apps/pack-opener/components/PackOpenerUnavailable";
 import { CARD_BACK_URL } from "@fabkit/apps/pack-opener/config/scene";
 import { loadSetIndex } from "@fabkit/shared/data/fab-printings";
 import { createFileRoute } from "@tanstack/react-router";
@@ -25,4 +27,17 @@ export const Route = createFileRoute("/pack-opener")({
 		});
 	},
 	component: PackOpenerPage,
+	// Covers the wait for this app's own code and its set list, neither of
+	// which is precached (see vite.config.ts). Shown only once the wait is
+	// long enough to notice, so a warm cache never flashes it.
+	pendingComponent: PackOpenerLoading,
+	pendingMs: 200,
+	// A first visit with no connection cannot download that code. This turns
+	// it into a plain "needs a connection" screen and rethrows anything else
+	// to the root error boundary.
+	errorComponent: PackOpenerUnavailable,
+	// Only the page itself is split out. The router would split the error
+	// screen into its own chunk too by default, and a screen whose whole job
+	// is to appear when chunks cannot be downloaded has to already be here.
+	codeSplitGroupings: [["component"]],
 });

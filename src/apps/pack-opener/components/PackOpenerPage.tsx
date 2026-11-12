@@ -1,4 +1,5 @@
 import { SetCarousel } from "@fabkit/apps/pack-opener/components/carousel/SetCarousel";
+import { CardLoadingIndicator } from "@fabkit/apps/pack-opener/components/hud/CardLoadingIndicator";
 import { IdleOverlay } from "@fabkit/apps/pack-opener/components/hud/IdleOverlay";
 import { PackSummary } from "@fabkit/apps/pack-opener/components/hud/PackSummary";
 import { RevealCaption } from "@fabkit/apps/pack-opener/components/hud/RevealCaption";
@@ -10,7 +11,8 @@ import { useTranslation } from "react-i18next";
  * Stacked top to bottom: set picker, the 3D canvas, a caption slot, then the
  * pack summary. Everything except the canvas is in normal flow at a fixed
  * height, so the canvas — and therefore whatever it frames — never changes
- * size as the phases move on. Nothing floats over the canvas at all.
+ * size as the phases move on. Nothing floats over the canvas except
+ * CardLoadingIndicator, and only while a card's art is still downloading.
  *
  * The caption slot is one fixed-height box shared by the idle prompt and the
  * card's details, so the pack and the cards are each framed in a canvas of a
@@ -43,6 +45,7 @@ export function PackOpenerPage() {
 					className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,var(--color-surface-muted),transparent_70%)]"
 				/>
 				<PackOpenerCanvas />
+				<CardLoadingIndicator />
 			</div>
 			{/* One slot, one height, whichever phase is running. Its height is
 			    fixed here rather than by the components inside it so the two can

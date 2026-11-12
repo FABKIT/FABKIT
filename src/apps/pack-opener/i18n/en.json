@@ -2,6 +2,14 @@
 	"common": {
 		"close": "Close"
 	},
+	"loading": {
+		"label": "Getting the packs ready"
+	},
+	"unavailable": {
+		"title": "The Pack Opener needs a connection",
+		"description": "It downloads its cards the first time you open it. Connect to the internet and try again. After that, it opens offline too.",
+		"retry": "Try again"
+	},
 	"page": {
 		"title": "Pack Opener",
 		"tap_to_tear": "Tap the pack to tear it open",
@@ -94,6 +102,7 @@
 	},
 	"card": {
 		"unavailable": "Card unavailable",
+		"loading": "Loading card art",
 		"rarity": {
 			"basic": "Basic",
 			"common": "Common",

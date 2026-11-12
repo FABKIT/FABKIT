@@ -38,13 +38,17 @@ src/apps/pack-opener/
     pack-opener-types.ts  State and action types
   components/
     PackOpenerPage.tsx  The page
+    PackOpenerLoading, PackOpenerUnavailable  The route's loading and offline screens.
+                      They render from the entry chunk, see "Bundle"
     PackOpenerDialog, ConfirmDialog, CurrencyToggle, PriceValue, TreatmentBadge  Shared by
                       the HUD and the carousel
     carousel/        SetCarousel and SetLogo (the set picker), LeavePackDialog, SetInfoDialog
                       and its sections, set-dropdown-options.ts
     hud/             2D page chrome BELOW the canvas, not overlaid on it: IdleOverlay,
                       RevealCaption, PackSummary, PackLedger, PackLedgerRow, SessionControls,
-                      SessionStatsDialog and its sections, ResetSessionDialog
+                      SessionStatsDialog and its sections, ResetSessionDialog. The one
+                      exception is CardLoadingIndicator, shown over the card back while a
+                      card's art is still downloading
     scene/           react-three-fiber scene:
       PackOpenerCanvas  The canvas
       CameraRig      Scripted camera, no OrbitControls
@@ -137,7 +141,9 @@ no imports for this reason.
 The service worker's precache is the other way in, since every visitor downloads all of it.
 `vite.config.ts` keeps this app's chunks out with `globIgnores`, by chunk name, and
 `scripts/update-pwa-assets.ts` keeps the pack artwork and set logos out of `includeAssets`.
-Only the card back is precached.
+Only the card back is precached. Three `runtimeCaching` rules store the chunks, data and
+artwork once someone has opened the app, so it works offline after a first visit; before
+that, the route shows `PackOpenerUnavailable`.
 
 ## Card data
 

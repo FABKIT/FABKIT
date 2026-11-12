@@ -393,14 +393,21 @@ export function Menu() {
 					<span className="sr-only">{t("nav.open_sidebar")}</span>
 					<MenuIcon className="size-6" aria-hidden="true" />
 				</button>
-				<div className="flex flex-row items-center text-sm/6 font-semibold text-primary">
+				{/* The Ko-fi button is moved into the right end of this bar on
+				    phones (see src/styles/index.css), so the title keeps clear of
+				    it: it shrinks and truncates instead of running underneath.
+				    The right margin is the button's own scaled width plus its
+				    inset. */}
+				<div className="mr-29 flex min-w-0 flex-row items-center text-sm/6 font-semibold text-primary md:mr-0">
 					<img
 						src={FabkitLogoNotext}
 						alt={t("nav.logo_with_text_alt")}
-						className="h-8 pr-2"
+						className="h-8 shrink-0 pr-2"
 					/>
-					{t("nav.brand")}
-					{currentRouteName && ` - ${t(currentRouteName)}`}
+					<span className="truncate">
+						{t("nav.brand")}
+						{currentRouteName && ` - ${t(currentRouteName)}`}
+					</span>
 				</div>
 			</div>
 		</div>
