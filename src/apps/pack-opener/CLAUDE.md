@@ -134,6 +134,11 @@ loader imports `lib/texture-cache.ts` dynamically for the same reason. Keep anyt
 from those two entry points free of static scene and store imports. `config/scene.ts` has
 no imports for this reason.
 
+The service worker's precache is the other way in, since every visitor downloads all of it.
+`vite.config.ts` keeps this app's chunks out with `globIgnores`, by chunk name, and
+`scripts/update-pwa-assets.ts` keeps the pack artwork and set logos out of `includeAssets`.
+Only the card back is precached.
+
 ## Card data
 
 Cards are real Flesh and Blood cards, resolved per the set the open pack was actually

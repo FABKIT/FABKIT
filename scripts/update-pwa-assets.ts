@@ -8,6 +8,18 @@ const VITE_CONFIG_PATH = "vite.config.ts";
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".svg"];
 const FONT_EXTENSIONS = [".woff", ".woff2", ".ttf", ".otf", ".svg"];
 
+/**
+ * Image folders that stay out of the precache. Everything listed in
+ * includeAssets is downloaded by every visitor's service worker, whichever
+ * app they came for, and the pack opener's pack artwork and set logos are
+ * several megabytes that only its own players ever see. They load on demand
+ * instead. Its card back is small and stays precached.
+ */
+const IMG_PRECACHE_EXCLUDED_PREFIXES = [
+	"img/pack-opener/packs/",
+	"img/pack-opener/logos/",
+];
+
 async function scanDirectoryRecursive(
 	dir: string,
 	baseDir: string,
@@ -80,7 +92,17 @@ async function getFontFiles(): Promise<string[]> {
 
 async function getImgFiles(): Promise<string[]> {
 	try {
-		return await scanDirectoryRecursive(IMG_DIR, IMG_DIR, IMAGE_EXTENSIONS);
+		const files = await scanDirectoryRecursive(
+			IMG_DIR,
+			IMG_DIR,
+			IMAGE_EXTENSIONS,
+		);
+		return files.filter(
+			(file) =>
+				!IMG_PRECACHE_EXCLUDED_PREFIXES.some((prefix) =>
+					file.startsWith(prefix),
+				),
+		);
 	} catch (error) {
 		console.error(`Error reading img directory: ${error}`);
 		return [];

@@ -51,6 +51,17 @@ export default defineConfig({
 			},
 			workbox: {
 				cleanupOutdatedCaches: true,
+				// Everything precached is downloaded by every visitor's service
+				// worker, whichever app they came for. The pack opener's chunks
+				// carry three.js, fiber and drei, close to 1 MB that the rest of
+				// the site never runs, so they stay out and load when someone
+				// opens that app. The names follow the route file and
+				// lib/texture-cache.ts, the module the scene is first imported
+				// through, so renaming either means updating these patterns.
+				globIgnores: [
+					"**/assets/pack-opener-*.js",
+					"**/assets/texture-cache-*.js",
+				],
 				// Pack opener card art: content.fabrary.net's own Cache-Control
 				// only holds a card's image for 3 days, but a pack draws its
 				// commons from a pool of roughly 130 per set, so repeat
