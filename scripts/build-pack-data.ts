@@ -1,4 +1,4 @@
-import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { KNOWN_SETS } from "@fabkit/apps/pack-opener/config/known-sets";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
@@ -51,14 +51,26 @@ import {
  * Mastery Pack Warrior's 156 cards and no TCGplayer ids for them, while
  * develop had all 156.
  */
-const CARD_JSON_URL =
-	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/card.json";
-const SET_JSON_URL =
-	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/set.json";
-const RARITY_JSON_URL =
-	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/rarity.json";
-const FOILING_JSON_URL =
-	"https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/json/english/foiling.json";
+const FAB_CUBE_JSON_PATH = "json/english";
+const FAB_CUBE_RAW_BASE = `https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/${FAB_CUBE_JSON_PATH}`;
+
+/**
+ * Reads one of the-fab-cube's JSON files. CI and the Pages deploy check the
+ * repository out next to this one and point FAB_CUBE_DIR at it (see
+ * .github/workflows), the same way the deploy pulls the cardbacks, so the
+ * build reads from disk there. Without FAB_CUBE_DIR, which is every local
+ * run, the file is downloaded instead. A checkout that is missing a file
+ * fails rather than quietly downloading it: the workflow asked for the
+ * checkout, so a hole in it is a broken build, not a reason to mix sources.
+ */
+async function readFabCubeJson<T>(fileName: string): Promise<T> {
+	const checkoutDir = process.env.FAB_CUBE_DIR;
+	if (!checkoutDir) {
+		return fetchJson<T>(`${FAB_CUBE_RAW_BASE}/${fileName}`);
+	}
+	const filePath = join(checkoutDir, FAB_CUBE_JSON_PATH, fileName);
+	return JSON.parse(await readFile(filePath, "utf8")) as T;
+}
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");
 
@@ -619,12 +631,16 @@ function buildSetPrintings(
 }
 
 async function main() {
-	console.log("Fetching the-fab-cube dataset...");
+	console.log(
+		process.env.FAB_CUBE_DIR
+			? `Reading the-fab-cube dataset from ${process.env.FAB_CUBE_DIR}...`
+			: "Fetching the-fab-cube dataset...",
+	);
 	const [cards, sets, rarityLookup, foilingLookup] = await Promise.all([
-		fetchJson<RawCard[]>(CARD_JSON_URL),
-		fetchJson<RawSet[]>(SET_JSON_URL),
-		fetchJson<RawLookupEntry[]>(RARITY_JSON_URL),
-		fetchJson<RawLookupEntry[]>(FOILING_JSON_URL),
+		readFabCubeJson<RawCard[]>("card.json"),
+		readFabCubeJson<RawSet[]>("set.json"),
+		readFabCubeJson<RawLookupEntry[]>("rarity.json"),
+		readFabCubeJson<RawLookupEntry[]>("foiling.json"),
 	]);
 
 	// Fail loudly if upstream adds a code this script doesn't know about,

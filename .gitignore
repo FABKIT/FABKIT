@@ -34,6 +34,9 @@ CHANGELOG.md
 # Generated pack opener data (scripts/build-pack-data.ts) — build output, not source
 public/data/pack-opener/
 
+# the-fab-cube checkout the workflows read card data from (FAB_CUBE_DIR)
+.fab-cube/
+
 # Local AI files
 .claude/settings.local.json
 .claude/worktrees/

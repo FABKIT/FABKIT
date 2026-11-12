@@ -67,9 +67,18 @@ jobs:
       - name: Update PWA assets
         run: bun run scripts/update-pwa-assets
 
+      - name: Pull the-fab-cube card data
+        uses: actions/checkout@v7
+        with:
+          repository: the-fab-cube/flesh-and-blood-cards
+          ref: develop
+          path: ".fab-cube"
+          sparse-checkout: json/english
+
       - name: Update pack opener data
         env:
           APP_VERSION: ${{ steps.version.outputs.value }}
+          FAB_CUBE_DIR: .fab-cube
         run: bun run build-pack-data
 
       - name: Check every pack slot can be dealt

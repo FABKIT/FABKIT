@@ -141,7 +141,8 @@ generated from. `src/shared/data/fab-printings.ts` fetches one JSON file per set
 (`public/data/pack-opener/sets/<CODE>.json`, built by `scripts/build-pack-data.ts` from the
 develop branch of github.com/the-fab-cube/flesh-and-blood-cards; its main branch lags well
 behind) — every real _printing_ of a card, with that set's own rarity, foil treatments,
-and TCGplayer product id. The store's `warmSet` loads a set's printings and prices whenever
+and TCGplayer product id. CI and the Pages deploy check that repository out and read it from
+disk (`FAB_CUBE_DIR`); a local run downloads the same files instead. The store's `warmSet` loads a set's printings and prices whenever
 it is selected, ahead of the next `openPack()`.
 
 **A double-faced card is one row.** The build drops back-face rows by image filename

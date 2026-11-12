@@ -199,7 +199,7 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"pack would have shown the same three Commons over and over. That was " +
 			"a property of the source, not of the product, and the build now reads " +
 			"the-fab-cube's develop branch, which has all 156 with prices — see " +
-			"the comment on CARD_JSON_URL in scripts/build-pack-data.ts.",
+			"the comment on FAB_CUBE_RAW_BASE in scripts/build-pack-data.ts.",
 	},
 	{
 		code: "TNP",
