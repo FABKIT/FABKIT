@@ -23,17 +23,7 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Pull the-fab-cube card data
-        uses: actions/checkout@v7
-        with:
-          repository: the-fab-cube/flesh-and-blood-cards
-          ref: develop
-          path: ".fab-cube"
-          sparse-checkout: json/english
-
       - name: Build pack data
-        env:
-          FAB_CUBE_DIR: .fab-cube
         run: bun run build-pack-data
 
       - name: Test

@@ -6,12 +6,7 @@ on:
   release:
     types: [published]
 
-  # Nightly price refresh: redeploys the latest published release with fresh
-  # pack-opener price data. 03:00 UTC is after both sources have updated
-  # (tcgcsv around 20:00 UTC, Cardmarket's daily files around 02:00 UTC).
-  # Rebuilds from the release TAG, never from master, so this can only ever
-  # change data, not code. GitHub pauses schedules on public repos after 60
-  # days without a commit; a push re-enables it.
+  # Nightly price refresh of the latest release, after the price sources update
   schedule:
     - cron: "0 3 * * *"
 
@@ -28,59 +23,53 @@ permissions:
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   # Single deploy job since we're just deploying
   deploy:
-    # The nightly refresh only makes sense where releases are published; on
-    # a fork or staging copy it would fail every night looking for one.
+    # Skip the nightly refresh on forks, which have no releases
     if: ${{ github.event_name != 'schedule' || github.repository == 'FABKIT/FABKIT' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      # Which code and which version label this deploy carries. A release
-      # deploys its own tag; a scheduled run deploys the LATEST published
-      # release again (fresh prices, same code, same version label, so the
-      # footer and bug reports keep reporting the real release); a manual run
-      # deploys whatever ref it was started from, with the version typed in.
-      - name: Resolve ref and version
-        id: version
+      - name: Resolve ref and version (release)
+        if: ${{ github.event_name == 'release' }}
+        id: version_release
+        run: |
+          echo "ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve ref and version (schedule)
+        if: ${{ github.event_name == 'schedule' }}
+        id: version_schedule
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          case "${{ github.event_name }}" in
-            release)
-              tag='${{ github.ref_name }}'
-              ;;
-            schedule)
-              tag="$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name)"
-              if [ -z "$tag" ]; then
-                echo "No published release to refresh; nothing to deploy." >&2
-                exit 1
-              fi
-              ;;
-            *)
-              tag=''
-              ;;
-          esac
-          if [ -n "$tag" ]; then
-            echo "ref=$tag" >> "$GITHUB_OUTPUT"
-            echo "value=${tag#v}" >> "$GITHUB_OUTPUT"
-          else
-            echo "ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
-            echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          tag="$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name)"
+          if [ -z "$tag" ]; then
+            echo "No published release to refresh; nothing to deploy." >&2
+            exit 1
           fi
+          echo "ref=$tag" >> "$GITHUB_OUTPUT"
+          echo "value=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve ref and version (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: version_dispatch
+        run: |
+          echo "ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
+          echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ steps.version.outputs.ref }}
+          ref: ${{ steps.version_release.outputs.ref || steps.version_schedule.outputs.ref || steps.version_dispatch.outputs.ref }}
 
       - name: Remove placeholder cardbacks
         if: ${{ startsWith(github.repository, 'FABKIT/') }}
@@ -105,34 +94,22 @@ jobs:
       - name: Update PWA assets
         run: bun run scripts/update-pwa-assets
 
-      - name: Pull the-fab-cube card data
-        uses: actions/checkout@v7
-        with:
-          repository: the-fab-cube/flesh-and-blood-cards
-          ref: develop
-          path: ".fab-cube"
-          sparse-checkout: json/english
-
       - name: Update pack opener data
         env:
-          APP_VERSION: ${{ steps.version.outputs.value }}
-          FAB_CUBE_DIR: .fab-cube
+          APP_VERSION: ${{ steps.version_release.outputs.value || steps.version_schedule.outputs.value || steps.version_dispatch.outputs.value }}
         run: bun run build-pack-data
-
-      - name: Check every pack slot can be dealt
-        run: bun test tests/pack-opener/pool-viability.test.ts
 
       - name: Build (Production)
         if: ${{ github.repository == 'FABKIT/FABKIT' }}
         env:
-          APP_VERSION: ${{ steps.version.outputs.value }}
+          APP_VERSION: ${{ steps.version_release.outputs.value || steps.version_schedule.outputs.value || steps.version_dispatch.outputs.value }}
           VITE_UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
         run: bun run build
 
       - name: Build (Staging)
         if: ${{ github.repository != 'FABKIT/FABKIT' }}
         env:
-          APP_VERSION: ${{ steps.version.outputs.value }}
+          APP_VERSION: ${{ steps.version_release.outputs.value || steps.version_schedule.outputs.value || steps.version_dispatch.outputs.value }}
         run: bun run build -- --mode staging
 
       - name: Setup Pages

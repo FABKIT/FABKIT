@@ -1,11 +1,14 @@
-import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { KNOWN_SETS } from "@fabkit/apps/pack-opener/config/known-sets";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import {
 	type FabPrinting,
 	type FabSetPrintings,
 	type FoilTreatment,
+	hasType,
+	isClassCard,
 	printingArtSlug,
 	type SetIndexEntry,
 } from "@fabkit/shared/data/fab-printings";
@@ -54,22 +57,8 @@ import {
 const FAB_CUBE_JSON_PATH = "json/english";
 const FAB_CUBE_RAW_BASE = `https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/${FAB_CUBE_JSON_PATH}`;
 
-/**
- * Reads one of the-fab-cube's JSON files. CI and the Pages deploy check the
- * repository out next to this one and point FAB_CUBE_DIR at it (see
- * .github/workflows), the same way the deploy pulls the cardbacks, so the
- * build reads from disk there. Without FAB_CUBE_DIR, which is every local
- * run, the file is downloaded instead. A checkout that is missing a file
- * fails rather than quietly downloading it: the workflow asked for the
- * checkout, so a hole in it is a broken build, not a reason to mix sources.
- */
-async function readFabCubeJson<T>(fileName: string): Promise<T> {
-	const checkoutDir = process.env.FAB_CUBE_DIR;
-	if (!checkoutDir) {
-		return fetchJson<T>(`${FAB_CUBE_RAW_BASE}/${fileName}`);
-	}
-	const filePath = join(checkoutDir, FAB_CUBE_JSON_PATH, fileName);
-	return JSON.parse(await readFile(filePath, "utf8")) as T;
+function readFabCubeJson<T>(fileName: string): Promise<T> {
+	return fetchJson<T>(`${FAB_CUBE_RAW_BASE}/${fileName}`);
 }
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");
@@ -630,12 +619,55 @@ function buildSetPrintings(
 	return { code, printings };
 }
 
+/** Throws if a pack slot of a real set has no printing to deal. */
+function assertPackSlotsDealable(setPrintings: FabSetPrintings) {
+	const config = REAL_SET_PACK_CONFIGS[setPrintings.code];
+	if (!config) return;
+	const hasPool = (
+		rarity: CardRarity,
+		expansionSlot: boolean,
+		requiresType?: string,
+		classRestricted?: boolean,
+	) =>
+		setPrintings.printings.some(
+			(p) =>
+				p.rarity === rarity &&
+				p.expansionSlot === expansionSlot &&
+				(!requiresType || hasType(p, requiresType)) &&
+				(classRestricted === undefined || isClassCard(p) === classRestricted),
+		);
+	const empty: string[] = [];
+	for (const slot of config.slots) {
+		for (const entry of slot.rarityTable) {
+			if (
+				!hasPool(
+					entry.rarity,
+					Boolean(entry.expansionSlot),
+					entry.requiresType,
+					entry.classRestricted,
+				)
+			) {
+				empty.push(`slot "${slot.kind}" -> rarity "${entry.rarity}"`);
+			}
+		}
+	}
+	for (const [rarity, chance] of [
+		["marvel", config.marvelChance],
+		["fabled", config.fabledChance],
+	] as const) {
+		if (chance > 0 && !hasPool(rarity, false)) {
+			empty.push(`${rarity}Chance is ${chance} but the set prints none`);
+		}
+	}
+	if (empty.length > 0) {
+		throw new Error(
+			`${setPrintings.code}: pack slots that can't be dealt: ${empty.join("; ")}`,
+		);
+	}
+}
+
 async function main() {
-	console.log(
-		process.env.FAB_CUBE_DIR
-			? `Reading the-fab-cube dataset from ${process.env.FAB_CUBE_DIR}...`
-			: "Fetching the-fab-cube dataset...",
-	);
+	console.log("Fetching the-fab-cube dataset...");
 	const [cards, sets, rarityLookup, foilingLookup] = await Promise.all([
 		readFabCubeJson<RawCard[]>("card.json"),
 		readFabCubeJson<RawSet[]>("set.json"),
@@ -771,6 +803,7 @@ async function main() {
 			output.printings,
 			cardByUniqueId,
 		);
+		assertPackSlotsDealable(setPrintings);
 		await writeFile(
 			join(OUTPUT_DIR, "sets", `${code}.json`),
 			JSON.stringify(setPrintings),
