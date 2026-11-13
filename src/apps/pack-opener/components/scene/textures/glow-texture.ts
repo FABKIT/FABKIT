@@ -3,17 +3,12 @@ import type { CanvasTexture } from "three";
 
 const TEXTURE_SIZE = 256;
 
-let cachedTexture: CanvasTexture | null = null;
-
 /**
  * A soft white radial gradient, opaque at the centre and fully transparent
- * at the edge, generated once and cached at module scope. There is only
- * ever one glow texture: every celebration tier tints it via its own
- * material `color` rather than baking a colour into the texture itself, so
- * this never needs to be regenerated per tier.
+ * at the edge. Every celebration tier tints it via its own material `color`.
  */
 export function getGlowTexture(): CanvasTexture {
-	cachedTexture ??= makeCanvasTexture(TEXTURE_SIZE, TEXTURE_SIZE, (ctx) => {
+	return makeCanvasTexture("glow", TEXTURE_SIZE, TEXTURE_SIZE, (ctx) => {
 		const center = TEXTURE_SIZE / 2;
 		const gradient = ctx.createRadialGradient(
 			center,
@@ -29,5 +24,4 @@ export function getGlowTexture(): CanvasTexture {
 		ctx.fillStyle = gradient;
 		ctx.fillRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
 	});
-	return cachedTexture;
 }

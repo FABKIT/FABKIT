@@ -128,7 +128,7 @@ export interface PackOpenerActions {
 	/** Throws away everything opened so far and starts counting from pack
 	 * one again, without touching the chosen set or reloading the page.
 	 * Destructive on purpose (the session ledger is the only record of a
-	 * run), so the UI confirms first — see ResetSessionDialog.tsx. */
+	 * run), so the UI confirms first — see SessionControls.tsx. */
 	resetSession(): void;
 	/** Clears a finished pack and brings out the next one closed, in a fresh
 	 * one of the set's pack fronts, without opening it. */

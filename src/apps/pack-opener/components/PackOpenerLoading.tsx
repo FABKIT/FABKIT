@@ -28,14 +28,14 @@ export function PackOpenerLoading() {
 			role="status"
 			className="flex h-[calc(100dvh-4rem)] w-full flex-col items-center justify-center gap-10 bg-surface px-4 lg:h-dvh"
 		>
-			<div aria-hidden="true" className="relative h-56 w-40">
+			<div className="relative h-56 w-40">
 				{STACK_TILTS.map((tilt, index) => {
 					const isTop = index === STACK_TILTS.length - 1;
 					return (
 						<div key={tilt} className={`absolute inset-0 ${tilt}`}>
 							<img
 								src={CARD_BACK_URL}
-								alt=""
+								alt={isTop ? t("loading.card_back") : ""}
 								// Ahead of the app's own chunks on a first visit, when
 								// the service worker has not precached it yet.
 								fetchPriority="high"

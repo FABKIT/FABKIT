@@ -28,7 +28,8 @@ src/apps/pack-opener/
                       pack-art.ts, pack-opener-storage.ts, preload-pack.ts, set-index.ts,
                       texture-cache.ts (every image texture, see "Card data")
   hooks/             useCollapseOnOutsidePointer, useNeighbourLogoPreload,
-                      usePrefersReducedMotion, usePrices, useSafeTexture, useSetNavigation
+                      usePrefersReducedMotion, usePrices, useSafeTexture, useCardFaceTexture,
+                      useSetNavigation
   stores/
     pack-opener.ts   Zustand store: the idle/tearing/revealing/done state machine, the
                       selected set and currency (saved with zustand's persist, never
@@ -40,11 +41,11 @@ src/apps/pack-opener/
                       They render from the entry chunk, see "Bundle"
     PackOpenerDialog, ConfirmDialog, CurrencyToggle, PriceValue, TreatmentBadge  Shared by
                       the HUD and the carousel
-    carousel/        SetCarousel and SetLogo (the set picker), LeavePackDialog, SetInfoDialog
+    carousel/        SetCarousel and SetLogo (the set picker), SetInfoDialog
                       and its sections, set-dropdown-options.ts
-    hud/             2D page chrome BELOW the canvas, not overlaid on it: IdleOverlay,
+    hud/             2D page chrome BELOW the canvas, not overlaid on it:
                       RevealCaption, PackSummary, PackLedger, PackLedgerRow, SessionControls,
-                      SessionStatsDialog and its sections, ResetSessionDialog. The one
+                      SessionStatsDialog and its sections. The one
                       exception is CardLoadingIndicator, shown over the card back while a
                       card's art is still downloading
     scene/           react-three-fiber scene:
@@ -272,8 +273,8 @@ like Crucible of War's Mandible Claw.
 
 `openedPacksThisSession` is in-memory only and resets on reload. `resetSession()` clears it
 and puts a closed pack back on the counter, keeping the selected set and re-rolling its
-artwork; it is destructive with no undo, so `ResetSessionDialog` confirms first, the same
-gate `LeavePackDialog` puts in front of discarding an in-flight pack.
+artwork; it is destructive with no undo, so a `ConfirmDialog` in `SessionControls` confirms first, the
+same gate the set carousel puts in front of discarding an in-flight pack.
 
 ## Decided, don't reopen
 

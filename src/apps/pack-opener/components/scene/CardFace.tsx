@@ -8,6 +8,7 @@ import {
 	CARD_HEIGHT,
 	CARD_WIDTH,
 } from "@fabkit/apps/pack-opener/config/scene";
+import { useCardFaceTexture } from "@fabkit/apps/pack-opener/hooks/useCardFaceTexture";
 import { useSafeTexture } from "@fabkit/apps/pack-opener/hooks/useSafeTexture";
 
 interface CardFaceProps {
@@ -53,10 +54,7 @@ export function CardFace({
 		showOtherFace && card.backImageUrl !== null
 			? card.backImageUrl
 			: card.imageUrl;
-	const face = useSafeTexture(faceUrl);
-	const front = useSafeTexture(
-		face.status === "error" && faceUrl !== card.imageUrl ? card.imageUrl : null,
-	);
+	const { face, front } = useCardFaceTexture(faceUrl, card.imageUrl);
 	const cardBack = useSafeTexture(CARD_BACK_URL);
 
 	const texture =

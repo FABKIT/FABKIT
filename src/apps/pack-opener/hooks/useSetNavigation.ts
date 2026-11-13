@@ -11,7 +11,7 @@ import {
 	useState,
 } from "react";
 
-/** A set change waiting on LeavePackDialog, and the pack it would discard. */
+/** A set change waiting on the leave-pack confirmation, and the pack it would discard. */
 interface LeaveRequest {
 	setCode: string;
 	pack: DrawnCard[];
@@ -35,7 +35,7 @@ function arrowKeyBelongsElsewhere(event: KeyboardEvent): boolean {
 
 /** Every way of moving between sets (arrows, dropdown, swipe, arrow keys) and
  * the gate they all pass through. A pack still being torn open or revealed is
- * never silently discarded: the change pauses on LeavePackDialog first, and
+ * never silently discarded: the change pauses on the leave-pack confirmation first, and
  * the store's selectSet(), which does the actual discarding, runs only once
  * the player has confirmed.
  *

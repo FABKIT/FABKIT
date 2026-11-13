@@ -1,5 +1,5 @@
 import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
-import { useSafeTexture } from "@fabkit/apps/pack-opener/hooks/useSafeTexture";
+import { useCardFaceTexture } from "@fabkit/apps/pack-opener/hooks/useCardFaceTexture";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { selectActiveCard } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { LoaderCircle } from "lucide-react";
@@ -38,12 +38,7 @@ export function CardLoadingIndicator() {
 	const faceUrl =
 		showingOtherFace && card?.backImageUrl ? card.backImageUrl : frontUrl;
 
-	// The same two lookups, in the same order, as CardFace: the face asked
-	// for, then the front when the other side of a double-faced card failed.
-	const face = useSafeTexture(faceUrl);
-	const front = useSafeTexture(
-		face.status === "error" && faceUrl !== frontUrl ? frontUrl : null,
-	);
+	const { face, front } = useCardFaceTexture(faceUrl, frontUrl);
 
 	const isLoading =
 		faceUrl !== null &&

@@ -267,7 +267,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						// SetCarousel.tsx) so a player can switch sets mid-pack. That is a
 						// deliberate, user-facing decision, not something this store should
 						// silently allow or silently block: SetCarousel gates the call
-						// behind LeavePackDialog, which warns that an in-flight pack is
+						// behind the leave-pack confirmation, which warns that an in-flight pack is
 						// discarded and does not count toward session stats, before ever
 						// calling this action. This action itself stays unconditional —
 						// it already resets pack/phase/revealIndex cleanly below, which is

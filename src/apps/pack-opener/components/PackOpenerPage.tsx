@@ -1,6 +1,5 @@
 import { SetCarousel } from "@fabkit/apps/pack-opener/components/carousel/SetCarousel";
 import { CardLoadingIndicator } from "@fabkit/apps/pack-opener/components/hud/CardLoadingIndicator";
-import { IdleOverlay } from "@fabkit/apps/pack-opener/components/hud/IdleOverlay";
 import { PackSummary } from "@fabkit/apps/pack-opener/components/hud/PackSummary";
 import { RevealCaption } from "@fabkit/apps/pack-opener/components/hud/RevealCaption";
 import { PackOpenerCanvas } from "@fabkit/apps/pack-opener/components/scene/PackOpenerCanvas";
@@ -51,7 +50,13 @@ export function PackOpenerPage() {
 			    fixed here rather than by the components inside it so the two can
 			    never drift apart and resize the canvas between phases. */}
 			<div className="flex h-19 shrink-0 items-center justify-center px-4 text-center">
-				{showsCard ? <RevealCaption /> : <IdleOverlay />}
+				{showsCard ? (
+					<RevealCaption />
+				) : (
+					<p className="animate-pulse text-lg font-medium text-heading drop-shadow">
+						{t("page.tap_to_tear")}
+					</p>
+				)}
 			</div>
 			{/* Always present, always the same height, in every phase — the
 			    summary is only ever VISIBLE once a pack is finished, but its

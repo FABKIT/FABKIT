@@ -1,5 +1,5 @@
+import { ConfirmDialog } from "@fabkit/apps/pack-opener/components/ConfirmDialog";
 import { CurrencyToggle } from "@fabkit/apps/pack-opener/components/CurrencyToggle";
-import { ResetSessionDialog } from "@fabkit/apps/pack-opener/components/hud/ResetSessionDialog";
 import { SessionStatsDialog } from "@fabkit/apps/pack-opener/components/hud/SessionStatsDialog";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { RotateCcw } from "lucide-react";
@@ -57,9 +57,12 @@ export function SessionControls() {
 				openedPacks={openedPacks}
 			/>
 
-			<ResetSessionDialog
+			<ConfirmDialog
 				open={resetOpen}
-				packsOpened={openedPacks.length}
+				title={t("reset.title")}
+				body={t("reset.body", { count: openedPacks.length })}
+				confirmLabel={t("reset.confirm")}
+				cancelLabel={t("reset.cancel")}
 				onCancel={() => setResetOpen(false)}
 				onConfirm={() => {
 					setResetOpen(false);

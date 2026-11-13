@@ -82,7 +82,7 @@ export function RevealCaption() {
 				    labelling the rarity underneath it. */}
 				<img
 					src={CardRarities[resolved.rarity].icon}
-					alt=""
+					alt={t(CardRarities[resolved.rarity].label)}
 					className="h-4 w-4"
 				/>
 				<span>{t(CardRarities[resolved.rarity].label)}</span>

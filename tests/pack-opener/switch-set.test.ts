@@ -9,7 +9,7 @@ import { resetStore } from "./reset-store";
  * Switching sets mid-pack is allowed, but the abandoned pack is discarded and must NEVER be recorded into session stats — stats
  * exist to show value the player actually pulled, so counting cards they
  * never saw would be misleading. SetCarousel.tsx gates this behind
- * LeavePackDialog before ever calling selectSet(); this test covers the
+ * the leave-pack confirmation before ever calling selectSet(); this test covers the
  * store's own half of the contract directly, without the UI layer, so a
  * future change to the store can't quietly start counting an abandoned
  * pack even if the dialog is somehow bypassed.

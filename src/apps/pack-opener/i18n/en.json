@@ -3,7 +3,8 @@
 		"close": "Close"
 	},
 	"loading": {
-		"label": "Getting the packs ready"
+		"label": "Getting the packs ready",
+		"card_back": "Flesh and Blood card back"
 	},
 	"unavailable": {
 		"title": "The Pack Opener needs a connection",

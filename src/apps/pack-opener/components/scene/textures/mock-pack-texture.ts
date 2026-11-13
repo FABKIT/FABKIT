@@ -57,15 +57,10 @@ function drawSealStrip(ctx: CanvasRenderingContext2D): void {
 	ctx.fill();
 }
 
-const textures: Partial<Record<PackPart, CanvasTexture>> = {};
-
 /** The plain pack shown when a set has no art or its art failed to load: a
- * wrapper shape and sheen, with nothing on it to translate. Built once, since it
- * doesn't vary per pack. */
+ * wrapper shape and sheen, with nothing on it to translate. */
 export function getMockPackTexture(part: PackPart): CanvasTexture {
-	textures[part] ??=
-		part === "body"
-			? makeCanvasTexture(BODY_WIDTH, BODY_HEIGHT, drawPackBody)
-			: makeCanvasTexture(SEAL_WIDTH, SEAL_HEIGHT, drawSealStrip);
-	return textures[part];
+	return part === "body"
+		? makeCanvasTexture("pack-body", BODY_WIDTH, BODY_HEIGHT, drawPackBody)
+		: makeCanvasTexture("pack-seal", SEAL_WIDTH, SEAL_HEIGHT, drawSealStrip);
 }

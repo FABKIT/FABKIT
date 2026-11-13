@@ -36,23 +36,27 @@ export function ensureLoading(url: string): Promise<void> {
 	const pending = inFlight.get(url);
 	if (pending) return pending;
 
-	const loading = new Promise<void>((resolve) => {
-		loader.load(
-			url,
-			(texture) => {
-				texture.colorSpace = SRGBColorSpace;
-				textureCache.set(url, texture);
-				resolve();
-			},
-			undefined,
-			() => {
-				failedUrls.add(url);
-				resolve();
-			},
-		);
-	}).then(() => {
-		inFlight.delete(url);
-	});
+	const loading = (async () => {
+		try {
+			await new Promise<void>((resolve) => {
+				loader.load(
+					url,
+					(texture) => {
+						texture.colorSpace = SRGBColorSpace;
+						textureCache.set(url, texture);
+						resolve();
+					},
+					undefined,
+					() => {
+						failedUrls.add(url);
+						resolve();
+					},
+				);
+			});
+		} finally {
+			inFlight.delete(url);
+		}
+	})();
 	inFlight.set(url, loading);
 	return loading;
 }

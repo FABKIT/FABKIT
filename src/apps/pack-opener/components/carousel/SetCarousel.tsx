@@ -1,4 +1,4 @@
-import { LeavePackDialog } from "@fabkit/apps/pack-opener/components/carousel/LeavePackDialog";
+import { ConfirmDialog } from "@fabkit/apps/pack-opener/components/ConfirmDialog";
 import { SetInfoDialog } from "@fabkit/apps/pack-opener/components/carousel/SetInfoDialog";
 import { SetLogo } from "@fabkit/apps/pack-opener/components/carousel/SetLogo";
 import { buildSetDropdownOptions } from "@fabkit/apps/pack-opener/components/carousel/set-dropdown-options";
@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 /** Page-level chrome, not an overlay floating over the canvas — it needs
  * to be visible whenever there's a set to show, including mid-animation: a
  * player can switch sets while a pack is tearing or revealing, behind
- * LeavePackDialog's confirmation.
+ * a confirmation dialog.
  *
  * Sits in normal document flow ABOVE the canvas rather than floating over
  * it. It used to be absolutely positioned across the top of the canvas,
@@ -124,8 +124,12 @@ export function SetCarousel() {
 				setName={current.name}
 			/>
 
-			<LeavePackDialog
+			<ConfirmDialog
 				open={navigation.leaveDialogOpen}
+				title={t("carousel.leave_pack_title")}
+				body={t("carousel.leave_pack_body")}
+				confirmLabel={t("carousel.leave_pack_confirm")}
+				cancelLabel={t("carousel.leave_pack_cancel")}
 				onConfirm={navigation.confirmLeave}
 				onCancel={navigation.cancelLeave}
 			/>

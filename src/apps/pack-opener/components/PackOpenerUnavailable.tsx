@@ -2,12 +2,6 @@ import { CARD_BACK_URL } from "@fabkit/apps/pack-opener/config/scene";
 import { Button } from "@fabkit/platform/components/Button";
 import { useTranslation } from "react-i18next";
 
-/** Every browser words a failed `import()` differently: Chrome, Firefox, then
- * Safari. Matching the message is the only signal there is, since they all
- * throw a plain TypeError. */
-const CHUNK_LOAD_FAILURE =
-	/dynamically imported module|error loading dynamically imported|Importing a module script failed/i;
-
 interface PackOpenerUnavailableProps {
 	error: unknown;
 }
@@ -27,9 +21,8 @@ interface PackOpenerUnavailableProps {
 export function PackOpenerUnavailable({ error }: PackOpenerUnavailableProps) {
 	const { t } = useTranslation("pack-opener");
 
-	const isChunkLoadFailure =
-		error instanceof Error && CHUNK_LOAD_FAILURE.test(error.message);
-	if (!isChunkLoadFailure) throw error;
+	const isOffline = error instanceof TypeError && !navigator.onLine;
+	if (!isOffline) throw error;
 
 	return (
 		<div className="flex h-[calc(100dvh-4rem)] w-full flex-col items-center justify-center gap-6 bg-surface px-6 text-center lg:h-dvh">
