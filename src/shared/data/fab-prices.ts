@@ -1,20 +1,8 @@
 import { createCachedJsonLoader } from "@fabkit/shared/data/cached-json-loader";
 import type { FoilTreatment } from "@fabkit/shared/data/fab-printings";
 
-/**
- * One set's price snapshot, sourced from tcgcsv.com's daily TCGplayer
- * mirror and pre-processed at build time by scripts/build-pack-data.ts into
- * one slim JSON file per set (public/data/pack-opener/prices/<CODE>.json).
- * tcgcsv sends no CORS header and rejects requests without an identifying
- * User-Agent, so this can only ever be a build-time snapshot, never a live
- * browser fetch.
- *
- * USD only, market price only (no LSS list/MSRP price — no free,
- * automatable source for that was found).
- * Deliberately separate from fab-printings.ts: a printing is real,
- * permanent card data, while a price is a daily snapshot with its own
- * `capturedAt` and its own (much smaller) lifecycle.
- */
+/** One set's TCGplayer price snapshot (USD, market price only). Kept apart from
+ * fab-printings.ts because prices are a dated snapshot, not permanent card data. */
 export interface SetPriceSnapshot {
 	/** ISO timestamp of the tcgcsv fetch this file was built from — shown in
 	 * the set info dialog so a price is never presented as more current

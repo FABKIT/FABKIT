@@ -3,10 +3,10 @@ import {
 	resolveTreatment,
 	selectPrintingPool,
 } from "@fabkit/apps/pack-opener/cards/card-resolver";
-import { hashToIndex } from "@fabkit/apps/pack-opener/cards/deterministic-hash";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
 import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
+import { hashToIndex } from "@fabkit/shared/random";
 import {
 	makeDrawn as drawn,
 	hasPackData,

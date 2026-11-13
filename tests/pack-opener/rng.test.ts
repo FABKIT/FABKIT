@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
+import { mulberry32 } from "@fabkit/shared/random";
 
 describe("mulberry32", () => {
 	it("is deterministic for a fixed seed", () => {

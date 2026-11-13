@@ -1,4 +1,3 @@
-import { hashToIndex } from "@fabkit/apps/pack-opener/cards/deterministic-hash";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import type {
@@ -12,6 +11,7 @@ import {
 	printingBackImageUrl,
 	printingImageUrl,
 } from "@fabkit/shared/data/fab-printings";
+import { hashToIndex } from "@fabkit/shared/random";
 
 /**
  * Shape every 3D/UI component consumes. `imageUrl` is a real content.fabrary.net

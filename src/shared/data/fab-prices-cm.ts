@@ -1,30 +1,7 @@
 import { createCachedJsonLoader } from "@fabkit/shared/data/cached-json-loader";
 
-/**
- * One set's price snapshot in EUROS, from Cardmarket — the European
- * counterpart of fab-prices.ts, built at the same time by the same build
- * script (scripts/build-pack-data.ts, via scripts/cardmarket.ts) into
- * public/data/pack-opener/prices-cm/<CODE>.json.
- *
- * A deliberate parallel module rather than another field on
- * SetPriceSnapshot, for three reasons that all point the same way:
- *
- *   - it is keyed differently. TCGplayer prices a product per foiling
- *     subtype, so the dollar file is keyed by (tcgplayerProductId,
- *     treatment); Cardmarket has its own product ids that nothing in any
- *     Flesh and Blood dataset carries, so the euro file is keyed by the
- *     printing's own uniqueId instead.
- *   - it covers different cards. The GEM Packs are barely on TCGplayer and
- *     almost fully on Cardmarket; older sets are the other way round. A
- *     player switching currency is switching marketplace, and each one
- *     genuinely knows about different cardboard.
- *   - it is fetched separately, so a visitor who never touches the
- *     currency switch never downloads the file for the other one.
- *
- * Nothing here ever converts between the two currencies. A euro figure is
- * a real Cardmarket euro figure or it is absent — see scripts/cardmarket.ts
- * for the matching rules and for which cards deliberately go unpriced.
- */
+/** One set's Cardmarket price snapshot (EUR), keyed by the printing's uniqueId.
+ * Never converted from USD: a euro figure is a real Cardmarket price or absent. */
 
 export interface SetCardmarketSnapshot {
 	/** ISO timestamp of the build that fetched this, shown wherever a euro

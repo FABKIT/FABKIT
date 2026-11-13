@@ -19,12 +19,10 @@ src/apps/pack-opener/
                       and Fabled rolls
     reveal-order.ts  orderForReveal(): shuffles reveal order, pins the premium foil last
     slot-table.ts, pull-rates.ts  What a pack holds, for the set info dialog
-    rng.ts           mulberry32, a seeded PRNG for deterministic tests
   cards/
     card-resolver.ts ResolvedCard, and resolveCard (per-set printings, with a
                       placeholder when a set's data is missing)
     celebration-tier.ts  Which rarities get which celebration
-    deterministic-hash.ts  hashToIndex(): a stable per-id pick into a pool
   stats/             computeSessionStats, value totals. Pure, no React.
   lib/               currency.ts, pricing.ts (see "Prices and currency"), easing.ts,
                       pack-art.ts, pack-opener-storage.ts, preload-pack.ts, set-index.ts,

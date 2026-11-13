@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
-import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
 import { computeSessionStats } from "@fabkit/apps/pack-opener/stats/session-stats";
+import { mulberry32 } from "@fabkit/shared/random";
 
 describe("session stats", () => {
 	const pack = generatePack(DEFAULT_PACK_CONFIG, mulberry32(21));

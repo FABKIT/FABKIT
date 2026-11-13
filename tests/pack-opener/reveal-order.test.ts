@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { generatePack } from "@fabkit/apps/pack-opener/pack/generate-pack";
 import { DEFAULT_PACK_CONFIG } from "@fabkit/apps/pack-opener/pack/odds";
 import { orderForReveal } from "@fabkit/apps/pack-opener/pack/reveal-order";
-import { mulberry32 } from "@fabkit/apps/pack-opener/pack/rng";
+import { mulberry32 } from "@fabkit/shared/random";
 
 describe("orderForReveal", () => {
 	it("always places the premium-foil card last", () => {

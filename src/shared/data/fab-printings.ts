@@ -2,17 +2,8 @@ import { CardClasses } from "@fabkit/shared/config/cards/classes";
 import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import { createCachedJsonLoader } from "@fabkit/shared/data/cached-json-loader";
 
-/**
- * Real per-set, per-printing FAB card data, sourced from
- * github.com/the-fab-cube/flesh-and-blood-cards and pre-processed at build
- * time by scripts/build-pack-data.ts into one slim JSON file per set
- * (public/data/pack-opener/sets/<CODE>.json).
- *
- * Every *printing* of a card is its own row, because a card's rarity and
- * available foil treatments can differ between sets, and only per-set fidelity
- * lets a "Part the Mistveil pack" actually only ever show Part the Mistveil
- * cards at Part the Mistveil's own printed rarities.
- */
+/** Real per-set, per-printing FAB card data. Every printing is its own row, since
+ * rarity and foil treatments can differ between sets. */
 
 /**
  * A printing's foil treatment, as printed. pack/types.ts's DrawnCard carries

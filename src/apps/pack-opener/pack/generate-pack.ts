@@ -18,7 +18,7 @@ function weightedPick(table: RarityWeight[], rng: () => number): RarityWeight {
 
 /** Generates one booster pack's worth of drawn cards from a PackConfig.
  * Always returns exactly `config.cardsPerPack` cards. Pass a seeded rng
- * (see pack/rng.ts) for deterministic rarities and treatments in tests, and
+ * (see shared/random.ts) for deterministic rarities and treatments in tests, and
  * an `makeId` when ids should be deterministic too or aren't needed at all. */
 export function generatePack(
 	config: PackConfig,
