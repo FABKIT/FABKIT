@@ -133,6 +133,7 @@
 	display: grid;
 	gap: 1.5rem;
 	justify-items: center;
+	/* biome-ignore lint/correctness/noInvalidGridAreas: false positive in Biome 2.6.2, one cell per row stacked is valid */
 	grid-template-areas: "image" "side" "below";
 }
 
@@ -140,9 +141,8 @@
 	.fabble-answer-grid {
 		grid-template-columns: auto 1fr;
 		grid-template-rows: auto auto;
-		grid-template-areas:
-			"image side"
-			"below below";
+		/* biome-ignore lint/correctness/noInvalidGridAreas: false positive in Biome 2.6.2, both rows have two cells */
+		grid-template-areas: "image side" "below below";
 		column-gap: 2.5rem;
 		row-gap: 1rem;
 		justify-items: start;

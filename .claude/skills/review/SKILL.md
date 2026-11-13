@@ -1,5 +1,4 @@
 ---
-
 name: review
 description: FABKIT-specific code review. Checks changed files against the project's concrete rules — i18n, semantic tokens, React/Zustand patterns, field component structure, import boundaries, TypeScript hygiene. Reports blocking issues and warnings. Invoke with /review.
 ---
@@ -8,7 +7,7 @@ You are performing a FABKIT-specific code review. Your job is to catch real viol
 
 ## What to Review
 
-Run `git diff HEAD` to get all uncommitted changes. If everything is staged, use `git diff --cached`. On a clean tree, or to review a whole branch, use `git diff origin/master...HEAD`. Review only the changed lines, not the entire file.
+Run `git diff HEAD` to get all uncommitted changes. If everything is staged, use `git diff --cached`. Review only the changed lines, not the entire file.
 
 If no diff is available, ask the user which files or changes to review.
 
@@ -16,11 +15,11 @@ If no diff is available, ask the user which files or changes to review.
 
 FABKIT uses a three-layer architecture:
 
-| Layer    | Path               | Rule                                                                                   |
-| -------- | ------------------ | -------------------------------------------------------------------------------------- |
-| Platform | `src/platform/`    | Shell infrastructure. May import from `src/shared/`. Must not import from `src/apps/`. |
-| Shared   | `src/shared/`      | FAB domain data. Must not import from `src/apps/` or `src/platform/`.                  |
-| App      | `src/apps/<name>/` | Self-contained. May import from platform and shared. Must not import from other apps.  |
+| Layer | Path | Rule |
+|-------|------|------|
+| Platform | `src/platform/` | Shell infrastructure. May import from `src/shared/`. Must not import from `src/apps/`. |
+| Shared | `src/shared/` | FAB domain data. Must not import from `src/apps/` or `src/platform/`. |
+| App | `src/apps/<name>/` | Self-contained. May import from platform and shared. Must not import from other apps. |
 
 Routes live in `src/routes/` and import app components via `@fabkit/apps/<name>/*`.
 
@@ -78,10 +77,10 @@ Also flag direction violations:
 No raw Tailwind color utilities or `dark:` variants. Only semantic tokens from `src/styles/index.css`:
 ```tsx
 // VIOLATIONS
-className = "bg-gray-900 text-white dark:bg-black";
+className="bg-gray-900 text-white dark:bg-black"
 
 // CORRECT
-className = "bg-surface text-body";
+className="bg-surface text-body"
 ```
 Valid tokens: `bg-surface`, `bg-surface-muted`, `bg-surface-active`, `text-heading`, `text-body`, `text-muted`, `text-subtle`, `text-faint`, `border-border-primary`.
 
@@ -126,14 +125,12 @@ Card field components in `src/apps/card-creator/components/card-creator/fields/`
 ```tsx
 // Canonical pattern
 export function CardXxxField() {
-	const { t } = useTranslation("card-creator");
-	const value = useCardCreator((s) => s.CardXxx);
-	const setValue = useCardCreator((s) => s.setCardXxx);
-	const shouldShow = useIsFieldVisible("CardXxx");
-	if (!shouldShow) return null;
-	return (
-		<TextInput label={t("xxx_label")} value={value || ""} onChange={setValue} />
-	);
+  const { t } = useTranslation("card-creator");
+  const value = useCardCreator((s) => s.CardXxx);
+  const setValue = useCardCreator((s) => s.setCardXxx);
+  const shouldShow = useIsFieldVisible("CardXxx");
+  if (!shouldShow) return null;
+  return <TextInput label={t("xxx_label")} value={value || ""} onChange={setValue} />;
 }
 ```
 
