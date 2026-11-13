@@ -20,14 +20,6 @@ export function SessionControls() {
 
 	return (
 		<>
-			{/* Always here, from the very first visit, even with nothing opened
-			    yet — the dialog has its own empty state telling you to open a
-			    pack, which is a better answer than a button that is not there.
-			    It used to appear only once a pack had been completed, so a
-			    player mid-pack could not check the totals they were adding to.
-
-			    Fills with the brand colour and flips the label white on hover,
-			    matching the pull-rates button. */}
 			<button
 				type="button"
 				onClick={() => setStatsOpen(true)}
@@ -36,9 +28,6 @@ export function SessionControls() {
 				{t("stats.open_button")}
 			</button>
 			<CurrencyToggle variant="bar" />
-			{/* Reset, unlike the stats button beside it, appears only once there
-			    is actually a session to throw away: a button whose only outcome
-			    is "nothing happened" is worse than no button. */}
 			{openedPacks.length > 0 && (
 				<button
 					type="button"

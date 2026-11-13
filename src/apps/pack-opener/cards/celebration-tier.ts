@@ -1,40 +1,11 @@
 import type { ResolvedCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 
-/** Which glow tier (if any) a pull earns. Rendered by PullCelebration.tsx as a
- * soft glow behind the active card, replacing an old camera dolly-in punch: the
- * final card getting physically bigger wasn't necessary, and it never
- * celebrated a plain Majestic/Legendary pull that happened not to be foil.
- * "chase" names the richest tier, shared by Marvel and Fabled. */
+/** Which glow tier (if any) a pull earns. "chase" is the richest, shared by Marvel and Fabled. */
 export type CelebrationTier = "majestic" | "foil" | "legendary" | "chase";
 
-/**
- * Ordered richest first, and deliberately a chain of exclusive ifs rather
- * than independent checks: a card can be more than one of these at once
- * (a foil Legendary, a foil Majestic), and only the single richest tier
- * should glow, not a layered stack of them.
- *
- *  - Fabled/Marvel: the two rarest pulls, always foil, get the biggest glow.
- *    Fabled is the rarer of the two (see pack/published-rates.ts's
- *    FABLED_SHARE_OF_MARVEL).
- *  - Legendary: celebrated regardless of foil treatment, since in
- *    most real sets a pulled Legendary is now always foil anyway (see
- *    card-resolver.ts's resolveTreatment), but some sets (History
- *    Pack 1, Compendium of Rathe, Bright Lights) print non-foil Legendaries
- *    too, and those still deserve the celebration.
- *  - Majestic: its own tier, whether or not this copy happens to be foil.
- *    Rarity deliberately outranks foiling here. It used to be the other way
- *    round, which was harmless while the only effect was a glow, but the
- *    tier now also decides whether a pull gets particles (see
- *    PullSparkles.tsx) — and a foil Majestic was falling through to "foil"
- *    and so getting LESS celebration than a plain one. A player who pulls a
- *    Majestic has pulled a Majestic; the foil is a bonus on top, already
- *    visible as the shader on the card face and named in the caption.
- *  - Any other foil treatment (Rainbow, Cold, Gold Cold): a spectral glow,
- *    covering a foiled Common/Rare/Super Rare that isn't already caught by
- *    a rarity tier above. No particles: the rarity is what is special, and
- *    a foil Common is not a rare pull.
- *  - Everything else (Common through Rare, Basic, Token): no celebration.
- */
+/** Richest tier first, as exclusive checks so only one tier glows. Rarity outranks
+ * foiling: a foil Majestic is a Majestic. Other foils get a glow, but a foil Common
+ * is not a rare pull. */
 export function celebrationTierFor(card: ResolvedCard): CelebrationTier | null {
 	if (card.rarity === "marvel" || card.rarity === "fabled") return "chase";
 	if (card.rarity === "legendary") return "legendary";

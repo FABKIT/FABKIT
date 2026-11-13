@@ -6,19 +6,9 @@ import { useTranslation } from "react-i18next";
 const STACK_TILTS = ["-rotate-6", "rotate-3", "rotate-0"];
 
 /**
- * What the route shows while the pack opener's own code and set list are
- * still arriving (see src/routes/pack-opener.tsx). The top card is pulled up
- * and off a short stack, over and over, the same gesture the reveal itself
- * uses, so the wait already looks like the thing being waited for.
- *
- * This renders from the entry chunk, before any of the app has loaded, so it
- * must stay free of the store, the scene and three.js: one image, CSS, and a
- * translated line. The card back is precached by the service worker, so it is
- * there even on the slowest first visit.
- *
- * Framed like PackOpenerPage, the same height with the caption in the same
- * place, so the page does not jump when the real one takes over. With reduced
- * motion on, the stack simply sits still.
+ * Route loading screen: the top card is pulled off a short stack on a loop. Renders from
+ * the entry chunk, so it must stay free of the store, the scene and three.js. Framed
+ * like PackOpenerPage so the page doesn't jump when the real one takes over.
  */
 export function PackOpenerLoading() {
 	const { t } = useTranslation("pack-opener");
@@ -36,8 +26,6 @@ export function PackOpenerLoading() {
 							<img
 								src={CARD_BACK_URL}
 								alt={isTop ? t("loading.card_back") : ""}
-								// Ahead of the app's own chunks on a first visit, when
-								// the service worker has not precached it yet.
 								fetchPriority="high"
 								className={`h-full w-full rounded-lg object-cover shadow-lg ${
 									isTop ? "motion-safe:animate-pack-pull" : ""

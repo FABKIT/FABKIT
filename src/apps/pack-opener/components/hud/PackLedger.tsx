@@ -17,29 +17,9 @@ interface PackLedgerProps {
 	panelRef: RefObject<HTMLDivElement | null>;
 }
 
-/** A finished pack resolves into an ordered, legible ledger — one row per
- * card, tappable to look at that specific card again in the 3D scene (see
- * stores/pack-opener.ts's revisitIndex). Prices come from whichever
- * marketplace the currency switch is on (see lib/pricing.ts): TCGplayer
- * dollars or Cardmarket euros, never one converted into the other. A card
- * that marketplace has no price for says "Not priced yet", never a zero.
- *
- * The ledger collapses independently of its header: swipe or tap the header
- * on mobile, click it on desktop, click anywhere outside the panel to collapse
- * it. The header itself (title, pulled total, chevron) always stays visible
- * even collapsed, so the headline number is never hidden.
- *
- * Mounted only while a finished pack is showing, which is also what opens the
- * ledger for every new pack: the next one mounts a fresh component, starting
- * open, and resolves its cards after the pack is complete rather than while
- * the tear was still under way.
- *
- * `panelRef` is the whole row including the actions beside this (see
- * PackSummary.tsx), so clicking "Session stats" doesn't collapse the summary
- * on its way to opening the dialog. It measures the visible frame rather than
- * the outer wrapper because the wrapper is full-width and centres its
- * children: clicks to the left or right of the frame would land inside it and
- * count as "inside". */
+/** One row per card of a finished pack; tapping a row revisits that card in the scene.
+ * Mounted only for a finished pack, so each new pack starts open. `panelRef` is the whole
+ * summary row, so clicking the neighbouring actions doesn't collapse the ledger. */
 export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 	const { t } = useTranslation("pack-opener");
 	const packSetCode = usePackOpenerStore((state) => state.packSetCode);
@@ -55,13 +35,7 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 
 	useCollapseOnOutsidePointer(panelRef, expanded, () => setExpanded(false));
 
-	/** Tapping a row shows that card and gets the ledger out of the way, so
-	 * the chosen card is visible at its normal size. Which card is on screen
-	 * and whether the ledger is open are otherwise independent of each other:
-	 * reopening the ledger deliberately does NOT put the last-revealed card
-	 * back, because then you could never open the ledger to pick a different
-	 * card without losing the one you were looking at. The chosen card stays
-	 * until another row is tapped or a new pack is opened. */
+	/** Shows the tapped card and collapses the ledger. Reopening it keeps that card. */
 	function showCard(index: number): void {
 		revisitCard(index);
 		setExpanded(false);
@@ -76,25 +50,16 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 
 	return (
 		<>
-			{/* The ledger opens UPWARD, over the canvas, rather than pushing the
-			    layout around — that is what keeps the card exactly one size
-			    whether the summary is open or shut (see PackOpenerPage.tsx).
-			    Collapsed it has no height at all: the border and background sit
-			    on the inner element so nothing shows as a stray line above the
-			    header. */}
+			{/* Opens upward over the canvas so the card never changes size. */}
 			<div className="absolute inset-x-0 bottom-full">
 				<div
 					className={`grid w-full transition-[grid-template-rows] duration-300 motion-reduce:transition-none ${
 						expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
 					}`}
 				>
-					{/* inert while collapsed: clipped to zero height, its rows are
-					    invisible but would otherwise stay reachable by Tab. */}
+					{/* inert while collapsed, so Tab can't reach the clipped rows. */}
 					<div id={ledgerId} inert={!expanded} className="overflow-hidden">
-						{/* Near-opaque on purpose: the card behind it is full size
-						    for the whole done phase, so a lightly tinted panel let
-						    bright card art bleed through and made prices hard to
-						    read. */}
+						{/* Near-opaque so card art behind it doesn't bleed through. */}
 						<div className="rounded-t-2xl border border-b-0 border-border-primary bg-surface/95 px-4 pt-4 shadow-xl backdrop-blur-md">
 							<ul className="flex max-h-64 flex-col gap-1 overflow-y-auto">
 								{resolvedCards.map((card, index) => (
@@ -139,20 +104,13 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 				</div>
 			</div>
 
-			{/* The header bar itself stays in flow, directly under the card's
-			    details, so it never covers the card. Squared off at the top
-			    while open so it reads as one panel with the ledger above. */}
+			{/* Squared off at the top while open, to read as one panel with the ledger. */}
 			<div
 				className={`min-w-0 flex-1 border border-border-primary bg-surface/95 shadow-xl backdrop-blur-md ${
 					expanded ? "rounded-b-2xl border-t-0" : "rounded-2xl"
 				}`}
 			>
-				{/* The heading wraps the button (rather than sitting inside it,
-				    which HTML doesn't allow — a <button> can only hold phrasing
-				    content, not a heading) so the summary title stays in the
-				    document outline for screen readers while the whole header is
-				    still one native, keyboard-operable toggle. Standard
-				    WAI-ARIA disclosure/accordion pattern. */}
+				{/* The heading wraps the button so the title stays in the document outline. */}
 				<h2 className="text-lg font-semibold text-heading">
 					<button
 						type="button"
@@ -168,9 +126,7 @@ export function PackLedger({ pack, panelRef }: PackLedgerProps) {
 								event.changedTouches[0].clientY - touchStartY.current;
 							touchStartY.current = null;
 							if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
-							// A real swipe, not a tap — stop the browser's own
-							// synthesized click from also firing right after this
-							// and toggling the state a second time.
+							// Stop the synthesized click from toggling a second time.
 							event.preventDefault();
 							setExpanded(delta < 0);
 						}}

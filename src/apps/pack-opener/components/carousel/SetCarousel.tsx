@@ -12,25 +12,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-/** Page-level chrome, not an overlay floating over the canvas — it needs
- * to be visible whenever there's a set to show, including mid-animation: a
- * player can switch sets while a pack is tearing or revealing, behind
- * a confirmation dialog.
- *
- * Sits in normal document flow ABOVE the canvas rather than floating over
- * it. It used to be absolutely positioned across the top of the canvas,
- * which put the set logo and the pull-rates button directly on top of the
- * card underneath as soon as the card was anything but small. The canvas
- * takes the remaining height (see PackOpenerPage.tsx), so the two can no
- * longer overlap at any viewport size.
- *
- * Reads set data straight from getSetIndex()'s module cache rather than a
- * loader prop: the route loader (src/routes/pack-opener.tsx) already awaits
- * loadSetIndex() before this page ever mounts.
- *
- * The dialogs render outside the swipe area deliberately. They portal away in
- * the DOM, but React still bubbles their touch events through the component
- * tree, so a sideways drag while reading one of them used to switch sets. */
+/** In-flow chrome above the canvas, so it can't overlap the card. The dialogs sit
+ * outside the swipe area because React bubbles their portalled touch events here. */
 export function SetCarousel() {
 	const { t } = useTranslation("pack-opener");
 	const selectedSet = usePackOpenerStore((state) => state.selectedSet);
@@ -74,14 +57,7 @@ export function SetCarousel() {
 
 					<SetLogo logoUrl={current.setLogo} name={current.name} />
 
-					{/* Reuses the shared Select dropdown (same component the card
-					    creator's card back picker uses), collapsed down to just the
-					    chevron: the logo above already shows the current selection,
-					    so the button's own value text is visually hidden
-					    (valueClassName, see Select.tsx) rather than removed, keeping
-					    it in the accessible name/value chain that Select already
-					    wires up. Selecting an option here jumps straight to that set
-					    instead of stepping one at a time. */}
+					{/* The logo already shows the current set, so the value text is visually hidden. */}
 					<Select
 						value={current.code}
 						onChange={(code) => navigation.requestSetChange(code)}
@@ -104,10 +80,7 @@ export function SetCarousel() {
 					</button>
 				</div>
 
-				{/* Fills with the brand colour and flips the label to white on
-				    hover. It previously only shifted its background, which left
-				    the primary-coloured text washing into the hovered surface
-				    behind it. */}
+				{/* Fills with the brand colour and flips the label to white on hover. */}
 				<button
 					type="button"
 					onClick={() => setInfoOpen(true)}

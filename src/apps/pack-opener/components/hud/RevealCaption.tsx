@@ -8,23 +8,8 @@ import { CardRarities } from "@fabkit/shared/config/cards/rarities";
 import { FlipHorizontal2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-/** What the card currently on screen actually is — in normal document flow
- * BELOW the 3D canvas and ABOVE the summary (see PackOpenerPage.tsx),
- * never an overlay sitting on top of the card itself.
- *
- * Shown for the whole of both card-bearing phases, not just the reveal. It
- * used to disappear the moment the summary arrived, which left the last
- * card of a pack — and every card opened from the ledger afterwards —
- * sitting there unlabelled. Whatever card the scene is showing, this
- * describes it: the one being revisited if there is one, otherwise the
- * last one revealed. The tap prompt and the running count are the only
- * parts specific to the reveal itself.
- *
- * The fixed-height slot it sits in is owned by PackOpenerPage, not by this
- * component: the reveal shows one line more than the done phase does, and
- * if the block were free to resize, the canvas above it would resize with
- * it and the card would change size at exactly the moment the summary
- * appears — the thing that layout exists to prevent. */
+/** Describes the card on screen: the revisited one if any, else the last revealed.
+ * The slot's height is owned by PackOpenerPage so the canvas never resizes. */
 export function RevealCaption() {
 	const { t } = useTranslation("pack-opener");
 	const pack = usePackOpenerStore((state) => state.pack);
@@ -42,23 +27,12 @@ export function RevealCaption() {
 
 	const resolved = resolveCard(drawn, packSetCode);
 
-	/** The same build-time snapshot the summary totals up, read one card
-	 * at a time, in whichever currency is selected (see lib/pricing.ts).
-	 * Each marketplace prices a specific printing, so the Red of a card and
-	 * its Yellow are priced separately, as are a standard copy and its
-	 * Rainbow Foil. No price is a real and fairly common state — a few
-	 * printings in every hundred are in neither snapshot — so it says so
-	 * rather than showing a zero. */
+	/** Price in the selected currency; null renders as "Not priced yet". */
 	const price = prices.card(packSetCode, resolved);
 
 	return (
 		<div className="flex flex-col items-center gap-1">
-			{/* Card names in the real FAB card-name face: the game's own face
-			    for the game's own content. */}
-			{/* The flip control sits beside the name rather than over the card
-			    so it can never cover the artwork it exists to reveal, and
-			    appears only for the double-faced cards that actually have
-			    another side (see card-resolver.ts's backImageUrl). */}
+			{/* The flip control sits beside the name so it never covers the artwork. */}
 			<span className="flex items-center gap-2">
 				<span className="font-card-name text-lg text-heading">
 					{resolved.name ?? t("card.unavailable")}
@@ -76,10 +50,7 @@ export function RevealCaption() {
 				)}
 			</span>
 			<p className="font-card-stat flex items-center gap-2 text-sm text-muted">
-				{/* Rarity symbol sits directly next to its own label (the C
-				    before "Common", and so on). It used to sit next to the card
-				    name instead, which read as decorating the name rather than
-				    labelling the rarity underneath it. */}
+				{/* Sits next to its own label, not the card name. */}
 				<img
 					src={CardRarities[resolved.rarity].icon}
 					alt={t(CardRarities[resolved.rarity].label)}
@@ -87,11 +58,7 @@ export function RevealCaption() {
 				/>
 				<span>{t(CardRarities[resolved.rarity].label)}</span>
 				<TreatmentBadge card={resolved} />
-				{/* Price rides on the rarity line rather than getting a line of
-				    its own: this block sits in a fixed-height slot owned by
-				    PackOpenerPage, and adding a line would resize the canvas
-				    above it and change the card's size mid-pack. The separator
-				    keeps it from reading as part of the rarity itself. */}
+				{/* Same line as the rarity: a separate line would resize the fixed-height slot. */}
 				<span className="text-subtle" aria-hidden="true">
 					·
 				</span>
@@ -101,11 +68,7 @@ export function RevealCaption() {
 					<PriceValue amount={price} />
 				</span>
 			</p>
-			{/* Reveal-only. Once the pack is done there is nothing left to tap
-			    through, and the summary below carries the count instead. There
-			    is deliberately no "back to summary" control: the summary sits
-			    right underneath, collapsed to its header, and expanding it is
-			    what reopens the ledger (see PackLedger.tsx). */}
+			{/* Reveal-only: once the pack is done the summary carries the count. */}
 			{phase === "revealing" && (
 				<p className="text-sm text-muted">
 					{t("page.tap_to_reveal")}

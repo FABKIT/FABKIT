@@ -7,16 +7,9 @@ interface PackOpenerUnavailableProps {
 }
 
 /**
- * The route's error screen (see src/routes/pack-opener.tsx). The pack
- * opener's code is not precached, so someone who opens it for the first time
- * with no connection cannot download it. That is not a bug to report, so it
- * gets its own plain message instead of the app-wide crash screen.
- *
- * Anything else is rethrown, which hands it to the root error boundary and
- * its bug-report prompt, exactly as before this component existed.
- *
- * Like PackOpenerLoading, this renders from the entry chunk and must stay
- * free of the store, the scene and three.js.
+ * Route error screen for a first visit with no connection (the app's code isn't
+ * precached). Any other error is rethrown to the root error boundary. Renders from the
+ * entry chunk, so it must stay free of the store, the scene and three.js.
  */
 export function PackOpenerUnavailable({ error }: PackOpenerUnavailableProps) {
 	const { t } = useTranslation("pack-opener");
@@ -38,9 +31,6 @@ export function PackOpenerUnavailable({ error }: PackOpenerUnavailableProps) {
 				</h1>
 				<p className="text-body">{t("unavailable.description")}</p>
 			</div>
-			{/* A full reload rather than a router retry: the router remembers a
-			    failed import, and a reload also lets the service worker hand
-			    over anything it has cached since. */}
 			<Button onClick={() => window.location.reload()}>
 				{t("unavailable.retry")}
 			</Button>
