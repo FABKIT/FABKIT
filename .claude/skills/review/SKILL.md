@@ -1,5 +1,4 @@
 ---
-
 name: review
 description: FABKIT-specific code review. Checks changed files against the project's concrete rules — i18n, semantic tokens, React/Zustand patterns, field component structure, import boundaries, TypeScript hygiene. Reports blocking issues and warnings. Invoke with /review.
 ---
@@ -16,11 +15,11 @@ If no diff is available, ask the user which files or changes to review.
 
 FABKIT uses a three-layer architecture:
 
-| Layer    | Path               | Rule                                                                                   |
-| -------- | ------------------ | -------------------------------------------------------------------------------------- |
-| Platform | `src/platform/`    | Shell infrastructure. May import from `src/shared/`. Must not import from `src/apps/`. |
-| Shared   | `src/shared/`      | FAB domain data. Must not import from `src/apps/` or `src/platform/`.                  |
-| App      | `src/apps/<name>/` | Self-contained. May import from platform and shared. Must not import from other apps.  |
+| Layer | Path | Rule |
+|-------|------|------|
+| Platform | `src/platform/` | Shell infrastructure. May import from `src/shared/`. Must not import from `src/apps/`. |
+| Shared | `src/shared/` | FAB domain data. Must not import from `src/apps/` or `src/platform/`. |
+| App | `src/apps/<name>/` | Self-contained. May import from platform and shared. Must not import from other apps. |
 
 Routes live in `src/routes/` and import app components via `@fabkit/apps/<name>/*`.
 
@@ -29,6 +28,7 @@ Valid import aliases:
 - `@fabkit/shared/*` → `src/shared/`
 - `@fabkit/apps/card-creator/*` → `src/apps/card-creator/`
 - `@fabkit/apps/fabble/*` → `src/apps/fabble/`
+- `@fabkit/apps/pack-opener/*` → `src/apps/pack-opener/`
 
 Relative imports (`./`, `../`) are only valid **within the same layer**. A relative import that crosses a layer boundary is a violation.
 
@@ -52,6 +52,7 @@ Each layer owns its own namespace. `useTranslation()` must be called with the co
 - `src/platform/` components → `useTranslation("platform")`
 - `src/apps/card-creator/` components → `useTranslation("card-creator")`
 - `src/apps/fabble/` components → `useTranslation("fabble")`
+- `src/apps/pack-opener/` components → `useTranslation("pack-opener")`
 
 No namespace argument (defaults to `"platform"`) is only acceptable in platform components.
 
@@ -76,10 +77,10 @@ Also flag direction violations:
 No raw Tailwind color utilities or `dark:` variants. Only semantic tokens from `src/styles/index.css`:
 ```tsx
 // VIOLATIONS
-className = "bg-gray-900 text-white dark:bg-black";
+className="bg-gray-900 text-white dark:bg-black"
 
 // CORRECT
-className = "bg-surface text-body";
+className="bg-surface text-body"
 ```
 Valid tokens: `bg-surface`, `bg-surface-muted`, `bg-surface-active`, `text-heading`, `text-body`, `text-muted`, `text-subtle`, `text-faint`, `border-border-primary`.
 
@@ -124,14 +125,12 @@ Card field components in `src/apps/card-creator/components/card-creator/fields/`
 ```tsx
 // Canonical pattern
 export function CardXxxField() {
-	const { t } = useTranslation("card-creator");
-	const value = useCardCreator((s) => s.CardXxx);
-	const setValue = useCardCreator((s) => s.setCardXxx);
-	const shouldShow = useIsFieldVisible("CardXxx");
-	if (!shouldShow) return null;
-	return (
-		<TextInput label={t("xxx_label")} value={value || ""} onChange={setValue} />
-	);
+  const { t } = useTranslation("card-creator");
+  const value = useCardCreator((s) => s.CardXxx);
+  const setValue = useCardCreator((s) => s.setCardXxx);
+  const shouldShow = useIsFieldVisible("CardXxx");
+  if (!shouldShow) return null;
+  return <TextInput label={t("xxx_label")} value={value || ""} onChange={setValue} />;
 }
 ```
 
@@ -152,6 +151,7 @@ If a new `t("key")` call is added, confirm the key exists in the correct namespa
 - `src/platform/i18n/en.json` for platform
 - `src/apps/card-creator/i18n/en.json` for card-creator
 - `src/apps/fabble/i18n/en.json` for fabble
+- `src/apps/pack-opener/i18n/en.json` for pack-opener
 
 ---
 

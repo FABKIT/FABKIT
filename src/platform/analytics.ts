@@ -104,7 +104,15 @@ type AnalyticsEvent =
 			name: "fabble_endless_completed";
 			data: { result: "won" | "gave_up"; guessCount: number };
 	  }
-	| { name: "bug_report_submitted" };
+	| { name: "bug_report_submitted" }
+	| { name: "pack_opener_pack_opened" }
+	| {
+			name: "pack_opener_card_revealed";
+			data: { rarity: string; treatment: string };
+	  }
+	| { name: "pack_opener_pack_completed" }
+	| { name: "pack_opener_currency_changed"; data: { currency: string } }
+	| { name: "pack_opener_session_reset" };
 
 /**
  * Providers only accept text, numbers and booleans. An event value that is

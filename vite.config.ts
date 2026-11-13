@@ -51,10 +51,98 @@ export default defineConfig({
 			},
 			workbox: {
 				cleanupOutdatedCaches: true,
+				// The pack opener's chunks carry three.js, fiber and drei, so they
+				// stay out of the precache every visitor downloads. Names follow
+				// the route file and lib/texture-cache.ts (the scene's first
+				// import); update these patterns if either is renamed.
+				globIgnores: [
+					"**/assets/pack-opener-*.js",
+					"**/assets/texture-cache-*.js",
+				],
+				// Card art: the origin only caches for 3 days, but repeat packs of
+				// a set reuse its commons, so keep images for a month (capped).
+				// Status 200 only: an opaque entry would fail later CORS texture
+				// loads for that card.
+				runtimeCaching: [
+					{
+						urlPattern: ({ url }: { url: URL }) =>
+							url.origin === "https://content.fabrary.net" &&
+							url.pathname.startsWith("/cards/"),
+						handler: "CacheFirst",
+						options: {
+							cacheName: "pack-opener-card-art",
+							expiration: {
+								maxEntries: 600,
+								maxAgeSeconds: 60 * 60 * 24 * 30,
+							},
+							cacheableResponse: { statuses: [200] },
+						},
+					},
+					// Code, data and art left out of the precache (globIgnores,
+					// scripts/update-pwa-assets.ts) are cached on first visit.
+					// Chunk names are content-hashed, so CacheFirst is safe.
+					{
+						urlPattern: ({
+							url,
+							sameOrigin,
+						}: {
+							url: URL;
+							sameOrigin: boolean;
+						}) =>
+							sameOrigin &&
+							/\/assets\/(pack-opener|texture-cache)-[^/]+\.js$/.test(
+								url.pathname,
+							),
+						handler: "CacheFirst",
+						options: {
+							cacheName: "pack-opener-code",
+							expiration: { maxEntries: 12 },
+							cacheableResponse: { statuses: [200] },
+						},
+					},
+					// Data keeps its file names across deploys, so refresh it in
+					// the background.
+					{
+						urlPattern: ({
+							url,
+							sameOrigin,
+						}: {
+							url: URL;
+							sameOrigin: boolean;
+						}) => sameOrigin && url.pathname.includes("/data/pack-opener/"),
+						handler: "StaleWhileRevalidate",
+						options: {
+							cacheName: "pack-opener-data",
+							expiration: { maxEntries: 150 },
+							cacheableResponse: { statuses: [200] },
+						},
+					},
+					{
+						urlPattern: ({
+							url,
+							sameOrigin,
+						}: {
+							url: URL;
+							sameOrigin: boolean;
+						}) =>
+							sameOrigin &&
+							/\/img\/pack-opener\/(packs|logos)\//.test(url.pathname),
+						handler: "CacheFirst",
+						options: {
+							cacheName: "pack-opener-art",
+							expiration: {
+								maxEntries: 100,
+								maxAgeSeconds: 60 * 60 * 24 * 30,
+							},
+							cacheableResponse: { statuses: [200] },
+						},
+					},
+				],
 			},
 			includeAssets: [
 				"favicon.ico",
 				"apple-touch-icon.png",
+				"img/pack-opener/card-back.webp",
 				"cardbacks/generated/683c9f087ee5f.png",
 				"cardbacks/generated/683c9f087f497.png",
 				"cardbacks/generated/683c9f087fa14.png",

@@ -37,6 +37,7 @@ import {
 	ListboxOptions,
 } from "@headlessui/react";
 import { Check, ChevronDown } from "lucide-react";
+import { Fragment } from "react";
 
 /**
  * Single option in a Select dropdown.
@@ -58,10 +59,38 @@ export interface SelectOption<T extends string> {
 	variant?: "action";
 
 	/** Optional leading icon, mainly for action options */
-	icon?: React.ElementType;
+	icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 	/** Small trailing pill, for marking an option's provenance (e.g. "custom"). */
 	badge?: string;
+
+	/**
+	 * Renders a small non-selectable heading directly ABOVE this option,
+	 * turning a flat list into labelled runs. Set it on the first option of
+	 * each run and leave it off everywhere else.
+	 *
+	 * Deliberately a property of the option rather than a separate "groups"
+	 * prop: every existing caller passes a flat array and keeps working
+	 * untouched, and a caller that wants headings does not have to
+	 * restructure its data to get them.
+	 */
+	sectionLabel?: string;
+
+	/**
+	 * Tints the section heading above this option, so a heading reads as a
+	 * divider between two kinds of thing rather than as a faint label. Only
+	 * meaningful alongside `sectionLabel`, and so set on the same option.
+	 *
+	 * Deliberately the heading alone and NOT the options beneath it: tinting
+	 * the whole run made the list read as two competing panels and drew more
+	 * attention to the individual entries than to the break between them.
+	 *
+	 * Equally deliberately a neutral "this is a different kind of thing"
+	 * tint from the shared surface tokens rather than a colour a caller
+	 * picks — the point is to separate runs, and letting each caller choose
+	 * its own would make the same control look different in every app.
+	 */
+	sectionTinted?: boolean;
 }
 
 /**
@@ -94,6 +123,20 @@ interface SelectProps<T extends string> {
 	className?: string;
 	/** Class names for custom button styling */
 	buttonClassName?: string;
+	/** Overrides the button's visible-value span (default: text-body when a
+	 * value is selected, text-faint otherwise). A class such as "sr-only"
+	 * hides the label text visually while keeping it available to assistive
+	 * technology, for a caller whose button already shows the current value
+	 * another way and doesn't want it duplicated as visible text. This only
+	 * affects the closed button; option rows in the open list always show
+	 * their own label. */
+	valueClassName?: string;
+	/** Class names for the open dropdown panel. The default anchors its
+	 * width to the trigger button's own rendered width (w-(--button-width)),
+	 * which looks wrong for a caller whose button is deliberately small
+	 * (see valueClassName above) but whose option labels are normal-length
+	 * text — pass a fixed width here instead in that case. */
+	optionsClassName?: string;
 	/** Native tooltip text for the button, for cases where the label may be truncated */
 	title?: string;
 	/** Accessible name for the button, for cases where no visible <Label> is rendered (label=null) */
@@ -114,6 +157,8 @@ export default function Select<T extends string>({
 	placeholder,
 	className,
 	buttonClassName,
+	valueClassName,
+	optionsClassName,
 	title,
 	ariaLabel,
 }: SelectProps<T>) {
@@ -139,7 +184,11 @@ export default function Select<T extends string>({
 						"relative w-full px-3 py-1.5 bg-surface border border-border rounded-md text-left text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
 					}
 				>
-					<span className={selectedOption ? "text-body" : "text-faint"}>
+					<span
+						className={
+							valueClassName ?? (selectedOption ? "text-body" : "text-faint")
+						}
+					>
 						{selectedOption?.label || placeholder || "Select an option"}
 						{selectedOption?.badge && (
 							<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
@@ -154,49 +203,67 @@ export default function Select<T extends string>({
 				</ListboxButton>
 				<ListboxOptions
 					anchor="bottom"
-					className="mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-50 max-h-60 overflow-auto"
+					className={
+						optionsClassName ??
+						"mt-1 w-(--button-width) bg-surface border border-border rounded-md shadow-lg py-1 focus:outline-none z-50 max-h-60 overflow-auto"
+					}
 				>
 					{options.map((option) => {
 						const isAction = option.variant === "action";
 						const Icon = option.icon;
 						return (
-							<ListboxOption
-								key={option.value}
-								value={option.value}
-								className={
-									isAction
-										? "relative flex items-center gap-2 mb-1 px-3 py-2 cursor-pointer select-none border-b border-border-primary bg-primary/10 text-primary font-semibold leading-snug data-focus:bg-primary/20 transition-colors"
-										: "relative px-3 py-2 cursor-pointer select-none text-body data-focus:bg-surface-muted data-selected:bg-primary/5 transition-colors"
-								}
-							>
-								{({ selected }) =>
-									isAction ? (
-										<>
-											{Icon && <Icon className="w-4 h-4 shrink-0" />}
-											<span>{option.label}</span>
-										</>
-									) : (
-										<>
-											<span
-												className={selected ? "font-medium" : "font-normal"}
-											>
-												{option.label}
-											</span>
-											{option.badge && (
-												<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
-													{option.badge}
+							<Fragment key={`${option.value}-group`}>
+								{option.sectionLabel && (
+									// Not a ListboxOption: a heading must not be
+									// selectable or sit in the keyboard order.
+									// aria-hidden because the options below it
+									// already carry their own accessible names.
+									<div
+										aria-hidden="true"
+										className={`px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-subtle ${
+											option.sectionTinted ? "bg-surface-muted" : ""
+										}`}
+									>
+										{option.sectionLabel}
+									</div>
+								)}
+								<ListboxOption
+									value={option.value}
+									className={
+										isAction
+											? "relative flex items-center gap-2 mb-1 px-3 py-2 cursor-pointer select-none border-b border-border-primary bg-primary/10 text-primary font-semibold leading-snug data-focus:bg-primary/20 transition-colors"
+											: "relative px-3 py-2 cursor-pointer select-none text-body data-focus:bg-surface-muted data-selected:bg-primary/5 transition-colors"
+									}
+								>
+									{({ selected }) =>
+										isAction ? (
+											<>
+												{Icon && <Icon className="w-4 h-4 shrink-0" />}
+												<span>{option.label}</span>
+											</>
+										) : (
+											<>
+												<span
+													className={selected ? "font-medium" : "font-normal"}
+												>
+													{option.label}
 												</span>
-											)}
-											{selected && (
-												<Check
-													className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary"
-													strokeWidth={2.5}
-												/>
-											)}
-										</>
-									)
-								}
-							</ListboxOption>
+												{option.badge && (
+													<span className="ml-2 rounded-full bg-surface-active px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-subtle">
+														{option.badge}
+													</span>
+												)}
+												{selected && (
+													<Check
+														className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary"
+														strokeWidth={2.5}
+													/>
+												)}
+											</>
+										)
+									}
+								</ListboxOption>
+							</Fragment>
 						);
 					})}
 				</ListboxOptions>
