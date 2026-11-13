@@ -82,6 +82,7 @@ export function CardStack3D() {
 			{celebrationTier && (
 				<CelebrationEffects
 					tier={celebrationTier}
+					treatment={resolvedCard.treatment}
 					phaseStartedAt={phaseStartedAt}
 				/>
 			)}

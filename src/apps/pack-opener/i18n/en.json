@@ -11,6 +11,11 @@
 		"description": "It downloads its cards the first time you open it. Connect to the internet and try again. After that, it opens offline too.",
 		"retry": "Try again"
 	},
+	"beta_notice": {
+		"title": "The Pack Opener is still in beta.",
+		"body": "Pack odds and prices are estimates based on public sources, so don't take them as the whole truth or as financial advice. This is mostly here for fun.",
+		"dismiss": "Dismiss this notice"
+	},
 	"page": {
 		"title": "Pack Opener",
 		"tap_to_tear": "Tap the pack to tear it open",

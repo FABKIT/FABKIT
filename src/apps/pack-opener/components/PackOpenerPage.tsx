@@ -1,3 +1,4 @@
+import { BetaNotice } from "@fabkit/apps/pack-opener/components/BetaNotice";
 import { SetCarousel } from "@fabkit/apps/pack-opener/components/carousel/SetCarousel";
 import { CardLoadingIndicator } from "@fabkit/apps/pack-opener/components/hud/CardLoadingIndicator";
 import { PackSummary } from "@fabkit/apps/pack-opener/components/hud/PackSummary";
@@ -20,6 +21,7 @@ export function PackOpenerPage() {
 	return (
 		<div className="relative flex h-[calc(100dvh-4rem)] w-full flex-col overflow-hidden bg-surface lg:h-dvh">
 			<h1 className="sr-only">{t("page.title")}</h1>
+			<BetaNotice />
 			{/* In flow above the canvas so the set picker can't sit on top of a card. */}
 			<SetCarousel />
 			<div className="relative min-h-0 flex-1">

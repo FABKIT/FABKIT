@@ -4,6 +4,10 @@ Logos for sets that Legend Story Studios' card data has no logo for. Drop a file
 here and run `bun run build-pack-data`; the set picker uses it. A file here also
 overrides an LSS logo with the same set code.
 
+The logos from Welcome to Rathe up to Super Slam are also kept here. The card data
+still points at an LSS image host that has shut down, so these copies were recovered
+from the Internet Archive.
+
 ## Naming
 
 One file per set, named by set code, `.webp`: `PEN.webp`, `GEM1.webp`.

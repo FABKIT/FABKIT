@@ -32,7 +32,7 @@ src/apps/pack-opener/
 `phaseStartedAt` is the single source of animation timing: every `useFrame` timer reads it,
 and 3D components and the HUD are pure readers. `openPack()` waits for the set's printings
 if they aren't cached yet, so every surface resolves the same cards. Switching set or
-resetting cancels that wait. The selected set and currency are saved with the store's
+resetting cancels that wait. The selected set, currency and beta notice dismissal are saved with the store's
 persist middleware, never through localStorage directly.
 
 ## Rendering rules

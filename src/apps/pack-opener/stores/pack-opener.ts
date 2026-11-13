@@ -48,7 +48,10 @@ const TEXTURE_CACHE_KEEP = 64;
 
 /** What survives a reload, through zustand's persist. Everything else in the
  * store belongs to the current visit. */
-type PackOpenerPreferences = Pick<PackOpenerState, "selectedSet" | "currency">;
+type PackOpenerPreferences = Pick<
+	PackOpenerState,
+	"selectedSet" | "currency" | "betaNoticeDismissed"
+>;
 
 const initialState: PackOpenerState = {
 	phase: "idle",
@@ -65,6 +68,7 @@ const initialState: PackOpenerState = {
 	packArtUrl: null,
 	revisitIndex: null,
 	packSetCode: null,
+	betaNoticeDismissed: false,
 };
 
 /** Reports the card as the player sees it. A cold upgrade can redraw into a
@@ -355,6 +359,14 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						);
 					},
 
+					dismissBetaNotice() {
+						set(
+							{ betaNoticeDismissed: true },
+							undefined,
+							"pack-opener/dismissBetaNotice",
+						);
+					},
+
 					revisitCard(index) {
 						const { phase, pack } = get();
 						if (phase !== "done" || !pack) return;
@@ -370,7 +382,11 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 			{
 				name: "pack-opener:preferences",
 				storage: createPreferenceStorage<PackOpenerPreferences>(),
-				partialize: ({ selectedSet, currency }) => ({ selectedSet, currency }),
+				partialize: ({ selectedSet, currency, betaNoticeDismissed }) => ({
+					selectedSet,
+					currency,
+					betaNoticeDismissed,
+				}),
 			},
 		),
 	),

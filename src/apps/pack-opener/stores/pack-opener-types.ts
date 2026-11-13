@@ -64,6 +64,9 @@ export interface PackOpenerState {
 	/** The set `pack` was dealt for; stays correct after selectedSet moves on.
 	 * Null before the first pack of the session. */
 	packSetCode: string | null;
+	/** True once the visitor has closed the beta notice above the set picker.
+	 * Persisted by the store, so it stays closed on later visits. */
+	betaNoticeDismissed: boolean;
 }
 
 export interface PackOpenerActions {
@@ -92,4 +95,6 @@ export interface PackOpenerActions {
 	/** Clears a finished pack and brings out the next one closed, in a fresh
 	 * one of the set's pack fronts, without opening it. */
 	readyAnotherPack(): void;
+	/** Closes the beta notice for good. */
+	dismissBetaNotice(): void;
 }

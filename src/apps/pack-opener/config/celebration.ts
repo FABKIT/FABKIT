@@ -1,3 +1,4 @@
+import type { ResolvedCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import type { CelebrationTier } from "@fabkit/apps/pack-opener/cards/celebration-tier";
 
 interface GlowSpec {
@@ -37,6 +38,17 @@ interface CelebrationSpec {
 	 * rather than more of the same glitter. */
 	fireworks: FireworksSpec | null;
 }
+
+/** The colour of ColdFoilGlints' flares per theme: steel for Cold Foil, gold
+ * for Gold Cold Foil. The light theme's are deeper because a flare is laid over
+ * the page there rather than added to it, so a pale one fades into the white.
+ * A treatment missing here gets no glints. */
+export const GLINT_COLOR_BY_TREATMENT: Partial<
+	Record<ResolvedCard["treatment"], { dark: string; light: string }>
+> = {
+	cold: { dark: "#8fbdf0", light: "#2f6fbd" },
+	"gold-cold": { dark: "#e2b13c", light: "#b07a08" },
+};
 
 /** Everything each celebration tier does, in one table. Each step up adds
  * particles, size and speed rather than swapping one look for another. See

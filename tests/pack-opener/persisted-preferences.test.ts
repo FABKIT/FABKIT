@@ -45,7 +45,11 @@ describe("persisted preferences", () => {
 		usePackOpenerStore.getState().setCurrency("EUR");
 
 		const saved = JSON.parse(storage.data.get(KEY) ?? "null");
-		expect(saved.state).toEqual({ selectedSet: "DTD", currency: "EUR" });
+		expect(saved.state).toEqual({
+			selectedSet: "DTD",
+			currency: "EUR",
+			betaNoticeDismissed: false,
+		});
 	});
 
 	it("restores them on load without touching the rest of the store", async () => {
