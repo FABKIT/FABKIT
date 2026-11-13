@@ -235,8 +235,8 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"bonus insert, not its own booster set', which is true of how it is " +
 			"sold and beside the point of what it is: it is a randomised sealed " +
 			"pack with its own published rarity breakdown, which is the thing " +
-			"this app opens. LSS publishes that breakdown; it is transcribed in " +
-			"docs/pull-rate-verification.md and applied in pack/set-configs.ts. " +
+			"this app opens. LSS publishes that breakdown; it is " +
+			"applied in pack/set-configs.ts. " +
 			"Opens as two cards rather than three — see that config for why the " +
 			"puzzle slot is left out.",
 	},
@@ -258,7 +258,6 @@ export const KNOWN_SETS: KnownSetDecision[] = [
 			"(the-fab-cube's develop branch only has 11 preview printings for " +
 			"it) until the-fab-cube catches up, and the odds in pack/set-configs.ts are " +
 			"Omens' own rates borrowed as an estimate until fabtcg.com publishes " +
-			"this set's Collectors Centre page. See that config's own comment " +
-			"and docs/pull-rate-verification.md's IAR section.",
+			"this set's Collectors Centre page. See that config's own comment.",
 	},
 ];

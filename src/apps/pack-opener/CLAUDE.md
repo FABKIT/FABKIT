@@ -219,8 +219,8 @@ Every rate that decides what a pack deals lives in `pack/published-rates.ts`, ea
 PUBLISHED, OBSERVED, ESTIMATED or POPULATION, and `pack/set-configs.ts` turns them into each
 set's config. The twenty sets with a Collectors Centre page on fabtcg.com (for example
 fabtcg.com/collectors-centre/high-seas/) are transcribed verbatim in
-`docs/pull-rate-verification.md`, including Compendium of Rathe and Omens of the Third Age,
-which were read off the live pages by hand. The rest come from elsewhere: the Antiquity Pack
+`published-rates.ts`, including Compendium of Rathe and Omens of the Third Age, which were
+read off the live pages by hand. The rest come from elsewhere: the Antiquity Pack
 from LSS's own breakdown, Mastery Packs and GEM Packs from product pages or the FAQ, and
 Usurp the Shadow Throne borrows Omens' rates.
 
@@ -228,8 +228,7 @@ Usurp the Shadow Throne borrows Omens' rates.
 published rate within 20%, so a config cannot quietly drift away from its source. That file
 is the guard; changing a weight without changing the transcription will fail it.
 
-Read `docs/pull-rate-verification.md` before touching any config. It records which figures
-are published and which are not:
+Which figures are published and which are not:
 - **Fabled** is unpublished except on the Antiquity Pack, and is estimated at half the set's
   Marvel rate (`fabledChanceFor`), so a set's rarest card stays reachable. Sets whose boosters
   hold no Fabled printing deal none.

@@ -17,7 +17,6 @@ import {
 	type CardmarketCatalog,
 	fetchCardmarketCatalog,
 } from "./cardmarket";
-import { fetchJson } from "./fetch-json";
 import { bridgePrintings, PRE_RELEASE_SETS } from "./pre-release-bridge";
 import type { RawCard, RawPrinting } from "./raw-card-data";
 import {
@@ -58,7 +57,7 @@ const FAB_CUBE_JSON_PATH = "json/english";
 const FAB_CUBE_RAW_BASE = `https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/${FAB_CUBE_JSON_PATH}`;
 
 function readFabCubeJson<T>(fileName: string): Promise<T> {
-	return fetchJson<T>(`${FAB_CUBE_RAW_BASE}/${fileName}`);
+	return fetch(`${FAB_CUBE_RAW_BASE}/${fileName}`).then((r) => r.json());
 }
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");

@@ -40,8 +40,7 @@ export const PRE_RELEASE_SETS: Record<
 > = {
 	IAR: {
 		release: BridgeRelease.UsurpTheShadowThrone,
-		// Must equal the tcgcsv group's own name — see resolveGroup in
-		// tcgcsv.ts.
+		// Must equal the tcgcsv group's own name (see resolveGroup).
 		name: "Usurp the Shadow Throne",
 		// LSS's Card Vault API agrees:
 		// api.cardvault.fabtcg.com/carddb/api/v1/product-cards/usurp-the-shadow-throne/

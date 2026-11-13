@@ -4,22 +4,18 @@ import type {
 	FabPrinting,
 	FoilTreatment,
 } from "@fabkit/shared/data/fab-printings";
-import { fetchJson } from "./fetch-json";
 
-/** Flesh and Blood's category id on tcgcsv/TCGplayer — verified against
- * live data. */
+/** Flesh and Blood's category id on tcgcsv/TCGplayer. */
 const TCGCSV_CATEGORY_ID = 62;
 const TCGCSV_BASE = `https://tcgcsv.com/tcgplayer/${TCGCSV_CATEGORY_ID}`;
 
-/** tcgcsv rejects requests with no identifying User-Agent. APP_VERSION
- * matches what pages.yml resolves at deploy time; local runs (no env var
- * set) just say "dev". */
+/** tcgcsv rejects requests with no identifying User-Agent. */
 const TCGCSV_USER_AGENT = `FABKIT/${process.env.APP_VERSION ?? "dev"} (+https://github.com/FABKIT/FABKIT)`;
 
 function fetchTcgcsv<T>(path: string): Promise<T> {
-	return fetchJson<T>(`${TCGCSV_BASE}${path}`, {
+	return fetch(`${TCGCSV_BASE}${path}`, {
 		headers: { "User-Agent": TCGCSV_USER_AGENT },
-	});
+	}).then((r) => r.json());
 }
 
 export interface TcgcsvGroup {
@@ -44,14 +40,8 @@ interface TcgcsvPriceRow {
 	subTypeName: string;
 }
 
-/** Maps our own FoilTreatment vocabulary to TCGplayer's subtype names, so
- * the price snapshot can be keyed identically to how printings are already
- * keyed (see fab-prices.ts's priceKey). TCGplayer does not list Gold Cold
- * Foil as its own subtype (verified against multiple sets' live price
- * data) — the closest real listing is the plain Cold Foil one, which is
- * used here rather than showing no price at all for a treatment that, as
- * of this writing, the odds engine never actually draws (see
- * pack/generate-pack.ts) but the shader and types already model. */
+/** Maps our FoilTreatment to TCGplayer's subtype names. TCGplayer has no
+ * Gold Cold Foil subtype, so it uses the Cold Foil price. */
 const TCGCSV_SUBTYPE_BY_TREATMENT: Record<FoilTreatment, string> = {
 	standard: "Normal",
 	rainbow: "Rainbow Foil",
@@ -59,19 +49,10 @@ const TCGCSV_SUBTYPE_BY_TREATMENT: Record<FoilTreatment, string> = {
 	"gold-cold": "Cold Foil",
 };
 
-/** Resolves a set's tcgcsv group id — abbreviation AND exact name first,
- * then abbreviation alone, then exact name alone (neither alone is
- * reliable, but combined they resolve every known booster set). Returns
- * null (logged, not thrown) when nothing matches, so one set's tcgcsv
- * naming drifting must never fail the whole build — that set's prices are
- * simply unavailable until the mismatch is noticed and fixed.
- *
- * The both-fields pass exists for `IAR`, which tcgcsv lists twice: group
- * 24762 "Usurp the Shadow Throne" and 24776 "Usurp the Shadow Throne
- * Pre-release Cards" share the one abbreviation. Every other known set has
- * exactly one abbreviation match (verified against the live group list),
- * so this pass never changes their resolution — it only breaks IAR's tie
- * in favour of the group whose name is the exact one this app wants. */
+/** Resolves a set's tcgcsv group id: abbreviation and name together, then
+ * abbreviation, then name. The first pass breaks `IAR`'s tie between two
+ * groups sharing one abbreviation. Returns null (logged, not thrown) when
+ * nothing matches, so one set's naming drift never fails the build. */
 export function resolveGroup(
 	code: string,
 	setName: string,
@@ -84,10 +65,7 @@ export function resolveGroup(
 	if (byBoth) return byBoth;
 	const byAbbreviation = groups.find((g) => g.abbreviation === code);
 	if (byAbbreviation) return byAbbreviation;
-	// Case-insensitively, because tcgcsv's own naming is not consistent:
-	// its groups read "GEM Pack 1" through "GEM Pack 4" and then "Gem Pack
-	// 5". An exact match would silently leave that one product with no
-	// prices at all, which is the quietest possible way for this to break.
+	// Case-insensitive: tcgcsv writes "GEM Pack 4" but "Gem Pack 5".
 	const byName = groups.find((g) => g.name.toLowerCase() === wanted);
 	if (byName) return byName;
 	console.warn(
@@ -96,31 +74,13 @@ export function resolveGroup(
 	return null;
 }
 
-/** The sealed booster pack/box products within a group, matched by
- * TCGplayer's own naming convention — "<Set Name> Booster Pack" for a
- * modern single-edition set, or "<Set Name> Booster Pack [Unlimited
- * Edition]" / "[1st Edition]" for an older set with more than one print
- * run (verified against live data for Arcane Rising). `setName` should be
- * the tcgcsv *group's* own name, not the-fab-cube's — the two disagree on
- * casing and wording often enough to matter (verified: TCGplayer's own
- * group is "Dusk till Dawn" but its own product is "Dusk Till Dawn";
- * the-fab-cube's "History Pack 1" vs TCGplayer's "History Pack Vol.1" is
- * worse still), and matching within one source's own naming is far more reliable
- * than matching across two. Still compared case-insensitively on top of
- * that, per the "Dusk Till/till Dawn" case.
- *
- * Deliberately anchored to `${base}` or `${base} [` rather than a
- * substring/`.includes()` check — "Booster Box" would otherwise also match
- * "Booster Box Case" (a case of boxes, a much bigger and differently-priced
- * product).
- *
- * Returned in preference order (exact name, then Unlimited, then 1st
- * Edition, then anything else), not narrowed to one product here — the
- * caller tries each in turn, because the "preferred" edition's own product
- * sometimes has no live market price at all (also verified for Arcane
- * Rising: its Unlimited Edition pack has none, while its 1st Edition pack
- * does) and falling through to a priced-but-less-preferred edition beats
- * showing no pack price whatsoever. */
+/** The sealed booster pack/box products within a group, named
+ * "<Set Name> Booster Pack" with an optional "[Unlimited Edition]" or
+ * "[1st Edition]" suffix. `setName` should be the tcgcsv group's own name,
+ * compared case-insensitively. Anchored to `${base}` or `${base} [` so that
+ * "Booster Box Case" does not match. Returned in preference order (exact,
+ * Unlimited, 1st Edition) because the preferred product sometimes has no
+ * market price and the caller falls through to the next. */
 function findSealedProductCandidates(
 	products: TcgcsvProduct[],
 	setName: string,
@@ -141,11 +101,9 @@ function findSealedProductCandidates(
 	return [...candidates].sort((a, b) => rank(a) - rank(b));
 }
 
-/** Builds one set's price snapshot from its resolved tcgcsv group — sealed
- * pack/box market prices plus a market price per (tcgplayerProductId,
- * treatment) pair actually present in the set's own printings. Only
- * entries tcgcsv has a real market price for are written; everything else
- * is simply absent (see fab-prices.ts's SetPriceSnapshot doc comment). */
+/** Builds one set's price snapshot: sealed pack/box market prices plus a
+ * market price per (tcgplayerProductId, treatment) pair. Entries without a
+ * market price are left out. */
 export async function buildSetPriceSnapshot(
 	groupId: number,
 	setName: string,
@@ -164,14 +122,8 @@ export async function buildSetPriceSnapshot(
 			row.marketPrice,
 		);
 	}
-	// Sets with more than one historical print run (Alpha/1st Edition vs
-	// Unlimited — see toSetMeta's own comment on this) don't carry a bare
-	// "Normal" / "Cold Foil" / "Rainbow Foil" subtype at all; tcgcsv only
-	// has "Unlimited Edition Cold Foil", "1st Edition Cold Foil", etc
-	// (verified against live data for Arcane Rising). Prefer the plain
-	// name when it exists, then Unlimited (the print still sold in current
-	// boosters), then 1st Edition, rather than showing no price at all for
-	// every card in these older sets.
+	// Older sets only have edition-prefixed subtypes ("Unlimited Edition
+	// Cold Foil"); prefer the plain name, then Unlimited, then 1st Edition.
 	const EDITION_PREFIXES = ["", "Unlimited Edition ", "1st Edition "];
 	function marketPriceFor(
 		productId: number,

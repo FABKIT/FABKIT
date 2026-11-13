@@ -20,12 +20,7 @@ const IMG_PRECACHE_EXCLUDED_PREFIXES = [
 	"img/pack-opener/logos/",
 ];
 
-/** Whether an image under public/img/ (given relative to public/) belongs in
- * the precache. Exported so tests/pack-opener/precache.test.ts can hold the
- * line in both directions: the card back must stay in, because the pack
- * opener's loading and offline screens show it before anything else of that
- * app has loaded, and the artwork must stay out. */
-export function isPrecachedImage(file: string): boolean {
+function isPrecachedImage(file: string): boolean {
 	return !IMG_PRECACHE_EXCLUDED_PREFIXES.some((prefix) =>
 		file.startsWith(prefix),
 	);
@@ -193,11 +188,7 @@ async function main() {
 	console.log("✨ Done!");
 }
 
-// Only when run as a script, so a test can import isPrecachedImage without
-// rewriting vite.config.ts.
-if (import.meta.main) {
-	main().catch((error) => {
-		console.error("❌ Error:", error);
-		process.exit(1);
-	});
-}
+main().catch((error) => {
+	console.error("❌ Error:", error);
+	process.exit(1);
+});

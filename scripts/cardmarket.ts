@@ -1,98 +1,24 @@
 import { priceKey } from "@fabkit/shared/data/fab-prices";
 import type { SetCardmarketSnapshot } from "@fabkit/shared/data/fab-prices-cm";
 import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
-import { fetchJson } from "./fetch-json";
 
 /**
- * Cardmarket prices, for the European half of the audience: a TCGplayer
- * dollar price is close to meaningless when deciding what a card is worth
- * to someone buying in euros.
+ * Cardmarket euro prices from their public daily flat files (the API is
+ * gone). Products are matched to our printings without any version label,
+ * which the files do not carry:
  *
- * Cardmarket withdrew their API and now publish flat files instead, all
- * public, all refreshed daily:
- *   productCatalog/productList/products_singles_16.json     the cards
- *   productCatalog/productList/products_nonsingles_16.json  the sealed product
- *   productCatalog/priceGuide/price_guide_16.json           what it all costs
- * (16 is their category id for Flesh and Blood.)
+ *   1. `idMetacard` identifies a card (pitch included); all of a card's
+ *      versions in one set share a (metacard, expansion) pair.
+ *   2. A card is priced only when Cardmarket's version count equals ours
+ *      under one of four readings of "a version" (foiling, + art variation,
+ *      + collector number, + both), tried plainest first.
+ *   3. Within a collector number the cheapest product is taken to be the
+ *      plainest version, so which version gets which price is a heuristic.
  *
- * THE PROBLEM THIS FILE SOLVES. Neither file says which VERSION of a card
- * a product is. Cardmarket's website shows "Swordmaster's Path (Blue)
- * (Rainbow Foil)", but the string "Rainbow Foil" appears literally zero
- * times in the 3.2 MB product file, and their website answers automated
- * requests with a 403, so the labels cannot be read from either side. No
- * Flesh and Blood card dataset carries Cardmarket ids either, so there is
- * no ready-made bridge to cross.
- *
- * WHAT WE USE INSTEAD. Three facts in the data are enough:
- *
- *   1. `idMetacard` identifies a card, pitch colour included. Sink Below
- *      red, yellow and blue are three metacards, and all of a card's
- *      versions in one set share one (metacard, expansion) pair.
- *   2. When Cardmarket's number of versions for a card equals OURS, the two
- *      lists pair off with nothing left over on either side.
- *   3. `dateAdded` keeps a card's products together by collector number,
- *      and within a collector number the cheapest product is taken to be
- *      the plainest version.
- *
- * Where the counts DISAGREE we write no price at all, and likewise where a
- * collector number has a product with no price, since a rank needs every
- * product's price. So the set of versions priced is proven by the counts,
- * but which of a card's versions gets which price is a heuristic: a plain
- * print can genuinely cost more than its own foil when tournament demand
- * bids it up, those two prices then swap, and nothing in the files can show
- * it. See pricesByVersion.
- *
- * FOUR READINGS OF "A VERSION", tried plainest first, each accepted only
- * if IT makes the two counts agree exactly. Our own data and Cardmarket's
- * genuinely draw the line in different places, and which place depends on
- * the card:
- *
- *   1. by foiling alone. The common case, and all that most cards need.
- *   2. + art variation. Everfest's Pulverize is a normal, a Rainbow Foil
- *      and an Extended Art Rainbow Foil: two versions by foiling, three
- *      once the art counts, and Cardmarket sells three.
- *   3. + collector number. Crucible of War's Mandible Claw is printed
- *      TWICE in the set, as CRU004 and CRU005. Cardmarket files both under
- *      one card but sells them as separate products, so its four are our
- *      two numbers times two foilings.
- *   4. + both.
- *
- * No reading is ever bent to fit: a card is priced only when one of them
- * pairs off with nothing left over on either side.
- *
- * ONE PRINT RUN AT A TIME, which is what makes 3 and 4 work at all. The
- * five oldest sets were printed more than once, and a card can carry
- * different foilings per run: Welcome to Rathe's Fyendal's Spring Tunic is
- * a Cold Foil in Alpha and a Rainbow Foil in Unlimited, so we counted two
- * versions against Cardmarket's one and gave up. A Cardmarket expansion is
- * one run, and it says so in the name of the booster filed under it
- * ("Welcome to Rathe - Unlimited Booster"), so the printings compared
- * against it are that run's. See editionForExpansion — this is read from
- * the data, never guessed, because an earlier attempt that simply picked
- * whichever run paired best matched Alpha Cold Foils against Unlimited
- * Rainbow Foil prices.
- *
- * Together with the name normalisation below this reaches about 98.5% of
- * card versions. What is left is the two catalogues genuinely describing
- * the same cardboard differently with nothing in either file to break the
- * tie, and it stays unpriced on purpose.
- *
- * Verified by hand against Cardmarket's own website (Mastery Pack Warrior,
- * seven cards, including the awkward ones): normal 4.31 against Rainbow
- * Foil 6.65 on Overwhelming Swing, where a swapped pairing would show. Two
- * of the seven turned out to have an Extended Art Rainbow Foil and no
- * ordinary one, and our own data independently flags exactly those two
- * with artVariations ["EA"], which is a second source agreeing.
- *
- * Keyed by `uniqueId`, NOT by TCGplayer product id like the tcgcsv
- * snapshot: GEM Packs 3, 4 and 5 carry no TCGplayer ids at all, and they
- * are among the sets Cardmarket helps most (95%, 92% and 100% covered,
- * against 1, 0 and 0 priced cards from TCGplayer).
- *
- * SEALED PRODUCT comes from the nonsingles file and needs none of the
- * above: a booster is one product per expansion, named in plain words, and
- * the expansion this set resolved to for its cards is the same one its
- * boosters are filed under. See resolveSealedPrices.
+ * Sets printed more than once are compared one print run at a time, read
+ * from the booster's name (see editionForExpansion). Keyed by `uniqueId`
+ * because the GEM Packs have no TCGplayer ids. Sealed prices come from the
+ * nonsingles file (see resolveSealedPrices).
  */
 
 const CM_BASE = "https://downloads.s3.cardmarket.com/productCatalog";
@@ -160,21 +86,9 @@ const TREATMENT_ORDER: Record<string, number> = {
 	marvel: 9,
 };
 
-/** The same card name written two ways by two catalogues, reduced to one
- * spelling. Three differences actually occur in the live files, and
- * between them they cost roughly a hundred card versions their price:
- *
- *   - the apostrophe. Ours is "Tremor of i'Arathael", Cardmarket's is
- *     "Tremor of iArathael".
- *   - stray whitespace. Cardmarket's "Invert Existence " has a trailing
- *     space, on every one of its five products.
- *   - double-faced cards. Ours is "Invoke Dracona Optimai", Cardmarket
- *     writes both faces: "Invoke Dracona Optimai // Dracona Optimai".
- *
- * Lowercased on top of that, since the two disagree on casing often enough
- * to matter and nothing here needs the name for display. Deliberately
- * conservative: it only removes punctuation and spacing, so two genuinely
- * different cards cannot collapse into one key. */
+/** Reduces a card name to one spelling across both catalogues: drops
+ * apostrophes, stray whitespace and the second face of a double-faced card
+ * ("A // B"), and lowercases. */
 function normaliseName(name: string): string {
 	return name
 		.split("//")[0]
@@ -217,9 +131,16 @@ export interface CardmarketCatalog {
 
 export async function fetchCardmarketCatalog(): Promise<CardmarketCatalog> {
 	const [productFile, sealedFile, priceFile] = await Promise.all([
-		fetchJson<{ createdAt: string; products: CmProduct[] }>(PRODUCTS_URL),
-		fetchJson<{ products: CmProduct[] }>(SEALED_URL),
-		fetchJson<{ priceGuides: CmPriceRow[] }>(PRICES_URL),
+		fetch(PRODUCTS_URL).then((r) => r.json()) as Promise<{
+			createdAt: string;
+			products: CmProduct[];
+		}>,
+		fetch(SEALED_URL).then((r) => r.json()) as Promise<{
+			products: CmProduct[];
+		}>,
+		fetch(PRICES_URL).then((r) => r.json()) as Promise<{
+			priceGuides: CmPriceRow[];
+		}>,
 	]);
 
 	const metacardsByCard = new Map<string, Set<number>>();
@@ -279,27 +200,18 @@ export async function fetchCardmarketCatalog(): Promise<CardmarketCatalog> {
 	};
 }
 
-/** Cardmarket's booster category holds more than the booster a player
- * would actually buy to open: a Japanese printing, a First Edition
- * alongside an Unlimited one, Part the Mistveil's Golden Booster, High
- * Seas' Treasure Pack, Omens' World Premiere pack. None of those is the
- * pack this simulator opens, and several cost multiples of it, so a
- * careless pick would show a player a wildly wrong "what this pack cost".
- * Everything here is excluded by name, and anything left unmatched simply
- * yields no euro pack price rather than a wrong one. */
+/** Sealed products that are not the pack this simulator opens (Japanese,
+ * First Edition, Golden Booster, Treasure Pack and so on). A set with no
+ * match gets no euro pack price rather than a wrong one. */
 const SEALED_EXCLUSIONS =
 	/japanese|case|display|blitz|golden|treasure|world premiere|bundle|first edition|1st edition|alpha/i;
 
-/** The GEM Packs are five different products sharing ONE Cardmarket
- * expansion, numbered in their names ("GEM Pack Promos Booster 3"). Our
- * own codes carry the same number, so the two line up directly — without
- * this every GEM Pack would show GEM Pack 1's price. */
+/** The GEM Packs share one Cardmarket expansion and are told apart by the
+ * number at the end of their names, which our set codes also carry. */
 const GEM_CODE = /^GEM(\d)$/;
 
-/** A set's sealed euro prices, looked up in the expansion its cards
- * already resolved to (see chooseExpansion). Null for either where
- * Cardmarket lists no booster or no box under that expansion, or where its
- * one listing has no trend price — never a converted dollar figure. */
+/** A set's sealed euro prices, from the expansion its cards resolved to.
+ * Null where there is no single matching listing or it has no price. */
 function resolveSealedPrices(
 	catalog: CardmarketCatalog,
 	expansion: number,
@@ -319,9 +231,7 @@ function resolveSealedPrices(
 				product.name.trim().endsWith(gem[1]),
 			);
 		}
-		// More than one survivor means the exclusions above no longer
-		// describe what Cardmarket lists, and picking one of several would
-		// be the guess this file exists to avoid.
+		// Several survivors means the exclusions are stale; don't guess.
 		if (candidates.length !== 1) return null;
 		return catalog.priceByProduct.get(candidates[0].idProduct) ?? null;
 	}
@@ -341,18 +251,12 @@ interface Version {
 	printings: FabPrinting[];
 }
 
-/** One card's versions under each reading, plainest first — see the file
- * header. Identical lists for the great majority of cards, which are
- * printed once, in one art, per foiling. */
+/** One card's versions under each reading, plainest first. */
 type CardReadings = Version[][];
 
 /** Collector number, then plainest foiling, then ordinary art before
- * Extended Art. The collector-number grouping is still read off Cardmarket's
- * dateAdded, verified against Crucible of War's Mandible Claw (CRU004's two
- * products added before CRU005's two) — see pricesByVersion, which resolves
- * foiling order WITHIN each such group by price instead. The fields a
- * reading does not split on are empty everywhere and sort out of the way on
- * their own. */
+ * Extended Art. Foiling order within a collector number is settled by price
+ * (see pricesByVersion). */
 function sortVersions(versions: Version[]): Version[] {
 	return versions.sort(
 		(a, b) =>
@@ -363,9 +267,7 @@ function sortVersions(versions: Version[]): Version[] {
 	);
 }
 
-/** The four readings of one card's printings, built by merging the finest
- * grouping back down rather than regrouping from scratch each time, so
- * every reading is guaranteed to describe exactly the same printings. */
+/** The four readings of one card's printings, plainest first. */
 function readingsFor(printings: FabPrinting[]): CardReadings {
 	const group = (splitCard: boolean, splitArt: boolean): Version[] => {
 		const buckets = new Map<string, Version>();
@@ -399,10 +301,8 @@ function readingsFor(printings: FabPrinting[]): CardReadings {
 }
 
 /** Our printings as Cardmarket might count them, keyed by card. When
- * `edition` is set, only that print run's printings are considered — with
- * a fallback to all of them for a card that has none in that run, since
- * dropping such a card entirely would lose a price we could otherwise
- * prove. */
+ * `edition` is set only that print run is considered, falling back to all
+ * printings for a card with none in it. */
 function versionsOf(
 	printings: FabPrinting[],
 	edition: string | null,
@@ -425,11 +325,8 @@ function versionsOf(
 	return out;
 }
 
-/** Which print run is this Cardmarket expansion? Read off the name of the
- * sealed booster filed under it, which is the only place either file says
- * so in words. Null for the single-run sets that are most of the game, and
- * for anything whose booster is not named after a run — in both cases
- * every printing is compared, exactly as before. */
+/** The print run of a Cardmarket expansion, read from the name of its
+ * booster. Null for single-run sets, where every printing is compared. */
 function editionForExpansion(
 	catalog: CardmarketCatalog,
 	expansion: number,
@@ -449,10 +346,7 @@ function metacardsFor(
 ): Set<number> | undefined {
 	return (
 		catalog.metacardsByCard.get(key) ??
-		// Cardmarket brackets the pitch colour only where it needs to tell
-		// two printings apart, so a card that exists in one colour only is
-		// listed under its bare name. Without this fallback roughly half of
-		// a modern set reads as "not on Cardmarket" when it is all there.
+		// Pitch is bracketed only where needed, so fall back to the bare name.
 		catalog.metacardsByCard.get(`${key.split("|")[0]}|`)
 	);
 }
@@ -476,32 +370,11 @@ function productsIn(
 }
 
 /**
- * `productsIn`'s dateAdded order clusters a card's products correctly by
- * COLLECTOR NUMBER (see sortVersions' comment) but not reliably by
- * FOILING within a collector number: The Hunted's "Arakni, Trap-Door"
- * token print (dateAdded 2025-01-22) pairs against Cardmarket product
- * 807245 and its Marvel (dateAdded 2025-10-14, catalogued nine months
- * later once the pull surfaced) against product 853967 — chronological
- * order exactly as the plainest-first assumption predicts, and yet the
- * FIRST (token) product prices at EUR 23.67 and the SECOND (Marvel) at
- * EUR 0.34, backwards from what every other signal says. Cardmarket's
- * flat files carry no field that names a treatment (see the file header),
- * so there is no identifier to look up instead — the only signal left
- * that actually correlates with rarity is the price itself.
- *
- * This hands out prices in ascending order WITHIN each same-collector-
- * number run (a "chunk", sized off `ours`'s own cardId groups — empty
- * string, i.e. one chunk covering everything, for every reading that
- * doesn't split by collector number, which is the common case), so the
- * cheapest product in a chunk pairs with our plainest treatment and the
- * most expensive with our fanciest — "the higher the price, the higher
- * the rarity" — without disturbing which products belong to which
- * collector number, which only dateAdded can tell apart.
- *
- * A chunk with an unpriced product gets no prices at all, because there is
- * no telling which version that product is. Ranking only the priced ones
- * would hand a Rainbow Foil's price to the plain print whenever it was the
- * plain print that had none. */
+ * dateAdded groups products by collector number but does not reliably order
+ * them by foiling, so prices are handed out in ascending order within each
+ * collector-number chunk: cheapest to our plainest treatment. A chunk with
+ * an unpriced product gets no prices, since there is no telling which
+ * version that product is. */
 function pricesByVersion(
 	ours: readonly Version[],
 	products: readonly CmProduct[],
@@ -531,22 +404,13 @@ function pricesByVersion(
 	return prices;
 }
 
-/** A sane euro-per-dollar figure to score candidate expansions against.
- * Not an exchange rate: the two markets genuinely diverge, and this only
- * has to separate "the same cards" from "the same cards at three times the
- * price", which is what the 1st Edition listings look like. */
+/** Rough euro-per-dollar figure to score candidate expansions against; not
+ * an exchange rate. */
 const EXPECTED_EUR_PER_USD = 0.9;
 
-/** Which Cardmarket expansion is this set?
- *
- * Voting on metacards finds the candidates, but for Welcome to Rathe,
- * Arcane Rising and Crucible of War it finds TWO with identical contents
- * and identical product counts: 1st Edition and Unlimited. Nothing in the
- * files distinguishes them, so the tie is broken on price. Our TCGplayer
- * prices are Unlimited (preferring the print still sold in boosters — see
- * buildSetPriceSnapshot's EDITION_PREFIXES), so the candidate whose prices
- * agree with those IS the Unlimited one. Welcome to Rathe scored 3.16
- * euros per dollar before this and 1.03 after. */
+/** Which Cardmarket expansion is this set? Metacard votes find the
+ * candidates; where 1st Edition and Unlimited tie, the one whose prices
+ * best agree with our (Unlimited) TCGplayer prices wins. */
 function chooseExpansion(
 	catalog: CardmarketCatalog,
 	versions: Map<string, CardReadings>,
@@ -574,11 +438,7 @@ function chooseExpansion(
 		if (count < best * 0.8) continue;
 		const ratios: number[] = [];
 		for (const [key, readings] of versions) {
-			// Scored on the plainest reading only. This runs before any set
-			// is paired, and before the print run is even known (that is
-			// read off the expansion this is choosing), so it has to work
-			// from the one reading that needs neither. It only has to tell
-			// two candidate expansions apart, which it does on price.
+			// Plainest reading only: the print run isn't known yet.
 			const ours = readings[0];
 			const products = productsIn(catalog, key, expansion);
 			if (products.length !== ours.length) continue;
@@ -604,9 +464,7 @@ function chooseExpansion(
 		}
 	}
 
-	// No candidate had enough comparable prices to score (a set TCGplayer
-	// barely prices, e.g. the newer GEM Packs). Fall back to the most-voted
-	// one, which is unambiguous whenever there is only one candidate.
+	// Too few comparable prices to score: fall back to the most-voted one.
 	if (!winner) return { expansion: ranked[0][0], ratio: null };
 	return { expansion: winner.expansion, ratio: winner.ratio };
 }
@@ -617,9 +475,7 @@ export function buildCardmarketSnapshot(
 	tcgPrices: Record<string, number>,
 	catalog: CardmarketCatalog,
 ): { snapshot: SetCardmarketSnapshot; coverage: CardmarketCoverage } {
-	// Which expansion first, on every printing we have, because the print
-	// run is read OFF that expansion — then, for a set with more than one
-	// run, the readings are rebuilt for that run alone.
+	// The expansion is chosen first; the print run is read from it.
 	const allVersions = versionsOf(printings, null);
 	const { expansion, ratio } = chooseExpansion(catalog, allVersions, tcgPrices);
 	const edition = expansion ? editionForExpansion(catalog, expansion) : null;
@@ -633,41 +489,23 @@ export function buildCardmarketSnapshot(
 
 	for (const [key, readings] of versions) {
 		const products = expansion ? productsIn(catalog, key, expansion) : [];
-		// The only pairing we accept: same number of versions on both sides
-		// means each of ours has exactly one of theirs. Anything else is a
-		// guess, so it gets no price.
-		// Every reading of "a version" gets to try, plainest first (see the
-		// file header); none is allowed to pair with anything left over on
-		// either side, and an expansion we never resolved (no products at
-		// all) pairs with nothing.
+		// Only an exact count match pairs; anything else is a guess.
 		const ours =
 			products.length > 0
 				? readings.find((reading) => reading.length === products.length)
 				: undefined;
 		if (!ours) {
-			// Counted against the plainest reading, which is the honest
-			// answer to "how many versions of this card do we know about"
-			// when none of the readings pairs.
 			versionCount += readings[0].length;
 			ambiguous += readings[0].length;
 			continue;
 		}
-		// Counted against the reading actually used, so the coverage figure
-		// stays "how many versions we distinguish, and how many of those we
-		// priced" rather than mixing readings' denominators.
 		versionCount += ours.length;
-		// Which collector-number chunk each product belongs to still comes
-		// from dateAdded (productsIn), but which TREATMENT within that chunk
-		// each product is comes from its price instead — see
-		// pricesByVersion's own comment.
 		const prices = pricesByVersion(ours, products, catalog.priceByProduct);
 		if (ours !== readings[0]) refinedPairings += ours.length;
 		for (let i = 0; i < ours.length; i++) {
 			const euros = prices[i];
 			if (euros === undefined) continue;
 			priced++;
-			// Every printing sharing this version gets the same price: they
-			// are one product as far as Cardmarket is concerned.
 			for (const printing of ours[i].printings) {
 				cardPrices[printing.uniqueId] = euros;
 			}

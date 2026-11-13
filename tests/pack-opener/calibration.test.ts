@@ -217,8 +217,7 @@ describe("frequency calibration", () => {
 	});
 
 	// Usurp the Shadow Throne. This set has no Collectors Centre page of its
-	// own yet (see set-configs.ts's USURP_THE_SHADOW_THRONE comment and
-	// docs/pull-rate-verification.md's IAR section), so its config runs on
+	// own yet (see set-configs.ts's USURP_THE_SHADOW_THRONE comment), so its config runs on
 	// Omens of the Third Age's rates, borrowed. This test therefore guards
 	// the derivation against Omens' own numbers — the same expectations as
 	// the block above — not against a published truth of this set's own.
@@ -290,8 +289,7 @@ describe("expected counts agree with the engine", () => {
 
 /**
  * Compendium of Rathe - Antiquity Pack. The only product here whose source
- * is LSS's own "Estimated Rarity Breakdown" (their wording), pasted into
- * docs/pull-rate-verification.md: Marvel 1 per 800, Fabled 1 per 45,
+ * is LSS's own "Estimated Rarity Breakdown" (their wording), Marvel 1 per 800, Fabled 1 per 45,
  * Legendary 1 per 20, Majestic 1 per pack across its regular and Cold Foil
  * halves, and a 10-card Rare slot at 1 per pack.
  *

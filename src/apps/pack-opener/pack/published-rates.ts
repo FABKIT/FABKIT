@@ -23,7 +23,7 @@
  * WHERE THESE COME FROM
  *
  * Each set's rates are transcribed from its Collectors Centre page on
- * fabtcg.com, recorded verbatim in `docs/pull-rate-verification.md`. Each
+ * fabtcg.com. Each
  * entry below is tagged so you can tell sourced numbers from the rest:
  *
  *   PUBLISHED  printed on the set's own page
@@ -401,11 +401,10 @@ export const PUBLISHED_RATES = {
 	// borrowed on the strength of the identical structure plus a close set
 	// composition (this set: 133 Common / 66 Rare / 40 Majestic / 16 Basic
 	// / 5 Legendary / 2 Fabled / 27 Marvel, against Omens' 134 / 60 / 37 /
-	// 14 / 5 / 1). ESTIMATED, all of it, and flagged as the one exception
-	// in docs/pull-rate-verification.md's Status section. Replace with
-	// this set's own figures the day its Collectors Centre page goes live,
-	// and update tests/pack-opener/calibration.test.ts and that doc in the
-	// same commit — see set-configs.ts's USURP_THE_SHADOW_THRONE comment.
+	// 14 / 5 / 1). ESTIMATED, all of it. Replace with this set's own
+	// figures the day its Collectors Centre page goes live, and update
+	// tests/pack-opener/calibration.test.ts in the same commit — see
+	// set-configs.ts's USURP_THE_SHADOW_THRONE comment.
 	IAR: {
 		rare: 1.88,
 		basic: 1.8,
@@ -421,8 +420,7 @@ export const PUBLISHED_RATES = {
 	// -----------------------------------------------------------------
 	// Compendium of Rathe - Antiquity Pack. The 3-card bonus pack bundled
 	// one per Compendium of Rathe booster box. PUBLISHED by LSS as an
-	// "Estimated Rarity Breakdown", their own wording, transcribed in
-	// docs/pull-rate-verification.md:
+	// "Estimated Rarity Breakdown", their own wording:
 	//   1 Marvel (1 per 800 packs)
 	//   3 Fabled (1 per 45 packs)
 	//   7 Legendary (1 per 20 packs)

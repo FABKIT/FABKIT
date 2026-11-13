@@ -347,7 +347,7 @@ const DUSK_TILL_DAWN: PackConfig = {
 // ---------------------------------------------------------------------------
 // Heavy Hitters / Part the Mistveil / Rosetta / The Hunted family — 16
 // cards each. All four now come straight from their Collectors Centre
-// pages (transcribed in docs/pull-rate-verification.md), which publish
+// pages, which publish
 // per-pack rates rather than the slot memberships the product pages give.
 // They share one shape: a base block, then a "Premium Foil (1 per pack)"
 // block, then a Cold Foil block.
@@ -755,7 +755,7 @@ const OMENS_OF_THE_THIRD_AGE: PackConfig = {
 // running on another set's numbers rather than its own; replace
 // PUBLISHED_RATES.IAR (and this comment) the day fabtcg.com publishes
 // this set's actual breakdown, and update
-// tests/pack-opener/calibration.test.ts and docs/pull-rate-verification.md
+// tests/pack-opener/calibration.test.ts
 // in the same commit.
 //
 // Card data for this set doesn't come from the usual the-fab-cube feed
@@ -1305,8 +1305,7 @@ const BRIGHT_LIGHTS: PackConfig = {
 
 // ---------------------------------------------------------------------------
 // High Seas (SEA) — 16 cards.
-// Rates from https://fabtcg.com/collectors-centre/high-seas/ (transcribed
-// verbatim in docs/pull-rate-verification.md). The base block:
+// Rates from https://fabtcg.com/collectors-centre/high-seas/. The base block:
 //   1 Fabled / 6 Legendary / 46 Majestic (1 per 4 packs) /
 //   64 Rare (1.83 per pack) / 127 Common (11 per pack) / 18 Basic
 // then a second block under "Premium Foil (1 per pack)":
