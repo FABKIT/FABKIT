@@ -10,20 +10,12 @@ import {
 
 /**
  * The single place that knows how a card type and its variant combine.
- *
- * Everything the app asks about a card ("which fields?", "which subtypes?",
- * "which frames?", "what is printed on the type line?") depends on BOTH
- * `CardType` and `CardVariant`. Components and stores must ask through these
- * helpers instead of reading `CardTypes`, `CardSubtypes` or `CardVariants`
- * themselves, so a variant can never be forgotten at a call site.
- *
- * A `variant` of `null` means the standard version of the type. Every helper
- * falls back to the card type's own settings in that case, and also when the
- * variant is not one the type actually has.
+ * Components and stores ask through these helpers instead of reading
+ * `CardTypes`, `CardSubtypes` or `CardVariants`. A `null` variant, or one the
+ * type doesn't have, falls back to the type's own settings.
  */
 
-// CardVariants is typed by its literal keys, which can't be indexed with a
-// plain CardType. Widen it once here.
+// CardVariants has literal keys; widen so it can be indexed by CardType.
 const VARIANT_GROUPS: Partial<Record<CardType, VariantGroup>> = CardVariants;
 
 const CARD_TYPE_KEYS: ReadonlySet<string> = new Set(Object.keys(CardTypes));
@@ -34,12 +26,7 @@ export interface CardKind {
 	variant: CardVariant | null;
 }
 
-/**
- * Makes an untrusted value (a saved card, an imported file, a bug report)
- * safe to use as a card type. Unknown types become "action" instead of
- * crashing the editor when its config can't be found. `null` and `undefined`
- * stay `null`, meaning "no card type chosen".
- */
+/** Makes an untrusted value safe as a card type: unknown becomes "action", null/undefined become null. */
 export function normalizeCardType(value: unknown): CardType | null {
 	if (value === null || value === undefined) return null;
 	if (typeof value === "string" && CARD_TYPE_KEYS.has(value)) {
@@ -106,12 +93,7 @@ export function getCardSubtypes(
 	return getVariantDefinition(type, variant)?.subtypes ?? CardSubtypes[type];
 }
 
-/**
- * Options for the Variant dropdown of a card type: the standard version first
- * (`variant: null`), then each variant in the order it's listed in
- * variants.ts. Empty for a card type with no variants, which is also what
- * tells the editor not to show the dropdown (check `.length > 0`).
- */
+/** Variant dropdown options: standard first, then variants in listed order. Empty if the type has none. */
 export function getVariantOptions(
 	type: CardType,
 ): { variant: CardVariant | null; label: string }[] {

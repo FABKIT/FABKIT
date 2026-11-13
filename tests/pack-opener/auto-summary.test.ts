@@ -8,13 +8,7 @@ import { resetStore } from "./reset-store";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/**
- * Reaching the final card used to require one more tap that revealed
- * nothing — the card was already on screen, so the tap only dismissed it.
- * It now hands over to the summary on its own after a beat. The guard that
- * matters is that the automatic hand-over and a manual tap can never both
- * record the same pack.
- */
+/** The last card hands over to the summary on its own; the automatic hand-over and a manual tap must never both record the same pack. */
 describe("automatic hand-over on the last card", () => {
 	beforeEach(() => {
 		resetStore();

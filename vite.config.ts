@@ -51,30 +51,18 @@ export default defineConfig({
 			},
 			workbox: {
 				cleanupOutdatedCaches: true,
-				// Everything precached is downloaded by every visitor's service
-				// worker, whichever app they came for. The pack opener's chunks
-				// carry three.js, fiber and drei, close to 1 MB that the rest of
-				// the site never runs, so they stay out and load when someone
-				// opens that app. The names follow the route file and
-				// lib/texture-cache.ts, the module the scene is first imported
-				// through, so renaming either means updating these patterns.
+				// The pack opener's chunks carry three.js, fiber and drei, so they
+				// stay out of the precache every visitor downloads. Names follow
+				// the route file and lib/texture-cache.ts (the scene's first
+				// import); update these patterns if either is renamed.
 				globIgnores: [
 					"**/assets/pack-opener-*.js",
 					"**/assets/texture-cache-*.js",
 				],
-				// Pack opener card art: content.fabrary.net's own Cache-Control
-				// only holds a card's image for 3 days, but a pack draws its
-				// commons from a pool of roughly 130 per set, so repeat
-				// openings of the same set collide constantly — after around
-				// ten packs, most of that set's commons are already on the
-				// device. CacheFirst here means a card downloaded once stays
-				// available for a full month regardless of what the origin
-				// server's own header says, capped at 600 images so this can
-				// never grow without bound.
-				//
-				// Only status 200 is cached, never an opaque 0: every load from
-				// this path is CORS, and an opaque entry served by CacheFirst
-				// would fail every later CORS texture load for that card.
+				// Card art: the origin only caches for 3 days, but repeat packs of
+				// a set reuse its commons, so keep images for a month (capped).
+				// Status 200 only: an opaque entry would fail later CORS texture
+				// loads for that card.
 				runtimeCaching: [
 					{
 						urlPattern: ({ url }: { url: URL }) =>
@@ -90,15 +78,9 @@ export default defineConfig({
 							cacheableResponse: { statuses: [200] },
 						},
 					},
-					// The pack opener's own code, data and artwork are kept out
-					// of the precache (see globIgnores above and
-					// scripts/update-pwa-assets.ts), so nothing else would keep
-					// them for an offline visit. These three rules store them the
-					// first time someone opens the app, and only for that person.
-					//
-					// The chunks carry a content hash in their name, so a cached
-					// one is never stale and CacheFirst is safe; the small cap
-					// lets old builds' chunks fall away.
+					// Code, data and art left out of the precache (globIgnores,
+					// scripts/update-pwa-assets.ts) are cached on first visit.
+					// Chunk names are content-hashed, so CacheFirst is safe.
 					{
 						urlPattern: ({
 							url,
@@ -118,9 +100,8 @@ export default defineConfig({
 							cacheableResponse: { statuses: [200] },
 						},
 					},
-					// Card and price data is rebuilt on every deploy under the
-					// same file names, so it is served from the cache and
-					// refreshed in the background for the next visit.
+					// Data keeps its file names across deploys, so refresh it in
+					// the background.
 					{
 						urlPattern: ({
 							url,

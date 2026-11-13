@@ -74,13 +74,10 @@ export function resolveGroup(
 	return null;
 }
 
-/** The sealed booster pack/box products within a group, named
- * "<Set Name> Booster Pack" with an optional "[Unlimited Edition]" or
- * "[1st Edition]" suffix. `setName` should be the tcgcsv group's own name,
- * compared case-insensitively. Anchored to `${base}` or `${base} [` so that
- * "Booster Box Case" does not match. Returned in preference order (exact,
- * Unlimited, 1st Edition) because the preferred product sometimes has no
- * market price and the caller falls through to the next. */
+/** Sealed pack/box products named "<Set Name> Booster Pack" with an optional
+ * "[Unlimited Edition]" or "[1st Edition]" suffix (anchored so "Booster Box
+ * Case" does not match). Returned in preference order: the caller falls
+ * through when the preferred product has no market price. */
 function findSealedProductCandidates(
 	products: TcgcsvProduct[],
 	setName: string,

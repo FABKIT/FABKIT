@@ -649,12 +649,8 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			}),
 		setCardBackStyle: (backType: CardStyle) =>
 			set((state) => {
-				// Unlike setCardType, this action used to replace CardBack
-				// UNCONDITIONALLY with no validity check at all — meaning toggling
-				// flat/dented always evicted a custom frame (and any missing-frame
-				// placeholder) even when the current selection was still fine. Now:
-				// carry a sticky placeholder forward first, then only re-suggest when
-				// the current selection isn't actually valid for the new style.
+				// Carry a sticky placeholder forward first, then only re-suggest when
+				// the current selection isn't valid for the new style.
 				const available = getAvailableCardBacks(
 					getCustomFramesSnapshot(),
 					state.CardType,

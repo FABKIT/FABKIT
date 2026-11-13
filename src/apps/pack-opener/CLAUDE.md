@@ -54,8 +54,8 @@ anything reachable from those must not statically import the scene or store. `co
 has no imports for this reason. `PackOpenerLoading` and `PackOpenerUnavailable` render from the
 entry chunk under the same rule.
 
-The service worker precache keeps this app's chunks (`globIgnores` in `vite.config.ts`) and the
-pack art (`scripts/update-pwa-assets.ts`) out; only the card back is precached. `runtimeCaching`
+The service worker precache excludes this app's chunks (`globIgnores` in `vite.config.ts`) and
+pack art (`scripts/update-pwa-assets.ts`); only the card back is precached. `runtimeCaching`
 stores the rest after a first visit.
 
 ## Card data
@@ -85,9 +85,8 @@ can be dealt. Fabled is estimated at half a set's Marvel rate where unpublished.
 
 USD is TCGplayer (`shared/data/fab-prices.ts`), EUR is Cardmarket
 (`shared/data/fab-prices-cm.ts`), never converted into each other. Both are build-time
-snapshots refreshed nightly by `pages.yml`. Components go through `lib/pricing.ts` via
-`usePrices`, so every surface shows the same marketplace. A missing price shows "Not priced
-yet", never zero or the other currency.
+snapshots refreshed nightly by `pages.yml`. Go through `lib/pricing.ts` via `usePrices`. A
+missing price shows "Not priced yet", never zero or the other currency.
 
 ## Decided, don't reopen
 

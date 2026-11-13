@@ -49,12 +49,7 @@ describe("celebrationTierFor", () => {
 	});
 
 	it("keeps a foil majestic in the majestic tier, not the foil one", () => {
-		// Regression: this used to return "foil", on the reasoning that a
-		// card should not be double-counted. Harmless while the tier only
-		// chose a glow colour, but the tier now also decides whether a pull
-		// gets particles at all, and a foil Majestic was ending up with LESS
-		// celebration than a plain one — reported from the app as "a majestic
-		// rainbow foil that didn't have the sparkles".
+		// The tier decides whether a pull gets particles, so a foil Majestic must not get less than a plain one.
 		expect(
 			celebrationTierFor(card({ rarity: "majestic", treatment: "rainbow" })),
 		).toBe("majestic");

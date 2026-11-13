@@ -3,22 +3,18 @@ import type { SetCardmarketSnapshot } from "@fabkit/shared/data/fab-prices-cm";
 import type { FabPrinting } from "@fabkit/shared/data/fab-printings";
 
 /**
- * Cardmarket euro prices from their public daily flat files (the API is
- * gone). Products are matched to our printings without any version label,
- * which the files do not carry:
+ * Cardmarket euro prices from their public daily flat files. Products carry
+ * no version label, so they are matched to our printings by count:
  *
- *   1. `idMetacard` identifies a card (pitch included); all of a card's
- *      versions in one set share a (metacard, expansion) pair.
- *   2. A card is priced only when Cardmarket's version count equals ours
- *      under one of four readings of "a version" (foiling, + art variation,
- *      + collector number, + both), tried plainest first.
- *   3. Within a collector number the cheapest product is taken to be the
- *      plainest version, so which version gets which price is a heuristic.
+ *   1. `idMetacard` identifies a card; a card's versions in one set share a
+ *      (metacard, expansion) pair.
+ *   2. A card is priced only when Cardmarket's version count equals ours under
+ *      one of four readings of "a version" (foiling, + art variation,
+ *      + collector number, + both), plainest first.
+ *   3. Within a collector number the cheapest product is taken as the plainest
+ *      version, so version-to-price pairing is a heuristic.
  *
- * Sets printed more than once are compared one print run at a time, read
- * from the booster's name (see editionForExpansion). Keyed by `uniqueId`
- * because the GEM Packs have no TCGplayer ids. Sealed prices come from the
- * nonsingles file (see resolveSealedPrices).
+ * Keyed by `uniqueId` because the GEM Packs have no TCGplayer ids.
  */
 
 const CM_BASE = "https://downloads.s3.cardmarket.com/productCatalog";
@@ -246,9 +242,7 @@ interface Version {
 /** One card's versions under each reading, plainest first. */
 type CardReadings = Version[][];
 
-/** Collector number, then plainest foiling, then ordinary art before
- * Extended Art. Foiling order within a collector number is settled by price
- * (see pricesByVersion). */
+/** Collector number, then plainest foiling, then ordinary art before Extended Art. */
 function sortVersions(versions: Version[]): Version[] {
 	return versions.sort(
 		(a, b) =>

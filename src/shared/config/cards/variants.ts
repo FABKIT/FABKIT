@@ -2,24 +2,10 @@ import type { CardFormField } from "./form_fields.ts";
 import type { CardType } from "./types.ts";
 
 /**
- * Card variants: alternate versions of one card type.
- *
- * A card is described by two coordinates, `CardType` ("what kind of card",
- * e.g. equipment) and `CardVariant` ("which version of it", e.g. Evo action).
- * `CardVariant` is `null` for the standard version of a type, which is every
- * card unless the card type lists variants below. Only card types that appear
- * in `CardVariants` have variants at all.
- *
- * Each variant carries everything that differs from the standard version of
- * its type: what the card prints on its type line, what the variant dropdown
- * calls it, which form fields it shows, which subtypes it offers and which
- * frame families (`CardBack.type`) it can use. Anything a variant does NOT
- * list falls back to the card type's own settings (types.ts, subtypes.ts).
- *
- * Nothing outside this folder should read `CardVariants` directly. Use the
- * helpers in card_definition.ts, which know how type and variant combine. To
- * add a variant, see the "Card Variants" section of
- * src/apps/card-creator/CLAUDE.md.
+ * Card variants: alternate versions of one card type (e.g. Evo equipment).
+ * `CardVariant` is `null` for the standard version. Each variant carries what
+ * differs from its type's own settings; use the helpers in card_definition.ts
+ * rather than reading `CardVariants` directly.
  */
 
 export interface VariantDefinition {
@@ -36,12 +22,8 @@ export interface VariantDefinition {
 }
 
 /**
- * Stand-in for "no variant" (`null`) wherever a string is required, such as the
- * option values of the Variant dropdown. It is never stored: callers map it
- * back to `null` before it reaches the store or the serializer.
- *
- * It is reserved: `VariantGroup` rejects it as a variant key at compile time,
- * so it can never collide with a real variant.
+ * Stand-in for `null` where a string is required (dropdown option values).
+ * Never stored. Reserved: `VariantGroup` rejects it as a variant key.
  */
 export const STANDARD_VARIANT = "standard";
 
@@ -53,9 +35,7 @@ export interface VariantGroup {
 	};
 }
 
-// Evo equipment is played from hand like an action or instant, then equipped.
-// Unlike plain equipment it carries pitch and cost. No Evo equipment prints
-// power, life or intellect.
+// Unlike plain equipment, Evo equipment carries pitch and cost.
 const EVO_EQUIPMENT_FIELDS = [
 	"CardPitch",
 	"CardName",
@@ -106,10 +86,8 @@ export const CardVariants = {
 } satisfies Partial<Record<CardType, VariantGroup>>;
 
 /**
- * Every variant key across every card type, derived from `CardVariants` above
- * rather than written out by hand, so adding a variant there is enough.
- * Variant keys are saved in card files and share links, so never rename one.
- * `STANDARD_VARIANT` is excluded: it means "no variant", which is `null`.
+ * Every variant key across every card type. Keys are saved in card files and
+ * share links, so never rename one.
  */
 export type CardVariant = Exclude<
 	{
@@ -118,9 +96,5 @@ export type CardVariant = Exclude<
 	typeof STANDARD_VARIANT
 >;
 
-/**
- * A variant, or `STANDARD_VARIANT` for "no variant". Use it only where a
- * string must stand in for `null` (e.g. dropdown option values); comparing
- * against `STANDARD_VARIANT` narrows it back to `CardVariant`.
- */
+/** A variant, or `STANDARD_VARIANT` where a string must stand in for `null`. */
 export type CardVariantOrStandard = CardVariant | typeof STANDARD_VARIANT;
