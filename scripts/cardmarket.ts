@@ -32,8 +32,7 @@ interface CmProduct {
 	idExpansion: number;
 	idMetacard: number;
 	dateAdded: string;
-	/** Nonsingles only — "Flesh And Blood Booster", "Flesh And Blood
-	 * Booster Boxes", and the several categories of thing we don't want. */
+	/** Nonsingles only. */
 	categoryName?: string;
 }
 
@@ -50,12 +49,9 @@ interface CardmarketCoverage {
 	versions: number;
 	/** Versions we wrote a price for. */
 	priced: number;
-	/** Versions dropped because their version count disagreed with ours
-	 * under every reading of a version — see the file header. */
+	/** Versions dropped: count disagreed under every reading (see header). */
 	ambiguous: number;
-	/** Versions that needed a reading finer than "one per foiling" to pair
-	 * — art variations, collector numbers, or both. Logged so a drop here
-	 * is visible if either catalogue changes how it splits a card. */
+	/** Versions that needed a reading finer than "one per foiling" to pair. */
 	refinedPairings: number;
 	/** The print run compared against, or null when the set has only one
 	 * (see editionForExpansion). */
@@ -103,8 +99,7 @@ function cardKey(name: string, pitch: number | null): string {
 }
 
 function normalisePitch(raw: string): string {
-	// Cardmarket's own data carries a handful of typos: "(Yelllow)" on four
-	// products and "(Bleu)" on one.
+	// Typos in Cardmarket's data.
 	if (raw === "Yelllow") return "Yellow";
 	if (raw === "Bleu") return "Blue";
 	return raw;
@@ -121,10 +116,7 @@ export interface CardmarketCatalog {
 	/** metacard -> the expansions it appears in, for resolving which
 	 * Cardmarket set one of ours is. */
 	expansionsByMetacard: Map<number, number[]>;
-	/** expansion -> the sealed products filed under it (boosters, boxes,
-	 * cases, decks, the lot) from the nonsingles file. Sealed product uses
-	 * the SAME expansion ids the cards do, which is what lets a set's
-	 * booster be found from the expansion its cards already resolved to. */
+	/** expansion -> sealed products filed under it (same expansion ids as cards). */
 	sealedByExpansion: Map<number, CmProduct[]>;
 	priceByProduct: Map<number, number>;
 }

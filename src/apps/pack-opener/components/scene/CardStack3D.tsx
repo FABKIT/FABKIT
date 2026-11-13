@@ -73,9 +73,7 @@ export function CardStack3D() {
 	const celebrationTier = celebrationTierFor(resolvedCard);
 
 	return (
-		// The intro group carries the whole stack, effects included, so the
-		// celebration scales in with its card instead of arriving at full size
-		// beside a card that is still growing.
+		// The intro group carries the effects too, so they scale in with the card.
 		<group
 			ref={introGroup}
 			scale={initialIntro.scale}

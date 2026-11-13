@@ -59,10 +59,7 @@ const initialState: PackOpenerState = {
 	showingOtherFace: false,
 	openedPacksThisSession: [],
 	selectedSet: null,
-	// Dollars unless this visitor has said otherwise. Deliberately not guessed
-	// from the browser's locale: a euro price here is a Cardmarket price, and a
-	// visitor's language says nothing about which marketplace they buy from.
-	// They pick once and it sticks.
+	// Dollars until the visitor picks; not guessed from locale (euro means Cardmarket).
 	currency: "USD",
 	pricesVersion: 0,
 	packArtUrl: null,
@@ -104,10 +101,8 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					});
 				}
 
-				/** Ends the pack and hands over to the summary. Shared by the last
-				 * tap and by the automatic hand-over on the final card (see
-				 * LAST_CARD_AUTO_SUMMARY_MS), so both paths record the pack into
-				 * session stats identically rather than one of them drifting. */
+				/** Ends the pack and hands over to the summary. Shared by the last tap
+				 * and the automatic hand-over (LAST_CARD_AUTO_SUMMARY_MS). */
 				function completePack(pack: DrawnCard[], setCode: string | null): void {
 					set(
 						{
@@ -183,11 +178,8 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 							return;
 						}
 
-						// A pack dealt before its set's printings arrive resolves some
-						// cards against a pool that isn't there yet, and each surface
-						// resolves at a different moment, so the reveal and the ledger
-						// could disagree about what was pulled. A second tap while this
-						// waits is the same request, not another pack.
+						// Wait for the set's printings so the reveal and the ledger resolve
+						// cards against the same pool. A second tap is the same request.
 						if (pendingOpenSet === packConfig.id) return;
 						pendingOpenSet = packConfig.id;
 						loadSetPrintings(packConfig.id)
@@ -225,10 +217,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 							undefined,
 							"pack-opener/advanceReveal",
 						);
-						// Keeps the lookahead window moving forward one card at a time as
-						// the player advances — the cards behind this frontier were
-						// already preloaded when the pack was dealt or by an earlier call
-						// here, so only the new topmost index needs fetching.
+						// Advance the lookahead window; earlier cards are already preloaded.
 						const frontierIndex = nextIndex + preloadLookaheadCount() - 1;
 						preloadPackTextures(
 							pack,
@@ -237,13 +226,8 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 							1,
 						);
 
-						// The last card is already on screen at this point, so requiring
-						// one more tap to see the summary asked the player to dismiss the
-						// pack's best card to reveal nothing. Hand over on its own after
-						// a beat instead. Re-checks everything on fire rather than
-						// holding a cancellable handle: a tap that completes the pack
-						// early, or switching sets out from under it, both simply make
-						// these conditions false.
+						// Hand over to the summary on its own after a beat. Re-checks
+						// state on fire instead of holding a cancellable handle.
 						if (nextIndex === pack.length - 1) {
 							setTimeout(() => {
 								const live = get();
@@ -263,16 +247,8 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					selectSet(setCode) {
 						const { selectedSet } = get();
 						if (setCode === selectedSet) return;
-						// The carousel stays visible during tearing/revealing (see
-						// SetCarousel.tsx) so a player can switch sets mid-pack. That is a
-						// deliberate, user-facing decision, not something this store should
-						// silently allow or silently block: SetCarousel gates the call
-						// behind the leave-pack confirmation, which warns that an in-flight pack is
-						// discarded and does not count toward session stats, before ever
-						// calling this action. This action itself stays unconditional —
-						// it already resets pack/phase/revealIndex cleanly below, which is
-						// exactly "discard the pack" — so there is nothing else to guard
-						// here once the UI has confirmed the player wants that.
+						// Unconditional: SetCarousel gates this behind the leave-pack
+						// confirmation, and the reset below discards any in-flight pack.
 						pendingOpenSet = null;
 						const packArtUrl = rollPackArt(setCode);
 						warmSet(setCode);
@@ -305,9 +281,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						// re-rolls which of a set's artworks is on the counter.
 						if (phase === "tearing" || phase === "revealing") return;
 
-						// A stored code the index no longer lists counts as no choice at
-						// all. Left in place, it would show the default set's logo while
-						// its packs came from the mock config.
+						// A stored code the index no longer lists counts as no choice.
 						const current = sets[selectedSetPosition(sets, selectedSet)];
 
 						warmSet(current.code);
@@ -339,14 +313,9 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					},
 
 					resetSession() {
-						// Everything the session ledger is built from goes, and the
-						// player is put back in front of a closed pack of the set they
-						// were already on — the same place readyAnotherPack leaves
-						// them, so a reset feels like starting the visit again rather
-						// than landing somewhere new. selectedSet is explicitly kept
-						// rather than reset to initialState's null, and the artwork is
-						// re-rolled for that same set rather than dropping back to the
-						// mock pack.
+						// Clears the session ledger and returns to a closed pack of the
+						// same set (selectedSet kept, artwork re-rolled), like
+						// readyAnotherPack.
 						pendingOpenSet = null;
 						set(
 							{
@@ -372,9 +341,7 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 						set(
 							{
 								phase: "idle",
-								// Rolled HERE rather than at the tap, so the player sees
-								// which pack front they are about to open. openPack() keeps
-								// whatever art is on screen, so the two do not fight.
+								// Rolled here so the player sees the pack front they will open.
 								packArtUrl: rollPackArt(get().selectedSet),
 								pack: null,
 								revealIndex: -1,

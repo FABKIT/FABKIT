@@ -489,10 +489,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 		...initialState,
 		setCardType: (cardType: CardType, variant: CardVariant | null) =>
 			set((state) => {
-				// From here on, use `cardVariant` — the cleaned-up NEW variant — and
-				// never `state.CardVariant`, which is the OLD one. Using the old one
-				// would, for example, check Normal Equipment's field list while
-				// switching to an Evo variant and wipe the user's Pitch and Cost.
+				// Use the normalised new variant here, never state.CardVariant (the old one).
 				const cardVariant = normalizeVariant(cardType, variant);
 
 				// When selecting a new card type, make sure that either:

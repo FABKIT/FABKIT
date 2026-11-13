@@ -4,9 +4,7 @@ import { CELEBRATION_Z } from "@fabkit/apps/pack-opener/config/scene";
 import { usePrefersReducedMotion } from "@fabkit/apps/pack-opener/hooks/usePrefersReducedMotion";
 import { Sparkles } from "@react-three/drei";
 
-/** Layered just behind the shared celebration depth — see
- * CELEBRATION_Z in config/scene.ts for the render-queue reason every
- * effect back here has to respect. */
+/** Just behind the shared celebration depth; see CELEBRATION_Z. */
 const SPARKLE_Z = CELEBRATION_Z - 0.05;
 
 /** Particles behind the card for a genuinely rare pull.

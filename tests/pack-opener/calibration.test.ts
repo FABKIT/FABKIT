@@ -6,26 +6,15 @@ import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
 import { mulberry32 } from "@fabkit/shared/random";
 
 /**
- * Frequency calibration: for every config derived from a set's published
- * *frequency* numbers (rather than a literal slot count), simulate a large
- * number of packs and assert the observed rate of each rarity matches what LSS
- * actually published, within a stated tolerance. This is the only defence
- * against a plausible-looking config that is quietly wrong.
- *
- * N = 200,000 packs per set. Tolerance is +-20% of the published rate,
- * generous enough not to be flaky (most of these rates are well above
- * zero, so sampling noise at this N is small relative to 20%) but tight
- * enough to catch a real derivation error — a mistake in the four-step
- * method (see set-configs.ts's per-set comments) typically shifts a rate
- * by 2x or more, not by a few percent.
+ * Frequency calibration: simulate N packs per set and assert each rarity's observed
+ * rate matches the published rate within TOLERANCE. Published rates and their
+ * sources live in pack/published-rates.ts.
  */
 
 const N = 200_000;
 const TOLERANCE = 0.2;
 
-/** One seeded simulation per set, counted once per rarity. Every assertion in
- * this file reads from the same run, which is what it was already measuring
- * (the seed never changed), without paying for 200,000 packs per rarity. */
+/** One seeded simulation per set; every assertion reads from the same run. */
 const histograms = new Map<string, Map<CardRarity, number>>();
 
 function histogramFor(setCode: string): Map<CardRarity, number> {
@@ -54,11 +43,7 @@ function expectRate(setCode: string, rarity: CardRarity, published: number) {
 }
 
 describe("frequency calibration", () => {
-	// Welcome to Rathe: collectors-centre states Rare 1.75/pack, Super Rare
-	// 1/6, Majestic 1/12, Legendary 1/96 — see set-configs.ts's WTR comment
-	// for how Legendary (folded entirely into the Equipment slot) and the
-	// others (population-weighted across the 2 rare-or-higher slots) were
-	// derived from these numbers.
+	// Published rates live in pack/published-rates.ts.
 	it("Welcome to Rathe matches its published rates", () => {
 		expectRate("WTR", "rare", 1.75);
 		expectRate("WTR", "superrare", 1 / 6);
@@ -66,7 +51,6 @@ describe("frequency calibration", () => {
 		expectRate("WTR", "legendary", 1 / 96);
 	});
 
-	// Arcane Rising: identical published rates to Welcome to Rathe.
 	it("Arcane Rising matches its published rates", () => {
 		expectRate("ARC", "rare", 1.75);
 		expectRate("ARC", "superrare", 1 / 6);
@@ -74,31 +58,24 @@ describe("frequency calibration", () => {
 		expectRate("ARC", "legendary", 1 / 96);
 	});
 
-	// Crucible of War: Rare 1.75/pack, Majestic 1/4, Legendary 1/240.
 	it("Crucible of War matches its published rates", () => {
 		expectRate("CRU", "rare", 1.75);
 		expectRate("CRU", "majestic", 1 / 4);
 		expectRate("CRU", "legendary", 1 / 240);
 	});
 
-	// Monarch: Rare 1.75/pack, Majestic 1/4, Legendary 1/96.
 	it("Monarch matches its published rates", () => {
 		expectRate("MON", "rare", 1.75);
 		expectRate("MON", "majestic", 1 / 4);
 		expectRate("MON", "legendary", 1 / 96);
 	});
 
-	// Tales of Aria: Rare 1.75/pack, Majestic 1/4, Legendary 1/88.
 	it("Tales of Aria matches its published rates", () => {
 		expectRate("ELE", "rare", 1.75);
 		expectRate("ELE", "majestic", 1 / 4);
 		expectRate("ELE", "legendary", 1 / 88);
 	});
 
-	// Outsiders: collectors-centre gives Rare 1.75/pack, Majestic 1/5,
-	// Legendary 1/70 (Rainbow Foil) — see set-configs.ts's OUT comment for
-	// how the published "1-2 Rare or higher" range was resolved into
-	// these two slots.
 	it("Outsiders matches its published rates", () => {
 		expectRate("OUT", "rare", 1.75);
 		expectRate("OUT", "majestic", 1 / 5);
@@ -106,27 +83,20 @@ describe("frequency calibration", () => {
 		expectRate("OUT", "token", 1.75);
 	});
 
-	// Everfest: 1.65 Rare, 1 Majestic per 4 packs, 1 Legendary per 160,
-	// all three carried by the pack's two Rare-or-higher slots.
 	it("Everfest matches its published rates", () => {
 		expectRate("EVR", "rare", 1.65);
 		expectRate("EVR", "majestic", 1 / 4);
 		expectRate("EVR", "legendary", 1 / 160);
 	});
 
-	// History Pack 1: Majestic is published as "1 per 3.15 packs", the one
-	// set that states a Majestic rate to two decimals rather than as a
-	// round fraction. Fabled and Marvel are Black Label only, so neither is
-	// reachable from a booster and neither is asserted.
+	// Fabled and Marvel are Black Label only, so not asserted.
 	it("History Pack 1 matches its published rates", () => {
 		expectRate("1HP", "rare", 1.65);
 		expectRate("1HP", "majestic", 1 / 3.15);
 		expectRate("1HP", "legendary", 1 / 82);
 	});
 
-	// Uprising: Legendary is published twice, as Rainbow Foil 1 per 80 and
-	// Cold Foil 1 per 220. The engine draws the rarity once and applies
-	// foiling separately, so the Rainbow rate is the one to match.
+	// Legendary is published as Rainbow Foil 1 per 80 and Cold Foil 1 per 220; foiling is applied separately, so match Rainbow.
 	it("Uprising matches its published rates", () => {
 		expectRate("UPR", "rare", 1.75);
 		expectRate("UPR", "majestic", 1 / 4);
@@ -146,9 +116,7 @@ describe("frequency calibration", () => {
 		expectRate("DTD", "legendary", 1 / 64);
 	});
 
-	// Bright Lights: the same shape as the Heavy Hitters family but the one
-	// set of that generation whose page publishes no Premium Foil
-	// breakdown, so its Legendary rate is the only rate that slot carries.
+	// No Premium Foil breakdown published, so Legendary is the only rate that slot carries.
 	it("Bright Lights matches its published rates", () => {
 		expectRate("EVO", "rare", 1.68);
 		expectRate("EVO", "majestic", 1 / 4);
@@ -156,10 +124,7 @@ describe("frequency calibration", () => {
 		expectRate("EVO", "token", 1.8);
 	});
 
-	// Heavy Hitters, Part the Mistveil, Rosetta and The Hunted publish the
-	// same base and Premium Foil blocks, differing only in the Token rate
-	// (and in whether Marvel has a published number). A pack holds one of
-	// each block, so a rarity listed in both is asserted as the sum.
+	// Same base and premium blocks, differing in Token rate; rarities in both blocks are asserted as the sum.
 	const hvyFamily: Array<[string, number]> = [
 		["HVY", 1.85],
 		["MST", 1.84],
@@ -176,13 +141,7 @@ describe("frequency calibration", () => {
 		});
 	}
 
-	// Heavy Hitters and Part the Mistveil are the only two of that family
-	// to publish a Marvel rate; Rosetta and The Hunted print "1 per ???"
-	// and carry the estimate instead, which is not a published figure and
-	// so is deliberately not asserted here.
-	// Every set whose Marvel rate LSS has published. The rest carry
-	// ESTIMATED_MARVEL_CHANCE, which is not a published figure and so is
-	// deliberately not asserted anywhere.
+	// Only published Marvel rates are asserted; the rest use ESTIMATED_MARVEL_CHANCE.
 	it("the published Marvel rates are matched", () => {
 		expectRate("HVY", "marvel", 1 / 192);
 		expectRate("MST", "marvel", 1 / 100);
@@ -193,9 +152,6 @@ describe("frequency calibration", () => {
 		expectRate("OUT", "marvel", 1 / 390);
 	});
 
-	// Compendium of Rathe. Its Collectors Centre breakdown renders behind
-	// JavaScript tabs and was read off the live page by hand rather than
-	// scraped, which is why this set arrived after the rest.
 	it("Compendium of Rathe matches its published rates", () => {
 		expectRate("PEN", "common", 5 + 18 / 24);
 		expectRate("PEN", "rare", 2.55 + 5 / 24);
@@ -204,10 +160,7 @@ describe("frequency calibration", () => {
 		expectRate("PEN", "marvel", 1 / 96);
 	});
 
-	// Omens of the Third Age, same provenance. Majestic here is the sum of
-	// the two published Majestic content rates (Set 1 per 8, Expansion
-	// 1 per 7) plus the premium slot's 1 per 42: this set publishes no
-	// standalone Majestic rate of its own.
+	// Majestic is Set + Expansion + premium: no standalone rate is published.
 	it("Omens of the Third Age matches its published rates", () => {
 		expectRate("OMN", "common", 11 + 18 / 24);
 		expectRate("OMN", "rare", 1.88 + 5.5 / 24);
@@ -216,13 +169,7 @@ describe("frequency calibration", () => {
 		expectRate("OMN", "basic", 1.8);
 	});
 
-	// Usurp the Shadow Throne. This set has no Collectors Centre page of its
-	// own yet (see set-configs.ts's USURP_THE_SHADOW_THRONE comment), so its config runs on
-	// Omens of the Third Age's rates, borrowed. This test therefore guards
-	// the derivation against Omens' own numbers — the same expectations as
-	// the block above — not against a published truth of this set's own.
-	// Replace these expectations with IAR's real figures the day its
-	// Collectors Centre page goes live.
+	// IAR has no Collectors Centre page yet and borrows Omens' rates, so this guards the derivation only.
 	it("Usurp the Shadow Throne matches its borrowed (Omens) rates", () => {
 		expectRate("IAR", "common", 11 + 18 / 24);
 		expectRate("IAR", "rare", 1.88 + 5.5 / 24);
@@ -231,27 +178,16 @@ describe("frequency calibration", () => {
 		expectRate("IAR", "basic", 1.8);
 	});
 
-	// Super Slam. Majestic is not asserted: its base breakdown lists 42
-	// Majestics with no rate at all, and the only published Majestic rate
-	// is the Premium Foil slot's 1 per 22. The set's Set and Expansion content
-	// (1 per 8 and 1 per 6) is Majestic rarity in the card data,
-	// so the engine's Majestic total is those two plus the premium rate,
-	// and there is no single published number to compare it against.
+	// Majestic here is Set + Expansion + premium; no single published figure covers it, so it is asserted below as observed.
 	it("Super Slam matches its published rates", () => {
 		expectRate("SUP", "rare", 1.42 + 4 / 24);
 		expectRate("SUP", "superrare", 1 / 2.18 + 1 / 13);
 		expectRate("SUP", "legendary", 1 / 94);
-		// Observed rather than published: about 10 Majestics per 24-pack
-		// display. See set-configs.ts's SUP comment.
+		// Observed, not published.
 		expectRate("SUP", "majestic", 10 / 24);
 	});
 
-	// High Seas: the first set modelled entirely from its Collectors Centre
-	// page, base block plus the Premium Foil slot's own breakdown. A pack
-	// holds one of each, so the published rate for a rarity listed in both
-	// is the sum of the two — see set-configs.ts's SEA comment for why that
-	// second block is read as one card's distribution rather than as extra
-	// pack-wide rates. Fabled is not asserted because it is not published.
+	// A pack holds one card of the premium block, so rarities in both blocks are asserted as the sum.
 	it("High Seas matches its published rates", () => {
 		expectRate("SEA", "common", 11 + 18 / 24);
 		expectRate("SEA", "rare", 1.83 + 5 / 24);
@@ -261,14 +197,7 @@ describe("frequency calibration", () => {
 	});
 });
 
-/**
- * The pull-rates dialog and the session summary don't simulate — they read
- * pack/pull-rates.ts's expectedRarityCounts, which works the weights
- * out analytically. Nothing checked that the analytic path agrees with the
- * engine that actually deals the cards, so a config could be right in the
- * dialog and wrong in the pack, or the reverse. This closes that gap for
- * every set at once.
- */
+/** The analytic expectedRarityCounts (pull-rates dialog, session summary) must agree with the engine. */
 describe("expected counts agree with the engine", () => {
 	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
 		it(`${code}'s stated expectations match what it deals`, () => {
@@ -288,18 +217,9 @@ describe("expected counts agree with the engine", () => {
 });
 
 /**
- * Compendium of Rathe - Antiquity Pack. The only product here whose source
- * is LSS's own "Estimated Rarity Breakdown" (their wording), Marvel 1 per 800, Fabled 1 per 45,
- * Legendary 1 per 20, Majestic 1 per pack across its regular and Cold Foil
- * halves, and a 10-card Rare slot at 1 per pack.
- *
- * The Rare slot is the one figure that cannot be asserted as published.
- * LSS counts all 10 of those cards as "Rare"; the upstream data files 6 of
- * them as Common, and the pack generator deals by the rarity the data
- * carries. So the published "1 per pack" is checked across both rarities
- * together, which is the same claim measured the only way this engine can
- * express it. It is a hair under 1 because Legendary is folded into this
- * slot — see set-configs.ts's ANTIQUITY_PACK for why it lives here.
+ * Antiquity Pack: LSS's "Estimated Rarity Breakdown". LSS counts all 10 cards of
+ * its Rare slot as Rare but the data files 6 as Common, so that slot is asserted
+ * across both rarities together.
  */
 describe("Antiquity Pack", () => {
 	it("matches its published rarity breakdown", () => {
@@ -325,14 +245,8 @@ describe("Antiquity Pack", () => {
 });
 
 /**
- * Fabled is, for every set but the Antiquity Pack above, a rarity with no
- * published rate anywhere: every Collectors Centre page prints
- * "1 per ??? packs" for it. It is set at half
- * the set's own Marvel chance (pack/published-rates.ts's
- * FABLED_SHARE_OF_MARVEL) so a set's single rarest card stays reachable
- * instead of being unpullable, which is what it was before. There is
- * nothing published to calibrate against, so this asserts the rule rather
- * than a source: that it is drawn at all, and at half of Marvel.
+ * Fabled has no published rate (pages print "1 per ??? packs"), so this asserts
+ * the rule: it is dealt, at half the set's Marvel chance.
  */
 describe("Fabled", () => {
 	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
@@ -344,9 +258,7 @@ describe("Fabled", () => {
 		});
 	}
 
-	// The two sets that must never deal one: History Pack 1's Fabled cards
-	// are Black Label product rather than booster content, and Compendium
-	// of Rathe prints none at all.
+	// 1HP's Fabled cards are Black Label only; Compendium of Rathe prints none.
 	it("is never dealt by the two sets whose boosters have none", () => {
 		expect(simulateRatePerPack("1HP", "fabled")).toBe(0);
 		expect(simulateRatePerPack("PEN", "fabled")).toBe(0);

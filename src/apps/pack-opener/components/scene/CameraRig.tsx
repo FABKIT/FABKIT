@@ -11,8 +11,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import { Vector3 } from "three";
 
-/** Fixed per phase, with no per-card dolly-in: a good pull earns a glow behind
- * the card instead of a camera move (see cards/celebration-tier.ts). */
+/** Fixed per phase; a good pull gets a glow, not a camera move. */
 function targetForPhase(phase: PackOpenerPhase): [number, number, number] {
 	if (phase === "tearing") return TEARING_CAMERA_POSITION;
 	if (phase === "done") return DONE_CAMERA_POSITION;
@@ -37,14 +36,7 @@ export function CameraRig() {
 				: 0;
 		target.current.set(x, y + idleBobY, z);
 
-		// Opening a pack is a scene change, not a continuation, so the camera
-		// jumps rather than eases into it. Easing meant that after "Open
-		// Another Pack" the new pack was first painted from the card's much
-		// closer viewing distance, appearing about a fifth larger than it
-		// belongs, then shrinking over the next half second. That read as the
-		// pack arriving and then being swapped for a different-sized one.
-		// Every other transition still eases, including the deliberate
-		// dolly-in from the torn pack to the first card.
+		// Pack open is a scene change: jump, don't ease.
 		const enteringTear = phase === "tearing" && previousPhase.current !== phase;
 		previousPhase.current = phase;
 		if (enteringTear) {

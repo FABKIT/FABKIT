@@ -10,29 +10,11 @@ import {
 import type { RawCard, RawPrinting } from "./raw-card-data";
 
 /**
- * Sets whose full card list has not reached the-fab-cube's card.json yet — a
- * new set is spoiled and pre-release-priced well before the-fab-cube carries
- * it. Usurp the Shadow Throne is the first case of this: as of writing,
- * card.json has 11 Marvel preview printings for it and set.json names it
- * "??? Set 20 ???" with no release date at all.
- *
- * fabrary maintains a spoiler-card spreadsheet that already has the whole
- * set — 263 cards, 516 printings, matching the product page's own "263 cards
- * in set", 515 of them with a TCGplayer id. It's compiled into the
- * `@flesh-and-blood/cards` npm package (pinned exactly in package.json —
- * pre-release data changes daily upstream, so bumping it is a deliberate
- * `bun update @flesh-and-blood/cards`, never a surprise). This bridge reads
- * that package for exactly the sets listed below and maps its schema onto
- * the same RawCard/RawPrinting shapes card.json already produces, so nothing
- * downstream of `buildSetPrintings` has to know the difference.
- *
- * It is deliberately self-retiring rather than a permanent second source:
- * bridgePrintings() below is only used while card.json's own printing count
- * for that code is still smaller than the bridge's. The moment the-fab-cube
- * adds the set for real, the build logs that the entry is no longer needed
- * and quietly stops using it — see the loop over this table in
- * build-pack-data.ts's main(). Removing the entry (and, eventually, the
- * dependency) at that point is housekeeping, not urgent.
+ * Sets whose full card list has not reached the-fab-cube's card.json yet.
+ * Reads the `@flesh-and-blood/cards` package (pinned exactly; bump
+ * deliberately) for the listed sets and maps it onto RawCard/RawPrinting.
+ * Self-retiring: bridgePrintings() is only used while card.json has fewer
+ * printings for the code; the build logs when an entry is no longer needed.
  */
 export const PRE_RELEASE_SETS: Record<
 	string,
@@ -42,19 +24,12 @@ export const PRE_RELEASE_SETS: Record<
 		release: BridgeRelease.UsurpTheShadowThrone,
 		// Must equal the tcgcsv group's own name (see resolveGroup).
 		name: "Usurp the Shadow Throne",
-		// LSS's Card Vault API agrees:
-		// api.cardvault.fabtcg.com/carddb/api/v1/product-cards/usurp-the-shadow-throne/
-		// gives "release_date":"2026-09-25". Without this override the set
-		// sorts by an empty release date, which — see the indexEntries sort
-		// in build-pack-data.ts — puts it FIRST among booster sets, ahead of
-		// Welcome to Rathe.
+		// Without a release date the set would sort first among booster sets.
 		releaseDate: "2026-09-25T00:00:00.000Z",
 	},
 };
 
-/** the-fab-cube's rarity.json codes, reversed from the bridged package's own
- * Rarity enum values (its strings match the-fab-cube's rarity names
- * exactly, e.g. "Super Rare", "Marvel"). */
+/** the-fab-cube's rarity.json codes, reversed from the bridged Rarity enum. */
 const BRIDGE_RARITY_TO_CODE: Record<string, string> = {
 	[BridgeRarity.Basic]: "B",
 	[BridgeRarity.Token]: "T",
@@ -77,9 +52,7 @@ const BRIDGE_FOILING_TO_CODE: Record<string, string> = {
 	[BridgeFoiling.Gold]: "G",
 };
 
-/** the-fab-cube's art-variation.json codes, reversed from the bridged
- * package's own Treatment enum (no "Half Size" member exists there; IAR
- * carries none, verified against the full 516-printing census). */
+/** the-fab-cube's art-variation.json codes, reversed from the bridged Treatment enum. */
 const BRIDGE_TREATMENT_TO_CODE: Record<string, string> = {
 	[BridgeTreatment.FA]: "FA",
 	[BridgeTreatment.EA]: "EA",
@@ -88,8 +61,7 @@ const BRIDGE_TREATMENT_TO_CODE: Record<string, string> = {
 	[BridgeTreatment.AT]: "AT",
 };
 
-/** One bridged printing, mapped onto the RawPrinting shape card.json
- * printings already carry — see PRE_RELEASE_SETS's own comment for why. */
+/** One bridged printing, mapped onto the RawPrinting shape. */
 function toBridgeRawPrinting(
 	printing: BridgePrinting,
 	setCode: string,
@@ -121,29 +93,19 @@ function toBridgeRawPrinting(
 		return code;
 	});
 	return {
-		// The printing's own collector id, e.g. "IAR206". NEVER
-		// printing.image: that's "IAR206-RF" for a Rainbow printing (foil-
-		// baked artwork), which would double up with this app's own foil
-		// shader — see printingImageUrl's comment in fab-printings.ts.
+		// Collector id, never printing.image (foil-baked art doubles up with our shader).
 		id: printing.identifier,
 		set_id: setCode,
 		rarity,
 		foiling,
-		// Single-run set; the bridged package leaves `edition` undefined
-		// for every IAR printing.
+		// Single-run set.
 		edition: "N",
 		expansion_slot: printing.isExpansionSlot ?? false,
 		tcgplayer_product_id: printing.tcgplayer?.productId ?? null,
-		// The bridged schema has no unique id of its own. `print` (e.g.
-		// "IAR159-Cold-Full Art") is distinct across every printing of a
-		// set — verified for all 516 IAR printings — and is only ever
-		// consumed as this build's own Cardmarket snapshot key, rebuilt
-		// fresh every run, so a synthetic id here is safe.
+		// No unique id in the bridged schema; `print` is distinct per printing.
 		unique_id: printing.print,
 		art_variations: artVariations,
-		// A bare slug ("IAR206", "IAR159-MV"), not a URL — build-pack-data.ts's
-		// toArtSlug tolerates that fine, since it only strips a path and
-		// extension neither of which are present.
+		// A bare slug, not a URL; toArtSlug tolerates that.
 		image_url: printing.image ?? null,
 		double_sided_card_info: printing.oppositeImage
 			? [
@@ -156,11 +118,8 @@ function toBridgeRawPrinting(
 	};
 }
 
-/** Builds one pre-release set's RawCard/RawPrinting lists from the bridged
- * package — see PRE_RELEASE_SETS's own comment. Only a card's printings
- * for THIS set are kept; the bridged package lists every reprint of a card
- * across every set it's been in (IAR reprints ~80 cards from earlier
- * sets), and those belong to their own set's pool, not this one's. */
+/** Builds one pre-release set's cards and printings. Only printings for THIS
+ * set are kept; reprints belong to their own set's pool. */
 export function bridgePrintings(
 	code: string,
 	entry: (typeof PRE_RELEASE_SETS)[string],
@@ -181,15 +140,8 @@ export function bridgePrintings(
 			cost: String(card.cost ?? ""),
 			power: String(card.power ?? ""),
 			defense: String(card.defense ?? ""),
-			// Flattened onto the-fab-cube's shape, which packs a card's class,
-			// talent and subtypes into the same one `types` array the rest of
-			// this script already reads (see isClassCard/hasType in
-			// fab-printings.ts). Generic is the bridged package's placeholder
-			// for "no class", and classless cards can also carry an undefined
-			// entry here, because the package's `classes` names an enum member
-			// the pinned types package no longer has. Neither is a real class
-			// name the-fab-cube would print, and isClassCard would crash on the
-			// undefined one.
+			// Flattened onto the-fab-cube's `types` shape. Generic and undefined
+			// class entries are dropped (isClassCard would crash on undefined).
 			types: [
 				...card.classes.filter((c) => c && c !== BridgeClass.Generic),
 				...(card.talents ?? []),

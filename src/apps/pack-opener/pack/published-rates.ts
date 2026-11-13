@@ -1,50 +1,22 @@
 /**
  * EVERY NUMBER THAT DECIDES WHAT COMES OUT OF A PACK.
  *
- * This file is meant to be edited by hand. Change a number here and the
- * app follows: `pack/set-configs.ts` turns these rates into the weights
- * the pack generator actually draws with, so there is no second place to
- * keep in sync.
+ * Edit rates here; `pack/set-configs.ts` turns them into the weights the
+ * generator draws with. Rates are per pack (`rare: 1.83` is 1.83 Rares a pack;
+ * `majestic: 1 / 4` is one every 4 packs). Write `1 / 4`, not `0.25`, so the
+ * source page stays checkable.
  *
- * ---------------------------------------------------------------------
- * HOW TO READ A RATE
- *
- * Almost everything here is "how many of this rarity come out of one
- * pack, on average".
- *
- *   rare: 1.83          means 1.83 Rares per pack
- *   majestic: 1 / 4     means one Majestic every 4 packs
- *   marvel: 1 / 60      means one Marvel every 60 packs
- *
- * Write `1 / 4`, not `0.25`. Both work, but the first is what the source
- * page says, so it stays checkable.
- *
- * ---------------------------------------------------------------------
- * WHERE THESE COME FROM
- *
- * Each set's rates are transcribed from its Collectors Centre page on
- * fabtcg.com. Each
- * entry below is tagged so you can tell sourced numbers from the rest:
+ * Rates come from each set's Collectors Centre page on fabtcg.com, tagged:
  *
  *   PUBLISHED  printed on the set's own page
  *   OBSERVED   counted from real product, not published by LSS
  *   ESTIMATED  no number exists anywhere; a documented guess
  *   POPULATION how many cards the set prints at a rarity, used only where
- *              LSS states which rarities a slot can hold but never how
- *              often each one comes up
+ *              LSS states which rarities a slot can hold but not how often
  *
- * ---------------------------------------------------------------------
- * WHAT HAPPENS IF YOU CHANGE ONE
- *
- * `tests/pack-opener/calibration.test.ts` opens 200,000 packs per set and
- * checks each rarity against the published figure, within 20%. If you
- * raise a rate past what that test expects, it fails and tells you which
- * set and rarity. That is working as intended: it means the app and this
- * file disagree, and one of them needs updating.
- *
- * Rates within one slot cannot add up to more than 1, because a slot
- * holds one card. Push them past that and the app throws at startup
- * naming the slot, rather than dealing a quietly wrong distribution.
+ * calibration.test.ts simulates packs and fails when the app and this file
+ * disagree. Rates within one slot cannot sum past 1; slotTable throws at
+ * startup naming the slot.
  */
 
 /** Chance, per pack, of a Marvel in a set that prints real Marvels but
@@ -53,12 +25,8 @@
  * median. */
 export const ESTIMATED_MARVEL_CHANCE = 1 / 100;
 
-/** Fabled's chance, per pack, as a share of the same set's Marvel chance.
- * ESTIMATED, and necessarily so: no set publishes a Fabled rate at all,
- * every page prints "1 per ??? packs". Half a Marvel's chance keeps a
- * set's single Fabled card the rarest thing it can deal while still
- * making it reachable, which is the point. A set with no Marvel rate of
- * its own gets half of ESTIMATED_MARVEL_CHANCE. */
+/** Fabled's chance per pack, as a share of the same set's Marvel chance.
+ * ESTIMATED: no set publishes a Fabled rate (pages print "1 per ??? packs"). */
 const FABLED_SHARE_OF_MARVEL = 0.5;
 
 /** A set's Fabled chance per pack, from its own Marvel chance. Sets that
@@ -71,17 +39,13 @@ export function fabledChanceFor(marvelChance: number): number {
 	return basis * FABLED_SHARE_OF_MARVEL;
 }
 
-/** How much of a set's Majestic rate is expansion-slot content, where the
- * set prints such cards and LSS publishes no separate rate for them.
- * Expansion-slot printings are Majestic rarity, so they come OUT of the
- * published Majestic rate rather than on top of it; only the split is
- * ours. Sets whose page DOES publish an expansion rate (Super Slam,
- * Omens) use that instead and ignore this. */
+/** Share of a set's Majestic rate that is expansion-slot content, where LSS
+ * publishes no separate rate. It comes out of the published Majestic rate, not on
+ * top of it. Super Slam and Omens publish their own and ignore this. */
 export const EXPANSION_SHARE_OF_MAJESTIC = 0.2;
 
-/** The standard published cold-foil rate: one per display, and every set
- * here confirms a display is 24 packs. Sets that publish a different one
- * (Everfest 1 per 16, Compendium of Rathe 1 per 8) state it themselves. */
+/** The standard cold-foil rate: one per display of 24 packs. Sets that state a
+ * different one (Everfest 1 per 16, Compendium of Rathe 1 per 8) use their own. */
 export const COLD_FOIL_PER_DISPLAY = 1 / 24;
 
 /** The base and Premium Foil rates that Heavy Hitters, Part the Mistveil,
@@ -99,9 +63,8 @@ export const HVY_FAMILY_RATES = {
 export const PUBLISHED_RATES = {
 	// -----------------------------------------------------------------
 	// Welcome to Rathe. PUBLISHED: Legendary 1 per 96, Majestic 1 per 12,
-	// Super Rare 1 per 6, Rare 1.75, Common 12, Token 1. Legendary sits
-	// in this set's Equipment slot; everything else in its two
-	// rare-or-higher slots, of which the first is a guaranteed Rare.
+	// Super Rare 1 per 6, Rare 1.75, Common 12, Token 1. Legendary sits in the
+	// Equipment slot.
 	WTR: {
 		superRare: 1 / 6,
 		majestic: 1 / 12,
@@ -149,15 +112,13 @@ export const PUBLISHED_RATES = {
 		coldFoil: 1 / 16,
 	},
 	// History Pack 1. PUBLISHED: Legendary 1 per 82, Majestic 1 per 3.15,
-	// Rare 1.65, Common 7. Its Fabled and Marvel cards are Black Label
-	// product only and cannot come out of a booster, which is why this is
-	// the one set with no marvel rate rather than an estimated one.
+	// Rare 1.65, Common 7. Its Fabled and Marvel cards are Black Label only, hence
+	// no marvel rate.
 	"1HP": {
 		rare: 1.65,
 		majestic: 1 / 3.15,
 		legendary: 1 / 82,
-		// This set's page lists no Cold Foil at all, and its Marvels are
-		// Black Label only. Both are zero on purpose, not by omission.
+		// No Cold Foil line on the page; Marvels are Black Label only.
 		coldFoil: 0,
 		marvel: 0,
 	},
@@ -250,15 +211,12 @@ export const PUBLISHED_RATES = {
 		premiumMarvel: 1 / 60,
 		coldFoil: 0,
 	},
-	// Super Slam. PUBLISHED: Set 1 per 8, Expansion 1 per 6, Super Rare
-	// 1 per 2.18, Rare 1.42, Common 11, Cold Foil 1 per 24, and a premium
-	// slot of Legendary 1 per 94, Majestic 1 per 22, Super Rare 1 per 13,
-	// Rare 4 per 24, Common 17 per 24.
-	// OBSERVED: about 10 Majestics per 24-pack display, i.e. 0.417 a
-	// pack in total. Its page gives no base Majestic rate, so this is the
-	// one rate in this file counted from real product rather than read
-	// off a page. ESTIMATED: Marvel, which its page never mentions
-	// despite the set printing 23 of them.
+	// Super Slam. PUBLISHED: Set 1 per 8, Expansion 1 per 6, Super Rare 1 per 2.18,
+	// Rare 1.42, Common 11, Cold Foil 1 per 24, and a premium slot of Legendary
+	// 1 per 94, Majestic 1 per 22, Super Rare 1 per 13, Rare 4 per 24, Common 17 per 24.
+	// OBSERVED: about 10 Majestics per 24-pack display (0.417 a pack in total); the
+	// page gives no base Majestic rate. ESTIMATED: Marvel, which the page never
+	// mentions.
 	SUP: {
 		rare: 1.42,
 		superRare: 1 / 2.18,
@@ -273,22 +231,14 @@ export const PUBLISHED_RATES = {
 		coldFoil: 1 / 24,
 	},
 
-	// -----------------------------------------------------------------
-	// Mastery Pack Guardian. Sourced from a product page rather than a
-	// Collectors Centre page, because it has no Collectors Centre page: LSS
-	// states which rarities each slot can hold but never how often. PUBLISHED
-	// configuration, 13 cards a pack:
-	//   Common 9 per pack / Rare or Majestic 1 per pack /
-	//   Equipment 1 per pack / Token 1 per pack /
-	//   Token or higher, Rainbow Foil or Cold Foil, 1 per pack
-	// PUBLISHED set composition: 3 Legendary, 16 Majestic, 30 Rare,
-	// 76 Common, 3 Token, 12 Marvel.
-	//
-	// POPULATION weights below carry the two slots whose split LSS does not
-	// give. ESTIMATED: Legendary, Marvel and Cold Foil, none of which this
-	// product publishes a rate for at all. Legendary takes the 1 per 96 that
-	// almost every set with a published Legendary rate uses, which is a
-	// borrowed figure, not this set's own.
+	// Mastery Pack Guardian. Sourced from a product page (no Collectors Centre page).
+	// PUBLISHED, 13 cards:
+	//   Common 9 / Rare or Majestic 1 / Equipment 1 / Token 1 /
+	//   Token or higher, Rainbow Foil or Cold Foil, 1
+	// PUBLISHED composition: 3 Legendary, 16 Majestic, 30 Rare, 76 Common, 3 Token,
+	// 12 Marvel.
+	// POPULATION: the two slots whose split LSS does not give. ESTIMATED: Legendary
+	// (the common 1 per 96), Marvel and Cold Foil.
 	MPG: {
 		popRare: 30,
 		popMajestic: 16,
@@ -299,30 +249,16 @@ export const PUBLISHED_RATES = {
 		coldFoil: COLD_FOIL_PER_DISPLAY,
 	},
 
-	// -----------------------------------------------------------------
-	// Mastery Pack Warrior. Like its Guardian sibling above, sourced from a
-	// product page rather than a Collectors Centre page, so LSS states what
-	// each slot can hold but not how often. PUBLISHED configuration, 13
-	// cards a pack, from fabtcg.com/products/product/mastery-pack-warrior/:
-	//   Common 8 per pack
-	//   Rare or Majestic 2 per pack (1 Rare + 1 Rare or Majestic)
-	//   Rainbow Foil 1 per pack
-	//   Basic 2 per pack (1 Basic + 1 Basic, Legendary, Cold Foil or Marvel)
-	// PUBLISHED set composition: 9 Marvel, 4 Legendary, 20 Majestic,
-	// 40 Rare, 80 Common, 10 Basic.
-	//
-	// POPULATION weights carry the two slots whose split LSS does not give:
-	// the second Rare-or-Majestic card, weighted by the set's own Rare and
-	// Majestic counts, and the Rainbow Foil card, weighted by how many
-	// Rainbow Foil printings this set actually has at each rarity. That
-	// second one is deliberately Common/Rare/Majestic only: Rainbow Foil
-	// Legendaries exist, but LSS lists Legendary as an outcome of the Basic
-	// slot, so putting it in both would deal it twice as often as stated.
-	//
-	// ESTIMATED: Legendary, Marvel and Cold Foil, none of which this product
-	// publishes a rate for. They take the same figures as Mastery Pack
-	// Guardian, which is the closest comparable product, rather than
-	// anything specific to this set.
+	// Mastery Pack Warrior. Sourced from a product page (no Collectors Centre page),
+	// from fabtcg.com/products/product/mastery-pack-warrior/. PUBLISHED, 13 cards:
+	//   Common 8 / Rare or Majestic 2 (1 Rare + 1 Rare or Majestic) /
+	//   Rainbow Foil 1 / Basic 2 (1 Basic + 1 Basic, Legendary, Cold Foil or Marvel)
+	// PUBLISHED composition: 9 Marvel, 4 Legendary, 20 Majestic, 40 Rare, 80 Common,
+	// 10 Basic.
+	// POPULATION: the second Rare-or-Majestic card (Rare/Majestic counts) and the
+	// Rainbow Foil card (Rainbow printings per rarity). The latter excludes Legendary,
+	// which LSS lists under the Basic slot; including it would deal it twice.
+	// ESTIMATED: Legendary, Marvel and Cold Foil, taken from Mastery Pack Guardian.
 	MPW: {
 		popRare: 40,
 		popMajestic: 20,
@@ -335,19 +271,13 @@ export const PUBLISHED_RATES = {
 	},
 
 	// -----------------------------------------------------------------
-	// GEM Packs 1 to 5. PUBLISHED configuration, from the GEM Pack FAQ,
-	// and the same for every pack in the line:
-	//   3 cards per pack: 1 regular print, 1 premium foil (Rainbow Foil,
-	//   Cold Foil or Marvel), 1 art card.
-	// The only products here with no rarity structure whatsoever: every
-	// GEM printing is Promo. So their slots are told apart by FOILING, and
-	// the only number to tune is how often the premium card is Cold Foil
-	// rather than Rainbow.
-	//
-	// POPULATION: LSS publishes no split for that, so each pack uses its
-	// OWN Cold-to-Rainbow printing count. A card-population share standing
-	// in for a pull rate, which is the best available here, but at least
-	// it is each product's own share rather than the whole line's.
+	// GEM Packs 1 to 5. PUBLISHED configuration (GEM Pack FAQ), the same for every pack:
+	//   3 cards: 1 regular print, 1 premium foil (Rainbow Foil, Cold Foil or Marvel),
+	//   1 art card.
+	// Every GEM printing is Promo, so slots differ by foiling and the only number to
+	// tune is how often the premium card is Cold Foil.
+	// POPULATION: each pack's own Cold-to-Rainbow printing count stands in for a rate
+	// LSS does not publish.
 	GEM1: { popRainbow: 22, popCold: 10 },
 	GEM2: { popRainbow: 26, popCold: 9 },
 	GEM3: { popRainbow: 28, popCold: 8 },
@@ -386,25 +316,10 @@ export const PUBLISHED_RATES = {
 		coldFoil: 1 / 24,
 	},
 
-	// Usurp the Shadow Throne. NOTHING HERE IS PUBLISHED FOR THIS SET YET.
-	// fabtcg.com/products/booster-set/iar/ publishes the pack structure —
-	// Common 11, Rare or Majestic 2 (1 Rare + 1 Rare or Majestic), Rainbow
-	// Foil 1, Basic 2 (1 Basic + 1 Basic/Expansion/Legendary/Marvel/
-	// Fabled), Cold Foil 1 per 24 replacing a Basic — and it is IDENTICAL
-	// to Omens of the Third Age's structure above. No Collectors Centre
-	// page exists as of 2026-09-15 (fabtcg.com/collectors-centre/iar/ and
-	// /collectors-centre/usurp-the-shadow-throne/ both 404), so there is no
-	// per-rarity rate to transcribe the way every other set here has one.
-	//
-	// Every value below is OMENS' OWN rate, copied rather than aliased so a
-	// future correction to one set can never silently move the other,
-	// borrowed on the strength of the identical structure plus a close set
-	// composition (this set: 133 Common / 66 Rare / 40 Majestic / 16 Basic
-	// / 5 Legendary / 2 Fabled / 27 Marvel, against Omens' 134 / 60 / 37 /
-	// 14 / 5 / 1). ESTIMATED, all of it. Replace with this set's own
-	// figures the day its Collectors Centre page goes live, and update
-	// tests/pack-opener/calibration.test.ts in the same commit — see
-	// set-configs.ts's USURP_THE_SHADOW_THRONE comment.
+	// Usurp the Shadow Throne. ESTIMATED: no Collectors Centre page exists yet, so
+	// every value is Omens of the Third Age's, copied (not aliased) because the pack
+	// structure is identical and the set composition is close. Replace with this
+	// set's own figures, and update calibration.test.ts, once it is published.
 	IAR: {
 		rare: 1.88,
 		basic: 1.8,
@@ -418,28 +333,14 @@ export const PUBLISHED_RATES = {
 	},
 
 	// -----------------------------------------------------------------
-	// Compendium of Rathe - Antiquity Pack. The 3-card bonus pack bundled
-	// one per Compendium of Rathe booster box. PUBLISHED by LSS as an
-	// "Estimated Rarity Breakdown", their own wording:
-	//   1 Marvel (1 per 800 packs)
-	//   3 Fabled (1 per 45 packs)
-	//   7 Legendary (1 per 20 packs)
-	//   17 Majestic: 17 Regular (7 per 8 packs), 17 Cold Foil (1 per 8)
-	//   10 Rare (1 per pack)
-	//   3 Puzzles, 9 cards per puzzle (1 per pack)
-	//
-	// THE PUZZLE SLOT IS NOT MODELLED, by product decision, and it could
-	// not be anyway: the 27 puzzle cards do not exist in the upstream card
-	// data under any set code, so there would be nothing to deal. Every
-	// other card above does exist — 1 + 3 + 7 + 17 + 17 + 10 is exactly the
-	// 55 printings upstream carries for this set. So this opens as a
-	// TWO-card pack, the real product minus a slot we have no cards for.
-	//
-	// That leaves Legendary without its home: LSS deals it out of the
-	// puzzle slot ("Rainbow Foil Puzzle Piece or Rainbow Foil Antiquity
-	// Legendary"). Folding it into the Rare slot instead keeps the number a
-	// player actually feels — one Legendary every 20 packs — which dropping
-	// it with the puzzles would not. See set-configs.ts's ANTIQUITY_PACK.
+	// Compendium of Rathe - Antiquity Pack (3-card bonus pack). PUBLISHED as LSS's
+	// "Estimated Rarity Breakdown":
+	//   1 Marvel (1 per 800) / 3 Fabled (1 per 45) / 7 Legendary (1 per 20) /
+	//   17 Majestic: Regular 7 per 8, Cold Foil 1 per 8 / 10 Rare (1 per pack) /
+	//   3 Puzzles (1 per pack)
+	// The puzzle slot is not modelled: its 27 cards are in no upstream data, so this
+	// opens as a two-card pack. Legendary, which LSS deals from the puzzle slot, is
+	// folded into the Rare slot (see set-configs.ts's ANTIQUITY_PACK).
 	ANQ: {
 		marvel: 1 / 800,
 		fabled: 1 / 45,

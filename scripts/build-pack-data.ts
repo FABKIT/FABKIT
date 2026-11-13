@@ -32,27 +32,15 @@ import {
  * Cardmarket's daily catalogue (scripts/cardmarket.ts). A browser cannot
  * fetch the price sources itself, so they ship as build-time snapshots.
  *
- * Output (gitignored — build output, not source, see .gitignore):
- *   public/data/pack-opener/sets/<CODE>.json    one file per included set
- *   public/data/pack-opener/prices/<CODE>.json  one file per set with a
- *                                                resolved tcgcsv group
- *   public/data/pack-opener/prices-cm/<CODE>.json  the same in euros, from
- *                                                Cardmarket (see
- *                                                scripts/cardmarket.ts)
- *   public/data/pack-opener/index.json          set list + metadata
+ * Output (gitignored build output) under public/data/pack-opener/:
+ *   sets/<CODE>.json, prices/<CODE>.json (tcgcsv), prices-cm/<CODE>.json
+ *   (Cardmarket, euros), index.json (set list + metadata).
  *
- * This script is safe to run locally any time: `bun run build-pack-data`. A
- * fresh checkout without ever having run it just has no pack-opener data
- * yet, and the app degrades rather than breaks (a set with no price file
- * shows no prices, never zeros).
+ * Safe to run any time: `bun run build-pack-data`. Without data the app
+ * degrades (a set with no price file shows no prices).
  */
 
-/**
- * All four files come from the-fab-cube's develop branch, its default. Its
- * main branch lags well behind: when this was checked, main had 34 of
- * Mastery Pack Warrior's 156 cards and no TCGplayer ids for them, while
- * develop had all 156.
- */
+/** All four files come from the-fab-cube's develop branch; main lags behind. */
 const FAB_CUBE_JSON_PATH = "json/english";
 const FAB_CUBE_RAW_BASE = `https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/${FAB_CUBE_JSON_PATH}`;
 
@@ -66,13 +54,8 @@ const OUTPUT_DIR = join("public", "data", "pack-opener");
  * above) — see the README in that folder for the spec to upload to. */
 const PACK_ART_DIR = join("public", "img", "pack-opener", "packs");
 
-/** Numbered pack-front artworks for one set, in order, as public URLs —
- * or an empty array when nothing's been uploaded for it yet (the normal
- * case for most sets today; see fab-printings.ts's SetIndexEntry.packArt
- * for how the app degrades when this is empty). Stops at the first gap in
- * the numbering rather than requiring a strict contiguous set, so a
- * mis-numbered upload degrades to "fewer artworks found" instead of
- * silently discarding everything after the gap. */
+/** Numbered pack-front artworks for one set, in order, as public URLs; empty
+ * when none are uploaded. Stops at the first gap in the numbering. */
 async function resolvePackArt(code: string): Promise<string[]> {
 	let entries: string[];
 	try {
@@ -94,28 +77,11 @@ async function resolvePackArt(code: string): Promise<string[]> {
 	return urls;
 }
 
-/** Upstream sets that are really SEVERAL products sharing one set code,
- * and how to cut them apart.
- *
- * the-fab-cube files every GEM Pack card under the single set "GEM", but
- * GEM Packs ship one per booster set, each with its own wrapper art, its
- * own card list and its own TCGplayer group. Treating them as one pool
- * would deal a Pack 1 card out of a Pack 5 wrapper, so each becomes its
- * own app-level set instead, cut by collector number.
- *
- * The ranges come from LSS's own Card Vault API, which lists each pack's
- * contents exactly:
- *   https://api.cardvault.fabtcg.com/carddb/api/v1/product-cards/gem-pack-1/
- * They are hardcoded rather than fetched at build time on purpose. A new
- * GEM Pack needs a wrapper-art folder and a pack configuration before it
- * can ship anyway, so fetching would save none of the work that actually
- * blocks one, and it would put a third external service in front of a
- * build that already gates CI. What stands in for the fetch is the check
- * in splitOutputSets() below: the build fails loudly the moment upstream
- * has printings this table does not account for.
- *
- * Names must match the TCGplayer group name, since that is how prices are
- * resolved — see resolveGroup in tcgcsv.ts. */
+/** Upstream sets that are several products under one code (GEM Packs), cut
+ * by collector number. Ranges come from LSS's Card Vault API
+ * (https://api.cardvault.fabtcg.com/carddb/api/v1/product-cards/gem-pack-1/).
+ * splitOutputSets() fails the build if upstream has printings not covered
+ * here. Names must match the TCGplayer group name (see resolveGroup). */
 const SET_SPLITS: Record<
 	string,
 	ReadonlyArray<{
@@ -254,13 +220,8 @@ function splitOutputSets(
  * PACK_ART_DIR above: drop a file in, rebuild, done. */
 const SET_LOGO_DIR = join("public", "img", "pack-opener", "logos");
 
-/** The logo to show for one set: a checked-in file if there is one, and
- * otherwise whatever the card data carries.
- *
- * Local wins on purpose. The common case is a set the data has no logo
- * for at all (Compendium of Rathe, all five GEM Packs), but the same
- * folder then doubles as the fix for a logo that exists upstream and is
- * simply wrong or unusable, with no code change needed either way. */
+/** The logo for one set: a checked-in file wins (fixes missing or unusable
+ * upstream logos with no code change), else the card data's. */
 async function resolveSetLogo(
 	code: string,
 	upstreamLogo: string | null,
@@ -296,11 +257,8 @@ interface RawSet {
 	printings: RawSetPrinting[];
 }
 
-/** Builds a code -> value lookup from the-fab-cube's own rarity.json /
- * foiling.json. Throwing here (rather than falling back to some default) is
- * deliberate: if upstream ever adds a rarity or foiling code this doesn't
- * know how to map, that must fail the build loudly rather than silently
- * mis-map or drop printings. */
+/** Builds a code -> value lookup from the-fab-cube's rarity.json / foiling.json.
+ * Throws on unmapped upstream codes so the build fails loudly. */
 function buildLookup<T extends string>(
 	entries: RawLookupEntry[],
 	valuesByCode: Record<string, T>,
@@ -352,12 +310,7 @@ function toPitch(value: string): 1 | 2 | 3 | null {
 	return parsed === 1 || parsed === 2 || parsed === 3 ? parsed : null;
 }
 
-/** The basename of a printing's real artwork filename, extension stripped
- * — e.g. ".../SEA001-MV.webp" gives "SEA001-MV". Null when the upstream
- * data has no image_url for this printing at all (not observed for any
- * Marvel printing as of this writing, but handled rather than assumed).
- * See fab-printings.ts's printingImageUrl for why only Marvel printings
- * ever actually use this value instead of the printing's own `id`. */
+/** Basename of a printing's artwork filename, extension stripped (".../SEA001-MV.webp" gives "SEA001-MV"). Null when upstream has no image_url. See printingImageUrl in fab-printings.ts. */
 function toArtSlug(imageUrl: string | null | undefined): string | null {
 	if (!imageUrl) return null;
 	const filename = imageUrl.split("/").pop();
@@ -376,51 +329,25 @@ interface SetMeta {
 const BACK_SUFFIX = "_BACK";
 
 /**
- * Whether this artwork is the back of a physical card. card.json lists the two
- * sides of a card as two printings, which share a collector number and,
- * from the same physical card, a TCGplayer product. Left in, a card with
- * two sides would be two rows in its pool and be dealt twice as often as a
- * card with one.
- *
- * Read off the artwork filename because is_front cannot be trusted:
- * Dusk till Dawn's DTD164 has it the wrong way round. is_DFC cannot decide
- * this either, since it is false on the many Marvel heroes that carry art
- * on both sides of one card (HNT003-MV and HNT003-MV_BACK).
+ * Whether this artwork is the back of a physical card. Both sides are listed
+ * as printings sharing a collector number; left in, a two-sided card would be
+ * dealt twice as often. Read off the artwork filename because is_front is
+ * unreliable and is_DFC is false on Marvel heroes with art on both sides.
  */
 function isBackFace(artSlug: string | null): artSlug is string {
 	return artSlug?.endsWith(BACK_SUFFIX) ?? false;
 }
 
 /**
- * The slug the OTHER side of a card renders from, or null when there is
- * nothing to turn it over to.
+ * The slug the other side of a card renders from, or null when there is none.
  *
- * is_DFC is the gate for ordinary printings, and it is not a formality. Most
- * printings carrying double_sided_card_info set it to false: they are
- * separate cards that merely share a print sheet, so Welcome to Rathe's
- * WTR040 "Anothos" lists WTR077 "Katsu", WTR113 "Dorinthea Ironsong" and
- * WTR225 "Quicken" as related printings. Taking the first entry regardless
- * would have offered players a flip to a completely unrelated card.
+ * Ordinary printings need is_DFC: most printings with double_sided_card_info
+ * are separate cards sharing a print sheet. The slug is this printing's own
+ * front slug plus "_BACK" (both faces share a collector number, and reading
+ * the other face's image_url would pull in foil-baked art).
  *
- * For those the slug is this printing's OWN front slug plus "_BACK", not the
- * other face's id. Both faces of a real double-faced card share one
- * collector number (DTD005 is both sides of Suraya), so using the other
- * face's id would have returned the front's own slug and shown the same
- * picture twice.
- *
- * Deriving it from the front slug rather than reading the other printing's
- * image_url also inherits printingImageUrl's rule for free (see
- * fab-printings.ts): plain collector id for everything, artSlug only for
- * Marvel. Reading the other face's own image_url would have pulled in
- * foil-baked artwork for foil printings, which doubles up with this app's
- * own foil shader.
- *
- * A Marvel with art on both sides but is_DFC false uses its back row's own
- * slug instead, which isBackFace has dropped from the pool, so this is the
- * only way left to see that art. Usually that is the front slug plus the
- * suffix, but not always (HVY093-MV's back is HVY093_MARVEL_BACK), so the
- * row's own link is tried first. A link has to stay on the same collector
- * number: as above, it can otherwise name a different card off the sheet.
+ * A Marvel with art on both sides but is_DFC false uses its back row's linked
+ * slug, only if it stays on the same collector number.
  */
 function backSlugFor(
 	raw: RawPrinting,
@@ -564,13 +491,8 @@ function buildSetPrintings(
 					`No parent card found for printing ${raw.id} (${raw.unique_id})`,
 				);
 			}
-			// An upstream printing can carry an empty foiling or rarity string
-			// rather than a real code — a data-entry gap, not a new code this
-			// script doesn't know about. None do as of this writing, but one
-			// such slip upstream must not stop every deploy. Drop just that
-			// printing rather than failing the whole build; a genuinely new
-			// non-empty code still throws below, which is the real "unmapped
-			// code" case.
+			// An empty foiling or rarity is an upstream data-entry gap: skip the
+			// printing. A new non-empty code still throws below.
 			if (!raw.foiling || !raw.rarity) {
 				console.warn(
 					`  Skipping ${raw.id}: missing rarity or foiling code in upstream data ` +
@@ -682,10 +604,7 @@ async function main() {
 	console.log(`${cards.length} cards, ${sets.length} set entries.`);
 
 	const printingsBySetCode = new Map<string, RawPrinting[]>();
-	// Keyed by unique_id, because a collector id can't identify a card: both
-	// sides of a double-faced card share one (MST095 is "A Drop in the Ocean"
-	// and "Inner Chi"), so keying on it gave whichever face was read last's
-	// name and stats to both.
+	// Keyed by unique_id: both sides of a double-faced card share a collector id.
 	const cardByUniqueId = new Map<string, RawCard>();
 	for (const card of cards) {
 		for (const printing of card.printings) {
@@ -892,10 +811,7 @@ async function main() {
 	}
 
 	indexEntries.sort((a, b) => {
-		// Mainline booster sets first, then the supplementary products.
-		// Release order alone put Mastery Pack Guardian between High Seas
-		// and Super Slam, where a 13-card single-class product reads as just
-		// another booster set.
+		// Booster sets first, then supplementary products.
 		if (a.productKind !== b.productKind) {
 			return a.productKind === "booster-set" ? -1 : 1;
 		}
@@ -903,11 +819,8 @@ async function main() {
 		if (a.productKind === "booster-set") {
 			return (a.releaseDate ?? "").localeCompare(b.releaseDate ?? "");
 		}
-		// The supplementary products go by NAME instead, so that a product
-		// LINE stays together: GEM Packs 1 to 5 ship alongside the booster
-		// sets, so release order would deal them out one at a time between
-		// the Mastery Packs. Numeric collation so GEM Pack 10 lands after
-		// GEM Pack 9 rather than after GEM Pack 1.
+		// Supplementary products go by name so a product line stays together;
+		// numeric collation puts GEM Pack 10 after 9.
 		return a.name.localeCompare(b.name, "en", { numeric: true });
 	});
 

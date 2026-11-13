@@ -24,9 +24,7 @@ const BURST_PERIOD_MS = 2400;
  * rather than a continuous fountain. */
 const BURST_ACTIVE = 0.72;
 
-/** Layered just behind the shared celebration depth — see
- * CELEBRATION_Z in config/scene.ts for the render-queue reason every
- * effect back here has to respect. */
+/** Just behind the shared celebration depth; see CELEBRATION_Z. */
 const FIREWORKS_Z = CELEBRATION_Z - 0.07;
 
 const GRAVITY = 1.5;
@@ -66,10 +64,7 @@ function buildShells(spec: FireworksSpec): Shell[] {
 function FireworksPoints({ spec }: { spec: FireworksSpec }) {
 	const material = useRef<PointsMaterial>(null);
 
-	// Fixed per mount, so only the animation replays each cycle and the fireworks
-	// stay recognisably the same display rather than reshuffling every 2.4
-	// seconds. Memoised for that stability, not for speed: the frame callback
-	// below writes into this exact buffer.
+	// Fixed per mount so the display stays recognisably the same each cycle.
 	const shells = useMemo(() => buildShells(spec), [spec]);
 	const geometry = useMemo(() => {
 		const total = spec.shells * spec.perShell;
@@ -109,9 +104,7 @@ function FireworksPoints({ spec }: { spec: FireworksSpec }) {
 						GRAVITY * t * t * 0.5;
 					array[write + 2] = shell.velocities[i * 3 + 2] * t;
 				} else {
-					// Parked far behind the camera's view rather than left at
-					// their last position, so a spent shell shows nothing at
-					// all instead of a frozen ring.
+					// Parked out of view so a spent shell shows nothing.
 					array[write] = 0;
 					array[write + 1] = 0;
 					array[write + 2] = -999;
@@ -121,8 +114,7 @@ function FireworksPoints({ spec }: { spec: FireworksSpec }) {
 		}
 
 		attribute.needsUpdate = true;
-		// Fades as the shells burn out, so the loop breathes rather than
-		// pulsing at constant brightness.
+		// Fades as the shells burn out.
 		material.current.opacity = 0.25 + 0.75 * brightest;
 	});
 
@@ -142,20 +134,9 @@ function FireworksPoints({ spec }: { spec: FireworksSpec }) {
 	);
 }
 
-/** Bursting fireworks behind the card for the rarest pulls.
- *
- * Deliberately a different shape of motion from PullSparkles, which drifts
- * and twinkles in place. These launch from a point, fly outward, arc under
- * gravity and fade, then go again. That difference is the whole point: a
- * Legendary should read as a bigger event than a Majestic at a glance,
- * rather than as the same effect with the dial turned up.
- *
- * Timed off the wall clock modulo the cycle length, so a remount picks the loop
- * up where it actually is instead of restarting it, the invariant this app's
- * CLAUDE.md sets out.
- *
- * Nothing renders under prefers-reduced-motion: a firework has no meaningful
- * still frame, and the glow behind the card marks the pull on its own. */
+/** Fireworks behind the card for the rarest pulls: launch, arc under gravity,
+ * fade, repeat. Timed off the wall clock so a remount resumes. Nothing under
+ * reduced motion. */
 export function LegendaryFireworks({ tier }: { tier: CelebrationTier }) {
 	const reducedMotion = usePrefersReducedMotion();
 	const spec = CELEBRATION_BY_TIER[tier].fireworks;

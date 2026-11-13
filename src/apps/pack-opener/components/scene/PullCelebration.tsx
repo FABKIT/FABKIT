@@ -22,12 +22,9 @@ interface PullCelebrationProps {
 	phaseStartedAt: number | null;
 }
 
-/** A soft glow behind the active card for a good pull, instead of moving the
- * camera in: the card getting physically bigger wasn't necessary, and it never
- * celebrated a plain Majestic or Legendary that happened not to be foil. A single
- * additive plane, tinted per tier, with one animated scale and opacity value
- * driving the bloom-in. Far cheaper than a particle system, so it holds up on
- * weak devices.
+/** A soft glow behind the active card for a good pull: a single additive
+ * plane, tinted per tier, with one animated scale and opacity driving the
+ * bloom-in.
  *
  * Reduced motion: no animated bloom, just a fixed, modestly-sized presence, the
  * same posture as the foil's static sheen. */

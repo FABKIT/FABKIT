@@ -2,18 +2,9 @@ import { CARD_BACK_URL } from "@fabkit/apps/pack-opener/config/scene";
 import { SRGBColorSpace, type Texture, TextureLoader } from "three";
 
 /**
- * Loads textures from URLs without depending on Suspense. A handful of real
- * printings list a collector id whose art never made it to content.fabrary.net,
- * and a 404 there throws from inside three.js's own `<img>` onerror handler,
- * which fires outside React's render call stack and so can never be caught by a
- * React error boundary. drei's Suspense-based `useTexture` hits exactly this:
- * the throw bubbles past react-three-fiber's own internal boundary and crashes
- * the whole route, not just the one card. This reports the failure instead, so
- * the caller can fall back for just that one image.
- *
- * Successful loads and failures are both cached by URL, so a card seen twice (the
- * active card, then again as OutgoingCard, or a ledger revisit) never re-requests
- * it. A session can open hundreds of packs though, so the cache is bounded (see
+ * Loads textures from URLs without Suspense, reporting failure instead of
+ * throwing (a 404 in drei's useTexture throws outside React and crashes the
+ * route). Loads and failures are cached by URL; the cache is bounded (see
  * trimSafeTextureCache) and failures are forgiven (see clearFailedTextureUrls).
  */
 
@@ -24,14 +15,8 @@ const failedUrls = new Set<string>();
 const inFlight = new Map<string, Promise<void>>();
 const loader = new TextureLoader();
 
-/** The single place a texture is loaded, so a preload and a mounted card asking
- * for the same URL share one download and one Texture.
- *
- * sRGB is set here, once, rather than left to whichever material sees the texture
- * first. r3f only sets it when a texture is passed as a built-in material's `map`,
- * and the upload's format depends on it, so a texture that reached the foil shader
- * first was stuck without it for good, and a plain copy of the same card looked
- * washed out, or a foil copy too dark, depending on the order they were seen. */
+/** The single place a texture is loaded (shared by preloads and mounted
+ * cards). sRGB is set here because the upload format depends on it. */
 export function ensureLoading(url: string): Promise<void> {
 	const pending = inFlight.get(url);
 	if (pending) return pending;
@@ -83,9 +68,8 @@ export function preloadSafeTexture(url: string): void {
 }
 
 /** Frees the GPU memory and decoded image of all but the `keep` most recently
- * used textures. A card uses roughly 1.5MB of GPU memory and a long session sees
- * thousands of them. The card back is always kept: it's the stand-in for
- * everything else that isn't ready, including after a failure.
+ * used textures. The card back is always kept: it's the stand-in for anything
+ * not ready, including after a failure.
  *
  * Disposing a texture that is still on screen only costs a re-upload, and a
  * mounted useSafeTexture reloads anything evicted from under it. */
