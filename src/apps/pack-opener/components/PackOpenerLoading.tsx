@@ -18,7 +18,7 @@ export function PackOpenerLoading() {
 			role="status"
 			className="flex h-[calc(100dvh-4rem)] w-full flex-col items-center justify-center gap-10 bg-surface px-4 lg:h-dvh"
 		>
-			<div className="relative h-56 w-40">
+			<div aria-hidden="true" className="relative h-56 w-40">
 				{STACK_TILTS.map((tilt, index) => {
 					const isTop = index === STACK_TILTS.length - 1;
 					return (
