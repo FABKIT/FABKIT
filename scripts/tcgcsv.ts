@@ -12,10 +12,14 @@ const TCGCSV_BASE = `https://tcgcsv.com/tcgplayer/${TCGCSV_CATEGORY_ID}`;
 /** tcgcsv rejects requests with no identifying User-Agent. */
 const TCGCSV_USER_AGENT = `FABKIT/${process.env.APP_VERSION ?? "dev"} (+https://github.com/FABKIT/FABKIT)`;
 
-function fetchTcgcsv<T>(path: string): Promise<T> {
-	return fetch(`${TCGCSV_BASE}${path}`, {
+async function fetchTcgcsv<T>(path: string): Promise<T> {
+	const response = await fetch(`${TCGCSV_BASE}${path}`, {
 		headers: { "User-Agent": TCGCSV_USER_AGENT },
-	}).then((r) => r.json());
+	});
+	if (!response.ok) {
+		throw new Error(`tcgcsv ${path} responded ${response.status}`);
+	}
+	return response.json();
 }
 
 export interface TcgcsvGroup {

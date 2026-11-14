@@ -44,8 +44,12 @@ import {
 const FAB_CUBE_JSON_PATH = "json/english";
 const FAB_CUBE_RAW_BASE = `https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/develop/${FAB_CUBE_JSON_PATH}`;
 
-function readFabCubeJson<T>(fileName: string): Promise<T> {
-	return fetch(`${FAB_CUBE_RAW_BASE}/${fileName}`).then((r) => r.json());
+async function readFabCubeJson<T>(fileName: string): Promise<T> {
+	const response = await fetch(`${FAB_CUBE_RAW_BASE}/${fileName}`);
+	if (!response.ok) {
+		throw new Error(`the-fab-cube ${fileName} responded ${response.status}`);
+	}
+	return response.json();
 }
 
 const OUTPUT_DIR = join("public", "data", "pack-opener");

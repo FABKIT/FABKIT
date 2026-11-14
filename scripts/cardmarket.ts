@@ -117,18 +117,21 @@ export interface CardmarketCatalog {
 	priceByProduct: Map<number, number>;
 }
 
+async function readCardmarketJson<T>(url: string): Promise<T> {
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`Cardmarket ${url} responded ${response.status}`);
+	}
+	return response.json();
+}
+
 export async function fetchCardmarketCatalog(): Promise<CardmarketCatalog> {
 	const [productFile, sealedFile, priceFile] = await Promise.all([
-		fetch(PRODUCTS_URL).then((r) => r.json()) as Promise<{
-			createdAt: string;
-			products: CmProduct[];
-		}>,
-		fetch(SEALED_URL).then((r) => r.json()) as Promise<{
-			products: CmProduct[];
-		}>,
-		fetch(PRICES_URL).then((r) => r.json()) as Promise<{
-			priceGuides: CmPriceRow[];
-		}>,
+		readCardmarketJson<{ createdAt: string; products: CmProduct[] }>(
+			PRODUCTS_URL,
+		),
+		readCardmarketJson<{ products: CmProduct[] }>(SEALED_URL),
+		readCardmarketJson<{ priceGuides: CmPriceRow[] }>(PRICES_URL),
 	]);
 
 	const metacardsByCard = new Map<string, Set<number>>();
