@@ -28,9 +28,15 @@ FABKIT is a community-driven toolkit for Flesh and Blood TCG players. It is a mu
 - **Gallery View**: Browse all your saved cards with thumbnail previews
 - **Import/Export**: Export cards as `.fabkit` files (JSON with embedded artwork) and re-import them via drag-and-drop or file picker
 
-### Fabble _(coming soon)_
+### Fabble
 
-- A new tool for the FAB community — currently scaffolded and in early development.
+- A Flesh and Blood card guessing game, with standard, endless and chaos modes.
+
+### Pack Opener
+
+- A 3D booster pack simulator: tear open a pack and pull real cards at each set's rates
+- Cold Foil, Rainbow Foil and Marvel treatments, with USD and EUR prices for what you pull
+- Session stats across every pack you open
 
 ### Key Highlights
 
@@ -53,6 +59,9 @@ cd FABKIT
 
 # Install dependencies
 bun install
+
+# Download the Pack Opener's card and price data (needed for that app and its tests)
+bun run build-pack-data
 
 # Start development server
 bun dev

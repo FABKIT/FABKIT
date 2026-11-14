@@ -1,0 +1,106 @@
+import { describe, expect, it } from "bun:test";
+import { REAL_SET_PACK_CONFIGS } from "@fabkit/apps/pack-opener/pack/set-configs";
+import type { CardRarity } from "@fabkit/shared/config/cards/rarities";
+import type { FabSetPrintings } from "@fabkit/shared/data/fab-printings";
+import { hasType, isClassCard } from "@fabkit/shared/data/fab-printings";
+import { hasPackData, readGeneratedSet } from "./pack-data";
+
+/**
+ * Hard gate: every rarity a real set's PackConfig can draw must actually be
+ * fillable from that set's own real printing pool. A config that declares a
+ * slot LSS's own pool can't fill silently falls back to placeholder art
+ * mid-pack — this test exists so that fails the build instead.
+ *
+ * Reads the generated per-set JSON directly from disk (see pack-data.ts).
+ * Requires `bun run build-pack-data` to have been run first (wired into
+ * CI ahead of the Test step — see .github/workflows/ci.yml); skipped with a
+ * message locally when it hasn't, see pack-data.ts.
+ */
+
+function poolSize(
+	data: FabSetPrintings,
+	rarity: CardRarity,
+	expansionSlot: boolean,
+	requiresType: string | undefined,
+	classRestricted: boolean | undefined,
+): number {
+	return data.printings.filter((p) => {
+		if (p.rarity !== rarity) return false;
+		if (p.expansionSlot !== expansionSlot) return false;
+		if (requiresType && !hasType(p, requiresType)) return false;
+		if (classRestricted !== undefined && isClassCard(p) !== classRestricted) {
+			return false;
+		}
+		return true;
+	}).length;
+}
+
+describe.skipIf(!hasPackData())("pool viability", () => {
+	for (const [code, config] of Object.entries(REAL_SET_PACK_CONFIGS)) {
+		describe(code, () => {
+			const data = readGeneratedSet(code);
+
+			it("every declared rarity/expansion-slot combination has a non-empty real pool", () => {
+				const empty: string[] = [];
+				for (const slot of config.slots) {
+					for (const entry of slot.rarityTable) {
+						const size = poolSize(
+							data,
+							entry.rarity,
+							Boolean(entry.expansionSlot),
+							entry.requiresType,
+							entry.classRestricted,
+						);
+						if (size === 0) {
+							empty.push(
+								`slot "${slot.kind}" -> rarity "${entry.rarity}"` +
+									(entry.expansionSlot ? " (expansion slot)" : "") +
+									(entry.requiresType
+										? ` (type "${entry.requiresType}")`
+										: "") +
+									(entry.classRestricted !== undefined
+										? ` (classRestricted=${entry.classRestricted})`
+										: ""),
+							);
+						}
+					}
+				}
+				expect(empty).toEqual([]);
+			});
+
+			/**
+			 * marvelChance and fabledChance are pack-level rolls applied to
+			 * the premium slot's draw, so neither appears in any
+			 * rarityTable and the check above cannot see them. A nonzero
+			 * chance on a set that prints none of that rarity would deal a
+			 * card with no pool behind it, which is exactly what this whole
+			 * file exists to stop. History Pack 1's Fabled and Marvel cards
+			 * are Black Label product and Compendium of Rathe prints no
+			 * Fabled at all; both are 0 for that reason, and this is what
+			 * keeps them that way.
+			 */
+			it("its pack-level Marvel and Fabled rolls have a pool behind them", () => {
+				const unbacked: string[] = [];
+				const rolls = [
+					["marvel", config.marvelChance],
+					["fabled", config.fabledChance],
+				] as const;
+				for (const [rarity, chance] of rolls) {
+					if (chance <= 0) continue;
+					if (poolSize(data, rarity, false, undefined, undefined) > 0) {
+						continue;
+					}
+					unbacked.push(
+						`${rarity}Chance is ${chance} but this set prints no ${rarity}`,
+					);
+				}
+				expect(unbacked).toEqual([]);
+			});
+
+			it("its declared slot counts sum to its own cardsPerPack", () => {
+				const sum = config.slots.reduce((total, slot) => total + slot.count, 0);
+				expect(sum).toBe(config.cardsPerPack);
+			});
+		});
+	}
+});

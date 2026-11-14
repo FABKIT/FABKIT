@@ -12,6 +12,9 @@ cd FABKIT
 # Install dependencies
 bun install
 
+# Download the Pack Opener's card and price data (needed for that app and its tests)
+bun run build-pack-data
+
 # Start development server
 bun dev
 

@@ -6,6 +6,10 @@ on:
   release:
     types: [published]
 
+  # Nightly price refresh of the latest release, after the price sources update
+  schedule:
+    - cron: "0 3 * * *"
+
   # Allows you to run this workflow manually from the Actions tab (dev builds)
   workflow_dispatch:
     inputs:
@@ -19,21 +23,53 @@ permissions:
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   # Single deploy job since we're just deploying
   deploy:
+    # Skip the nightly refresh on forks, which have no releases
+    if: ${{ github.event_name != 'schedule' || github.repository == 'FABKIT/FABKIT' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve ref and version (release)
+        if: ${{ github.event_name == 'release' }}
+        id: version_release
+        run: |
+          echo "ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve ref and version (schedule)
+        if: ${{ github.event_name == 'schedule' }}
+        id: version_schedule
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name)"
+          if [ -z "$tag" ]; then
+            echo "No published release to refresh; nothing to deploy." >&2
+            exit 1
+          fi
+          echo "ref=$tag" >> "$GITHUB_OUTPUT"
+          echo "value=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve ref and version (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: version_dispatch
+        run: |
+          echo "ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
+          echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.version_release.outputs.ref || steps.version_schedule.outputs.ref || steps.version_dispatch.outputs.ref }}
 
       - name: Remove placeholder cardbacks
         if: ${{ startsWith(github.repository, 'FABKIT/') }}
@@ -55,29 +91,25 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Resolve version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            echo "value=$(echo '${{ github.ref_name }}' | sed 's/^v//')" >> $GITHUB_OUTPUT
-          else
-            echo "value=${{ inputs.version }}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Update PWA assets
         run: bun run scripts/update-pwa-assets
+
+      - name: Update pack opener data
+        env:
+          APP_VERSION: ${{ steps.version_release.outputs.value || steps.version_schedule.outputs.value || steps.version_dispatch.outputs.value }}
+        run: bun run build-pack-data
 
       - name: Build (Production)
         if: ${{ github.repository == 'FABKIT/FABKIT' }}
         env:
-          APP_VERSION: ${{ steps.version.outputs.value }}
+          APP_VERSION: ${{ steps.version_release.outputs.value || steps.version_schedule.outputs.value || steps.version_dispatch.outputs.value }}
           VITE_UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
         run: bun run build
 
       - name: Build (Staging)
         if: ${{ github.repository != 'FABKIT/FABKIT' }}
         env:
-          APP_VERSION: ${{ steps.version.outputs.value }}
+          APP_VERSION: ${{ steps.version_release.outputs.value || steps.version_schedule.outputs.value || steps.version_dispatch.outputs.value }}
         run: bun run build -- --mode staging
 
       - name: Setup Pages

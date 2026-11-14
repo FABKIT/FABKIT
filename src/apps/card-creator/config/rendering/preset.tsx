@@ -521,18 +521,8 @@ export const NormalFlatTokenRenderConfigPreset = {
 };
 
 /**
- * Evo equipment (Action Equipment / Instant Equipment, the "evo_head" /
- * "evo_base_head" / etc. subtypes). Unlike every other equipment-ish preset,
- * this does NOT spread from NormalFlatEquipmentRenderConfigPreset — an Evo
- * card has a pitch gem and cost pip, just like a plain action card, and the
- * equipment preset's wider title exists specifically because equipment has
- * neither. So this spreads from the base action/instant layout instead.
- *
- * Values below are measured directly off the real Evo frame art
- * (EVO_1_Flat.png, 450x628 — the same size as this viewBox) against
- * FABKIT's own normal_flat frame. CardName, clips.Title,
- * CardResource and CardRarity are inherited unchanged — measured identical
- * on both frames.
+ * Evo equipment: spreads from the action layout (it has a pitch gem and cost
+ * pip); values measured off the Evo frame art.
  */
 export const NormalFlatEvoRenderConfigPreset = {
 	...NormalFlatRenderConfigPreset,
@@ -571,9 +561,9 @@ export const NormalFlatEvoRenderConfigPreset = {
 		},
 		CardBottomText: {
 			...NormalFlatRenderConfigPreset.elements.CardBottomText,
-			x: 186, // centre of the new 30..342 band (was 225.25)
+			x: 186, // centre of the 30..342 band
 			y: 575.4,
-			maxWidth: 259, // was 223 — longest real type line is
+			maxWidth: 259, // longest real type line is
 			// "Mechanologist Instant Equipment - Evo Base Arms"
 		},
 		// Defense socket measured ⌀43 centred at (404, 570), against the
@@ -587,7 +577,7 @@ export const NormalFlatEvoRenderConfigPreset = {
 		},
 		CardDefenseText: {
 			...NormalFlatRenderConfigPreset.elements.CardDefenseText,
-			x: 365, // centre of the 342..383 gap (was 375 for the action frame)
+			x: 365, // centre of the 342..383 gap
 			y: 574,
 			fontSize: 19.7,
 		},

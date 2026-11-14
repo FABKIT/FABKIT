@@ -1,6 +1,11 @@
-export function Fabble({ className }: { className?: string }) {
+export function Fabble({ className, ...rest }: React.SVGProps<SVGSVGElement>) {
 	return (
-		<svg className={className} viewBox="0 0 239.4141 239.4141" role="img">
+		<svg
+			className={className}
+			viewBox="0 0 239.4141 239.4141"
+			role="img"
+			{...rest}
+		>
 			<title>Fabble</title>
 			<circle
 				cx="119.7071"

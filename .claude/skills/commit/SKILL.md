@@ -101,6 +101,7 @@ Optional body — only if the change is non-obvious or has important context.
 | `platform`     | `src/platform/`                                                       |
 | `shared`       | `src/shared/`                                                         |
 | `fabble`       | `src/apps/fabble/`                                                    |
+| `pack-opener`  | `src/apps/pack-opener/`, `src/routes/pack-opener.tsx`                 |
 | `i18n`         | `src/platform/i18n/`, `src/apps/*/i18n/`                              |
 | `routing`      | `src/routes/` (general routing changes)                               |
 | `ui`           | `src/platform/components/form/`, `src/platform/components/layout/`    |

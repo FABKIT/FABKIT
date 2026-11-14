@@ -7,7 +7,12 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!public"]
+		"includes": [
+			"**",
+			"!public",
+			"!AGENTS.md",
+			"!.claude/skills/review/SKILL.md"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -16,12 +21,21 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"preset": "recommended",
-			"correctness": {
-				"noInvalidGridAreas": "off"
-			}
+			"preset": "recommended"
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["src/apps/pack-opener/components/scene/**"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"noStaticElementInteractions": "off"
+					}
+				}
+			}
+		}
+	],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"

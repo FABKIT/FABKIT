@@ -1,0 +1,137 @@
+{
+	"common": {
+		"close": "Close"
+	},
+	"loading": {
+		"label": "Getting the packs ready",
+		"card_back": "Flesh and Blood card back"
+	},
+	"unavailable": {
+		"title": "The Pack Opener needs a connection",
+		"description": "It downloads its cards the first time you open it. Connect to the internet and try again. After that, it opens offline too.",
+		"retry": "Try again"
+	},
+	"beta_notice": {
+		"title": "The Pack Opener is still in beta.",
+		"body": "Pack odds and prices are estimates based on public sources, so don't take them as the whole truth or as financial advice. This is mostly here for fun.",
+		"dismiss": "Dismiss this notice"
+	},
+	"page": {
+		"title": "Pack Opener",
+		"tap_to_tear": "Tap the pack to tear it open",
+		"tap_to_reveal": "Tap to reveal the next card",
+		"open_another": "Next Pack",
+		"summary_title": "Your pulls in this booster",
+		"packs_opened_session": "Packs opened this session: {{count}}",
+		"marvel_badge": "Marvel",
+		"see_back": "See backside",
+		"see_front": "See front",
+		"treatment_name": {
+			"rainbow": "Rainbow Foil",
+			"cold": "Cold Foil",
+			"gold-cold": "Gold Cold Foil"
+		},
+		"price_unavailable": "Not priced yet",
+		"value_pulled_label": "Value of cards pulled",
+		"pack_price_label": "This pack's price",
+		"partial_total_note": "Some cards aren't priced yet"
+	},
+	"carousel": {
+		"previous_set": "Previous set",
+		"next_set": "Next set",
+		"set_info_button": "Pull rates and pack contents",
+		"group_booster_sets": "Booster sets",
+		"group_other_products": "Other products",
+		"choose_set_label": "Choose a set",
+		"leave_pack_title": "Leave this pack?",
+		"leave_pack_body": "You have not finished opening this pack. If you switch sets now, this pack is discarded and will not count towards your session stats.",
+		"leave_pack_confirm": "Switch set",
+		"leave_pack_cancel": "Keep opening"
+	},
+	"dialog": {
+		"cards_per_pack_title": "Cards per pack",
+		"cards_per_pack_with_token_one": "{{cards}} (+ {{count}} token)",
+		"cards_per_pack_with_token_other": "{{cards}} (+ {{count}} tokens)",
+		"cards_per_pack_note": "The printed pack counts the cards only. Legend Story Studios counts the token too, which is why their product page says {{total}}.",
+		"pull_rates_title": "Pull rates",
+		"rate_odds": "About 1 in {{odds}} packs",
+		"estimate_title": "Disclaimer: these odds are estimates",
+		"estimate_body_sourced": "Legend Story Studios publishes odds for most booster sets, but not for every rarity or product. Where no official number exists, we estimate: most Fabled rates are half of the set's Marvel rate, several Marvel rates are estimated, Usurp the Shadow Throne borrows the rates of Omens of the Third Age, and Mastery Packs and GEM Packs rely partly on card counts. Treat these tables as estimates, not official figures.",
+		"estimate_body_not_real": "Because of that, opening packs here will not behave exactly like opening real packs. Treat it as a simulation for fun, not as an actual guide to what a real booster box will give you.",
+		"estimate_body_not_advice": "The prices shown are past market data, not a valuation, and nothing here is financial or investment advice. Verify the prices by yourself and please do not solely use this app to decide what to buy.",
+		"estimate_body_feedback": "If you know the real published rates for a set and our odds look wrong, get in touch with us on our Discord. We'd love to get it right.",
+		"pack_contents_title": "Pack contents",
+		"cold_foil_note": "Cold Foil: roughly 1 in {{odds}} packs",
+		"price_title": "Current prices",
+		"pack_price_label": "Booster pack",
+		"box_price_label": "Booster box",
+		"price_captured": "Prices captured {{date}}",
+		"price_source": "Market prices come from TCGplayer, collected through tcgcsv.com.",
+		"price_source_cm": "Market prices come from Cardmarket's daily price guide.",
+		"source_link": "See the official product page",
+		"treatment": {
+			"rainbow": "usually Rainbow Foil",
+			"cold": "guaranteed Cold Foil",
+			"gold-cold": "guaranteed Gold Cold Foil"
+		},
+		"slot": {
+			"common": "Common",
+			"guaranteed-rare-plus": "Guaranteed Rare or better",
+			"premium-foil": "Premium Foil",
+			"basic-or-token": "Basic or Token",
+			"rare": "Rare",
+			"rare-or-majestic": "Rare or Majestic",
+			"rare-or-super-rare-plus": "Rare, Super Rare, or better",
+			"token": "Token",
+			"token-or-wildcard": "Token or Wildcard",
+			"basic": "Basic",
+			"basic-or-wildcard": "Basic or Wildcard",
+			"generic-common": "Generic Common",
+			"class-common": "Class Common",
+			"equipment": "Equipment",
+			"promo": "Promo card",
+			"majestic": "Majestic"
+		},
+		"slot_line": "{{amount}} × {{label}}",
+		"slot_rarities_treatment": "{{rarities}}, {{treatment}}"
+	},
+	"stats": {
+		"open_button": "Session stats",
+		"title": "This session",
+		"empty": "Open a pack to start tracking your session.",
+		"packs_opened_label": "Packs opened",
+		"value_title": "Value this session",
+		"spent_label": "Spent on packs",
+		"packs_opened_for_set": "{{count}} opened",
+		"pull_line": "{{pulled}} · {{percent}}%",
+		"pull_line_with_expected": "{{pulled}} · {{percent}}% (expected {{expected}}%)"
+	},
+	"card": {
+		"unavailable": "Card unavailable",
+		"loading": "Loading card art",
+		"rarity": {
+			"basic": "Basic",
+			"common": "Common",
+			"rare": "Rare",
+			"superrare": "Super Rare",
+			"majestic": "Majestic",
+			"legendary": "Legendary",
+			"fabled": "Fabled",
+			"token": "Token",
+			"promo": "Promo",
+			"marvel": "Marvel"
+		}
+	},
+	"currency": {
+		"switch_to_eur": "Show prices in euros (Cardmarket)",
+		"switch_to_usd": "Show prices in dollars (TCGplayer)"
+	},
+	"reset": {
+		"open_button": "Reset this session",
+		"title": "Reset this session?",
+		"body_one": "This clears the {{count}} pack you have opened and the totals that go with it, and starts you again at pack one. There is no way to get it back.",
+		"body_other": "This clears the {{count}} packs you have opened and the totals that go with them, and starts you again at pack one. There is no way to get them back.",
+		"confirm": "Reset session",
+		"cancel": "Keep my session"
+	}
+}

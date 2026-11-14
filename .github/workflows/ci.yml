@@ -23,6 +23,9 @@ jobs:
       - name: Lint
         run: bun run lint
 
+      - name: Build pack data
+        run: bun run build-pack-data
+
       - name: Test
         run: bun test tests/
 

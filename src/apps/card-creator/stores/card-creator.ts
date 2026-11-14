@@ -489,10 +489,7 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 		...initialState,
 		setCardType: (cardType: CardType, variant: CardVariant | null) =>
 			set((state) => {
-				// From here on, use `cardVariant` — the cleaned-up NEW variant — and
-				// never `state.CardVariant`, which is the OLD one. Using the old one
-				// would, for example, check Normal Equipment's field list while
-				// switching to an Evo variant and wipe the user's Pitch and Cost.
+				// Use the normalised new variant here, never state.CardVariant (the old one).
 				const cardVariant = normalizeVariant(cardType, variant);
 
 				// When selecting a new card type, make sure that either:
@@ -652,12 +649,8 @@ export const useCardCreator = create<CardCreatorState & CardCreatorActions>()(
 			}),
 		setCardBackStyle: (backType: CardStyle) =>
 			set((state) => {
-				// Unlike setCardType, this action used to replace CardBack
-				// UNCONDITIONALLY with no validity check at all — meaning toggling
-				// flat/dented always evicted a custom frame (and any missing-frame
-				// placeholder) even when the current selection was still fine. Now:
-				// carry a sticky placeholder forward first, then only re-suggest when
-				// the current selection isn't actually valid for the new style.
+				// Carry a sticky placeholder forward first, then only re-suggest when
+				// the current selection isn't valid for the new style.
 				const available = getAvailableCardBacks(
 					getCustomFramesSnapshot(),
 					state.CardType,
