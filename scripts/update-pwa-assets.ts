@@ -188,7 +188,4 @@ async function main() {
 	console.log("✨ Done!");
 }
 
-main().catch((error) => {
-	console.error("❌ Error:", error);
-	process.exit(1);
-});
+await main();
