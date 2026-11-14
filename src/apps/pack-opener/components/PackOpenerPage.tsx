@@ -1,19 +1,23 @@
 import { BetaNotice } from "@fabkit/apps/pack-opener/components/BetaNotice";
 import { SetCarousel } from "@fabkit/apps/pack-opener/components/carousel/SetCarousel";
 import { CardLoadingIndicator } from "@fabkit/apps/pack-opener/components/hud/CardLoadingIndicator";
+import { CardStepButton } from "@fabkit/apps/pack-opener/components/hud/CardStepButton";
 import { PackSummary } from "@fabkit/apps/pack-opener/components/hud/PackSummary";
 import { RevealCaption } from "@fabkit/apps/pack-opener/components/hud/RevealCaption";
 import { PackOpenerCanvas } from "@fabkit/apps/pack-opener/components/scene/PackOpenerCanvas";
+import { useCardBrowsing } from "@fabkit/apps/pack-opener/hooks/useCardBrowsing";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { useTranslation } from "react-i18next";
 
 /**
  * Set picker, canvas, caption slot, summary: all in flow at fixed heights except the
- * canvas, so it never changes size between phases. Only CardLoadingIndicator floats over it.
+ * canvas, so it never changes size between phases. Only CardLoadingIndicator floats over
+ * the card; from `md` up the card step buttons sit in the empty canvas at its sides.
  */
 export function PackOpenerPage() {
 	const { t } = useTranslation("pack-opener");
 	const phase = usePackOpenerStore((state) => state.phase);
+	const cardBrowsing = useCardBrowsing();
 
 	// Phases showing a card, versus the pack.
 	const showsCard = phase === "revealing" || phase === "done";
@@ -24,7 +28,13 @@ export function PackOpenerPage() {
 			<BetaNotice />
 			{/* In flow above the canvas so the set picker can't sit on top of a card. */}
 			<SetCarousel />
-			<div className="relative min-h-0 flex-1">
+			{/* A size container, so the step buttons can be placed off the card's
+			    width, which follows this box's height (the camera's field of view
+			    is vertical). */}
+			<div
+				className="relative min-h-0 flex-1 [container-type:size]"
+				{...cardBrowsing}
+			>
 				{/* Soft pool of light behind the card. */}
 				<div
 					aria-hidden="true"
@@ -32,11 +42,25 @@ export function PackOpenerPage() {
 				/>
 				<PackOpenerCanvas />
 				<CardLoadingIndicator />
+				{/* The card is 34cqh to each side of centre; the rest is the button
+				    and a gap that clears the card's tilt. */}
+				<CardStepButton
+					offset={-1}
+					className="absolute top-1/2 left-[max(0.5rem,calc(50%_-_34cqh_-_4.5rem))] hidden size-11 -translate-y-1/2 md:grid"
+				/>
+				<CardStepButton
+					offset={1}
+					className="absolute top-1/2 right-[max(0.5rem,calc(50%_-_34cqh_-_4.5rem))] hidden size-11 -translate-y-1/2 md:grid"
+				/>
 			</div>
 			{/* One fixed height in every phase, so the canvas never resizes. */}
-			<div className="flex h-19 shrink-0 items-center justify-center px-4 text-center">
+			<div className="flex h-19 shrink-0 items-center justify-center gap-2 px-4 text-center">
 				{showsCard ? (
-					<RevealCaption />
+					<>
+						<CardStepButton offset={-1} className="grid size-10 md:hidden" />
+						<RevealCaption />
+						<CardStepButton offset={1} className="grid size-10 md:hidden" />
+					</>
 				) : (
 					<p className="animate-pulse text-lg font-medium text-heading drop-shadow">
 						{t("page.tap_to_tear")}

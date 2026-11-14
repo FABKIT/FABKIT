@@ -28,9 +28,10 @@ import type {
 	DrawnCard,
 	PackConfig,
 } from "@fabkit/apps/pack-opener/pack/types";
-import type {
-	PackOpenerActions,
-	PackOpenerState,
+import {
+	type PackOpenerActions,
+	type PackOpenerState,
+	selectActiveIndex,
 } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { trackEvent } from "@fabkit/platform/analytics";
 import {
@@ -127,7 +128,12 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					// A failed image gets another chance with each new pack, so a brief
 					// network drop doesn't cost a card its art for the whole session.
 					clearFailedTextureUrls();
-					const pack = orderForReveal(generatePack(packConfig));
+					// Sorted by the rarity each card will show as; the set's printings
+					// are loaded by now (see openPack).
+					const pack = orderForReveal(
+						generatePack(packConfig),
+						(card) => resolveCard(card, packConfig.id).rarity,
+					);
 					preloadPackTextures(pack, packConfig.id, 0, preloadLookaheadCount());
 					set(
 						{
@@ -376,6 +382,11 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 							undefined,
 							"pack-opener/revisitCard",
 						);
+					},
+
+					stepCard(offset) {
+						const state = get();
+						get().revisitCard(selectActiveIndex(state) + offset);
 					},
 				};
 			},

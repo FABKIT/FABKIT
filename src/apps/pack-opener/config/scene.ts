@@ -33,6 +33,10 @@ export const PACK_TILT_MAX_DEG = 8;
  * gestures end up feeling different for no reason. */
 export const SWIPE_THRESHOLD_PX = 40;
 
+/** Minimum gap between two cards stepped by the scroll wheel while browsing a
+ * finished pack (hooks/useCardBrowsing.ts). */
+export const WHEEL_STEP_COOLDOWN_MS = 250;
+
 /** How far behind the card celebration effects sit. Additive effects (glow,
  * sparkles, fireworks) draw in the transparent queue after the opaque card
  * whatever their renderOrder, so they must clear the card's tilt excursion

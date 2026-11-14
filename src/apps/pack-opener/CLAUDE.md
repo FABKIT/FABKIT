@@ -19,7 +19,8 @@ src/apps/pack-opener/
     PackOpenerPage, PackOpenerLoading, PackOpenerUnavailable, shared dialogs and price bits
     carousel/ The set picker and the set info dialog
     hud/      2D chrome below the canvas (caption, summary, ledger, session controls).
-              CardLoadingIndicator is the one overlay on the canvas
+              CardLoadingIndicator is the one overlay on the card; from `md` up the
+              CardStepButtons sit in the empty canvas beside it
     scene/    react-three-fiber scene: canvas, camera, pack, cards, celebration effects,
               materials/foilMaterial.ts, textures/
   config/     scene.ts (timing, sizes, CELEBRATION_Z), celebration.ts, known-sets.ts
@@ -31,7 +32,10 @@ src/apps/pack-opener/
 `idle -> tearing -> revealing(index) -> done`, owned by `stores/pack-opener.ts`. The store's
 `phaseStartedAt` is the single source of animation timing: every `useFrame` timer reads it,
 and 3D components and the HUD are pure readers. `openPack()` waits for the set's printings
-if they aren't cached yet, so every surface resolves the same cards. Switching set or
+if they aren't cached yet, so every surface resolves the same cards, and so the pack can
+be sorted by the rarities those cards show (`pack/reveal-order.ts`). In `done` the pack can
+be browsed card by card (`hooks/useCardBrowsing.ts`), which takes over the arrow keys from
+the set carousel. Switching set or
 resetting cancels that wait. The selected set, currency and beta notice dismissal are saved with the store's
 persist middleware, never through localStorage directly.
 

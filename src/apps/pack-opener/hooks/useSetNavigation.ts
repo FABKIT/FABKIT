@@ -1,4 +1,5 @@
 import { SWIPE_THRESHOLD_PX } from "@fabkit/apps/pack-opener/config/scene";
+import { arrowKeyBelongsElsewhere } from "@fabkit/apps/pack-opener/lib/arrow-keys";
 import { stepSetCode } from "@fabkit/apps/pack-opener/lib/set-index";
 import type { DrawnCard } from "@fabkit/apps/pack-opener/pack/types";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
@@ -15,22 +16,6 @@ import {
 interface LeaveRequest {
 	setCode: string;
 	pack: DrawnCard[];
-}
-
-/** Arrow keys belong to whatever else is using them: a modified arrow is the
- * browser's (Alt+Left is Back), an open dialog owns the keyboard, and the set
- * dropdown uses them to move between its options. Dialogs are checked globally
- * rather than through the event target because focus can sit outside one while
- * it is open, and switching sets behind a dialog is what this exists to stop. */
-function arrowKeyBelongsElsewhere(event: KeyboardEvent): boolean {
-	if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
-		return true;
-	}
-	if (document.querySelector('[role="dialog"]')) return true;
-	return (
-		event.target instanceof Element &&
-		event.target.closest('[role="listbox"]') !== null
-	);
 }
 
 /** Every way of moving between sets (arrows, dropdown, swipe, arrow keys) and
@@ -84,12 +69,14 @@ export function useSetNavigation() {
 		[requestSetChange],
 	);
 
-	// Left/right arrow keys step through sets whenever the carousel is on
-	// screen. There's no text input on this page to conflict with.
+	// Left/right arrow keys step through sets, except while a finished pack is
+	// up: then they browse its cards (see useCardBrowsing.ts). There's no text
+	// input on this page to conflict with.
 	useEffect(() => {
 		function handleKeyDown(event: KeyboardEvent): void {
 			if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
 			if (arrowKeyBelongsElsewhere(event)) return;
+			if (usePackOpenerStore.getState().phase === "done") return;
 			step(event.key === "ArrowLeft" ? -1 : 1);
 		}
 		window.addEventListener("keydown", handleKeyDown);
