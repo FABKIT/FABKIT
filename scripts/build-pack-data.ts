@@ -455,7 +455,7 @@ function resolveIncludedSetCodes(candidates: Candidate[]): string[] {
 		throw new Error(
 			`Found ${unknown.length} set code(s) with no decision in ` +
 				`src/apps/pack-opener/config/known-sets.ts:\n${details}\n\n` +
-				'Add an "include" or "exclude" entry with a reason for each, then rebuild.',
+				'Add an "include" or "exclude" entry for each, then rebuild.',
 		);
 	}
 
