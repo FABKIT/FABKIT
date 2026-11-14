@@ -7,19 +7,24 @@ import type { OpenedPackRecord } from "@fabkit/apps/pack-opener/stats/session-st
 
 export type PackOpenerPhase = "idle" | "tearing" | "revealing" | "done";
 
-/** The card the scene and caption are showing: the one chosen from the ledger
- * while revisiting a finished pack, otherwise the one reached in the reveal. */
+/** Position in the pack of the card the scene and caption are showing: the one
+ * chosen while revisiting a finished pack, otherwise the one reached in the reveal. */
+export function selectActiveIndex(
+	state: Pick<PackOpenerState, "phase" | "revealIndex" | "revisitIndex">,
+): number {
+	return state.phase === "done" && state.revisitIndex !== null
+		? state.revisitIndex
+		: state.revealIndex;
+}
+
+/** The card at selectActiveIndex. */
 export function selectActiveCard(
 	state: Pick<
 		PackOpenerState,
 		"phase" | "pack" | "revealIndex" | "revisitIndex"
 	>,
 ): DrawnCard | undefined {
-	const index =
-		state.phase === "done" && state.revisitIndex !== null
-			? state.revisitIndex
-			: state.revealIndex;
-	return state.pack?.[index];
+	return state.pack?.[selectActiveIndex(state)];
 }
 
 export interface PackOpenerState {
@@ -51,9 +56,9 @@ export interface PackOpenerState {
 	 * the next pack and resetting the session, and never by a render. Null
 	 * falls back to the mock pack; see PackMesh.tsx. */
 	packArtUrl: string | null;
-	/** Set while phase is "done" and the player has tapped a row in the
-	 * summary ledger to look at that card again — read-only, doesn't touch
-	 * `revealIndex` or re-roll anything. Null means "not revisiting". */
+	/** Set while phase is "done" and the player has gone back to a card, from
+	 * the summary ledger or by browsing (see hooks/useCardBrowsing.ts). Read-only:
+	 * doesn't touch `revealIndex` or re-roll anything. Null means "not revisiting". */
 	revisitIndex: number | null;
 	/** Which marketplace's prices every price surface shows (TCGplayer dollars
 	 * or Cardmarket euros). Persisted by the store. */
@@ -85,6 +90,9 @@ export interface PackOpenerActions {
 	/** Shows a specific card from the just-finished pack (phase "done" only).
 	 * Read-only and sticky: opening a new pack or switching sets resets it. */
 	revisitCard(index: number): void;
+	/** Moves that many cards forward (or back, if negative) through a finished
+	 * pack, stopping at either end. */
+	stepCard(offset: number): void;
 	/** Turns the active card over; the UI only offers it for two-sided cards. */
 	flipCard(): void;
 	/** Switches which marketplace's prices are shown, and remembers it. */
