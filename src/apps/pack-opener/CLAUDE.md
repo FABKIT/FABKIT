@@ -19,7 +19,7 @@ src/apps/pack-opener/
     PackOpenerPage, PackOpenerLoading, PackOpenerUnavailable, shared dialogs and price bits
     carousel/ The set picker and the set info dialog
     hud/      2D chrome below the canvas (caption, summary, ledger, session controls).
-              CardLoadingIndicator is the one overlay on the card; from `md` up the
+              CardArtStatus is the one overlay on the card; from `md` up the
               CardStepButtons sit in the empty canvas beside it
     scene/    react-three-fiber scene: canvas, camera, pack, cards, celebration effects,
               materials/foilMaterial.ts, textures/
@@ -76,7 +76,8 @@ stores the rest after a first visit.
   resolved rarity. Missing set data resolves to a placeholder card.
 - Every image texture goes through `lib/texture-cache.ts`, never drei's `useTexture`, because
   a 404 there throws outside React and takes the route down. It reports failure instead, so
-  `CardFace` can fall back from the face, to the front, to the card back.
+  `CardFace` can fall back from the face, to the front, to the card back. `CardArtStatus`
+  labels that card back as loading or as "Artwork missing".
 
 ## Odds
 

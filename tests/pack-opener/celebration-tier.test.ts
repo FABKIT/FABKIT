@@ -7,6 +7,7 @@ function card(overrides: Partial<ResolvedCard>): ResolvedCard {
 		id: "test-card",
 		name: "Test Card",
 		rarity: "common",
+		isToken: false,
 		treatment: "standard",
 		imageUrl: null,
 		backImageUrl: null,

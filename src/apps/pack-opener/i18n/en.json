@@ -111,6 +111,7 @@
 	"card": {
 		"unavailable": "Card unavailable",
 		"loading": "Loading card art",
+		"art_missing": "Artwork missing",
 		"rarity": {
 			"basic": "Basic",
 			"common": "Common",

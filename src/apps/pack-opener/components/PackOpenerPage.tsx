@@ -1,6 +1,6 @@
 import { BetaNotice } from "@fabkit/apps/pack-opener/components/BetaNotice";
 import { SetCarousel } from "@fabkit/apps/pack-opener/components/carousel/SetCarousel";
-import { CardLoadingIndicator } from "@fabkit/apps/pack-opener/components/hud/CardLoadingIndicator";
+import { CardArtStatus } from "@fabkit/apps/pack-opener/components/hud/CardArtStatus";
 import { CardStepButton } from "@fabkit/apps/pack-opener/components/hud/CardStepButton";
 import { PackSummary } from "@fabkit/apps/pack-opener/components/hud/PackSummary";
 import { RevealCaption } from "@fabkit/apps/pack-opener/components/hud/RevealCaption";
@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 
 /**
  * Set picker, canvas, caption slot, summary: all in flow at fixed heights except the
- * canvas, so it never changes size between phases. Only CardLoadingIndicator floats over
+ * canvas, so it never changes size between phases. Only CardArtStatus floats over
  * the card; from `md` up the card step buttons sit in the empty canvas at its sides.
  */
 export function PackOpenerPage() {
@@ -41,7 +41,7 @@ export function PackOpenerPage() {
 					className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,var(--color-surface-muted),transparent_70%)]"
 				/>
 				<PackOpenerCanvas />
-				<CardLoadingIndicator />
+				<CardArtStatus />
 				{/* The card is 34cqh to each side of centre; the rest is the button
 				    and a gap that clears the card's tilt. */}
 				<CardStepButton

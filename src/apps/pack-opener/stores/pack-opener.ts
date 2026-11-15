@@ -128,11 +128,10 @@ export const usePackOpenerStore = create<PackOpenerState & PackOpenerActions>()(
 					// A failed image gets another chance with each new pack, so a brief
 					// network drop doesn't cost a card its art for the whole session.
 					clearFailedTextureUrls();
-					// Sorted by the rarity each card will show as; the set's printings
-					// are loaded by now (see openPack).
-					const pack = orderForReveal(
-						generatePack(packConfig),
-						(card) => resolveCard(card, packConfig.id).rarity,
+					// Sorted by what each card will show as; the set's printings are
+					// loaded by now (see openPack).
+					const pack = orderForReveal(generatePack(packConfig), (card) =>
+						resolveCard(card, packConfig.id),
 					);
 					preloadPackTextures(pack, packConfig.id, 0, preloadLookaheadCount());
 					set(

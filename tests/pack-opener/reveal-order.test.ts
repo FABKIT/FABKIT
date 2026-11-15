@@ -126,9 +126,38 @@ describe("orderForReveal", () => {
 		const upgraded = drawn("token", "token");
 		const ordered = orderForReveal(
 			[upgraded, drawn("token", "token"), drawn("common", "common")],
-			(card) => (card === upgraded ? "majestic" : card.rarity),
+			(card) => ({
+				rarity: card === upgraded ? "majestic" : card.rarity,
+				isToken: false,
+			}),
 		);
 		expect(ordered[ordered.length - 1]).toBe(upgraded);
+	});
+
+	it("moves a token printed at Common out of the commons to the back", () => {
+		const commonToken = drawn("common", "common");
+		const foilToken = drawn("premium-foil", "common");
+		const ordered = orderForReveal(
+			[
+				commonToken,
+				foilToken,
+				drawn("common", "common"),
+				drawn("rare-or-majestic", "majestic"),
+				drawn("rare", "rare"),
+			],
+			(card) => ({
+				rarity: card.rarity,
+				isToken: card === commonToken || card === foilToken,
+			}),
+		);
+		expect(ordered.map((card) => `${card.slot}:${card.rarity}`)).toEqual([
+			"common:common",
+			"rare:rare",
+			"rare-or-majestic:majestic",
+			"common:common",
+			"premium-foil:common",
+		]);
+		expect(ordered.slice(-2)).toEqual([commonToken, foilToken]);
 	});
 
 	it("never mixes the three stretches, in any real set", () => {
