@@ -10,6 +10,7 @@ import {
 } from "@fabkit/apps/pack-opener/config/scene";
 import { useCardFaceTexture } from "@fabkit/apps/pack-opener/hooks/useCardFaceTexture";
 import { useSafeTexture } from "@fabkit/apps/pack-opener/hooks/useSafeTexture";
+import { TextureStatus } from "@fabkit/apps/pack-opener/lib/texture-cache";
 
 interface CardFaceProps {
 	card: ResolvedCard;
@@ -39,11 +40,11 @@ export function CardFace({
 	const cardBack = useSafeTexture(CARD_BACK_URL);
 
 	const texture =
-		face.status === "loaded"
+		face.status === TextureStatus.Loaded
 			? face.texture
-			: front.status === "loaded"
+			: front.status === TextureStatus.Loaded
 				? front.texture
-				: cardBack.status === "loaded"
+				: cardBack.status === TextureStatus.Loaded
 					? cardBack.texture
 					: null;
 

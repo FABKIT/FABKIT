@@ -2,6 +2,7 @@ import { getMockPackTexture } from "@fabkit/apps/pack-opener/components/scene/te
 import { getPackArtStrip } from "@fabkit/apps/pack-opener/components/scene/textures/pack-art-strips";
 import type { PackPart } from "@fabkit/apps/pack-opener/config/scene";
 import { useSafeTexture } from "@fabkit/apps/pack-opener/hooks/useSafeTexture";
+import { TextureStatus } from "@fabkit/apps/pack-opener/lib/texture-cache";
 
 interface PackMaterialProps {
 	part: PackPart;
@@ -22,9 +23,9 @@ interface PackMaterialProps {
 export function PackMaterial({ part, packArtUrl }: PackMaterialProps) {
 	const art = useSafeTexture(packArtUrl);
 	const texture =
-		art.status === "loaded"
+		art.status === TextureStatus.Loaded
 			? getPackArtStrip(art.texture, part)
-			: art.status === "error"
+			: art.status === TextureStatus.Error
 				? getMockPackTexture(part)
 				: null;
 

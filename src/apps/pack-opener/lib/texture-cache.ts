@@ -46,18 +46,27 @@ export function ensureLoading(url: string): Promise<void> {
 	return loading;
 }
 
+// Each is declared on its own so it keeps its `unique symbol` type, which is
+// what lets SafeTextureState narrow on `status`.
+const Loading: unique symbol = Symbol("loading");
+const Loaded: unique symbol = Symbol("loaded");
+const Failed: unique symbol = Symbol("error");
+
+export const TextureStatus = { Loading, Loaded, Error: Failed } as const;
+export type TextureStatus = (typeof TextureStatus)[keyof typeof TextureStatus];
+
 export type SafeTextureState =
-	| { status: "loading" }
-	| { status: "loaded"; texture: Texture }
-	| { status: "error" };
+	| { status: typeof TextureStatus.Loading }
+	| { status: typeof TextureStatus.Loaded; texture: Texture }
+	| { status: typeof TextureStatus.Error };
 
 export function resolveCached(url: string): SafeTextureState {
-	if (failedUrls.has(url)) return { status: "error" };
+	if (failedUrls.has(url)) return { status: TextureStatus.Error };
 	const cached = textureCache.get(url);
-	if (!cached) return { status: "loading" };
+	if (!cached) return { status: TextureStatus.Loading };
 	textureCache.delete(url);
 	textureCache.set(url, cached);
-	return { status: "loaded", texture: cached };
+	return { status: TextureStatus.Loaded, texture: cached };
 }
 
 /** Fire-and-forget warmup, called by the store when a pack is generated, so most
