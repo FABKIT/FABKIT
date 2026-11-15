@@ -19,6 +19,9 @@ export interface ResolvedCard {
 	/** Null when no real card could be resolved; the UI supplies its own name. */
 	name: string | null;
 	rarity: CardRarity;
+	/** True for a token card, whatever rarity its set printed it at (Basic in
+	 * newer sets, Common in some older ones). */
+	isToken: boolean;
 	treatment: FoilTreatment;
 	imageUrl: string | null;
 	/** The other face's art for a double-faced card, otherwise null. */
@@ -35,6 +38,7 @@ function placeholderCard(drawn: DrawnCard): ResolvedCard {
 		id: drawn.id,
 		name: null,
 		rarity: drawn.rarity,
+		isToken: drawn.rarity === "token",
 		treatment: drawn.treatment,
 		imageUrl: null,
 		backImageUrl: null,
@@ -108,6 +112,7 @@ function toResolvedCardFromPrinting(
 		name: printing.name,
 		// The printing's rarity: a Cold Foil redraw can land on a different one.
 		rarity: printing.rarity,
+		isToken: printing.rarity === "token" || hasType(printing, "Token"),
 		treatment,
 		imageUrl: printingImageUrl(printing),
 		backImageUrl: printingBackImageUrl(printing),

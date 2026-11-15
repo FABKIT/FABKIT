@@ -43,6 +43,12 @@ const RARITY_ORDER: CardRarity[] = [
 	"fabled",
 ];
 
+/** What orderForReveal needs to know about the card a draw turns into. */
+export interface ShownCard {
+	rarity: CardRarity;
+	isToken: boolean;
+}
+
 function groupForRarity(rarity: CardRarity): number {
 	if (rarity === "common" || rarity === "promo") return COMMONS;
 	if (rarity === "token" || rarity === "basic") return BACK;
@@ -55,20 +61,29 @@ function groupForRarity(rarity: CardRarity): number {
  * premium foil is the last card of the stretch its rarity belongs to (a common
  * foil closes the commons, a rare or better closes the rares).
  *
- * `rarityOf` is the rarity the player will see. The store passes the resolved
- * printing's, since a Cold Foil redraw can land on a different rarity than the
- * draw. Cards that tie keep the order they were dealt in.
+ * Some older sets print their tokens at Common and deal them from the common
+ * slots (Dusk till Dawn has no token slot at all). Those go to the back with
+ * the other sets' tokens instead of sitting among the commons.
+ *
+ * `shownAs` is the card the player will see. The store passes the resolved
+ * printing, since a Cold Foil redraw can land on a different rarity than the
+ * draw, and only the printing knows whether a Common is a token. Cards that tie
+ * keep the order they were dealt in.
  */
 export function orderForReveal(
 	cards: DrawnCard[],
-	rarityOf: (card: DrawnCard) => CardRarity = (card) => card.rarity,
+	shownAs: (card: DrawnCard) => ShownCard = (card) => ({
+		rarity: card.rarity,
+		isToken: card.rarity === "token",
+	}),
 ): DrawnCard[] {
 	return cards
 		.map((card) => {
-			const rarity = rarityOf(card);
+			const { rarity, isToken } = shownAs(card);
+			const group = SLOT_GROUP[card.slot] ?? groupForRarity(rarity);
 			return {
 				card,
-				group: SLOT_GROUP[card.slot] ?? groupForRarity(rarity),
+				group: isToken && group === COMMONS ? BACK : group,
 				isPremiumFoil: card.slot === "premium-foil" ? 1 : 0,
 				rarityRank: RARITY_ORDER.indexOf(rarity),
 			};
