@@ -1,5 +1,6 @@
 import { resolveCard } from "@fabkit/apps/pack-opener/cards/card-resolver";
 import { useCardFaceTexture } from "@fabkit/apps/pack-opener/hooks/useCardFaceTexture";
+import { TextureStatus } from "@fabkit/apps/pack-opener/lib/texture-cache";
 import { usePackOpenerStore } from "@fabkit/apps/pack-opener/stores/pack-opener";
 import { selectActiveCard } from "@fabkit/apps/pack-opener/stores/pack-opener-types";
 import { ImageOff, LoaderCircle } from "lucide-react";
@@ -43,8 +44,11 @@ export function CardArtStatus() {
 
 	if (card === null) return null;
 
-	const isLoading = face.status === "loading" || front.status === "loading";
-	const isMissing = face.status === "error" && front.status === "error";
+	const isLoading =
+		face.status === TextureStatus.Loading ||
+		front.status === TextureStatus.Loading;
+	const isMissing =
+		face.status === TextureStatus.Error && front.status === TextureStatus.Error;
 	if (!isLoading && !isMissing) return null;
 
 	const Icon = isLoading ? LoaderCircle : ImageOff;

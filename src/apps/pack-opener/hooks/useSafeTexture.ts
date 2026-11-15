@@ -2,6 +2,7 @@ import {
 	ensureLoading,
 	resolveCached,
 	type SafeTextureState,
+	TextureStatus,
 } from "@fabkit/apps/pack-opener/lib/texture-cache";
 import { useEffect, useReducer } from "react";
 
@@ -18,7 +19,7 @@ export function useSafeTexture(url: string | null): SafeTextureState {
 	// during render so the url and the texture can never disagree.
 	const [, onSettled] = useReducer((tick: number) => tick + 1, 0);
 	const state: SafeTextureState =
-		url === null ? { status: "error" } : resolveCached(url);
+		url === null ? { status: TextureStatus.Error } : resolveCached(url);
 	const { status } = state;
 
 	// `status` is a dependency so a texture evicted, or a failure forgiven, while
@@ -26,7 +27,7 @@ export function useSafeTexture(url: string | null): SafeTextureState {
 	// good. `cancelled` only suppresses the re-render, which would be on an
 	// unmounted component: the result is cached regardless.
 	useEffect(() => {
-		if (url === null || status !== "loading") return;
+		if (url === null || status !== TextureStatus.Loading) return;
 		let cancelled = false;
 		ensureLoading(url).then(() => {
 			if (!cancelled) onSettled();
